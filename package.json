@@ -1,0 +1,29 @@
+{
+  "name": "phonemize",
+  "version": "0.1.0",
+  "description": "English phonemizer",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha __tests__ -r chai/register-expect.js",
+    "build-dict": "node build-dict.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hans00/phonemize.git"
+  },
+  "keywords": [
+    "nlp",
+    "phoneme",
+    "english"
+  ],
+  "author": "Hans <me@hans00.me>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hans00/phonemize/issues"
+  },
+  "homepage": "https://github.com/hans00/phonemize#readme",
+  "devDependencies": {
+    "chai": "^5.0.0",
+    "mocha": "^10.2.0"
+  }
+}
