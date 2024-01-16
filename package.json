@@ -1,12 +1,16 @@
 {
   "name": "phonemize",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "English phonemizer",
   "main": "index.js",
   "scripts": {
     "test": "mocha __tests__ -r chai/register-expect.js",
     "build-dict": "node build-dict.js"
   },
+  "files": [
+    "index.js",
+    "data/en.json"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hans00/phonemize.git"
