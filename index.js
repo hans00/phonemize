@@ -1,4 +1,4 @@
-const dict = require('./data/cmudict.json')
+const dict = require('./data/en.json')
 
 const isSymbol = (str) => str.match(/^\W$/)
 

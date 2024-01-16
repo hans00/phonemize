@@ -64,7 +64,7 @@ const toIPA = (phones) => {
 	return ipa
 }
 
-const main = async () => {
+const build_en = async () => {
 	const data = await fetch('https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict')
 		.then((res) => res.text())
 	const lines = data.split('\n')
@@ -82,6 +82,7 @@ const main = async () => {
 			maps[word] = [toIPA(phones)]
 		}
 	}
-	fs.writeFileSync('data/cmudict.json', JSON.stringify(maps))
+	fs.writeFileSync('data/en.json', JSON.stringify(maps))
 }
-main()
+
+build_en()
