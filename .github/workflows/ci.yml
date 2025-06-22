@@ -90,7 +90,7 @@ jobs:
           const performanceReport = `${{ steps.performance.outputs.report }}`;
           
           // Find existing performance comment
-          const { data: comments } = await github.rest.issues.listComments({
+          const { data: comments } = await github.rest.pulls.listComments({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
@@ -107,7 +107,7 @@ jobs:
           
           if (existingComment) {
             // Update existing comment
-            await github.rest.issues.updateComment({
+            await github.rest.pulls.updateComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: existingComment.id,
@@ -115,7 +115,7 @@ jobs:
             });
           } else {
             // Create new comment
-            await github.rest.issues.createComment({
+            await github.rest.pulls.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
