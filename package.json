@@ -56,5 +56,9 @@
   "dependencies": {
     "any-ascii": "^0.3.2",
     "number-to-words": "^1.2.4"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }
