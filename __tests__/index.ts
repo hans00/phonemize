@@ -86,4 +86,12 @@ describe('Index', function() {
     expect(phonemize('antidisestablishmentarianism')).to.be.a('string')
     expect(phonemize('antidisestablishmentarianism')).to.have.length.greaterThan(10)
   })
+
+  it('Uppercase acronym processing', function() {
+    expect(phonemize('TTS')).to.be.equal('ˈtiˈtiˈɛs')
+    expect(phonemize('AI')).to.be.equal('ˈeɪˈaɪ')
+
+    expect(phonemize('Xyz')).to.not.include('ˌɛks')
+    expect(phonemize('abc')).to.not.include('ˌeɪ')
+  })
 })

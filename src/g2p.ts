@@ -79,6 +79,20 @@ export class G2PModel {
       }
     }
 
+    // Handle uppercase acronyms/abbreviations (2-8 characters, all uppercase)
+    if (/^[A-Z]{2,8}$/.test(word)) {
+      const letterPronunciations: string[] = [];
+      for (const letter of word) {
+        const letterPronunciation = this.wellKnown(letter.toLowerCase());
+        if (letterPronunciation) {
+          letterPronunciations.push(letterPronunciation);
+        }
+      }
+      if (letterPronunciations.length === word.length) {
+        return letterPronunciations.join(" ");
+      }
+    }
+
     const rules: Array<[RegExp, string]> = [
       // Suffixes and complex patterns
       [/^tion/, "SH AH N"],
