@@ -1,0 +1,216 @@
+name: CI
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'yarn'
+        
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+      
+    - name: Build project
+      run: yarn build
+      
+    - name: Run tests
+      run: yarn test
+      
+    - name: Run tests with coverage
+      run: yarn test:coverage
+      
+    - name: Upload coverage to Codecov
+      if: matrix.node-version == '20.x'
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+
+  performance:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'yarn'
+        
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+      
+    - name: Build project
+      run: yarn build
+      
+    - name: Performance benchmark
+      id: performance
+      run: |
+        # Run performance test and capture output
+        PERF_OUTPUT=$(node -e "
+        const { phonemize } = require('./dist/index');
+        
+        // Test different scenarios
+        const scenarios = [
+          { name: 'Basic words', words: ['hello', 'world', 'phonemize', 'testing', 'performance'], iterations: 1000 },
+          { name: 'Compound words', words: ['supercar', 'playground', 'superman', 'overload'], iterations: 500 },
+          { name: 'Long words', words: ['pneumonoultramicroscopicsilicovolcanoconiosis', 'supercalifragilisticexpialidocious'], iterations: 100 },
+          { name: 'Multilingual', words: ['hello', '中文', 'こんにちは', '한국어'], iterations: 200, options: { anyAscii: true } }
+        ];
+        
+        let totalTime = 0;
+        let totalWords = 0;
+        let results = [];
+        
+        scenarios.forEach(scenario => {
+          const start = process.hrtime.bigint();
+          for (let i = 0; i < scenario.iterations; i++) {
+            scenario.words.forEach(word => phonemize(word, scenario.options || {}));
+          }
+          const end = process.hrtime.bigint();
+          const duration = Number(end - start) / 1000000;
+          const wordCount = scenario.words.length * scenario.iterations;
+          const avgPerWord = duration / wordCount;
+          
+          totalTime += duration;
+          totalWords += wordCount;
+          
+          results.push({
+            name: scenario.name,
+            duration: duration.toFixed(2),
+            wordCount,
+            avgPerWord: avgPerWord.toFixed(4)
+          });
+        });
+        
+        const overallAvg = (totalTime / totalWords).toFixed(4);
+        const throughput = Math.round(totalWords / (totalTime / 1000));
+        
+        console.log('## 🚀 Performance Test Results');
+        console.log('');
+        console.log('| Scenario | Words | Duration (ms) | Avg per word (ms) |');
+        console.log('|----------|-------|---------------|-------------------|');
+        results.forEach(r => {
+          console.log(\`| \${r.name} | \${r.wordCount} | \${r.duration} | \${r.avgPerWord} |\`);
+        });
+        console.log('');
+        console.log(\`**Overall Performance:**\`);
+        console.log(\`- Total words processed: \${totalWords}\`);
+        console.log(\`- Total time: \${totalTime.toFixed(2)}ms\`);
+        console.log(\`- Average per word: \${overallAvg}ms\`);
+        console.log(\`- Throughput: \${throughput} words/second\`);
+        console.log('');
+        
+        if (totalTime > 10000) {
+          console.log('⚠️ **Performance Warning**: Test took longer than expected');
+          process.exit(1);
+        } else if (throughput < 5000) {
+          console.log('⚠️ **Performance Warning**: Throughput below 5000 words/second');
+          process.exit(1);
+        } else {
+          console.log('✅ **Performance**: All benchmarks passed');
+        }
+        " 2>&1)
+        
+        # Save performance output for later use
+        echo "$PERF_OUTPUT" > performance_report.txt
+        
+        # Set output for other steps
+        echo "report<<EOF" >> $GITHUB_OUTPUT
+        echo "$PERF_OUTPUT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        
+        # Also output to console
+        echo "$PERF_OUTPUT"
+        
+    - name: Comment PR with performance results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const performanceReport = `${{ steps.performance.outputs.report }}`;
+          
+          // Find existing performance comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const existingComment = comments.find(comment => 
+            comment.body.includes('🚀 Performance Test Results')
+          );
+          
+          const commentBody = `${performanceReport}
+          
+          ---
+          *Performance test run on commit ${context.sha.substring(0, 7)}*`;
+          
+          if (existingComment) {
+            // Update existing comment
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existingComment.id,
+              body: commentBody
+            });
+          } else {
+            // Create new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+          }
+          
+    - name: Commit performance results to commit status
+      if: github.event_name == 'push'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const performanceReport = `${{ steps.performance.outputs.report }}`;
+          
+          // Extract key metrics for commit status
+          const lines = performanceReport.split('\n');
+          const throughputLine = lines.find(line => line.includes('Throughput:'));
+          const avgLine = lines.find(line => line.includes('Average per word:'));
+          
+          let description = 'Performance test completed';
+          if (throughputLine && avgLine) {
+            const throughput = throughputLine.match(/(\d+) words\/second/)?.[1];
+            const avgTime = avgLine.match(/([\d.]+)ms/)?.[1];
+            description = `${throughput} words/sec, ${avgTime}ms/word avg`;
+          }
+          
+          await github.rest.repos.createCommitStatus({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            sha: context.sha,
+            state: 'success',
+            target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            description: description,
+            context: 'performance/benchmark'
+          });
