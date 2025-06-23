@@ -34,7 +34,7 @@ describe('Index', function() {
 
   it('rule based or compound word', function() {
     expect(phonemize('supercar')).to.be.equal('ˈsupɝˈkɑɹ')
-    expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).to.be.equal('ˈnumoʊnɑʌlˈtɹæmɪkɹɑˈskɑpɪkˈsɪɫɪkɑvɑlkænɑkɑnɪɑsɪs')
+    expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).to.be.equal('ˈnumoʊnɑʌltɹæmɪˈkɹɔskɑpɪksɪlɪkɑvɑlkænɑkɑnɪɑsɪs')
   })
 
   it('anyAscii', function() {

@@ -55,6 +55,84 @@ function loadCmuDict(content: string): DictEntry {
   return arpaDict;
 }
 
+function trimDictionary(dictionary: DictEntry): DictEntry {
+  const trimmedDict = { ...dictionary };
+  let totalRemoved = 0;
+
+  // Rule 1: Remove predictable plural forms (-s, -es)
+  Object.keys(dictionary).forEach(word => {
+    // Simple plural -s
+    if (word.endsWith('s') && word.length > 2 && !word.endsWith('ss')) {
+      const singular = word.slice(0, -1);
+      if (dictionary[singular]) {
+        const singularPron = dictionary[singular];
+        const pluralPron = dictionary[word];
+        
+        // If plural pronunciation is singular + S/Z/IH Z, remove it
+        if (pluralPron === singularPron + ' S' || 
+            pluralPron === singularPron + ' Z' ||
+            pluralPron === singularPron + ' IH Z') {
+          delete trimmedDict[word];
+          totalRemoved++;
+        }
+      }
+    }
+    
+    // -es plural
+    if (word.endsWith('es') && word.length > 3) {
+      const singular = word.slice(0, -2);
+      if (dictionary[singular]) {
+        const singularPron = dictionary[singular];
+        const pluralPron = dictionary[word];
+        
+        if (pluralPron === singularPron + ' IH Z') {
+          delete trimmedDict[word];
+          totalRemoved++;
+        }
+      }
+    }
+  });
+
+  // Rule 2: Remove predictable past tense (-ed)
+  Object.keys(dictionary).forEach(word => {
+    if (word.endsWith('ed') && word.length > 3) {
+      const base = word.slice(0, -2);
+      if (dictionary[base]) {
+        const basePron = dictionary[base];
+        const pastPron = dictionary[word];
+        
+        // Check for regular past tense pronunciation
+        if (pastPron === basePron + ' D' || 
+            pastPron === basePron + ' T' ||
+            pastPron === basePron + ' IH D') {
+          delete trimmedDict[word];
+          totalRemoved++;
+        }
+      }
+    }
+  });
+
+  // Rule 3: Remove predictable present participle (-ing)
+  Object.keys(dictionary).forEach(word => {
+    if (word.endsWith('ing') && word.length > 4) {
+      const base = word.slice(0, -3);
+      if (dictionary[base]) {
+        const basePron = dictionary[base];
+        const presentPron = dictionary[word];
+        
+        // Check for regular present participle pronunciation
+        if (presentPron === basePron + ' IH NG') {
+          delete trimmedDict[word];
+          totalRemoved++;
+        }
+      }
+    }
+  });
+
+  console.log(`Removed ${totalRemoved} predictable word forms`);
+  return trimmedDict;
+}
+
 async function main(): Promise<void> {
   console.log("Building phoneme dictionaries...");
 
@@ -85,11 +163,23 @@ async function main(): Promise<void> {
     // Merge dictionaries (custom overrides CMU)
     const finalArpaDict = { ...dict, ...customDict };
 
-    // Save ARPABET dictionary
+    // Apply dictionary trimming
+    console.log("\nApplying dictionary trimming...");
+    const trimmedDict = trimDictionary(finalArpaDict);
+    const originalSize = Object.keys(finalArpaDict).length;
+    const trimmedSize = Object.keys(trimmedDict).length;
+    const reduction = originalSize - trimmedSize;
+    const reductionPercent = ((reduction / originalSize) * 100).toFixed(2);
+    
+    console.log(`Original size: ${originalSize}`);
+    console.log(`Trimmed size: ${trimmedSize}`);
+    console.log(`Reduced by: ${reduction} entries (${reductionPercent}%)`);
+
+    // Save ARPABET dictionary (now trimmed)
     const arpaPath = path.join(dataDir, "dict.json");
-    fs.writeFileSync(arpaPath, JSON.stringify(finalArpaDict, null, 2));
+    fs.writeFileSync(arpaPath, JSON.stringify(trimmedDict, null, 2));
     console.log(`Saved dictionary to: ${arpaPath}`);
-    console.log(`Total entries: ${Object.keys(finalArpaDict).length}`);
+    console.log(`Total entries: ${Object.keys(trimmedDict).length}`);
   }
 
   {
