@@ -26,10 +26,20 @@ export class G2PModel {
     this.homographs = homographs as HomographDict;
   }
 
+  private matchPos(entry: HomographEntry, pos: string): boolean {
+    if (entry.pos === pos) {
+      return true;
+    }
+    if (entry.pos.startsWith("!") && entry.pos.substring(1) !== pos) {
+      return true;
+    }
+    return false;
+  }
+
   private wellKnown(word: string, pos?: string): string | undefined {
-    if (this.homographs[word]) {
-      const homograph = this.homographs[word].find(
-        (h: HomographEntry) => h.pos === pos,
+    if (this.homographs[word] && pos) {
+      const homograph = this.homographs[word].find((entry: HomographEntry) =>
+        this.matchPos(entry, pos),
       );
       if (homograph) {
         return homograph.pronunciation;

@@ -107,6 +107,14 @@ async function main(): Promise<void> {
       );
       console.log(`Saved homographs to: ${homographsDestPath}`);
     }
+
+    // Load custom homographs
+    const customHomographsPath = new URL("../src-data/homographs-custom.txt", import.meta.url)
+      .pathname;
+    const customHomographs = parseHomographs(fs.readFileSync(customHomographsPath, "utf-8"));
+    console.log(
+      `Loaded ${Object.keys(customHomographs).length} entries from custom homographs`,
+    );
   }
 
   console.log("Dictionary build complete!");

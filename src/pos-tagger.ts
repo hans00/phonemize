@@ -131,6 +131,11 @@ export class SimplePOSTagger {
   public tagWord(word: string, context?: string[]): POSResult {
     const lowerWord = word.toLowerCase();
 
+    // Check if current word is determiner first
+    if (SimplePOSTagger.DETERMINERS.includes(lowerWord)) {
+      return { word, pos: "DT", confidence: 0.9 };
+    }
+
     // Check context clues first (higher confidence)
     if (context && context.length >= 1) {
       const prevWord = context[context.length - 1]?.toLowerCase();

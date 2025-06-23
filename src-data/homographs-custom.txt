@@ -1,0 +1,6 @@
+#This is based on http://www minpairs talktalk net/graph html 
+#Each line is formatted as follows:
+#HEADWORD|PRONUNCIATION1|PRONUNCIATION2|POS
+#HEADWORD should have PRONUNCIATION1 only if it's part-of-speech is POS 
+#Otherwise PRONUNCIATION2 is applied
+A|AX|EY1|!V
