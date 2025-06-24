@@ -119,6 +119,21 @@ Convert text to ARPABET phonemes.
 toARPABET('Hello world!')  // "HH AX L OW1 W ER1 L D!"
 ```
 
+#### `toZhuyin(text, options?)`
+Convert text to Zhuyin (Bopomofo / 注音) format.
+
+This function is specifically designed for Chinese text. Non-Chinese text will be phonemized to IPA as a fallback.
+
+**Note:** The output format is `Zhuyin + tone number` (e.g., `ㄓㄨㄥ1 ㄨㄣ2`), which is optimized for **Kokoro**.
+
+```javascript
+import { toZhuyin } from 'phonemize';
+
+toZhuyin('中文'); // "ㄓㄨㄥ1 ㄨㄣ2"
+toZhuyin('你好世界'); // "ㄋㄧ3 ㄏㄠ3 ㄕ4 ㄐㄧㄝ4"
+toZhuyin('中文 and English'); // "ㄓㄨㄥ1 ㄨㄣ2 ænd ˈɪŋɡlɪʃ"
+```
+
 ### Custom Pronunciations
 
 ```javascript
