@@ -1,6 +1,6 @@
 {
   "name": "phonemize",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Fast phonemizer with rule-based G2P prediction. Pure JavaScript implementation.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
