@@ -258,8 +258,8 @@ export class Tokenizer {
     const { text: processedText, languageMap } = this._preprocess(text);
     const expandedText = expandText(processedText);
     
-    // Split but preserve punctuation and spacing
-    const tokens = expandedText.split(/(\s+|[^\w\s])/g).filter(token => token.trim());
+    // Improved tokenization for better Chinese word preservation
+    const tokens = this._smartTokenize(expandedText);
     
     // Get POS tags for homograph disambiguation
     const cleanWords = tokens.filter(token => 
@@ -314,6 +314,38 @@ export class Tokenizer {
   }
 
   /**
+   * Smart tokenization using efficient regex patterns
+   */
+  private _smartTokenize(text: string): string[] {
+    const tokenRegex = /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+['']?\w*|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
+    
+    const tokens: string[] = [];
+    let match;
+    
+    while ((match = tokenRegex.exec(text)) !== null) {
+      const token = match[1];
+      
+      // Skip pure whitespace tokens
+      if (/^\s+$/.test(token)) {
+        continue;
+      }
+      
+      // Handle punctuation - only add if it's in our known punctuation list
+      if (token.length === 1 && PUNCTUATION.includes(token)) {
+        tokens.push(token);
+        continue;
+      }
+      
+      // Add word tokens (Chinese, English, numbers, contractions, etc.)
+      if (token.trim()) {
+        tokens.push(token.trim());
+      }
+    }
+    
+    return tokens;
+  }
+
+  /**
    * Convert text to phoneme string with specified separator
    */
   public tokenizeToString(text: string): string {
@@ -353,46 +385,63 @@ export class Tokenizer {
 
     const { text: processedText, languageMap } = this._preprocess(text);
     const expandedText = expandText(processedText);
-    const tokens = expandedText.split(/(\s+)/).filter(token => token);
+    
+    // Use regex to get tokens with their positions in original text
+    const tokenRegex = /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+['']?\w*|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
+    const tokenMatches: { token: string; position: number }[] = [];
+    let match;
+    
+    while ((match = tokenRegex.exec(expandedText)) !== null) {
+      const token = match[1];
+      
+      // Skip pure whitespace tokens
+      if (/^\s+$/.test(token)) {
+        continue;
+      }
+      
+      // Only process non-whitespace tokens
+      if (token.trim()) {
+        tokenMatches.push({
+          token: token.trim(),
+          position: match.index
+        });
+      }
+    }
     
     // Get POS tags for homograph disambiguation
-    const cleanWords = tokens.filter(token => 
-      token.trim() && !PUNCTUATION.includes(token.trim())
+    const cleanWords = tokenMatches.filter(({ token }) => 
+      !PUNCTUATION.includes(token)
     );
-    const posResults = simplePOSTagger.tagWords(cleanWords);
+    const posResults = simplePOSTagger.tagWords(cleanWords.map(({ token }) => token));
     
     const results: PhonemeToken[] = [];
-    let position = 0;
     let cleanWordIndex = 0;
 
-    for (const token of tokens) {
-      if (token.trim() && !PUNCTUATION.includes(token.trim())) {
-        const cleanToken = token.trim();
-        
+    for (const { token, position } of tokenMatches) {
+      if (!PUNCTUATION.includes(token)) {
         // Get POS tag for homograph disambiguation
         const pos = posResults[cleanWordIndex]?.pos;
         cleanWordIndex++;
         
         // Check for custom pronunciations
-        const customPronunciation = this.options.homograph?.[cleanToken.toLowerCase()];
+        const customPronunciation = this.options.homograph?.[token.toLowerCase()];
         let phoneme: string;
         
         if (customPronunciation) {
           phoneme = this._postProcess(customPronunciation);
         } else {
           // Check language map for multilingual words
-          const detectedLanguage = languageMap[cleanToken.toLowerCase()];
-          const pronunciation = predict(cleanToken, pos, detectedLanguage);
+          const detectedLanguage = languageMap[token.toLowerCase()];
+          const pronunciation = predict(token, pos, detectedLanguage);
           phoneme = this._postProcess(pronunciation);
         }
 
         results.push({
           phoneme,
-          word: cleanToken,
+          word: token,
           position
         });
       }
-      position += token.length;
     }
 
     return results;

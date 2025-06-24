@@ -3,7 +3,10 @@
  * Converts Chinese text to International Phonetic Alphabet (IPA) notation
  */
 
-import { pinyin } from 'pinyin-pro';
+import { pinyin, addDict } from 'pinyin-pro';
+import dict from '../data/zh/dict.json';
+
+addDict(dict, 'phonemize-zh');
 
 /**
  * Comprehensive pinyin to IPA phoneme mapping

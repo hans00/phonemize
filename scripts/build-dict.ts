@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import * as json5 from "json5";
 import { arpabetToIpa } from "../src/utils";
 import { ARPABET_TO_IPA, IPA_STRESS_MAP } from "../src/consts";
 
@@ -154,6 +155,12 @@ async function main(): Promise<void> {
     fs.mkdirSync(dataDir, { recursive: true });
   }
 
+  // mkdir en
+  const enDir = path.join(dataDir, "en");
+  if (!fs.existsSync(enDir)) {
+    fs.mkdirSync(enDir, { recursive: true });
+  }
+
   {
     // Parse Dictionary
     const res = await fetch(
@@ -163,7 +170,7 @@ async function main(): Promise<void> {
     console.log(`Loaded ${Object.keys(dict).length} entries from Dictionary`);
 
     // Load custom dictionary
-    const customDictPath = new URL("../src-data/custom.dict", import.meta.url)
+    const customDictPath = new URL("../src-data/en/custom.dict", import.meta.url)
       .pathname;
     const customDict = loadCmuDict(fs.readFileSync(customDictPath, "utf-8"));
     console.log(
@@ -186,8 +193,8 @@ async function main(): Promise<void> {
     console.log(`Reduced by: ${reduction} entries (${reductionPercent}%)`);
 
     // Save ARPABET dictionary (now trimmed)
-    const arpaPath = path.join(dataDir, "dict.json");
-    fs.writeFileSync(arpaPath, JSON.stringify(trimmedDict, null, 2));
+    const arpaPath = path.join(enDir, "dict.json");
+    fs.writeFileSync(arpaPath, JSON.stringify(trimmedDict));
     console.log(`Saved dictionary to: ${arpaPath}`);
     console.log(`Total entries: ${Object.keys(trimmedDict).length}`);
   }
@@ -204,7 +211,7 @@ async function main(): Promise<void> {
     }
 
     // Load custom homographs
-    const customHomographsPath = new URL("../src-data/homographs-custom.txt", import.meta.url)
+    const customHomographsPath = new URL("../src-data/en/homographs-custom.txt", import.meta.url)
       .pathname;
     const customHomographs = parseHomographs(fs.readFileSync(customHomographsPath, "utf-8"));
     console.log(
@@ -214,14 +221,27 @@ async function main(): Promise<void> {
     // Merge homographs (custom overrides original)
     const finalHomographs = { ...homographDict, ...customHomographs };
     
-    const homographsDestPath = path.join(dataDir, "homographs.json");
+    const homographsDestPath = path.join(enDir, "homographs.json");
     fs.writeFileSync(
       homographsDestPath,
-      JSON.stringify(finalHomographs, null, 2),
+      JSON.stringify(finalHomographs),
     );
     console.log(`Saved homographs to: ${homographsDestPath}`);
     console.log(`Total homograph entries: ${Object.keys(finalHomographs).length}`);
   }
+
+  // mkdir zh
+  const zhDir = path.join(dataDir, "zh");
+  if (!fs.existsSync(zhDir)) {
+    fs.mkdirSync(zhDir, { recursive: true });
+  }
+  // build json5 to json
+  const json5Path = new URL("../src-data/zh/dict.json5", import.meta.url).pathname;
+  const json5Content = fs.readFileSync(json5Path, "utf-8");
+  const jsonContent = json5.parse(json5Content);
+  fs.writeFileSync(path.join(zhDir, "dict.json"), JSON.stringify(jsonContent));
+  console.log(`Saved dictionary to: ${path.join(zhDir, "dict.json")}`);
+  console.log(`Total entries: ${Object.keys(jsonContent).length}`);
 
   console.log("Dictionary build complete!");
 }

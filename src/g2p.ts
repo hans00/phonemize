@@ -1,5 +1,5 @@
-import dictionary from "../data/dict.json";
-import homographs from "../data/homographs.json";
+import dictionary from "../data/en/dict.json";
+import homographs from "../data/en/homographs.json";
 import {
   processMultilingualText,
   isMultilingualText,

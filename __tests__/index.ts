@@ -41,6 +41,7 @@ describe('Index', function() {
   it('chinese', function() {
     expect(phonemize('中文 TTS')).to.be.equal('ʈʂʊŋ˥˥ wən˧˥ ˈtiˈtiˈɛs')
     expect(phonemize('中文的抑揚頓挫')).to.be.equal('ʈʂʊŋ˥˥ wən˧˥ tə˧ i˥˩ jɑŋ˧˥ tuən˥˩ tsʰuɔ˥˩')
+    expect(phonemize('還原 還你 還是')).to.be.equal('xuan˧˥ juan˧˥ xuan˧˥ ni˧˩˧ xaɪ˧˥ ʂɨ˥˩')
   })
 
   it('anyAscii', function() {
