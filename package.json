@@ -56,7 +56,8 @@
   },
   "dependencies": {
     "any-ascii": "^0.3.2",
-    "number-to-words": "^1.2.4"
+    "number-to-words": "^1.2.4",
+    "pinyin-pro": "^3.26.0"
   },
   "publishConfig": {
     "access": "public",

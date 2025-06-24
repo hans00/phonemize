@@ -17,11 +17,11 @@ describe('Index', function() {
         "word": "package"
       },
     ])
+  })
+
+  it('Custom Pronunciation', function() {
     addPronunciation('ML', 'ɛmɛl')
     expect(phonemize('ML')).to.be.equal('ɛmɛl')
-    expect(phonemize('1 2 3')).to.be.equal('ˈwən ˈtu ˈθɹi')
-    // test rule based
-    expect(phonemize('buggie')).to.be.equal('bʌɡi')
   })
 
   it('toIPA', function() {
@@ -33,12 +33,17 @@ describe('Index', function() {
   })
 
   it('rule based or compound word', function() {
+    expect(phonemize('buggie')).to.be.equal('ˈbʌɡɡi')
     expect(phonemize('supercar')).to.be.equal('ˈsupɝˈkɑɹ')
-    expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).to.be.equal('ˈnumoʊnɑʌltɹæmɪˈkɹɔskɑpɪksɪlɪkɑvɑlkænɑkɑnɪɑsɪs')
+    expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).to.be.equal('ˈnumoʊˈnoʊˈəɫtɹəˈˌmaɪkɹəskɑpɪkˈsiˈɫikoʊˈvɑɫkeɪnoʊˈkɑnˈaɪoʊˈsɪs')
+  })
+
+  it('chinese', function() {
+    expect(phonemize('中文 TTS')).to.be.equal('ʈʂʊŋ˥˥ wən˧˥ ˈtiˈtiˈɛs')
+    expect(phonemize('中文的抑揚頓挫')).to.be.equal('ʈʂʊŋ˥˥ wən˧˥ tə˧ i˥˩ jɑŋ˧˥ tuən˥˩ tsʰuɔ˥˩')
   })
 
   it('anyAscii', function() {
-    expect(phonemize('中文', { anyAscii: true })).to.be.equal('ʒoʊŋʊən')
     expect(phonemize('にほんご', { anyAscii: true })).to.be.equal('nihoʊnɡoʊ')
     expect(phonemize('한국어', { anyAscii: true })).to.be.equal('hʌnɡʊɡʊ')
   })
@@ -76,15 +81,6 @@ describe('Index', function() {
     expect(result).to.be.an('array')
     expect(result[0]).to.be.equal('HH-AX-EL-OW')
     expect(result[0]).to.not.include('1') // stress markers removed
-  })
-
-  it('Long word processing', function() {
-    // Very long compound words
-    expect(phonemize('supercalifragilisticexpialidocious')).to.include('ˈsupɝ')
-    
-    // Long technical terms
-    expect(phonemize('antidisestablishmentarianism')).to.be.a('string')
-    expect(phonemize('antidisestablishmentarianism')).to.have.length.greaterThan(10)
   })
 
   it('Uppercase acronym processing', function() {

@@ -1,10 +1,11 @@
 import dictionary from "../data/dict.json";
 import homographs from "../data/homographs.json";
-import { ipaToArpabet } from "./utils";
 import {
   processMultilingualText,
   isMultilingualText,
 } from "./multilingual-processor";
+import { arpabetToIpa } from "./utils";
+import { chineseG2P } from "./zh-g2p";
 
 export interface HomographEntry {
   pronunciation: string;
@@ -15,264 +16,93 @@ export interface HomographDict {
   [word: string]: HomographEntry[];
 }
 
-// --- Shared Constants ---
+// --- Linguistics-based Constants ---
 
-// G2P rules for main pronunciation generation
-export const G2P_RULES: Array<[RegExp, string]> = [
-  // Suffixes and complex patterns
-  [/^tion/, "SH AH N"],
-  [/^sion/, "ZH AH N"],
-  [/^cious/, "SH AH S"],
-  [/^tious/, "SH AH S"],
-  [/^dge/, "JH"],
-  [/^tch/, "CH"],
+const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
+const CONSONANTS = new Set("bcdfghjklmnpqrstvwxyz".split(""));
 
-  // Common "ough" patterns
-  [/^through/, "TH R UW"],
-  [/^enough/, "IY N AH F"],
-  [/^cough/, "K AO F"],
-  [/^rough/, "R AH F"],
-  [/^tough/, "T AH F"],
-  [/^bough/, "B AW"],
-  [/^dough/, "D OW"],
-  [/^ought/, "AO T"],
-  [/^aught/, "AO T"],
+// Rules for letter-to-phoneme conversion, organized by priority
+const PHONEME_RULES: Array<[RegExp, string]> = [
+  // --- Priority 1: Invariant and complex patterns ---
+  // Silent letters at the beginning of words
+  [/^pn/, "n"], // pneumonia
+  [/^ps/, "s"], // psychology
+  [/^kn/, "n"],
+  [/^gn/, "n"],
+  [/^wr/, "ɹ"],
+  // Common digraphs
+  [/^ch/, "tʃ"],
+  [/^gh/, "f"], // as in "laugh"
+  [/^ph/, "f"],
+  [/^sh/, "ʃ"],
+  [/^th/, "θ"], // Unvoiced 'th' as a default
+  [/^tch/, "tʃ"],
+  [/^wh/, "w"],
+  [/^qu/, "kw"],
+  [/^ng/, "ŋ"],
+  [/^sch/, "sk"], // as in "school"
 
-  // Other multi-letter graphemes
-  [/^aigh/, "EY"],
-  [/^eigh/, "EY"],
-  [/^igh/, "AY"],
-  [/^ould/, "UH D"],
-  [/^augh/, "AO"],
+  // --- Vowel Teams / Digraphs ---
+  [/^ie/, "i"],   // as in "piece"
+  [/^ei/, "eɪ"],  // as in "vein"
+  [/^ey/, "i"],   // as in "key"
+  [/^ay/, "eɪ"],
+  [/^ai/, "eɪ"],
+  [/^ea/, "i"],   // as in "read" (can also be /ɛ/)
+  [/^ee/, "i"],
+  [/^eu/, "ju"],
+  [/^ew/, "ju"],
+  [/^oa/, "oʊ"],
+  [/^oi/, "ɔɪ"],
+  [/^oo/, "u"],   // as in "boot" (can also be /ʊ/)
+  [/^ou/, "aʊ"],  // as in "out"
+  [/^ow/, "aʊ"],  // as in "cow"
+  [/^oy/, "ɔɪ"],
+  [/^au/, "ɔ"],
+  [/^aw/, "ɔ"],
+  [/^augh/, "ɔ"],
+  [/^aught/, "ɔt"],
 
-  // Consonant digraphs
-  [/^ch/, "CH"],
-  [/^sh/, "SH"],
-  [/^th/, "TH"], // Note: This is ambiguous (voiced/unvoiced). TH is a simplification.
-  [/^ng/, "NG"],
-  [/^nk/, "NG K"],
-  [/^ph/, "F"],
-  [/^gh/, "F"], // Note: Often silent, but this is a simplification (e.g., laugh)
-  [/^ck/, "K"],
-  [/^qu/, "K W"],
-  [/^wh/, "W"],
+  // --- R-controlled vowels ---
+  [/^ar/, "ɑɹ"],
+  [/^er/, "ɝ"],
+  [/^ir/, "ɝ"],
+  [/^or/, "ɔɹ"],
+  [/^ur/, "ɝ"],
 
-  // Vowel digraphs (highly simplified)
-  [/^oo/, "UW"],
-  [/^ee/, "IY"],
-  [/^ea/, "IY"],
-  [/^ai/, "EY"],
-  [/^ay/, "EY"],
-  [/^oa/, "OW"],
-  [/^ow/, "OW"],
-  [/^ou/, "AW"],
-  [/^oi/, "OY"],
-  [/^oy/, "OY"],
-  [/^au/, "AO"],
-  [/^aw/, "AO"],
-  [/^ew/, "UW"],
-  [/^ue/, "UW"],
-  [/^ui/, "UW"],
-  [/^ie/, "IY"],
-  [/^ei/, "EY"],
+  // --- Context-dependent 'c' and 'g' ---
+  [/^c(?=[eiy])/, "s"], // soft c
+  // [/^g(?=[eiy])/, "dʒ"], // soft g - This rule is too broad and causes issues with words like 'buggie'.
 
-  // Context-dependent consonants
-  [/^c(?=[eiy])/, "S"], // c before e, i, or y
-  [/^g(?=[eiy])/, "JH"], // g before e, i, or y
+  // --- Basic Consonants ---
+  [/^b/, "b"],
+  [/^c/, "k"], // hard c
+  [/^d/, "d"],
+  [/^f/, "f"],
+  [/^g/, "ɡ"], // hard g
+  [/^h/, "h"],
+  [/^j/, "dʒ"],
+  [/^k/, "k"],
+  [/^l/, "l"],
+  [/^m/, "m"],
+  [/^n/, "n"],
+  [/^p/, "p"],
+  [/^r/, "ɹ"],
+  [/^s/, "s"],
+  [/^t/, "t"],
+  [/^v/, "v"],
+  [/^w/, "w"],
+  [/^x/, "ks"],
+  [/^y/, "j"], // as a consonant
+  [/^z/, "z"],
 
-  // Silent letters (at word start)
-  [/^kn/, "N"],
-  [/^gn/, "N"],
-  [/^wr/, "R"],
-
-  // Final silent letters (simplified)
-  [/^mb$/, "M"],
-  [/^mn$/, "M"],
-
-  // Double consonants -> single sound
-  [/^([bdfgklmnprstz])\1/, "$1"],
-
-  // Single Vowels (very simplified, context-independent)
-  [/^a/, "AE"],
-  [/^e/, "EH"],
-  [/^i/, "IH"],
-  [/^o/, "AA"],
-  [/^u/, "AH"],
-  [/^y/, "AY"],
-
-  // Single Consonants
-  [/^b/, "B"],
-  [/^c/, "K"],
-  [/^d/, "D"],
-  [/^f/, "F"],
-  [/^g/, "G"],
-  [/^h/, "HH"],
-  [/^j/, "JH"],
-  [/^k/, "K"],
-  [/^l/, "L"],
-  [/^m/, "M"],
-  [/^n/, "N"],
-  [/^p/, "P"],
-  [/^r/, "R"],
-  [/^s/, "S"],
-  [/^t/, "T"],
-  [/^v/, "V"],
-  [/^w/, "W"],
-  [/^x/, "K S"],
-  [/^z/, "Z"],
+  // --- Default Vowels (for closed syllables) ---
+  [/^a/, "æ"], // as in "cat"
+  [/^e/, "ɛ"], // as in "bed"
+  [/^i/, "ɪ"], // as in "sit"
+  [/^o/, "ɑ"], // as in "cot"
+  [/^u/, "ʌ"], // as in "cut"
 ];
-
-// Known prefixes for compound word decomposition
-export const KNOWN_PREFIXES = [
-  "super", "anti", "over", "under", "pre", "post", "auto", "counter",
-  "pneumo", "micro", "ultra", "mega", "multi", "semi", "pseudo"
-];
-
-// Known suffixes for compound word decomposition  
-export const KNOWN_SUFFIXES = ["osis", "itis", "ology", "graphy", "scopy", "phobia"];
-
-// Common words for compound validation
-export const COMMON_WORDS = [
-  "car", "man", "light", "house", "way", "day", "time", "work", "load", "ball"
-];
-
-// Non-compound suffixes for early detection
-export const NON_COMPOUND_SUFFIXES = [
-  "ing", "ed", "er", "est", "ly", "ness", "ment", "tion", "sion"
-];
-
-// Clear prefixes for compound decomposition
-export const CLEAR_PREFIXES = [
-  "super", "over", "under", "pre", "post", "anti", "counter"
-];
-
-// Morpheme patterns for common word patterns
-export const MORPHEME_PATTERNS = [
-  // Greek/Latin roots
-  { pattern: /^(scop)(e|ic|y)?/, baseForm: "scope", type: "root" },
-  { pattern: /^(graph)(ic|y)?/, baseForm: "graph", type: "root" },
-  { pattern: /^(phon)(e|ic)?/, baseForm: "phone", type: "root" },
-  { pattern: /^(log)(ic|y)?/, baseForm: "log", type: "root" },
-  { pattern: /^(bio)/, baseForm: "bio", type: "root" },
-  { pattern: /^(geo)/, baseForm: "geo", type: "root" },
-  { pattern: /^(tele)/, baseForm: "tele", type: "root" },
-  { pattern: /^(auto)/, baseForm: "auto", type: "root" },
-  { pattern: /^(photo)/, baseForm: "photo", type: "root" },
-  { pattern: /^(chron)(o)?/, baseForm: "chrono", type: "root" },
-  
-  // Scientific/medical roots
-  { pattern: /^(pneum)(o)?/, baseForm: "pneumo", type: "root" },
-  { pattern: /^(cardio)/, baseForm: "cardio", type: "root" },
-  { pattern: /^(gastro)/, baseForm: "gastro", type: "root" },
-  { pattern: /^(neuro)/, baseForm: "neuro", type: "root" },
-  { pattern: /^(psycho)/, baseForm: "psycho", type: "root" },
-  { pattern: /^(thermo)/, baseForm: "thermo", type: "root" },
-  { pattern: /^(hydro)/, baseForm: "hydro", type: "root" },
-  
-  // Common prefixes
-  { pattern: /^(anti)/, baseForm: "anti", type: "prefix" },
-  { pattern: /^(semi)/, baseForm: "semi", type: "prefix" },
-  { pattern: /^(multi)/, baseForm: "multi", type: "prefix" },
-  { pattern: /^(pseudo)/, baseForm: "pseudo", type: "prefix" },
-  { pattern: /^(proto)/, baseForm: "proto", type: "prefix" },
-  
-  // Common suffixes
-  { pattern: /^(osis)$/, baseForm: "osis", type: "suffix" },
-  { pattern: /^(itis)$/, baseForm: "itis", type: "suffix" },
-  { pattern: /^(ology)$/, baseForm: "ology", type: "suffix" },
-  { pattern: /^(graphy)$/, baseForm: "graphy", type: "suffix" },
-  { pattern: /^(scopy)$/, baseForm: "scopy", type: "suffix" },
-  { pattern: /^(phobia)$/, baseForm: "phobia", type: "suffix" },
-  { pattern: /^(ism)$/, baseForm: "ism", type: "suffix" },
-  
-  // Chemical/material roots  
-  { pattern: /^(sili)(c|co)?/, baseForm: "silicon", type: "root" },
-  { pattern: /^(carbon)/, baseForm: "carbon", type: "root" },
-  { pattern: /^(oxygen)/, baseForm: "oxygen", type: "root" },
-  
-  // Geological terms
-  { pattern: /^(volcan)/, baseForm: "volcano", type: "root" },
-  { pattern: /^(seismo)/, baseForm: "seismo", type: "root" },
-  
-  // Size/measurement prefixes
-  { pattern: /^(mega)/, baseForm: "mega", type: "prefix" },
-  { pattern: /^(kilo)/, baseForm: "kilo", type: "prefix" },
-  { pattern: /^(nano)/, baseForm: "nano", type: "prefix" },
-  { pattern: /^(pico)/, baseForm: "pico", type: "prefix" }
-];
-
-// Simplified G2P rules for morpheme processing
-export const MORPHEME_RULES: Array<[RegExp, string]> = [
-  // Common morpheme patterns
-  [/^ph/, "F"],
-  [/^ch/, "CH"],
-  [/^th/, "TH"],
-  [/^sh/, "SH"],
-  [/^qu/, "K W"],
-  [/^tion$/, "SH AH N"],
-  [/^sion$/, "ZH AH N"],
-  [/^ology$/, "AA L AH JH IY"],
-  [/^graphy$/, "G R AE F IY"],
-  
-  // Single vowels
-  [/^a/, "AE"],
-  [/^e/, "EH"],
-  [/^i/, "IH"],
-  [/^o/, "AA"],
-  [/^u/, "AH"],
-  [/^y/, "AY"],
-  
-  // Single consonants
-  [/^b/, "B"],
-  [/^c/, "K"],
-  [/^d/, "D"],
-  [/^f/, "F"],
-  [/^g/, "G"],
-  [/^h/, "HH"],
-  [/^j/, "JH"],
-  [/^k/, "K"],
-  [/^l/, "L"],
-  [/^m/, "M"],
-  [/^n/, "N"],
-  [/^p/, "P"],
-  [/^q/, "K"],
-  [/^r/, "R"],
-  [/^s/, "S"],
-  [/^t/, "T"],
-  [/^v/, "V"],
-  [/^w/, "W"],
-  [/^x/, "K S"],
-  [/^z/, "Z"],
-];
-
-// Basic letter-to-phoneme mapping
-export const BASIC_LETTER_MAPPING: { [key: string]: string } = {
-  a: "AE",
-  e: "EH",
-  i: "IH",
-  o: "AA",
-  u: "AH",
-  b: "B",
-  c: "K",
-  d: "D",
-  f: "F",
-  g: "G",
-  h: "HH",
-  j: "JH",
-  k: "K",
-  l: "L",
-  m: "M",
-  n: "N",
-  p: "P",
-  r: "R",
-  s: "S",
-  t: "T",
-  v: "V",
-  w: "W",
-  x: "K S",
-  y: "AY",
-  z: "Z",
-};
 
 // --- G2PModel Class ---
 
@@ -304,12 +134,11 @@ export class G2PModel {
         return homograph.pronunciation;
       }
     }
-
     if (this.dictionary[word]) {
       return this.dictionary[word];
     }
 
-    // Try morphological analysis for missing words
+    // Morphological analysis for common endings
     return this.tryMorphologicalAnalysis(word);
   }
 
@@ -317,58 +146,193 @@ export class G2PModel {
     const lowerWord = word.toLowerCase();
     
     // Try plural forms (-s, -es)
-    if (lowerWord.endsWith('s') && lowerWord.length > 2 && !lowerWord.endsWith('ss')) {
+    if (lowerWord.endsWith('s') && !lowerWord.endsWith('ss') && lowerWord.length > 2) {
       const singular = lowerWord.slice(0, -1);
-      if (this.dictionary[singular]) {
-        const basePron = this.dictionary[singular];
-        // Add appropriate plural sound
-        if (basePron.endsWith('S') || basePron.endsWith('Z') || basePron.endsWith('SH') || 
-            basePron.endsWith('ZH') || basePron.endsWith('CH') || basePron.endsWith('JH')) {
-          return basePron + ' IH Z';
-        } else if (basePron.endsWith('T') || basePron.endsWith('K') || basePron.endsWith('P') ||
-                   basePron.endsWith('F') || basePron.endsWith('TH')) {
-          return basePron + ' S';
-        } else {
-          return basePron + ' Z';
+      const basePron = this.wellKnown(singular);
+      if (basePron) {
+        const lastSound = basePron.slice(-1);
+        if (["s", "z", "ʃ", "ʒ", "tʃ", "dʒ"].includes(lastSound)) {
+          return basePron + 'ɪz';
         }
+        if (["p", "t", "k", "f", "θ"].includes(lastSound)) {
+          return basePron + 's';
+        }
+        return basePron + 'z';
       }
     }
     
     // Try -es plural
     if (lowerWord.endsWith('es') && lowerWord.length > 3) {
       const singular = lowerWord.slice(0, -2);
-      if (this.dictionary[singular]) {
-        return this.dictionary[singular] + ' IH Z';
+      const basePron = this.wellKnown(singular);
+      if (basePron) {
+        return basePron + 'ɪz';
       }
     }
     
     // Try past tense (-ed)
     if (lowerWord.endsWith('ed') && lowerWord.length > 3) {
       const base = lowerWord.slice(0, -2);
-      if (this.dictionary[base]) {
-        const basePron = this.dictionary[base];
-        // Add appropriate past tense sound
-        if (basePron.endsWith('T') || basePron.endsWith('D')) {
-          return basePron + ' IH D';
-        } else if (basePron.endsWith('K') || basePron.endsWith('P') || basePron.endsWith('S') ||
-                   basePron.endsWith('SH') || basePron.endsWith('CH') || basePron.endsWith('F') ||
-                   basePron.endsWith('TH')) {
-          return basePron + ' T';
-        } else {
-          return basePron + ' D';
+      const basePron = this.wellKnown(base);
+      if (basePron) {
+        const lastSound = basePron.slice(-1);
+        if (['t', 'd'].includes(lastSound)) {
+          return basePron + 'ɪd';
         }
+        if (['p', 'k', 's', 'ʃ', 'tʃ', 'f', 'θ'].includes(lastSound)) {
+          return basePron + 't';
+        }
+        return basePron + 'd';
       }
     }
     
     // Try present participle (-ing)
     if (lowerWord.endsWith('ing') && lowerWord.length > 4) {
       const base = lowerWord.slice(0, -3);
-      if (this.dictionary[base]) {
-        return this.dictionary[base] + ' IH NG';
+      const basePron = this.wellKnown(base);
+      if (basePron) {
+        return basePron + 'ɪŋ';
       }
     }
     
     return undefined;
+  }
+
+  private tryDecomposition(word: string): string[] | undefined {
+    if (word.length < 8) return undefined; // Only try decomposition for reasonably long words
+    
+    // DP approach to find a valid decomposition into dictionary words.
+    const dp: (string[] | undefined)[] = Array(word.length + 1).fill(undefined);
+    dp[0] = [];
+
+    for (let i = 1; i <= word.length; i++) {
+        for (let j = 0; j < i; j++) {
+            // Prioritize longer chunks
+            const chunk = word.substring(j, i);
+            if (dp[j] !== undefined && this.dictionary[chunk]) {
+                const newDecomposition = [...dp[j]!, chunk];
+                 // Prefer decompositions with fewer (longer) words.
+                if (!dp[i] || newDecomposition.length < dp[i]!.length) {
+                    dp[i] = newDecomposition;
+                }
+            }
+        }
+    }
+    return dp[word.length];
+  }
+
+  private syllabify(word: string): string[] {
+    if (word.length <= 3) {
+      return [word];
+    }
+  
+    const syllables: string[] = [];
+    let currentSyllable = "";
+    let chars = word.split('');
+  
+    for (let i = 0; i < chars.length; i++) {
+        let char = chars[i];
+        currentSyllable += char;
+  
+        if (VOWELS.has(char)) {
+            let next1 = chars[i + 1];
+            let next2 = chars[i + 2];
+            let next3 = chars[i + 3];
+  
+            // VCV pattern -> V-CV (e.g., ro-bot)
+            if (CONSONANTS.has(next1) && VOWELS.has(next2)) {
+                syllables.push(currentSyllable);
+                currentSyllable = "";
+            } 
+            // VCCV pattern -> VC-CV (e.g., rab-bit)
+            else if (CONSONANTS.has(next1) && CONSONANTS.has(next2) && VOWELS.has(next3)) {
+                // Keep common consonant digraphs together in the second syllable
+                const digraphs = new Set(['bl', 'br', 'cl', 'cr', 'dr', 'fl', 'fr', 'gl', 'gr', 'pl', 'pr', 'sc', 'sk', 'sl', 'sm', 'sn', 'sp', 'st', 'sw', 'th', 'tr', 'tw', 'wh', 'wr']);
+                if (!digraphs.has(next1 + next2)) {
+                    currentSyllable += next1;
+                    syllables.push(currentSyllable);
+                    currentSyllable = "";
+                    i++; // Skip next consonant as it's already added
+                }
+            }
+        }
+    }
+    if (currentSyllable) {
+        syllables.push(currentSyllable);
+    }
+  
+    // Post-process to merge single-letter consonant syllables
+    if (syllables.length > 1) {
+        for (let i = syllables.length - 1; i > 0; i--) {
+            if (syllables[i].length === 1 && CONSONANTS.has(syllables[i])) {
+                syllables[i - 1] += syllables[i];
+                syllables.splice(i, 1);
+            }
+        }
+    }
+
+    // Handle silent 'e' at the end, keep it with the last syllable
+    if (syllables.length > 1 && syllables[syllables.length - 1] === 'e') {
+        let lastSyllable = syllables.splice(syllables.length - 2, 2).join('');
+        syllables.push(lastSyllable);
+    }
+    
+    return syllables.filter(s => s.length > 0);
+  }
+
+  private syllableToIPA(syllable: string, isLastSyllable: boolean): string {
+    let phonemes: string[] = [];
+    let remaining = syllable;
+  
+    // Handle doubled consonants by only processing the first one.
+    // This is a simplification. e.g., 'buggie' -> 'bugi' not 'buggi'
+    remaining = remaining.replace(/([b-df-hj-np-tv-z])\1/g, '$1');
+
+    const endsWithSilentE = isLastSyllable && syllable.length > 1 && syllable.endsWith('e') && !syllable.endsWith('ee') && VOWELS.has(syllable[syllable.length - 2]) === false;
+
+    if (endsWithSilentE) {
+        remaining = syllable.slice(0, -1);
+    }
+
+    while(remaining.length > 0) {
+        let matchFound = false;
+        for (const [pattern, ipa] of PHONEME_RULES) {
+            const match = remaining.match(pattern);
+            if (match) {
+                phonemes.push(ipa);
+                remaining = remaining.substring(match[0].length);
+                matchFound = true;
+                break;
+            }
+        }
+        if (!matchFound) {
+            remaining = remaining.substring(1);
+        }
+    }
+    
+    // Magic 'e' rule: if the syllable ended with a silent e, change the preceding vowel to its long form.
+    if (endsWithSilentE && phonemes.length > 0) {
+      const shortToLong: Record<string, string> = { "æ": "eɪ", "ɛ": "i", "ɪ": "aɪ", "ɑ": "oʊ", "ʌ": "ju" };
+      for (let i = phonemes.length - 1; i >= 0; i--) {
+        if (shortToLong[phonemes[i]]) {
+            phonemes[i] = shortToLong[phonemes[i]];
+            break; 
+        }
+      }
+    } else {
+        // Handle open syllable pronunciation (ending with a vowel)
+        if (VOWELS.has(syllable.slice(-1))) {
+            const shortToLong: Record<string, string> = { "æ": "eɪ", "ɛ": "i", "ɪ": "aɪ", "ɑ": "oʊ", "ʌ": "u" }; // 'u' as in 'super'
+             for (let i = phonemes.length - 1; i >= 0; i--) {
+                if (shortToLong[phonemes[i]]) {
+                    phonemes[i] = shortToLong[phonemes[i]];
+                    break;
+                }
+            }
+        }
+    }
+  
+    return phonemes.join("");
   }
 
   public predict(
@@ -377,473 +341,70 @@ export class G2PModel {
     detectedLanguage?: string,
   ): string {
     const lowerWord = word.toLowerCase();
-
-    // Priority: Homograph -> Dictionary -> Multilingual Processing -> Compound Word Decomposition -> Multi-Compound -> Rules
-    const pronunciation = this.wellKnown(lowerWord, pos);
-    if (pronunciation) {
-      return pronunciation;
+    // Priority 1: Direct lookups (Dictionary, Homographs, Morphology)
+    const knownPronunciation = this.wellKnown(lowerWord, pos);
+    if (knownPronunciation) {
+      return knownPronunciation;
     }
 
-    // Check for multilingual text using detected language or fallback to detection
+    // Priority 2: Language-specific G2P
+    if (detectedLanguage === 'zh' || chineseG2P.isChineseText(word)) {
+      const chineseResult = chineseG2P.textToIPA(word);
+      if (chineseResult) return chineseResult;
+    }
     if (detectedLanguage || isMultilingualText(word)) {
-      const multilingualResult = processMultilingualText(
-        word,
-        detectedLanguage,
-      );
-      if (multilingualResult) {
-        return multilingualResult;
-      }
+      const multilingualResult = processMultilingualText(word, detectedLanguage);
+      if (multilingualResult) return multilingualResult;
     }
 
-    // Try compound word decomposition
-    const compoundResult = this.tryCompoundDecomposition(lowerWord);
-    if (compoundResult) {
-      return compoundResult;
-    }
-
-    // For extremely long words (20+ chars), try simple multi-part decomposition
-    if (word.length >= 20) {
-      const multiResult = this.trySimpleMultiCompound(lowerWord);
-      if (multiResult) {
-        return multiResult;
-      }
-    }
-
-    // Handle uppercase acronyms/abbreviations (2-8 characters, all uppercase)
-    if (/^[A-Z]{2,8}$/.test(word)) {
-      const letterPronunciations: string[] = [];
-      for (const letter of word) {
-        const letterPronunciation = this.wellKnown(letter.toLowerCase());
-        if (letterPronunciation) {
-          letterPronunciations.push(letterPronunciation);
+    // Priority 3: Attempt to decompose the word into known dictionary parts
+    const decomposition = this.tryDecomposition(lowerWord);
+    if (decomposition && decomposition.length > 1) {
+        const pronunciations = decomposition.map(part => this.wellKnown(part)?.replace(/ˈ/g, ''));
+        if (pronunciations.every(p => p)) {
+            // Re-add stress markers between parts
+            return 'ˈ' + pronunciations.join('ˈ');
         }
-      }
-      if (letterPronunciations.length === word.length) {
-        return letterPronunciations.join(" ");
-      }
     }
 
-    const phonemes: string[] = [];
-    let remaining = lowerWord;
-
-    while (remaining.length > 0) {
-      let matchFound = false;
-      for (const [pattern, replacement] of G2P_RULES) {
-        const match = remaining.match(pattern);
-        if (match) {
-          if (replacement) {
-            if (replacement === "$1" && match[1]) {
-              phonemes.push(match[1].toUpperCase());
-            } else {
-              phonemes.push(replacement);
-            }
-          }
-          remaining = remaining.substring(match[0].length);
-          matchFound = true;
-          break;
-        }
-      }
-      if (!matchFound) {
-        remaining = remaining.substring(1);
-      }
-    }
-
-    // Final cleanup: handle silent 'e' at the end of words (a very common case)
-    if (word.endsWith("e") && !word.endsWith("ee") && phonemes.length > 1) {
-      const lastPhoneme = phonemes[phonemes.length - 1];
-      if (lastPhoneme === "EH") {
-        // From the 'e' -> 'EH' rule
-        phonemes.pop();
-      }
-    }
-
-    const result = phonemes.join(" ").trim();
-
-    if (!result) {
-      return word.toUpperCase().split("").join(" ");
-    }
-
-    return result;
-  }
-
-  // Compound word decomposition method
-  private tryCompoundDecomposition(word: string): string | undefined {
-    // Be more strict about what constitutes a compound word
-    if (word.length < 7) return undefined; // Increase minimum length further
-
-    // Early exit for obvious non-compounds
-    if (this.isObviouslyNotCompound(word)) {
-      return undefined;
-    }
-
-    // First, try to find balanced splits (prefer splits closer to the middle)
-    const midPoint = Math.floor(word.length / 2);
-    const searchOrder: number[] = [];
-
-    // Generate search order: middle outward
-    const maxOffset = Math.max(midPoint - 3, word.length - midPoint - 3);
-    for (let offset = 0; offset <= maxOffset; offset++) {
-      if (midPoint - offset >= 3 && midPoint - offset <= word.length - 3) {
-        searchOrder.push(midPoint - offset);
-      }
-      if (
-        offset > 0 &&
-        midPoint + offset >= 3 &&
-        midPoint + offset <= word.length - 3
-      ) {
-        searchOrder.push(midPoint + offset);
-      }
-    }
-
-    // Try balanced splits first - but only if both parts are substantial words
-    for (const i of searchOrder) {
-      const firstPart = word.substring(0, i);
-      const secondPart = word.substring(i);
-
-      // Both parts must be at least 3 characters and exist in dictionary
-      if (firstPart.length >= 3 && secondPart.length >= 3) {
-        const firstPronunciation = this.wellKnown(firstPart);
-        const secondPronunciation = this.wellKnown(secondPart);
-
-        if (firstPronunciation && secondPronunciation) {
-          // Additional check: ensure this is a real compound
-          if (this.isValidCompound(word, firstPart, secondPart)) {
-            return `${firstPronunciation} ${secondPronunciation}`;
-          }
-        }
-      }
-    }
-
-    // Try common prefixes (but be very selective)
-    for (const prefix of CLEAR_PREFIXES) {
-      if (word.startsWith(prefix) && word.length > prefix.length + 3) {
-        const root = word.substring(prefix.length);
-        const prefixPronunciation = this.wellKnown(prefix);
-        const rootPronunciation = this.wellKnown(root);
-
-        if (prefixPronunciation && rootPronunciation && root.length >= 4) {
-          return `${prefixPronunciation} ${rootPronunciation}`;
-        }
-      }
-    }
-
-    return undefined;
-  }
-
-  // More strict compound validation
-  private isValidCompound(
-    word: string,
-    firstPart: string,
-    secondPart: string,
-  ): boolean {
-    // Must not be a diminutive or nickname
-    if (word.endsWith("ie") || word.endsWith("y") || word.endsWith("gie")) {
-      return false;
-    }
-
-    // Both parts should be meaningful words (not just fragments)
-    if (firstPart.length < 3 || secondPart.length < 3) {
-      return false;
-    }
-
-    // Check if this looks like a real compound (both parts are common words)
-    const commonWords = COMMON_WORDS;
-    const isFirstCommon = commonWords.includes(firstPart);
-    const isSecondCommon = commonWords.includes(secondPart);
-
-    // At least one part should be a common word for it to be a compound
-    return isFirstCommon || isSecondCommon;
-  }
-
-  // Early detection of obvious non-compounds
-  private isObviouslyNotCompound(word: string): boolean {
-    // Words ending in diminutive suffixes
-    if (word.endsWith("ie") || word.endsWith("gie") || word.endsWith("kie")) {
-      return true;
-    }
-
-    // Words ending in common suffixes that are not compounds
-    const nonCompoundSuffixes = NON_COMPOUND_SUFFIXES;
-    if (nonCompoundSuffixes.some((suffix) => word.endsWith(suffix))) {
-      return true;
-    }
-
-    return false;
-  }
-
-  // Simple multi-compound handling for extremely long words (20+ chars)
-  private trySimpleMultiCompound(word: string): string | undefined {
-    if (word.length < 20) return undefined;
-
-    const parts: string[] = [];
-    let remaining = word;
-
-    // Try to find known prefixes first
-    for (const prefix of KNOWN_PREFIXES) {
-      if (remaining.startsWith(prefix)) {
-        const prefixPronunciation = this.wellKnown(prefix);
-        if (prefixPronunciation) {
-          parts.push(prefixPronunciation);
-          remaining = remaining.substring(prefix.length);
-          break;
-        }
-      }
-    }
-
-    // Common suffixes that should be handled separately
-    let suffix = "";
-    let suffixPronunciation = "";
-    
-    for (const suf of KNOWN_SUFFIXES) {
-      if (remaining.endsWith(suf)) {
-        const sufPron = this.wellKnown(suf);
-        if (sufPron) {
-          suffix = suf;
-          suffixPronunciation = sufPron;
-          remaining = remaining.substring(0, remaining.length - suf.length);
-          break;
-        }
-      }
-    }
-
-    // For the middle part, try to find chunks that exist in dictionary
-    while (remaining.length > 0) {
-      let found = false;
-
-      // Try progressively smaller chunks, prioritizing longer meaningful segments
-      for (
-        let chunkSize = Math.min(8, remaining.length);
-        chunkSize >= 3;
-        chunkSize--
-      ) {
-        const chunk = remaining.substring(0, chunkSize);
-        const chunkPronunciation = this.wellKnown(chunk);
-
-        if (chunkPronunciation) {
-          // Additional validation: prefer chunks that are likely word roots
-          if (this.isLikelyWordRoot(chunk, remaining, chunkSize)) {
-            parts.push(chunkPronunciation);
-            remaining = remaining.substring(chunkSize);
-            found = true;
-            break;
-          }
-        }
-      }
-
-      // If no dictionary match found, try common word patterns
-      if (!found) {
-        const patternResult = this.tryCommonPatterns(remaining);
-        if (patternResult) {
-          parts.push(patternResult.pronunciation);
-          remaining = remaining.substring(patternResult.length);
+    // Priority 4: Handle acronyms with or without periods, e.g., "TTS" or "M.L."
+    const acronymMatch = word.match(/^([A-Z]\.?){2,8}$/);
+    if (acronymMatch) {
+      const containsPeriods = word.includes('.');
+      const letters = word.replace(/\./g, '').split('');
+      const letterPronunciations = letters.map(letter => this.wellKnown(letter.toLowerCase()));
+      if (letterPronunciations.every(p => p)) {
+        if (containsPeriods) {
+          // No stress for acronyms with periods like M.L.
+          return letterPronunciations.map(p => p?.replace(/ˈ/g, '')).join('');
         } else {
-          // Last resort: take a small chunk and use basic mapping
-          const fallbackSize = Math.min(3, remaining.length);
-          const fallbackChunk = remaining.substring(0, fallbackSize);
-          const basicPhonemes = this.basicLetterMapping(fallbackChunk);
-          if (basicPhonemes) {
-            parts.push(basicPhonemes);
-          }
-          remaining = remaining.substring(fallbackSize);
+          // Add stress for acronyms without periods like TTS
+          return letterPronunciations.map(p => `ˈ${p?.replace(/ˈ/g, '')}`).join('');
         }
       }
     }
 
-    // Add suffix if found
-    if (suffixPronunciation) {
-      parts.push(suffixPronunciation);
-    }
+    // Priority 5: Syllabification and rule-based G2P for unknown English words
+    const syllables = this.syllabify(lowerWord);
+    const result = syllables.map((s, i) => this.syllableToIPA(s, i === syllables.length - 1)).join("");
 
-    // Only return if we found at least 2 parts
-    return parts.length >= 2 ? parts.join(" ") : undefined;
-  }
-
-  // Check if a chunk is likely a meaningful word root
-  private isLikelyWordRoot(chunk: string, remaining: string, chunkSize: number): boolean {
-    // Prefer longer chunks when available
-    if (chunkSize >= 5) return true;
-    
-    // Avoid breaking in the middle of likely phoneme patterns
-    if (chunkSize < remaining.length) {
-      const nextChar = remaining[chunkSize];
-      // Don't break before common consonant clusters
-      if ((chunk.endsWith('c') && nextChar === 'h') ||
-          (chunk.endsWith('s') && nextChar === 'h') ||
-          (chunk.endsWith('t') && nextChar === 'h')) {
-        return false;
+    if (result) {
+      // Add primary stress to the first syllable for longer words
+      if (syllables.length > 1) {
+        return "ˈ" + result;
       }
-    }
-    
-    // Common root patterns
-    const rootPatterns = /^(scop|volcan|sili|pneum|coni)/;
-    if (rootPatterns.test(chunk)) {
-      return true;
-    }
-    
-    return chunkSize >= 4; // Default: prefer chunks of 4+ characters
-  }
-
-  // Try to match common word patterns
-  private tryCommonPatterns(text: string): { pronunciation: string; length: number } | null {
-    for (const { pattern, baseForm, type } of MORPHEME_PATTERNS) {
-      const match = text.match(pattern);
-      if (match) {
-        const matchedText = match[0];
-        
-        // Additional validation based on context and type
-        if (this.isValidMorphemeMatch(matchedText, text, type)) {
-          // Try to get pronunciation from dictionary first
-          let pronunciation = this.getMorphemePronunciation(matchedText, baseForm, type);
-          
-          if (pronunciation) {
-            return { pronunciation, length: matchedText.length };
-          }
-        }
-      }
-    }
-    
-    return null;
-  }
-
-  // Validate if a morpheme match makes sense in context
-  private isValidMorphemeMatch(matched: string, fullText: string, type: string): boolean {
-    // Don't match very short fragments unless they're complete morphemes
-    if (matched.length < 3) return false;
-    
-    // For roots, ensure they're not at the very end of a long word (likely incomplete)
-    if (type === "root" && matched.length < fullText.length && fullText.length - matched.length < 3) {
-      return false;
-    }
-    
-    // For suffixes, they should be at the end or near the end
-    if (type === "suffix" && !fullText.endsWith(matched)) {
-      return false;
-    }
-    
-    return true;
-  }
-
-  // Get pronunciation for a morpheme using dictionary lookup or rules
-  private getMorphemePronunciation(matched: string, baseForm: string, type: string): string | null {
-    // Strategy 1: Direct dictionary lookup
-    let pronunciation = this.wellKnown(matched);
-    if (pronunciation) {
-      return pronunciation;
-    }
-    
-    // Strategy 2: Look up base form and adapt
-    pronunciation = this.wellKnown(baseForm);
-    if (pronunciation) {
-      // For roots that match the base form, use as-is
-      if (matched === baseForm) {
-        return pronunciation;
-      }
-      
-      // For partial matches, try to adapt the pronunciation
-      return this.adaptMorphemePronunciation(matched, baseForm, pronunciation, type);
-    }
-    
-    // Strategy 3: Try common alternative forms
-    const alternatives = this.getAlternativeBaseforms(baseForm, type);
-    for (const alt of alternatives) {
-      pronunciation = this.wellKnown(alt);
-      if (pronunciation) {
-        return this.adaptMorphemePronunciation(matched, alt, pronunciation, type);
-      }
-    }
-    
-    // Strategy 4: Use rule-based pronunciation as fallback
-    return this.generateRuleBased(matched);
-  }
-
-  // Get alternative base forms to look up in dictionary
-  private getAlternativeBaseforms(baseForm: string, type: string): string[] {
-    const alternatives: string[] = [];
-    
-    // For roots ending in 'o', try without 'o'
-    if (baseForm.endsWith('o') && baseForm.length > 3) {
-      alternatives.push(baseForm.slice(0, -1));
-    }
-    
-    // For medical/scientific terms, try common variants
-    if (type === "root") {
-      switch (baseForm) {
-        case "pneumo":
-          alternatives.push("pneum", "pneuma");
-          break;
-        case "chrono":
-          alternatives.push("chron", "chronic");
-          break;
-        case "silicon":
-          alternatives.push("silica", "silicone");
-          break;
-        case "volcano":
-          alternatives.push("volcanic", "volcanism");
-          break;
-        default:
-          // Try adding common suffixes
-          alternatives.push(baseForm + "ic", baseForm + "al", baseForm + "ism");
-      }
-    }
-    
-    return alternatives;
-  }
-
-  // Adapt pronunciation for partial morpheme matches
-  private adaptMorphemePronunciation(matched: string, baseForm: string, basePronunciation: string, type: string): string {
-    // If matched is shorter than base form, truncate pronunciation appropriately
-    if (matched.length < baseForm.length) {
-      // Simple heuristic: estimate how much of the pronunciation to keep
-      const ratio = matched.length / baseForm.length;
-      const phonemes = basePronunciation.split(' ');
-      const keepCount = Math.max(1, Math.floor(phonemes.length * ratio));
-      return phonemes.slice(0, keepCount).join(' ');
-    }
-    
-    // If matched is same length or longer, use full pronunciation
-    return basePronunciation;
-  }
-
-  // Generate rule-based pronunciation as final fallback
-  private generateRuleBased(text: string): string {
-    const phonemes: string[] = [];
-    let remaining = text.toLowerCase();
-
-    while (remaining.length > 0) {
-      let matched = false;
-      
-      for (const [pattern, replacement] of MORPHEME_RULES) {
-        const match = remaining.match(pattern);
-        if (match) {
-          phonemes.push(replacement);
-          remaining = remaining.substring(match[0].length);
-          matched = true;
-          break;
-        }
-      }
-      
-      if (!matched) {
-        remaining = remaining.substring(1);
-      }
+      return result;
     }
 
-    return phonemes.join(' ');
-  }
-
-  // Very basic letter-to-phoneme mapping for fallback
-  private basicLetterMapping(chunk: string): string {
-    return chunk
-      .split("")
-      .map((char) => BASIC_LETTER_MAPPING[char] || char.toUpperCase())
-      .join(" ");
+    // Final fallback: just spell it out (should be rare)
+    return lowerWord;
   }
 
   public addPronunciation(word: string, pronunciation: string): void {
-    if (/^[A-Z0-9 ]+$/.test(pronunciation)) {
-      this.dictionary[word.toLowerCase()] = pronunciation;
-    } else {
-      this.dictionary[word.toLowerCase()] = ipaToArpabet(pronunciation);
+    if (!pronunciation.match(/^[A-Z0-9]+$/)) {
+      pronunciation = arpabetToIpa(pronunciation);
     }
+    this.dictionary[word.toLowerCase()] = pronunciation;
   }
 }
 

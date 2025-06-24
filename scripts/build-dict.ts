@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { ipaToArpabet } from "../src/utils";
+import { arpabetToIpa } from "../src/utils";
+import { ARPABET_TO_IPA, IPA_STRESS_MAP } from "../src/consts";
 
 interface DictEntry {
   [word: string]: string;
@@ -22,7 +23,7 @@ function parseDict(content: string): DictEntry {
 
     const ipa = phonesStr.match(/^\/([^\/]+)\//)?.[1];
     if (!ipa) continue;
-    dict[word.toLowerCase()] = ipaToArpabet(ipa);
+    dict[word.toLowerCase()] = ipa;
   }
 
   return dict;
@@ -49,7 +50,16 @@ function loadCmuDict(content: string): DictEntry {
     const arpaPhones = phonesStr.trim().split(/\s+/);
     const arpaPhonemes = arpaPhones.join(" ");
 
-    arpaDict[word.toLowerCase()] = arpaPhonemes;
+    // Convert ARPABET to IPA
+    const ipaPhonemes = arpaPhonemes.split(' ').map(phone => {
+      const stress = phone.match(/[012]$/)?.[0];
+      const phoneWithoutStress = phone.replace(/[012]$/, "");
+      const ipa = ARPABET_TO_IPA[phoneWithoutStress as keyof typeof ARPABET_TO_IPA];
+      if (!ipa) return phone; // fallback to original if no mapping
+      return stress ? `${IPA_STRESS_MAP[stress]}${ipa}` : ipa;
+    }).join('');
+
+    arpaDict[word.toLowerCase()] = ipaPhonemes;
   }
 
   return arpaDict;
@@ -68,10 +78,10 @@ function trimDictionary(dictionary: DictEntry): DictEntry {
         const singularPron = dictionary[singular];
         const pluralPron = dictionary[word];
         
-        // If plural pronunciation is singular + S/Z/IH Z, remove it
-        if (pluralPron === singularPron + ' S' || 
-            pluralPron === singularPron + ' Z' ||
-            pluralPron === singularPron + ' IH Z') {
+        // If plural pronunciation is singular + s/z/ɪz, remove it (IPA format)
+        if (pluralPron === singularPron + 's' || 
+            pluralPron === singularPron + 'z' ||
+            pluralPron === singularPron + 'ɪz') {
           delete trimmedDict[word];
           totalRemoved++;
         }
@@ -85,7 +95,7 @@ function trimDictionary(dictionary: DictEntry): DictEntry {
         const singularPron = dictionary[singular];
         const pluralPron = dictionary[word];
         
-        if (pluralPron === singularPron + ' IH Z') {
+        if (pluralPron === singularPron + 'ɪz') {
           delete trimmedDict[word];
           totalRemoved++;
         }
@@ -101,10 +111,10 @@ function trimDictionary(dictionary: DictEntry): DictEntry {
         const basePron = dictionary[base];
         const pastPron = dictionary[word];
         
-        // Check for regular past tense pronunciation
-        if (pastPron === basePron + ' D' || 
-            pastPron === basePron + ' T' ||
-            pastPron === basePron + ' IH D') {
+        // Check for regular past tense pronunciation (IPA format)
+        if (pastPron === basePron + 'd' || 
+            pastPron === basePron + 't' ||
+            pastPron === basePron + 'ɪd') {
           delete trimmedDict[word];
           totalRemoved++;
         }
@@ -120,8 +130,8 @@ function trimDictionary(dictionary: DictEntry): DictEntry {
         const basePron = dictionary[base];
         const presentPron = dictionary[word];
         
-        // Check for regular present participle pronunciation
-        if (presentPron === basePron + ' IH NG') {
+        // Check for regular present participle pronunciation (IPA format)
+        if (presentPron === basePron + 'ɪŋ') {
           delete trimmedDict[word];
           totalRemoved++;
         }
@@ -187,15 +197,10 @@ async function main(): Promise<void> {
     const res = await fetch(
       "https://raw.githubusercontent.com/Kyubyong/g2p/master/g2p_en/homographs.en",
     );
+    let homographDict: HomographDict = {};
     if (res.ok) {
       console.log(`Parsing homographs from: ${res.url}`);
-      const homographDict = parseHomographs(await res.text());
-      const homographsDestPath = path.join(dataDir, "homographs.json");
-      fs.writeFileSync(
-        homographsDestPath,
-        JSON.stringify(homographDict, null, 2),
-      );
-      console.log(`Saved homographs to: ${homographsDestPath}`);
+      homographDict = parseHomographs(await res.text());
     }
 
     // Load custom homographs
@@ -205,6 +210,17 @@ async function main(): Promise<void> {
     console.log(
       `Loaded ${Object.keys(customHomographs).length} entries from custom homographs`,
     );
+
+    // Merge homographs (custom overrides original)
+    const finalHomographs = { ...homographDict, ...customHomographs };
+    
+    const homographsDestPath = path.join(dataDir, "homographs.json");
+    fs.writeFileSync(
+      homographsDestPath,
+      JSON.stringify(finalHomographs, null, 2),
+    );
+    console.log(`Saved homographs to: ${homographsDestPath}`);
+    console.log(`Total homograph entries: ${Object.keys(finalHomographs).length}`);
   }
 
   console.log("Dictionary build complete!");
@@ -239,8 +255,8 @@ function parseHomographs(content: string): HomographDict {
     // The logic is: use pron1 if the POS matches, otherwise use pron2.
     // We can store this as a condition. For simplicity, we store both with their POS triggers.
     // The runtime will decide which to use.
-    homographDict[lowerWord].push({ pronunciation: pron1, pos: pos });
-    homographDict[lowerWord].push({ pronunciation: pron2, pos: `!${pos}` }); // Representing "not POS"
+    homographDict[lowerWord].push({ pronunciation: arpabetToIpa(pron1), pos: pos });
+    homographDict[lowerWord].push({ pronunciation: arpabetToIpa(pron2), pos: `!${pos}` }); // Representing "not POS"
   }
 
   return homographDict;

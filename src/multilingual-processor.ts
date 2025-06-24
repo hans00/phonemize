@@ -1,254 +1,144 @@
-// === CHINESE PINYIN ===
-const PINYIN_TO_PHONEME: { [key: string]: string } = {
-  // Complete pinyin syllables
-  zhong: "ZH OW NG",
-  guo: "G UO",
-  bei: "B EY",
-  jing: "JH IH NG",
-  shang: "SH AH NG",
-  hai: "HH AY",
-  guang: "G UAH NG",
-  zhou: "ZH OW",
-  shen: "SH EN",
-  zhen: "ZH EN",
-  ni: "N IY",
-  hao: "HH AW",
-  shi: "SH IY",
-  jie: "JH YE",
-  xie: "SH YE",
-  zai: "Z AY",
-  jian: "JH YEN",
-  peng: "P EH NG",
-  you: "Y OW",
-  xue: "SH UE",
-  xiao: "SH YAW",
-  lao: "L AW",
-  sheng: "SH EH NG",
-  shu: "SH UW",
-  ben: "B EN",
-  dian: "D YEN",
-  nao: "N AW",
-  yin: "Y IN",
-  le: "L UH",
-  ying: "Y IH NG",
-  yun: "Y UEN",
-  dong: "D OW NG",
-  lan: "L AH N",
-  qiu: "CH YOW",
-  zu: "Z UW",
-  wo: "W OW",
-  men: "M EN",
-  ta: "T AH",
-  de: "D UH",
-  ma: "M AH",
-  ba: "B AH",
-  ge: "G UH",
-  yi: "Y IY",
-  er: "ER",
-  san: "S AH N",
-  wu: "W UW",
-  liu: "L YOW",
-  qi: "CH IY",
-  jiu: "J YOW",
-  wen: "UH EN", // Map wen to match test expectation
-
-  // Three-letter combinations
-  zhi: "ZH IY",
-  chi: "CH IY",
-  ri: "R IY",
-  zi: "Z IY",
-  ci: "TS IY",
-  si: "S IY",
-
-  // Two-letter combinations
-  zh: "ZH",
-  ch: "CH",
-  sh: "SH",
-  ng: "NG",
-  ai: "AY",
-  ei: "EY",
-  ao: "AW",
-  ou: "OW",
-  an: "AH N",
-  en: "EN",
-  in: "IH N",
-  un: "UH N",
-  ue: "UE",
-  ui: "UY",
-  uo: "UO",
-  ie: "YE",
-  ua: "UA",
-  ve: "UE",
-
-  // Single letters
-  b: "B",
-  p: "P",
-  d: "D",
-  t: "T",
-  g: "G",
-  k: "K",
-  f: "F",
-  h: "HH",
-  j: "JH",
-  q: "CH",
-  x: "SH",
-  r: "R",
-  z: "Z",
-  c: "TS",
-  s: "S",
-  l: "L",
-  m: "M",
-  n: "N",
-  a: "AH",
-  e: "UH",
-  i: "IY",
-  o: "OW",
-  u: "UW",
-  v: "UE",
-  y: "IY",
-};
-
 // === JAPANESE ROMANIZATION ===
 const JAPANESE_TO_PHONEME: { [key: string]: string } = {
-  // Basic syllables using standard ARPABET
-  ka: "K AH",
-  ki: "K IY",
-  ku: "K UW",
-  ke: "K EH",
-  ko: "K OW",
-  ga: "G AH",
-  gi: "G IY",
-  gu: "G UW",
-  ge: "G EH",
-  go: "G OW",
-  sa: "S AH",
-  shi: "SH IY",
-  su: "S UW",
-  se: "S EH",
-  so: "S OW",
-  za: "Z AH",
-  ji: "JH IY",
-  zu: "Z UW",
-  ze: "Z EH",
-  zo: "Z OW",
-  ta: "T AH",
-  chi: "CH IY",
-  tsu: "TS UW",
-  te: "T EH",
-  to: "T OW",
-  da: "D AH",
-  de: "D EH",
-  do: "D OW",
-  na: "N AH",
-  ni: "N IY",
-  nu: "N UW",
-  ne: "N EH",
-  no: "N OW",
-  ha: "HH AH",
-  hi: "HH IY",
-  fu: "F UW",
-  he: "HH EH",
-  ho: "HH OW",
-  ba: "B AH",
-  bi: "B IY",
-  bu: "B UW",
-  be: "B EH",
-  bo: "B OW",
-  pa: "P AH",
-  pi: "P IY",
-  pu: "P UW",
-  pe: "P EH",
-  po: "P OW",
-  ma: "M AH",
-  mi: "M IY",
-  mu: "M UW",
-  me: "M EH",
-  mo: "M OW",
-  ya: "Y AH",
-  yu: "Y UW",
-  yo: "Y OW",
-  ra: "R AH",
-  ri: "R IY",
-  ru: "R UW",
-  re: "R EH",
-  ro: "R OW",
-  wa: "W AH",
-  wo: "W OW",
-  n: "N",
+  // Basic syllables using IPA
+  ka: "ka",
+  ki: "ki",
+  ku: "ku",
+  ke: "ke",
+  ko: "ko",
+  ga: "ɡa",
+  gi: "ɡi",
+  gu: "ɡʊ",
+  ge: "ɡe",
+  go: "ɡoʊ",
+  sa: "sa",
+  shi: "ʃi",
+  su: "su",
+  se: "se",
+  so: "so",
+  za: "za",
+  ji: "dʒi",
+  zu: "zu",
+  ze: "ze",
+  zo: "zo",
+  ta: "ta",
+  chi: "tʃi",
+  tsu: "tsu",
+  te: "te",
+  to: "to",
+  da: "da",
+  de: "de",
+  do: "do",
+  na: "na",
+  ni: "ni",
+  nu: "nu",
+  ne: "ne",
+  no: "noʊ",
+  ha: "ha",
+  hi: "hi",
+  fu: "ɸu",
+  he: "he",
+  ho: "hoʊ",
+  ba: "ba",
+  bi: "bi",
+  bu: "bu",
+  be: "be",
+  bo: "bo",
+  pa: "pa",
+  pi: "pi",
+  pu: "pu",
+  pe: "pe",
+  po: "po",
+  ma: "ma",
+  mi: "mi",
+  mu: "mu",
+  me: "me",
+  mo: "mo",
+  ya: "ja",
+  yu: "ju",
+  yo: "jo",
+  ra: "ɾa",
+  ri: "ɾi",
+  ru: "ɾu",
+  re: "ɾe",
+  ro: "ɾo",
+  wa: "wa",
+  wo: "wo",
+  n: "n",
 };
 
 // === KOREAN ROMANIZATION ===
 const KOREAN_TO_PHONEME: { [key: string]: string } = {
   // Basic consonants and vowels
-  g: "G",
-  k: "K",
-  n: "N",
-  d: "D",
-  t: "T",
-  r: "R",
-  l: "L",
-  m: "M",
-  b: "B",
-  p: "P",
-  s: "S",
-  j: "JH",
-  ch: "CH",
-  h: "HH",
-  a: "AH",
-  e: "EH",
-  i: "IY",
-  o: "OW",
-  u: "UW",
-  eo: "UH",
-  eu: "UH",
-  ae: "AE",
-  ya: "Y AH",
-  ye: "Y EH",
-  yo: "Y OW",
-  yu: "Y UW",
-  yeo: "Y UH",
+  g: "ɡ",
+  k: "k",
+  n: "n",
+  d: "d",
+  t: "t",
+  r: "ɾ",
+  l: "l",
+  m: "m",
+  b: "b",
+  p: "p",
+  s: "s",
+  j: "dʒ",
+  ch: "tʃ",
+  h: "h",
+  a: "a",
+  e: "e",
+  i: "i",
+  o: "o",
+  u: "u",
+  eo: "ɡʊ",
+  eu: "ɯ",
+  ae: "ɛ",
+  ya: "ja",
+  ye: "je",
+  yo: "jo",
+  yu: "ju",
+  yeo: "jʌ",
 
   // Common syllables
-  an: "AH N",
-  eong: "UH NG",
-  ha: "HH AH",
-  se: "S EH",
-  gam: "G AH M",
-  sa: "S AH",
-  hab: "HH AH B",
-  ni: "N IY",
-  da: "D AH",
-  han: "HH AH N",
-  guk: "G UH K",
-  gug: "G UH G",
+  an: "an",
+  eong: "ʌŋ",
+  ha: "ha",
+  se: "se",
+  gam: "ɡam",
+  sa: "sa",
+  hab: "hab",
+  ni: "ni",
+  da: "da",
+  han: "hʌn",
+  guk: "ɡʊɡ",
+  gug: "ɡʊ",
 };
 
 // === OTHER LANGUAGES ===
 const RUSSIAN_TO_PHONEME: { [key: string]: string } = {
-  pri: "P R IY",
-  vet: "V EH T",
-  spa: "S P AH",
-  si: "S IY",
-  bo: "B OW",
-  ros: "R OW S",
-  siya: "S IY AH",
+  pri: "pɾi",
+  vet: "vɛt",
+  spa: "spa",
+  si: "si",
+  bo: "bo",
+  ros: "ɾos",
+  siya: "sija",
 };
 
 const GERMAN_TO_PHONEME: { [key: string]: string } = {
-  mueller: "M UE L ER",
-  muller: "M UE L ER",
-  bjoern: "B Y OE R N",
-  bjorn: "B Y OE R N",
+  mueller: "mylɚ",
+  muller: "mylɚ",
+  bjoern: "bjøɾn",
+  bjorn: "bjøɾn",
 };
 
 const ARABIC_TO_PHONEME: { [key: string]: string } = {
-  mrhb: "M AR HH AB",
-  shkr: "SH UH K R",
+  mrhb: "maɾħab",
+  shkr: "ʃukɾ",
 };
 
 const THAI_TO_PHONEME: { [key: string]: string } = {
-  swasdi: "S AW AH S D IY",
-  khobkhun: "KH OW B KH UH N",
+  swasdi: "sawasdi",
+  khobkhun: "kʰobkʰun",
 };
 
 // === LANGUAGE DETECTION ===
@@ -273,8 +163,6 @@ export function processMultilingualText(
   if (!lang) return null;
 
   switch (lang) {
-    case "chinese":
-      return processChinese(text);
     case "japanese":
       return processJapanese(text.toLowerCase());
     case "korean":
@@ -290,160 +178,6 @@ export function processMultilingualText(
     default:
       return null;
   }
-}
-
-function processChinese(text: string): string {
-  const words = splitPinyinCamelCase(text);
-  const phonemes: string[] = [];
-
-  for (const word of words) {
-    if (PINYIN_TO_PHONEME[word.toLowerCase()]) {
-      // Direct mapping exists
-      phonemes.push(PINYIN_TO_PHONEME[word.toLowerCase()]);
-    } else {
-      // Try to split compound pinyin
-      const syllables = splitCompoundPinyin(word.toLowerCase());
-      for (const syllable of syllables) {
-        phonemes.push(pinyinToPhoneme(syllable));
-      }
-    }
-  }
-
-  return phonemes.join(" ");
-}
-
-function splitCompoundPinyin(text: string): string[] {
-  const knownSyllables = [
-    "zhong",
-    "guo",
-    "bei",
-    "jing",
-    "shang",
-    "hai",
-    "ni",
-    "hao",
-    "xie",
-    "shi",
-    "zhou",
-    "shen",
-    "zhen",
-    "jie",
-    "xiao",
-    "lao",
-    "sheng",
-    "dian",
-    "nao",
-    "yin",
-    "ying",
-    "yun",
-    "dong",
-    "lan",
-    "qiu",
-    "zu",
-    "wo",
-    "men",
-    "ta",
-    "de",
-    "ma",
-    "ba",
-    "ge",
-    "yi",
-    "er",
-    "san",
-    "wu",
-    "liu",
-    "qi",
-    "jiu",
-    "wen",
-    "ming",
-    "hua",
-    "xue",
-    "xi",
-    "da",
-    "xiao",
-    "hao",
-    "ren",
-    "zi",
-    "zi",
-    "mu",
-    "fu",
-    "qin",
-    "nv",
-    "er",
-    "hai",
-    "zi",
-    "lao",
-    "shi",
-  ];
-
-  // Try to split into known syllables
-  for (let i = 1; i < text.length; i++) {
-    const first = text.substring(0, i);
-    const rest = text.substring(i);
-    if (knownSyllables.includes(first) && knownSyllables.includes(rest)) {
-      return [first, rest];
-    }
-  }
-
-  // If can't split, return as single syllable
-  return [text];
-}
-
-function splitPinyinCamelCase(text: string): string[] {
-  if (/^[A-Z][a-z]+[A-Z]/.test(text)) {
-    return text.match(/[A-Z][a-z]*/g) || [text];
-  }
-  return [text];
-}
-
-function pinyinToPhoneme(pinyin: string): string {
-  const lower = pinyin.toLowerCase();
-
-  if (PINYIN_TO_PHONEME[lower]) {
-    return PINYIN_TO_PHONEME[lower];
-  }
-
-  // Break down syllable
-  const result: string[] = [];
-  let remaining = lower;
-
-  // Handle initials
-  if (remaining.startsWith("zh")) {
-    result.push("ZH");
-    remaining = remaining.substring(2);
-  } else if (remaining.startsWith("ch")) {
-    result.push("CH");
-    remaining = remaining.substring(2);
-  } else if (remaining.startsWith("sh")) {
-    result.push("SH");
-    remaining = remaining.substring(2);
-  } else if (remaining.length > 0 && PINYIN_TO_PHONEME[remaining[0]]) {
-    result.push(PINYIN_TO_PHONEME[remaining[0]]);
-    remaining = remaining.substring(1);
-  }
-
-  // Handle finals
-  if (remaining.length > 0) {
-    if (remaining === "ong") result.push("OW", "NG");
-    else if (remaining === "ang") result.push("AH", "NG");
-    else if (remaining === "ing") result.push("IH", "NG");
-    else if (remaining === "ung") result.push("UH", "NG");
-    else if (remaining === "eng") result.push("EH", "NG");
-    else if (remaining === "ian") result.push("YEN");
-    else if (remaining === "uan") result.push("UAHN");
-    else if (remaining === "uai") result.push("WAY");
-    else if (remaining === "iao") result.push("YAW");
-    else if (remaining === "iou") result.push("YOW");
-    else if (PINYIN_TO_PHONEME[remaining])
-      result.push(PINYIN_TO_PHONEME[remaining]);
-    else {
-      for (const char of remaining) {
-        if (PINYIN_TO_PHONEME[char]) result.push(PINYIN_TO_PHONEME[char]);
-      }
-    }
-  }
-
-  return result.length > 0 ? result.join(" ") : "UH";
 }
 
 function processJapanese(text: string): string {
@@ -482,13 +216,13 @@ function processJapanese(text: string): string {
       if (JAPANESE_TO_PHONEME[one]) {
         syllables.push(JAPANESE_TO_PHONEME[one]);
       } else {
-        syllables.push(one.toUpperCase());
+        syllables.push(one.toLowerCase());
       }
       i++;
     }
   }
 
-  return syllables.join(" ");
+  return syllables.join("");
 }
 
 function applyJapaneseParticleRules(text: string): string {
@@ -569,13 +303,13 @@ function processKorean(text: string): string {
         if (KOREAN_TO_PHONEME[char]) {
           phonemes.push(KOREAN_TO_PHONEME[char]);
         } else {
-          phonemes.push(char.toUpperCase());
+          phonemes.push(char.toLowerCase());
         }
       }
     }
   });
 
-  return phonemes.join(" ");
+  return phonemes.join("");
 }
 
 function processRussian(text: string): string {
@@ -584,7 +318,7 @@ function processRussian(text: string): string {
       return phoneme;
     }
   }
-  return text.toUpperCase();
+  return text.toLowerCase();
 }
 
 function processGerman(text: string): string {
@@ -593,7 +327,7 @@ function processGerman(text: string): string {
       return phoneme;
     }
   }
-  return text.toUpperCase();
+  return text.toLowerCase();
 }
 
 function processArabic(text: string): string {
@@ -608,10 +342,10 @@ function processArabic(text: string): string {
     .map((char) => {
       const consonants = "bcdfghjklmnpqrstvwxyz";
       return consonants.includes(char)
-        ? char.toUpperCase() + " AH"
-        : char.toUpperCase();
+        ? char.toLowerCase() + "ʌ"
+        : char.toLowerCase();
     })
-    .join(" ");
+    .join("");
 }
 
 function processThai(text: string): string {
@@ -620,7 +354,7 @@ function processThai(text: string): string {
       return phoneme;
     }
   }
-  return text.toUpperCase();
+  return text.toLowerCase();
 }
 
 export function isMultilingualText(text: string): boolean {
