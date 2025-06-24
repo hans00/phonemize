@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { phonemize, toARPABET, toIPA, addPronunciation, Tokenizer, createTokenizer } from '../src/index'
+import { phonemize, toARPABET, toIPA, toZhuyin, addPronunciation, Tokenizer } from '../src/index'
 
 describe('Index', function() {
   it('Work Fine', function() {
@@ -41,7 +41,44 @@ describe('Index', function() {
   it('chinese', function() {
     expect(phonemize('中文 TTS')).to.be.equal('ʈʂʊŋ˥˥ wən˧˥ ˈtiˈtiˈɛs')
     expect(phonemize('中文的抑揚頓挫')).to.be.equal('ʈʂʊŋ˥˥ wən˧˥ tə˧ i˥˩ jɑŋ˧˥ tuən˥˩ tsʰuɔ˥˩')
-    expect(phonemize('還原 還你 還是 還不是')).to.be.equal('xuan˧˥ juan˧˥ xuan˧˥ ni˧˩˧ xaɪ˧˥ ʂɨ˥˩ xaɪ˧˥ pu˧˥ ʂɨ˥˩')
+    expect(phonemize('還原 還你 還是 還不是')).to.be.equal('xuan˧˥ juan˧˥ xuan˧˥ ni˧˩˧ xaɪ˧˥ ʂɨ˥˩ xaɪ˧˥ pu˥˩ ʂɨ˥˩')
+  })
+
+  it('chinese tone formats', function() {
+    // Test default Unicode tone format
+    expect(phonemize('中文', { toneFormat: 'unicode' })).to.include('˥˥')
+    expect(phonemize('中文', { toneFormat: 'unicode' })).to.include('˧˥')
+    
+    // Test arrow tone format
+    expect(phonemize('中文', { toneFormat: 'arrow' })).to.include('→')
+    expect(phonemize('中文', { toneFormat: 'arrow' })).to.include('↗')
+    
+    // Test tone conversion for common patterns
+    const unicodeResult = phonemize('還有', { toneFormat: 'unicode' })
+    const arrowResult = phonemize('還有', { toneFormat: 'arrow' })
+    expect(unicodeResult).to.not.equal(arrowResult)
+    expect(arrowResult).to.not.include('˥')
+    expect(arrowResult).to.not.include('˧')
+    expect(arrowResult).to.not.include('˩')
+  })
+
+  it('zhuyin format', function() {
+    // Test basic Zhuyin conversion
+    const zhuyinResult = phonemize('中文', { format: 'zhuyin' })
+    expect(zhuyinResult).to.be.equal('ㄓㄨㄥ1 ㄨㄣ2')
+    
+    // Test mixed Chinese and English
+    const mixedResult = phonemize('中文 hello', { format: 'zhuyin' })
+    expect(mixedResult).to.include('ㄓㄨㄥ1 ㄨㄣ2 həˈɫoʊ') // English IPA fallback
+  })
+
+  it('toZhuyin function', function() {
+    // Test standalone toZhuyin function
+    expect(toZhuyin('中文注音符號')).to.be.equal('ㄓㄨㄥ1 ㄨㄣ2 ㄓㄨ4 ㄧㄣ1 ㄈㄨ2 ㄏㄠ4')
+    
+    // Test with options
+    const result = toZhuyin('hello 中文', { stripStress: true })
+    expect(result).to.be.equal('həɫoʊ ㄓㄨㄥ1 ㄨㄣ2')
   })
 
   it('anyAscii', function() {

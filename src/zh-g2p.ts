@@ -5,6 +5,7 @@
 
 import { pinyin, addDict } from 'pinyin-pro';
 import dict from '../data/zh/dict.json';
+import { pinyinToZhuyin } from './utils';
 
 addDict(dict, 'phonemize-zh');
 
@@ -175,6 +176,27 @@ export class ChineseG2P {
     
     const results = this.textToPinyinResults(text);
     return results.map(result => result.ipa).join(' ');
+  }
+
+  /**
+   * Convert Chinese text to Zhuyin (Bopomofo) notation
+   * @param text - Chinese text to convert
+   * @returns Space-separated Zhuyin string with tone numbers
+   */
+  public textToZhuyin(text: string): string {
+    if (!text?.trim()) return '';
+    
+    const results = this.textToPinyinResults(text);
+    return results.map(result => {
+      if (this.isChinese(result.word)) {
+        // Convert Chinese characters to Zhuyin
+        // result.pinyin already includes tone number, so use it directly
+        return pinyinToZhuyin(result.pinyin);
+      } else {
+        // Keep non-Chinese characters as-is
+        return result.word;
+      }
+    }).join(' ');
   }
 
   /**

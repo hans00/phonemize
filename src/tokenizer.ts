@@ -10,7 +10,7 @@ import { simplePOSTagger, POSResult } from "./pos-tagger";
 import { ARPABET_TO_IPA, IPA_STRESS_MAP, PUNCTUATION } from "./consts";
 import { detectLanguage } from "./multilingual-processor";
 import { chineseG2P } from "./zh-g2p";
-import { ipaToArpabet } from "./utils";
+import { ipaToArpabet, convertChineseTonesToArrows, pinyinToZhuyin } from "./utils";
 
 /**
  * Configuration options for tokenizer behavior
@@ -20,12 +20,18 @@ export interface TokenizerOptions {
   homograph?: Record<string, string>;
   /** Remove stress markers from output */
   stripStress?: boolean;
-  /** Output format (IPA or ARPABET) */
-  format?: "ipa" | "arpabet";
+  /**
+   * Output format (IPA, ARPABET, or Zhuyin)
+   * 
+   * Note: Non-chinese in zhuyin format will be converted to IPA
+   **/
+  format?: "ipa" | "arpabet" | "zhuyin";
   /** Token separator in output string */
   separator?: string;
   /** Convert non-Latin text to ASCII approximation */
   anyAscii?: boolean;
+  /** Chinese tone format: 'unicode' (˧˩˧) or 'arrow' (↓↗↘→). Only applies when format is 'ipa' */
+  toneFormat?: "unicode" | "arrow";
 }
 
 /**
@@ -81,6 +87,7 @@ export class Tokenizer {
       separator: " ",
       anyAscii: false,
       homograph: {},
+      toneFormat: "unicode",
       ...options,
     };
   }
@@ -231,15 +238,27 @@ export class Tokenizer {
    * Post-process phonemes for format conversion and cleanup
    */
   protected _postProcess(phonemes: string): string {
-    // G2P returns IPA format, convert to ARPABET if needed
     if (this.options.format === "arpabet") {
+      // Convert to ARPABET format
       phonemes = ipaToArpabet(phonemes);
       
       // Remove ARPABET stress markers if requested
       if (this.options.stripStress) {
         phonemes = phonemes.replace(/[012]/g, "");
       }
+    } else if (this.options.format === "zhuyin") {
+      // Zhuyin format processing - handled per token, not here
+      // This is a placeholder for any global zhuyin post-processing
+      // The actual conversion happens in the tokenize method
+      return phonemes;
     } else {
+      // IPA format processing
+      
+      // Convert Chinese tone format if requested
+      if (this.options.toneFormat === "arrow") {
+        phonemes = convertChineseTonesToArrows(phonemes);
+      }
+      
       // Remove IPA stress markers if requested  
       if (this.options.stripStress) {
         phonemes = phonemes.replace(/[ˈˌ]/g, "");
@@ -298,16 +317,41 @@ export class Tokenizer {
       // Check language map for multilingual words
       const detectedLanguage = languageMap[cleanToken.toLowerCase()];
       
-      // Get pronunciation from G2P system with POS for homograph disambiguation
-      let pronunciation = predict(cleanToken, pos, detectedLanguage);
-      pronunciation = this._postProcess(pronunciation);
-      
-      // Apply custom separator to individual phonemes if needed
-      if (this.options.separator !== " ") {
-        pronunciation = pronunciation.split(' ').join(this.options.separator);
+      // Handle Zhuyin format specially
+      if (this.options.format === "zhuyin") {
+        let pronunciation: string;
+        
+        // Check if it's Chinese text
+        if (chineseG2P.isChineseText(cleanToken)) {
+          // Convert Chinese to Zhuyin
+          pronunciation = chineseG2P.textToZhuyin(cleanToken);
+        } else {
+          // Convert non-Chinese to IPA as fallback
+          pronunciation = predict(cleanToken, pos, detectedLanguage);
+          // Apply IPA post-processing but not tone format conversion
+          if (this.options.stripStress) {
+            pronunciation = pronunciation.replace(/[ˈˌ]/g, "");
+          }
+        }
+        
+        // Apply custom separator
+        if (this.options.separator !== " ") {
+          pronunciation = pronunciation.split(' ').join(this.options.separator);
+        }
+        
+        phonemes.push(pronunciation);
+      } else {
+        // Regular IPA/ARPABET processing
+        let pronunciation = predict(cleanToken, pos, detectedLanguage);
+        pronunciation = this._postProcess(pronunciation);
+        
+        // Apply custom separator to individual phonemes if needed
+        if (this.options.separator !== " ") {
+          pronunciation = pronunciation.split(' ').join(this.options.separator);
+        }
+        
+        phonemes.push(pronunciation);
       }
-      
-      phonemes.push(pronunciation);
     }
 
     return phonemes;
@@ -432,8 +476,25 @@ export class Tokenizer {
         } else {
           // Check language map for multilingual words
           const detectedLanguage = languageMap[token.toLowerCase()];
-          const pronunciation = predict(token, pos, detectedLanguage);
-          phoneme = this._postProcess(pronunciation);
+          
+          // Handle Zhuyin format specially
+          if (this.options.format === "zhuyin") {
+            if (chineseG2P.isChineseText(token)) {
+              // Convert Chinese to Zhuyin
+              phoneme = chineseG2P.textToZhuyin(token);
+            } else {
+              // Convert non-Chinese to IPA as fallback
+              phoneme = predict(token, pos, detectedLanguage);
+              // Apply IPA post-processing but not tone format conversion
+              if (this.options.stripStress) {
+                phoneme = phoneme.replace(/[ˈˌ]/g, "");
+              }
+            }
+          } else {
+            // Regular IPA/ARPABET processing
+            const pronunciation = predict(token, pos, detectedLanguage);
+            phoneme = this._postProcess(pronunciation);
+          }
         }
 
         results.push({

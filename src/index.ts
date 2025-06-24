@@ -113,6 +113,31 @@ export function toARPABET(
 }
 
 /**
+ * Convert text to Zhuyin (Bopomofo) notation
+ * Chinese characters are converted to Zhuyin with tone numbers,
+ * non-Chinese characters are converted to IPA as fallback.
+ * 
+ * @param text - Input text to convert
+ * @param options - Configuration options (format will be overridden to 'zhuyin')
+ * @returns Zhuyin phonetic string with tone numbers
+ * 
+ * @example
+ * ```typescript
+ * toZhuyin("中文") // "ㄓㄨㄥ1 ㄨㄣ2"
+ * toZhuyin("中文 hello") // "ㄓㄨㄥ1 ㄨㄣ2 həˈloʊ"
+ * toZhuyin("測試", { stripStress: true }) // "ㄘㄜ4 ㄕ4"
+ * ```
+ */
+export function toZhuyin(
+  text: string,
+  options?: Omit<TokenizerOptions, "format">,
+): string {
+  const zhuyinOptions: TokenizerOptions = { ...options, format: "zhuyin" };
+  const tokenizer = new Tokenizer(zhuyinOptions);
+  return tokenizer.tokenizeToString(text);
+}
+
+/**
  * Add custom pronunciation to the internal dictionary
  * 
  * @param word - Word to add pronunciation for
@@ -162,6 +187,7 @@ const phonemizer = {
   phonemize,
   toIPA,
   toARPABET,
+  toZhuyin,
 
   // === Utilities ===
   addPronunciation,

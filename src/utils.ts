@@ -2,7 +2,15 @@
  * Utility functions for phoneme format conversion
  */
 
-import { IPA_TO_ARPABET, IPA_TO_STRESS, ARPABET_TO_IPA, IPA_STRESS_MAP } from "./consts";
+import { 
+  IPA_TO_ARPABET, 
+  IPA_TO_STRESS, 
+  ARPABET_TO_IPA, 
+  IPA_STRESS_MAP, 
+  CHINESE_TONE_TO_ARROW,
+  PINYIN_INITIALS_TO_ZHUYIN,
+  PINYIN_FINALS_TO_ZHUYIN
+} from "./consts";
 
 /**
  * Convert IPA phonetic notation to ARPABET format
@@ -114,4 +122,139 @@ function getNextPhoneme(ipa: string, startIndex: number): { arpabet: string; len
   }
   
   return null;
+}
+
+/**
+ * Convert Chinese IPA tone marks to arrow format
+ * @param ipa - IPA string with Chinese tone marks
+ * @returns IPA string with arrow tone symbols
+ */
+export function convertChineseTonesToArrows(ipa: string): string {
+  if (!ipa || typeof ipa !== 'string') {
+    return ipa;
+  }
+  
+  let result = ipa;
+  
+  // Sort by length (longest first) to avoid partial replacements
+  const toneKeys = Object.keys(CHINESE_TONE_TO_ARROW).sort((a, b) => b.length - a.length);
+  
+  for (const tonePattern of toneKeys) {
+    const arrowSymbol = CHINESE_TONE_TO_ARROW[tonePattern];
+    result = result.replace(new RegExp(tonePattern, 'g'), arrowSymbol);
+  }
+  
+  return result;
+}
+
+/**
+ * Convert pinyin syllable to Zhuyin (Bopomofo) notation
+ * @param pinyin - Pinyin syllable with tone number (e.g., "zhong1", "wen2")
+ * @returns Zhuyin notation with tone number (e.g., "ㄓㄨㄥ1", "ㄨㄣ2")
+ */
+export function pinyinToZhuyin(pinyin: string): string {
+  if (!pinyin?.trim()) {
+    return pinyin;
+  }
+
+  // Extract tone number from the end
+  const toneMatch = pinyin.match(/([1-5])$/);
+  const toneNumber = toneMatch ? toneMatch[1] : '';
+  const syllableWithoutTone = pinyin.replace(/[1-5]$/, '');
+
+  // Handle special complete syllables first
+  if (PINYIN_FINALS_TO_ZHUYIN[syllableWithoutTone]) {
+    return PINYIN_FINALS_TO_ZHUYIN[syllableWithoutTone] + toneNumber;
+  }
+
+  // Decompose pinyin into initial and final
+  const { initial, final } = decomposePinyinSyllable(syllableWithoutTone);
+  
+  let zhuyin = '';
+
+  // Convert initial
+  if (initial && PINYIN_INITIALS_TO_ZHUYIN[initial]) {
+    zhuyin += PINYIN_INITIALS_TO_ZHUYIN[initial];
+  }
+
+  // Convert final
+  if (final && PINYIN_FINALS_TO_ZHUYIN[final]) {
+    zhuyin += PINYIN_FINALS_TO_ZHUYIN[final];
+  } else if (final) {
+    // If the final is not recognized, the syllable is invalid. Revert to the original.
+    zhuyin = syllableWithoutTone;
+    console.warn(`Could not find a Zhuyin mapping for pinyin final: ${final}`);
+  } else if (!final && initial) {
+    // If there is only an initial but it's not a special syllable, it's invalid.
+    zhuyin = syllableWithoutTone;
+  }
+
+  // Append the tone number. Default to 5 (neutral tone) if not present.
+  return zhuyin + (toneNumber || '5');
+}
+
+/**
+ * Decompose pinyin syllable into initial and final parts
+ * @param syllable - Pinyin syllable without tone
+ * @returns Object with initial and final parts
+ */
+function decomposePinyinSyllable(syllable: string): { initial: string; final: string } {
+  // Handle empty or invalid input
+  if (!syllable?.trim()) {
+    return { initial: '', final: '' };
+  }
+
+  // Special cases for retroflex sounds
+  if (syllable.startsWith('zh')) {
+    return { initial: 'zh', final: syllable.slice(2) };
+  }
+  if (syllable.startsWith('ch')) {
+    return { initial: 'ch', final: syllable.slice(2) };
+  }
+  if (syllable.startsWith('sh')) {
+    return { initial: 'sh', final: syllable.slice(2) };
+  }
+
+  // Handle other two-letter initials (none in standard pinyin)
+  
+  // Single letter initials
+  const possibleInitials = ['b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'r', 'z', 'c', 's', 'y', 'w'];
+  
+  for (const initial of possibleInitials) {
+    if (syllable.startsWith(initial)) {
+      return { initial, final: syllable.slice(initial.length) };
+    }
+  }
+
+  // No initial found, entire syllable is final
+  return { initial: '', final: syllable };
+}
+
+/**
+ * Convert Chinese IPA arrow format back to Unicode tone marks
+ * @param ipa - IPA string with arrow tone symbols
+ * @returns IPA string with Unicode tone marks
+ */
+export function convertChineseTonesToUnicode(ipa: string): string {
+  if (!ipa || typeof ipa !== 'string') {
+    return ipa;
+  }
+  
+  let result = ipa;
+  
+  // Reverse mapping from arrows to Unicode
+  const arrowToUnicode: Record<string, string> = {};
+  for (const [unicode, arrow] of Object.entries(CHINESE_TONE_TO_ARROW)) {
+    arrowToUnicode[arrow] = unicode;
+  }
+  
+  // Sort by length (longest first) to handle ↓↗ before ↓
+  const arrowKeys = Object.keys(arrowToUnicode).sort((a, b) => b.length - a.length);
+  
+  for (const arrowSymbol of arrowKeys) {
+    const unicodePattern = arrowToUnicode[arrowSymbol];
+    result = result.replace(new RegExp(arrowSymbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), unicodePattern);
+  }
+  
+  return result;
 }

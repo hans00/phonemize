@@ -1,7 +1,56 @@
 import { expect } from 'chai'
-import { ipaToArpabet } from '../src/utils'
+import { ipaToArpabet, pinyinToZhuyin } from '../src/utils'
 
 describe('Utils', function() {
+  describe('pinyinToZhuyin', function() {
+    it('should convert basic pinyin syllables', function() {
+      expect(pinyinToZhuyin('ma1')).to.equal('ㄇㄚ1');
+      expect(pinyinToZhuyin('tiao3')).to.equal('ㄊㄧㄠ3');
+      expect(pinyinToZhuyin('nü3')).to.equal('ㄋㄩ3');
+      expect(pinyinToZhuyin('lve4')).to.equal('ㄌㄩㄝ4');
+    });
+
+    it('should handle two-letter initials', function() {
+      expect(pinyinToZhuyin('zha1')).to.equal('ㄓㄚ1');
+      expect(pinyinToZhuyin('che1')).to.equal('ㄔㄜ1');
+      expect(pinyinToZhuyin('shi4')).to.equal('ㄕ4');
+    });
+
+    it('should handle zero-initial syllables (y, w)', function() {
+      expect(pinyinToZhuyin('yin1')).to.equal('ㄧㄣ1');
+      expect(pinyinToZhuyin('wu3')).to.equal('ㄨ3');
+      expect(pinyinToZhuyin('yu2')).to.equal('ㄩ2');
+      expect(pinyinToZhuyin('ye4')).to.equal('ㄧㄝ4');
+      expect(pinyinToZhuyin('yuan1')).to.equal('ㄩㄢ1');
+      expect(pinyinToZhuyin('wen4')).to.equal('ㄨㄣ4');
+    });
+
+    it('should handle special syllables (zhi, chi, shi, etc.)', function() {
+      expect(pinyinToZhuyin('zhi1')).to.equal('ㄓ1');
+      expect(pinyinToZhuyin('chi2')).to.equal('ㄔ2');
+      expect(pinyinToZhuyin('si4')).to.equal('ㄙ4');
+      expect(pinyinToZhuyin('ri4')).to.equal('ㄖ4');
+    });
+
+    it('should handle all tones correctly', function() {
+      expect(pinyinToZhuyin('a1')).to.equal('ㄚ1');
+      expect(pinyinToZhuyin('a2')).to.equal('ㄚ2');
+      expect(pinyinToZhuyin('a3')).to.equal('ㄚ3');
+      expect(pinyinToZhuyin('a4')).to.equal('ㄚ4');
+      expect(pinyinToZhuyin('a5')).to.equal('ㄚ5'); // Neutral tone
+    });
+    
+    it('should handle pinyin without tone number (defaults to neutral)', function() {
+      expect(pinyinToZhuyin('ma')).to.equal('ㄇㄚ5');
+    });
+    
+    it('should handle edge cases', function() {
+      expect(pinyinToZhuyin('')).to.equal('');
+      expect(pinyinToZhuyin('  ')).to.equal('  ');
+      expect(pinyinToZhuyin('invalidpinyin')).to.equal('invalidpinyin5');
+    });
+  });
+  
   describe('ipaToArpabet', function() {
     it('should convert basic IPA phonemes to ARPABET', function() {
       expect(ipaToArpabet('ɑ')).to.be.equal('AA')
