@@ -44,8 +44,12 @@ describe('Index', function() {
   })
 
   it('anyAscii', function() {
-    expect(phonemize('にほんご', { anyAscii: true })).to.be.equal('nihoʊnɡoʊ')
-    expect(phonemize('한국어', { anyAscii: true })).to.be.equal('hʌnɡʊɡʊ')
+    // Japanese test (with particle rule)
+    expect(phonemize('こんにちは', { anyAscii: true })).to.be.equal('konnitɕiwa')
+    // Korean test (with liaison rule)
+    expect(phonemize('한국어', { anyAscii: true })).to.be.equal('hanɡuɡʌ')
+    // Russian test
+    expect(phonemize('Привет', { anyAscii: true })).to.be.equal('prʲivʲet')
   })
 
   it('Options and configurations', function() {

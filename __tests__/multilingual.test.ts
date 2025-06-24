@@ -8,49 +8,49 @@ import {
 describe('Multilingual Processor', function() {
   describe('detectLanguage', function() {
     it('should detect Chinese characters', function() {
-      expect(detectLanguage('中文')).to.be.equal('chinese')
-      expect(detectLanguage('北京')).to.be.equal('chinese')
-      expect(detectLanguage('上海')).to.be.equal('chinese')
-      expect(detectLanguage('广州')).to.be.equal('chinese')
-      expect(detectLanguage('深圳')).to.be.equal('chinese')
+      expect(detectLanguage('中文')).to.be.equal('zh')
+      expect(detectLanguage('北京')).to.be.equal('zh')
+      expect(detectLanguage('上海')).to.be.equal('zh')
+      expect(detectLanguage('广州')).to.be.equal('zh')
+      expect(detectLanguage('深圳')).to.be.equal('zh')
     })
 
     it('should detect Japanese characters', function() {
-      expect(detectLanguage('にほん')).to.be.equal('japanese')
-      expect(detectLanguage('こんにちは')).to.be.equal('japanese')
-      expect(detectLanguage('ありがとう')).to.be.equal('japanese')
-      expect(detectLanguage('さようなら')).to.be.equal('japanese')
+      expect(detectLanguage('にほん')).to.be.equal('ja')
+      expect(detectLanguage('こんにちは')).to.be.equal('ja')
+      expect(detectLanguage('ありがとう')).to.be.equal('ja')
+      expect(detectLanguage('さようなら')).to.be.equal('ja')
     })
 
     it('should detect Korean characters', function() {
-      expect(detectLanguage('한국')).to.be.equal('korean')
-      expect(detectLanguage('안녕하세요')).to.be.equal('korean')
-      expect(detectLanguage('감사합니다')).to.be.equal('korean')
-      expect(detectLanguage('서울')).to.be.equal('korean')
+      expect(detectLanguage('한국')).to.be.equal('ko')
+      expect(detectLanguage('안녕하세요')).to.be.equal('ko')
+      expect(detectLanguage('감사합니다')).to.be.equal('ko')
+      expect(detectLanguage('서울')).to.be.equal('ko')
     })
 
     it('should detect Russian characters', function() {
-      expect(detectLanguage('русский')).to.be.equal('russian')
-      expect(detectLanguage('Москва')).to.be.equal('russian')
-      expect(detectLanguage('привет')).to.be.equal('russian')
+      expect(detectLanguage('русский')).to.be.equal('ru')
+      expect(detectLanguage('Москва')).to.be.equal('ru')
+      expect(detectLanguage('привет')).to.be.equal('ru')
     })
 
     it('should detect German characters', function() {
-      expect(detectLanguage('Müller')).to.be.equal('german')
-      expect(detectLanguage('schön')).to.be.equal('german')
-      expect(detectLanguage('Größe')).to.be.equal('german')
+      expect(detectLanguage('Müller')).to.be.equal('de')
+      expect(detectLanguage('schön')).to.be.equal('de')
+      expect(detectLanguage('Größe')).to.be.equal('de')
     })
 
     it('should detect Arabic characters', function() {
-      expect(detectLanguage('العربية')).to.be.equal('arabic')
-      expect(detectLanguage('مرحبا')).to.be.equal('arabic')
-      expect(detectLanguage('شكرا')).to.be.equal('arabic')
+      expect(detectLanguage('العربية')).to.be.equal('ar')
+      expect(detectLanguage('مرحبا')).to.be.equal('ar')
+      expect(detectLanguage('شكرا')).to.be.equal('ar')
     })
 
     it('should detect Thai characters', function() {
-      expect(detectLanguage('ไทย')).to.be.equal('thai')
-      expect(detectLanguage('สวัสดี')).to.be.equal('thai')
-      expect(detectLanguage('ขอบคุณ')).to.be.equal('thai')
+      expect(detectLanguage('ไทย')).to.be.equal('th')
+      expect(detectLanguage('สวัสดี')).to.be.equal('th')
+      expect(detectLanguage('ขอบคุณ')).to.be.equal('th')
     })
 
     it('should return null for English or unknown text', function() {
@@ -63,8 +63,8 @@ describe('Multilingual Processor', function() {
 
     it('should handle mixed content', function() {
       // Should detect the first non-English language it finds
-      expect(detectLanguage('Hello 中文')).to.be.equal('chinese')
-      expect(detectLanguage('English にほん Korean')).to.be.equal('japanese')
+      expect(detectLanguage('Hello 中文')).to.be.equal('zh')
+      expect(detectLanguage('English にほん Korean')).to.be.equal('ja')
     })
   })
 
@@ -91,31 +91,28 @@ describe('Multilingual Processor', function() {
     })
 
     it('should process Russian text', function() {
-      const result = processMultilingualText('Москва')
-      expect(result).to.be.a('string')
-      expect(result).to.have.length.greaterThan(0)
+      const result = processMultilingualText('Привет');
+      expect(result).to.be.a('string');
+      expect(result).to.have.length.greaterThan(0);
     })
 
     it('should process German text', function() {
-      const result = processMultilingualText('Müller')
-      expect(result).to.be.a('string')
-      expect(result).to.have.length.greaterThan(0)
+      // Abandoned, should fallback to null
+      expect(processMultilingualText('Müller')).to.be.null;
     })
 
     it('should process Arabic text', function() {
-      const result = processMultilingualText('العربية')
-      expect(result).to.be.a('string')
-      expect(result).to.have.length.greaterThan(0)
+      // Abandoned, should fallback to null
+      expect(processMultilingualText('مرحبا')).to.be.null;
     })
 
     it('should process Thai text', function() {
-      const result = processMultilingualText('ไทย')
-      expect(result).to.be.a('string')
-      expect(result).to.have.length.greaterThan(0)
+      // Abandoned, should fallback to null
+      expect(processMultilingualText('สวัสดี')).to.be.null;
     })
 
     it('should handle specified language detection', function() {
-      const result = processMultilingualText('中文', 'chinese')
+      const result = processMultilingualText('中文', 'zh')
       expect(result).to.satisfy((r: any) => r === null || typeof r === 'string')
     })
 
