@@ -37,14 +37,6 @@ import { phonemize, toIPA, toARPABET } from 'phonemize'
 console.log(phonemize('Hello world!'))
 // Output: həˈɫoʊ ˈwɝɫd!
 
-// Complex compound words
-console.log(phonemize('supercalifragilisticexpialidocious'))
-// Output: ˈsupɝˈkæɫɪfˈɹæɡɪlɪsˈtaɪskspɪæˈɫidoʊˌsiˌaɪˈoʊʌs
-
-// Multilingual support (via anyAscii)
-console.log(phonemize('中文', { anyAscii: true }))
-// Output: ʒoʊŋʊən
-
 // ARPABET format
 console.log(toARPABET('Hello world!'))
 // Output: HH AX EL1 OW W1 ER EL D!
@@ -76,19 +68,20 @@ phonemize('pneumonoultramicroscopicsilicovolcanoconiosss')
 Supports multiple languages through anyAscii transliteration:
 
 ```javascript
-// Chinese
-phonemize('你好世界', { anyAscii: true })  // → nihaʊʃidʒje
-phonemize('北京', { anyAscii: true })      // → ˌbeɪˈʒɪŋ
+// Chinese (direct processing with tone numbers)
+phonemize('你好世界')  // → ni˧˥ xɑʊ˨˩˦ ʂɻ̩˥˩ tɕiɛ˥˩
+phonemize('北京')      // → peɪ˧˩˧ tɕiŋ˥˥
 
-// Japanese  
-phonemize('こんにちは', { anyAscii: true }) // → koʊnitʃiwʌ
-phonemize('東京', { anyAscii: true })      // → doʊŋdʒɪŋ
+// Japanese (with anyAscii and rule-based processing)
+phonemize('こんにちは', { anyAscii: true }) // → konnitɕiwa
+phonemize('東京', { anyAscii: true })      // → tʊŋ˥˥ tɕiŋ˥˥
 
-// Korean
-phonemize('안녕하세요', { anyAscii: true }) // → ʌnnjɛoʊnɡhʌsɛjoʊ
+// Korean (with anyAscii and rule-based processing)
+phonemize('안녕하세요', { anyAscii: true }) // → ʔannjʌŋhaseyo
 phonemize('서울', { anyAscii: true })      // → ˈsoʊɫ
 
-// And many more languages...
+// Other languages fallback to English G2P after anyAscii
+phonemize('Привет', { anyAscii: true })    // → ˈpɹaɪvɛt
 ```
 
 Note: anyascii only ensures an approximation and is likely not the correct pronunciation
@@ -132,7 +125,7 @@ toARPABET('Hello world!')  // "HH AX L OW1 W ER1 L D!"
 import { addPronunciation } from 'phonemize'
 
 // Add custom word pronunciation
-addPronunciation('myword', 'M1 AY W ER D')
+addPronunciation('myword', 'ˈmaɪwərd') // Can be IPA or ARPABET
 console.log(phonemize('myword'))  // "ˈmaɪwərd"
 ```
 
