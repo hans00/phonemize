@@ -6,6 +6,9 @@ const testCases = [
   { word: 'phonemizer', expected: 'ˈfoʊnˈmaɪzɝ' },
   { word: 'knology', expected: 'ˈnoʊloʊɡj' },
   { word: 'syzygy', expected: 'ˈsjzjɡj' },
+  { word: 'aitch', expected: 'eɪtʃ' },
+  { word: 'anachronism', expected: 'əˈnækɹəˌnɪzəm' },
+  { word: 'bramble', expected: 'ˈbɹæmbəɫ' },
 ];
 
 describe('Rule-based G2P for OOV words', () => {
