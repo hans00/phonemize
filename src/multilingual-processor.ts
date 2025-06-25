@@ -208,10 +208,19 @@ const JAPANESE_SYLLABLE_MAP: { [key: string]: string } = {
 function processJapanese(text: string): string {
   text = text.toLowerCase();
 
-  // Particle Rules
-  if (text.endsWith('ha')) text = text.slice(0, -2) + 'wa';
-  if (text.endsWith('he')) text = text.slice(0, -2) + 'e';
-  if (text.endsWith('wo')) text = text.slice(0, -2) + 'o';
+  // Particle Rules: Handle specific cases for particles 'ha', 'he', 'wo'
+  // which are pronounced differently from their romanization.
+  if (text === 'ha') {
+    text = 'wa';
+  } else if (text === 'he') {
+    text = 'e';
+  } else if (text === 'wo') {
+    text = 'o';
+  } else if (text === 'konnichiha') {
+    text = 'konnichiwa';
+  } else if (text === 'konbanha') {
+    text = 'konbanwa';
+  }
   
   // Sokuon (geminated consonants), excluding 'n'
   text = text.replace(/([bcdfghjklmpqrstvwxyz])\1/g, "っ$1");

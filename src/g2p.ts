@@ -32,7 +32,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^wr/, "ɹ"],
   // Common digraphs
   [/^ch/, "tʃ"],
-  [/^gh/, "f"], // as in "laugh"
+  [/^gh/, "ɡ"], // as in "ghost"
   [/^ph/, "f"],
   [/^sh/, "ʃ"],
   [/^th/, "θ"], // Unvoiced 'th' as a default
