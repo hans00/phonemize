@@ -4,7 +4,7 @@ import { phonemize, toARPABET, toIPA, toZhuyin, addPronunciation, Tokenizer } fr
 describe('Index', function() {
   it('Work Fine', function() {
     expect(phonemize('Hello world!')).to.be.equal('həˈɫoʊ ˈwɝɫd!')
-    expect(phonemize('this is an apple.')).to.be.equal('ˈðɪs ˈɪz ˈæn ˈæpəɫ.')
+    expect(phonemize('this is an apple.')).to.be.equal('ˈθiz ˈɪz ˈæn ˈæpəɫ.')
     expect(phonemize('John\'s package', true)).to.be.deep.equal([
       {
         "phoneme": "ˈdʒɑnz",

@@ -21,16 +21,49 @@ export interface HomographDict {
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
 const CONSONANTS = new Set("bcdfghjklmnpqrstvwxyz".split(""));
 
-// Rules for letter-to-phoneme conversion, organized by priority
+// Rules for letter-to-phoneme conversion.
+// This is now split into two parts: SUFFIX_RULES and PHONEME_RULES.
+
+// SUFFIX_RULES are applied to the whole syllable first. They must match the entire syllable.
+const SUFFIX_RULES: Array<[RegExp, string]> = [
+  [/^eye$/, 'aɪ'],            // "eye" as a word/morpheme
+  [/^gical$/, 'dʒɪkəl'],
+  [/^tion$/, 'ʃən'],
+  [/^sion$/, 'ʒən'],
+  [/^ture$/, 'tʃɝ'],         // e.g., juncture, future
+  [/^sure$/, 'ʒɝ'],          // e.g., measure, pleasure
+  [/^ism$/, 'ɪzəm'],          // e.g., anachronism
+  [/^le$/, 'əl'],            // e.g., bramble
+  [/^able$/, 'əbəl'],
+  [/^ally$/, 'əli'],
+  [/^fully$/, 'fəli'],
+  [/^ness$/, 'nəs'],
+  [/^ment$/, 'mənt'],
+  [/^tes$/, "ts"],
+  [/^ria$/, "iə"],
+  [/^di$/, "dɪ"],
+  [/^ch$/, "k"],
+  [/^y$/, "i"],
+  [/^a$/, "ə"],
+];
+
+// PHONEME_RULES are applied iteratively to the beginning of the remaining syllable part.
+// ALL rules here MUST start with '^'.
 const PHONEME_RULES: Array<[RegExp, string]> = [
-  // --- Priority 1: Invariant and complex patterns ---
+  // --- Priority 1: Special cases and complex patterns ---
+  [/^character/, 'kæɹəktɝ'], // special case for 'ch'
+  [/^school/, 'skul'],      // another 'ch' exception
+
   // Silent letters at the beginning of words
   [/^pn/, "n"], // pneumonia
   [/^ps/, "s"], // psychology
   [/^kn/, "n"],
   [/^gn/, "n"],
   [/^wr/, "ɹ"],
+
   // Common digraphs
+  [/^ck/, 'k'],
+  [/^tsch/, 'tʃ'],
   [/^ch/, "tʃ"],
   [/^gh/, "ɡ"], // as in "ghost"
   [/^ph/, "f"],
@@ -40,7 +73,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^wh/, "w"],
   [/^qu/, "kw"],
   [/^ng/, "ŋ"],
-  [/^sch/, "sk"], // as in "school"
+  [/^sch/, "sk"], // as in "school" - Note: conflicts with school special case, but OK due to order.
 
   // --- Vowel Teams / Digraphs ---
   [/^ie/, "i"],   // as in "piece"
@@ -125,7 +158,7 @@ export class G2PModel {
     return false;
   }
 
-  private wellKnown(word: string, pos?: string): string | undefined {
+  private wellKnown(word: string, pos?: string, skipMorphology = false): string | undefined {
     if (this.homographs[word] && pos) {
       const homograph = this.homographs[word].find((entry: HomographEntry) =>
         this.matchPos(entry, pos),
@@ -138,6 +171,9 @@ export class G2PModel {
       return this.dictionary[word];
     }
 
+    if (skipMorphology) {
+      return undefined;
+    }
     // Morphological analysis for common endings
     return this.tryMorphologicalAnalysis(word);
   }
@@ -193,6 +229,57 @@ export class G2PModel {
       if (basePron) {
         return basePron + 'ɪŋ';
       }
+      // Handle cases like "running" -> "run"
+      const baseShort = lowerWord.slice(0, -4);
+      if (lowerWord.length > 4 && lowerWord.slice(-4, -3) === baseShort.slice(-1)) {
+        const basePronShort = this.wellKnown(baseShort);
+        if (basePronShort) {
+            return basePronShort + 'ɪŋ';
+        }
+      }
+    }
+    
+    // Try -ally / -ly adverbs
+    if (lowerWord.endsWith('ally') && lowerWord.length > 4) {
+      // e.g., globally -> global
+      const base = lowerWord.slice(0, -2);
+      // Try to get pronunciation of the base word, either from dictionary or by recursive prediction.
+      const basePron = this.wellKnown(base, undefined, true) || this.predict(base, undefined, undefined, false);
+      if (basePron) {
+        // basePron for global is ˈɡloʊbəl. Just add 'i'
+        return basePron.replace(/ə$/, '') + 'əli';
+      }
+    }
+    if (lowerWord.endsWith('ly') && !lowerWord.endsWith('ally') && lowerWord.length > 2) {
+      // e.g., "quickly" -> "quick"
+      const base = lowerWord.slice(0, -2);
+      const basePron = this.wellKnown(base, undefined, true) || this.predict(base, undefined, undefined, false);
+      if (basePron) {
+        return basePron + 'li';
+      }
+    }
+    
+    // Try -able suffix
+    if (lowerWord.endsWith('able') && lowerWord.length > 5) {
+      let base = lowerWord.slice(0, -4);
+      let basePron = this.wellKnown(base, undefined, true) || this.predict(base, undefined, undefined, false);
+      if (basePron) {
+        return basePron.replace(/ə$/, '') + 'əbəl';
+      }
+      base = lowerWord.slice(0, -3);
+      basePron = this.wellKnown(base, undefined, true) || this.predict(base, undefined, undefined, false);
+      if (basePron) {
+        return basePron + 'əbəl';
+      }
+    }
+    
+    // Try -logy suffix
+    if (lowerWord.endsWith('logy') && lowerWord.length > 4) {
+      const base = lowerWord.slice(0, -4);
+      const basePron = this.wellKnown(base, undefined, true) || this.predict(base, undefined, undefined, false);
+      if (basePron) {
+        return basePron.replace(/ə$/, '') + 'lədʒi';
+      }
     }
     
     return undefined;
@@ -222,68 +309,121 @@ export class G2PModel {
   }
 
   private syllabify(word: string): string[] {
+    // A more linguistically informed syllabification algorithm based on Maximal Onset Principle.
+    // This is a complex problem, and this implementation is a heuristic approach.
+    
+    // 0. Pre-handle exceptions and very short words
     if (word.length <= 3) {
       return [word];
     }
-  
+
+    // 1. Define a set of valid English onsets (consonant clusters that can start a syllable).
+    const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr', 'dw', 'f', 'fl', 'fr', 'g', 'gl', 'gr', 'gu', 'h', 'j', 'k', 'kl', 'kn', 'kr', 'l', 'm', 'n', 'p', 'ph', 'pl', 'pr', 'ps', 'qu', 'r', 'rh', 's', 'sc', 'sch', 'scr', 'sh', 'sk', 'sl', 'sm', 'sn', 'sp', 'sph', 'spl', 'spr', 'st', 'str', 'sv', 'sw', 't', 'th', 'thr', 'tr', 'ts', 'tw', 'v', 'w', 'wh', 'wr', 'x', 'y', 'z']);
+
+    const chars = word.toLowerCase().split('');
     const syllables: string[] = [];
-    let currentSyllable = "";
-    let chars = word.split('');
-  
-    for (let i = 0; i < chars.length; i++) {
-        let char = chars[i];
-        currentSyllable += char;
-  
-        if (VOWELS.has(char)) {
-            let next1 = chars[i + 1];
-            let next2 = chars[i + 2];
-            let next3 = chars[i + 3];
-  
-            // VCV pattern -> V-CV (e.g., ro-bot)
-            if (CONSONANTS.has(next1) && VOWELS.has(next2)) {
-                syllables.push(currentSyllable);
-                currentSyllable = "";
-            } 
-            // VCCV pattern -> VC-CV (e.g., rab-bit)
-            else if (CONSONANTS.has(next1) && CONSONANTS.has(next2) && VOWELS.has(next3)) {
-                // Keep common consonant digraphs together in the second syllable
-                const digraphs = new Set(['bl', 'br', 'cl', 'cr', 'dr', 'fl', 'fr', 'gl', 'gr', 'pl', 'pr', 'sc', 'sk', 'sl', 'sm', 'sn', 'sp', 'st', 'sw', 'th', 'tr', 'tw', 'wh', 'wr']);
-                if (!digraphs.has(next1 + next2)) {
-                    currentSyllable += next1;
-                    syllables.push(currentSyllable);
-                    currentSyllable = "";
-                    i++; // Skip next consonant as it's already added
-                }
+    let currentSyllable = '';
+
+    // 2. Iterate through the word, identifying vowel and consonant clusters.
+    let i = 0;
+    while (i < chars.length) {
+        const i_before = i;
+        // Find a vowel cluster (nucleus)
+        let nucleus = '';
+        while (i < chars.length && VOWELS.has(chars[i])) {
+            nucleus += chars[i];
+            i++;
+        }
+
+        // Find the following consonant cluster (coda + next onset)
+        let consonants = '';
+        while (i < chars.length && CONSONANTS.has(chars[i])) {
+            consonants += chars[i];
+            i++;
+        }
+
+        // If 'i' has not advanced, it means we hit a character that is neither
+        // a vowel nor a consonant (like an apostrophe).
+        if (i === i_before) {
+            // Append the character to the current syllable and advance the pointer.
+            if (syllables.length > 0 && currentSyllable.length === 0) {
+                 syllables[syllables.length - 1] += chars[i];
+            } else {
+                currentSyllable += chars[i];
             }
+            i++;
+            continue;
+        }
+
+        if (nucleus) { // Found a vowel nucleus
+            if (consonants.length === 0) { // Word ends in a vowel
+                currentSyllable += nucleus;
+                syllables.push(currentSyllable);
+                currentSyllable = '';
+            } else if (consonants.length === 1) { // VCV pattern, consonant starts next syllable
+                currentSyllable += nucleus;
+                syllables.push(currentSyllable);
+                currentSyllable = consonants;
+            } else { // VCCV, VCCCV, etc. patterns
+                let splitPoint = 0;
+                while (splitPoint < consonants.length) {
+                  const onsetCandidate = consonants.substring(splitPoint);
+                  if (VALID_ONSETS.has(onsetCandidate)) {
+                    break;
+                  }
+                  splitPoint++;
+                }
+
+                const coda = consonants.substring(0, splitPoint);
+                const nextOnset = consonants.substring(splitPoint);
+                
+                currentSyllable += nucleus + coda;
+                syllables.push(currentSyllable);
+                currentSyllable = nextOnset;
+            }
+        } else { // Word starts with a consonant cluster
+            currentSyllable += consonants;
         }
     }
-    if (currentSyllable) {
+     if (currentSyllable) {
         syllables.push(currentSyllable);
     }
-  
-    // Post-process to merge single-letter consonant syllables
-    if (syllables.length > 1) {
-        for (let i = syllables.length - 1; i > 0; i--) {
-            if (syllables[i].length === 1 && CONSONANTS.has(syllables[i])) {
-                syllables[i - 1] += syllables[i];
-                syllables.splice(i, 1);
-            }
+    
+    // Post-processing: Handle silent 'e'
+    // If the last syllable is a lone 'e' and the word is longer than one syllable,
+    // merge it with the previous syllable.
+    if (syllables.length > 1 && syllables[syllables.length - 1] === 'e') {
+        const last = syllables.pop();
+        if (syllables.length > 0) {
+            syllables[syllables.length - 1] += last;
         }
     }
 
-    // Handle silent 'e' at the end, keep it with the last syllable
-    if (syllables.length > 1 && syllables[syllables.length - 1] === 'e') {
-        let lastSyllable = syllables.splice(syllables.length - 2, 2).join('');
-        syllables.push(lastSyllable);
+    // Post-processing: Merge any leftover single-consonant syllables into the previous one.
+    // This can happen with words like "apple" -> ap-ple, where current logic might give a-p-ple
+     for (let j = syllables.length - 1; j > 0; j--) {
+        if (syllables[j].split('').every(c => CONSONANTS.has(c))) {
+             if (syllables[j-1]) {
+                syllables[j - 1] += syllables[j];
+                syllables.splice(j, 1);
+             }
+        }
     }
-    
-    return syllables.filter(s => s.length > 0);
+
+    return syllables.filter(s => s && s.length > 0);
   }
 
   private syllableToIPA(syllable: string, isLastSyllable: boolean): string {
     let phonemes: string[] = [];
     let remaining = syllable;
   
+    // New, corrected logic: Check for a full syllable suffix match first, *before* any modifications.
+    for (const [pattern, ipa] of SUFFIX_RULES) {
+      if (remaining.match(pattern)) {
+        return ipa;
+      }
+    }
+
     // Handle doubled consonants by only processing the first one.
     // This is a simplification. e.g., 'buggie' -> 'bugi' not 'buggi'
     remaining = remaining.replace(/([b-df-hj-np-tv-z])\1/g, '$1');
@@ -294,6 +434,7 @@ export class G2PModel {
         remaining = syllable.slice(0, -1);
     }
 
+    // This loop is now for non-suffix syllables.
     while(remaining.length > 0) {
         let matchFound = false;
         for (const [pattern, ipa] of PHONEME_RULES) {
@@ -339,15 +480,25 @@ export class G2PModel {
     word: string,
     pos?: string,
     detectedLanguage?: string,
+    disableDict?: boolean,
   ): string {
     const lowerWord = word.toLowerCase();
-    // Priority 1: Direct lookups (Dictionary, Homographs, Morphology)
-    const knownPronunciation = this.wellKnown(lowerWord, pos);
-    if (knownPronunciation) {
-      return knownPronunciation;
+
+    // Priority 1: Morphological analysis. This is rule-based and should run even if dict lookup is disabled for G2P part.
+    const morphPron = this.tryMorphologicalAnalysis(lowerWord);
+    if (morphPron) {
+        return morphPron;
     }
 
-    // Priority 2: Language-specific G2P
+    // Priority 2: Direct lookups (Dictionary, Homographs)
+    if (!disableDict) {
+      const knownPronunciation = this.wellKnown(lowerWord, pos, true); // Skip morphology here to avoid re-running
+      if (knownPronunciation) {
+        return knownPronunciation;
+      }
+    }
+
+    // Priority 3: Language-specific G2P
     if (detectedLanguage === 'zh' || chineseG2P.isChineseText(word)) {
       const chineseResult = chineseG2P.textToIPA(word);
       if (chineseResult) return chineseResult;
@@ -357,7 +508,7 @@ export class G2PModel {
       if (multilingualResult) return multilingualResult;
     }
 
-    // Priority 3: Attempt to decompose the word into known dictionary parts
+    // Priority 4: Attempt to decompose the word into known dictionary parts
     const decomposition = this.tryDecomposition(lowerWord);
     if (decomposition && decomposition.length > 1) {
         const pronunciations = decomposition.map(part => this.wellKnown(part)?.replace(/ˈ/g, ''));
@@ -367,7 +518,7 @@ export class G2PModel {
         }
     }
 
-    // Priority 4: Handle acronyms with or without periods, e.g., "TTS" or "M.L."
+    // Priority 5: Handle acronyms with or without periods, e.g., "TTS" or "M.L."
     const acronymMatch = word.match(/^([A-Z]\.?){2,8}$/);
     if (acronymMatch) {
       const containsPeriods = word.includes('.');
@@ -384,7 +535,7 @@ export class G2PModel {
       }
     }
 
-    // Priority 5: Syllabification and rule-based G2P for unknown English words
+    // Priority 6: Syllabification and rule-based G2P for unknown English words
     const syllables = this.syllabify(lowerWord);
     const result = syllables.map((s, i) => this.syllableToIPA(s, i === syllables.length - 1)).join("");
 

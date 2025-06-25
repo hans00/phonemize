@@ -5,3 +5,4 @@ data/*
 dist/
 coverage/
 .nyc_output/
+*report.txt
