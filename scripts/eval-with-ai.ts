@@ -68,11 +68,18 @@ ${result}
 ===
 
 Please give me detailed feedback on the phonetic transcription under 400 words.
-And give me a score between 0 and 100.`;
+And give me a score between 0 and 100.
+P.S. The score should at the end of the response and formatted as "Score: <score>".`;
 
 openai.chat.completions.create({
   model: "o3-mini",
   messages: [{ role: "user", content: score_prompt }],
 }).then(res => {
-  console.log(res.choices[0].message.content);
+  const content = res.choices[0].message.content;
+  console.log(content + "\n");
+
+//   if (content) {
+//     const score = content.match(/Score: (\d+)$/)?.[1];
+//     console.log(`Score: ${score}`);
+//   }
 });
