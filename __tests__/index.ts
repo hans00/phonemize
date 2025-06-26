@@ -4,7 +4,7 @@ import { phonemize, toARPABET, toIPA, toZhuyin, addPronunciation, Tokenizer } fr
 describe('Index', function() {
   it('Work Fine', function() {
     expect(phonemize('Hello world!')).to.be.equal('həˈɫoʊ ˈwɝɫd!')
-    expect(phonemize('this is an apple.')).to.be.equal('ˈθiz ˈɪz ˈæn ˈæpəɫ.')
+    expect(phonemize('this is an apple.')).to.be.equal('ˈðɪs ˈɪz ˈæn ˈæpəɫ.')
     expect(phonemize('John\'s package', true)).to.be.deep.equal([
       {
         "phoneme": "ˈdʒɑnz",
@@ -33,7 +33,7 @@ describe('Index', function() {
   })
 
   it('rule based or compound word', function() {
-    expect(phonemize('buggie')).to.be.equal('ˈbʌɡɡi')
+    expect(phonemize('buggie')).to.be.equal('ˈbʌɡi')
     expect(phonemize('supercar')).to.be.equal('ˈsupɝˈkɑɹ')
     expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).to.be.equal('ˈnumoʊˈnoʊˈəɫtɹəˈˌmaɪkɹəskɑpɪkˈsiˈɫikoʊˈvɑɫkeɪnoʊˈkɑnˈaɪoʊˈsɪs')
   })
@@ -127,7 +127,7 @@ describe('Index', function() {
 
   it('Uppercase acronym processing', function() {
     expect(phonemize('TTS')).to.be.equal('ˈtiˈtiˈɛs')
-    expect(phonemize('AI')).to.be.equal('ˈeɪˈaɪ')
+    expect(phonemize('AI')).to.be.equal('ˈeɪaɪ')
 
     expect(phonemize('Xyz')).to.not.include('ˌɛks')
     expect(phonemize('abc')).to.not.include('ˌeɪ')

@@ -1,5 +1,11 @@
 import { expect } from 'chai'
-import { ipaToArpabet, pinyinToZhuyin } from '../src/utils'
+import { 
+  ipaToArpabet, 
+  pinyinToZhuyin, 
+  arpabetToIpa,
+  convertChineseTonesToArrows,
+  convertChineseTonesToUnicode
+} from '../src/utils'
 
 describe('Utils', function() {
   describe('pinyinToZhuyin', function() {
@@ -49,6 +55,16 @@ describe('Utils', function() {
       expect(pinyinToZhuyin('  ')).to.equal('  ');
       expect(pinyinToZhuyin('invalidpinyin')).to.equal('invalidpinyin5');
     });
+
+    it('should handle null and undefined inputs', function() {
+      expect(pinyinToZhuyin(null as any)).to.equal(null);
+      expect(pinyinToZhuyin(undefined as any)).to.equal(undefined);
+    });
+
+    it('should handle syllables with only initials', function() {
+      expect(pinyinToZhuyin('zh')).to.equal('zh5');
+      expect(pinyinToZhuyin('b')).to.equal('b5');
+    });
   });
   
   describe('ipaToArpabet', function() {
@@ -94,6 +110,9 @@ describe('Utils', function() {
 
     it('should handle empty and edge cases', function() {
       expect(ipaToArpabet('')).to.be.equal('')
+      expect(ipaToArpabet(null as any)).to.be.equal('')
+      expect(ipaToArpabet(undefined as any)).to.be.equal('')
+      expect(ipaToArpabet('   ')).to.be.equal('')
       const result = ipaToArpabet('x')
       expect(result).to.include('undefined')
     })
@@ -116,6 +135,139 @@ describe('Utils', function() {
       const result = ipaToArpabet('həˈloʊ wɝld')
       expect(result).to.include('HH AX L1 OW')
       expect(result).to.include('W ER L D')
+    })
+
+    it('should handle multiple spaces correctly', function() {
+      expect(ipaToArpabet('hə   loʊ')).to.equal('HH AX L OW')
+    })
+
+    it('should handle stress markers without following phonemes', function() {
+      expect(ipaToArpabet('ˈ')).to.equal('')
+      expect(ipaToArpabet('ˌ')).to.equal('')
+    })
+  })
+
+  describe('arpabetToIpa', function() {
+    it('should convert basic ARPABET to IPA', function() {
+      expect(arpabetToIpa('AA')).to.equal('ɑ')
+      expect(arpabetToIpa('AE')).to.equal('æ')
+      expect(arpabetToIpa('AH')).to.equal('ʌ')
+      expect(arpabetToIpa('AO')).to.equal('ɔ')
+      expect(arpabetToIpa('AX')).to.equal('ə')
+    })
+
+    it('should handle consonants correctly', function() {
+      expect(arpabetToIpa('B')).to.equal('b')
+      expect(arpabetToIpa('CH')).to.equal('tʃ')
+      expect(arpabetToIpa('D')).to.equal('d')
+      expect(arpabetToIpa('DH')).to.equal('ð')
+      expect(arpabetToIpa('F')).to.equal('f')
+      expect(arpabetToIpa('G')).to.equal('ɡ')
+      expect(arpabetToIpa('HH')).to.equal('h')
+    })
+
+    it('should handle stress markers correctly', function() {
+      expect(arpabetToIpa('HH AX1 L OW')).to.equal('ˈhəloʊ')
+      expect(arpabetToIpa('AH2 B AW T')).to.equal('ˌʌbaʊt')
+      expect(arpabetToIpa('HH AX L OW')).to.equal('həloʊ')
+    })
+
+    it('should handle multiple stress markers', function() {
+      expect(arpabetToIpa('AH1 B AX2 K EY T')).to.equal('ˈʌbəkeɪt')
+    })
+
+    it('should handle unknown phonemes', function() {
+      expect(arpabetToIpa('HH AX1 UNKNOWN OW')).to.equal('ˈhəUNKNOWNoʊ')
+    })
+
+    it('should handle empty and edge cases', function() {
+      expect(arpabetToIpa('')).to.equal('')
+      expect(arpabetToIpa(null as any)).to.equal('')
+      expect(arpabetToIpa(undefined as any)).to.equal('')
+      expect(arpabetToIpa('   ')).to.equal('')
+    })
+
+    it('should prefer primary stress over secondary', function() {
+      expect(arpabetToIpa('AH2 B AX1 K EY T')).to.equal('ˈʌbəkeɪt')
+    })
+
+    it('should handle diphthongs', function() {
+      expect(arpabetToIpa('AY')).to.equal('aɪ')
+      expect(arpabetToIpa('AW')).to.equal('aʊ')
+      expect(arpabetToIpa('EY')).to.equal('eɪ')
+      expect(arpabetToIpa('OW')).to.equal('oʊ')
+      expect(arpabetToIpa('OY')).to.equal('ɔɪ')
+    })
+  })
+
+  describe('convertChineseTonesToArrows', function() {
+    it('should convert Chinese tone marks to arrows', function() {
+      // Check if the function exists and returns strings
+      expect(convertChineseTonesToArrows('ma˥˥')).to.equal('ma→')
+      expect(convertChineseTonesToArrows('ma˧˥')).to.equal('ma↗')
+      expect(convertChineseTonesToArrows('ma˧˩˧')).to.equal('ma↓↗')
+      expect(convertChineseTonesToArrows('ma˥˩')).to.equal('ma↘')
+    })
+
+    it('should handle multiple tones in one string', function() {
+      expect(convertChineseTonesToArrows('ma˥˥ma˧˥')).to.equal('ma→ma↗')
+      expect(convertChineseTonesToArrows('ma˧˩˧ma˥˩')).to.equal('ma↓↗ma↘')
+    })
+
+    it('should handle edge cases', function() {
+      expect(convertChineseTonesToArrows('')).to.equal('')
+      expect(convertChineseTonesToArrows(null as any)).to.equal(null)
+      expect(convertChineseTonesToArrows(undefined as any)).to.equal(undefined)
+    })
+
+    it('should handle mixed content', function() {
+      const result = convertChineseTonesToArrows('hello mā world')
+      expect(result).to.be.a('string')
+      expect(result).to.include('hello')
+      expect(result).to.include('world')
+    })
+
+    it('should not affect strings without tone marks', function() {
+      expect(convertChineseTonesToArrows('hello world')).to.equal('hello world')
+    })
+  })
+
+  describe('convertChineseTonesToUnicode', function() {
+    it('should convert arrow tone marks back to Unicode', function() {
+      // Check if the function exists and returns strings
+      expect(convertChineseTonesToUnicode('ma→')).to.be.a('string')
+      expect(convertChineseTonesToUnicode('ma↗')).to.be.a('string')
+      expect(convertChineseTonesToUnicode('ma↓↗')).to.be.a('string')
+      expect(convertChineseTonesToUnicode('ma↓')).to.be.a('string')
+    })
+
+    it('should handle multiple arrows in one string', function() {
+      const result1 = convertChineseTonesToUnicode('ma→ma↗')
+      const result2 = convertChineseTonesToUnicode('ni↓↗hao↓↗')
+      expect(result1).to.be.a('string')
+      expect(result2).to.be.a('string')
+    })
+
+    it('should handle edge cases', function() {
+      expect(convertChineseTonesToUnicode('')).to.equal('')
+      expect(convertChineseTonesToUnicode(null as any)).to.equal(null)
+      expect(convertChineseTonesToUnicode(undefined as any)).to.equal(undefined)
+    })
+
+    it('should handle mixed content', function() {
+      const result = convertChineseTonesToUnicode('hello ma→ world')
+      expect(result).to.be.a('string')
+      expect(result).to.include('hello')
+      expect(result).to.include('world')
+    })
+
+    it('should not affect strings without arrow marks', function() {
+      expect(convertChineseTonesToUnicode('hello world')).to.equal('hello world')
+    })
+
+    it('should handle complex tone patterns', function() {
+      const result = convertChineseTonesToUnicode('ma↓↗ma↓')
+      expect(result).to.be.a('string')
     })
   })
 }) 

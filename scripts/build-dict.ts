@@ -2,7 +2,6 @@ import * as fs from "fs";
 import * as path from "path";
 import * as json5 from "json5";
 import { arpabetToIpa } from "../src/utils";
-import { ARPABET_TO_IPA, IPA_STRESS_MAP } from "../src/consts";
 
 interface DictEntry {
   [word: string]: string;
@@ -51,14 +50,8 @@ function loadCmuDict(content: string): DictEntry {
     const arpaPhones = phonesStr.trim().split(/\s+/);
     const arpaPhonemes = arpaPhones.join(" ");
 
-    // Convert ARPABET to IPA
-    const ipaPhonemes = arpaPhonemes.split(' ').map(phone => {
-      const stress = phone.match(/[012]$/)?.[0];
-      const phoneWithoutStress = phone.replace(/[012]$/, "");
-      const ipa = ARPABET_TO_IPA[phoneWithoutStress as keyof typeof ARPABET_TO_IPA];
-      if (!ipa) return phone; // fallback to original if no mapping
-      return stress ? `${IPA_STRESS_MAP[stress]}${ipa}` : ipa;
-    }).join('');
+    // Convert ARPABET to IPA using the unified function
+    const ipaPhonemes = arpabetToIpa(arpaPhonemes);
 
     arpaDict[word.toLowerCase()] = ipaPhonemes;
   }

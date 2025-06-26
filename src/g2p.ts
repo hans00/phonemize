@@ -7,6 +7,8 @@ import {
 import { arpabetToIpa } from "./utils";
 import { chineseG2P } from "./zh-g2p";
 
+// --- Type Definitions ---
+
 export interface HomographEntry {
   pronunciation: string;
   pos: string;
@@ -21,120 +23,205 @@ export interface HomographDict {
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
 const CONSONANTS = new Set("bcdfghjklmnpqrstvwxyz".split(""));
 
-// Rules for letter-to-phoneme conversion.
-// This is now split into two parts: SUFFIX_RULES and PHONEME_RULES.
+// Valid English onsets (consonant clusters that can start a syllable)
+const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr', 'dw', 'f', 'fl', 'fr', 'g', 'gl', 'gr', 'gu', 'h', 'j', 'k', 'kl', 'kn', 'kr', 'l', 'm', 'n', 'p', 'ph', 'pl', 'pr', 'ps', 'qu', 'r', 'rh', 's', 'sc', 'sch', 'scr', 'sh', 'sk', 'sl', 'sm', 'sn', 'sp', 'sph', 'spl', 'spr', 'st', 'str', 'sv', 'sw', 't', 'th', 'thr', 'tr', 'ts', 'tw', 'v', 'w', 'wh', 'wr', 'x', 'y', 'z']);
 
-// SUFFIX_RULES are applied to the whole syllable first. They must match the entire syllable.
-const SUFFIX_RULES: Array<[RegExp, string]> = [
-  [/^eye$/, 'aɪ'],            // "eye" as a word/morpheme
-  [/^gical$/, 'dʒɪkəl'],
-  [/^tion$/, 'ʃən'],
-  [/^sion$/, 'ʒən'],
-  [/^ture$/, 'tʃɝ'],         // e.g., juncture, future
-  [/^sure$/, 'ʒɝ'],          // e.g., measure, pleasure
-  [/^ism$/, 'ɪzəm'],          // e.g., anachronism
-  [/^le$/, 'əl'],            // e.g., bramble
-  [/^able$/, 'əbəl'],
-  [/^ally$/, 'əli'],
-  [/^fully$/, 'fəli'],
-  [/^ness$/, 'nəs'],
-  [/^ment$/, 'mənt'],
-  [/^tes$/, "ts"],
-  [/^ria$/, "iə"],
-  [/^di$/, "dɪ"],
-  [/^ch$/, "k"],
-  [/^y$/, "i"],
-  [/^a$/, "ə"],
+// --- Phoneme Rules ---
+
+// Improved stress-sensitive suffix rules
+const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
+  // [pattern, IPA, attracts_stress]
+  [/^tion$/, 'ʃən', false],        // -tion is always unstressed
+  [/^sion$/, 'ʒən', false],        // -sion is always unstressed  
+  [/^cial$/, 'ʃəl', false],        // -cial (commercial, social)
+  [/^tial$/, 'ʃəl', false],        // -tial (potential, partial)
+  [/^ture$/, 'tʃɚ', false],        // -ture (future, nature)
+  [/^sure$/, 'ʒɚ', false],         // -sure (measure, pleasure)
+  [/^geous$/, 'dʒəs', false],      // -geous (gorgeous, advantageous)
+  [/^cious$/, 'ʃəs', false],       // -cious (delicious, precious)
+  [/^tious$/, 'ʃəs', false],       // -tious (ambitious, nutritious)
+  [/^eous$/, 'iəs', false],        // -eous (aneous, miscellaneous)
+  [/^ous$/, 'əs', false],          // -ous (famous, nervous)
+  [/^ious$/, 'iəs', false],        // -ious (various, serious)
+  [/^uous$/, 'juəs', false],       // -uous (continuous, ambiguous)
+  [/^able$/, 'əbəl', false],       // -able
+  [/^ible$/, 'əbəl', false],       // -ible  
+  [/^ance$/, 'əns', false],        // -ance (dominance, balance)
+  [/^ence$/, 'əns', false],        // -ence (presence, silence)
+  [/^ness$/, 'nəs', false],        // -ness
+  [/^ment$/, 'mənt', false],       // -ment
+  [/^less$/, 'ləs', false],        // -less
+  [/^ful$/, 'fəl', false],         // -ful
+  [/^ly$/, 'li', false],           // -ly
+  [/^er$/, 'ɚ', false],            // -er (comparative, agentive)
+  [/^ers$/, 'ɚz', false],          // -ers (plural of -er)
+  [/^est$/, 'əst', false],         // -est (superlative)
+  [/^ing$/, 'ɪŋ', false],          // -ing
+  [/^ed$/, 'd', false],            // -ed (past tense base)
+  [/^es$/, 'z', false],            // -es (plural/3rd person)
+  [/^s$/, 'z', false],             // -s (plural/3rd person)
+  [/^age$/, 'ɪdʒ', false],         // -age (package, marriage)
+  [/^ive$/, 'ɪv', false],          // -ive (active, passive)
+  [/^ism$/, 'ɪzəm', false],        // -ism
+  [/^ist$/, 'ɪst', false],         // -ist  
+  [/^ity$/, 'əti', false],         // -ity
+  [/^al$/, 'əl', false],           // -al (normal, final)
+  [/^ic$/, 'ɪk', true],            // -ic attracts stress (economic, systemic)
+  [/^ics$/, 'ɪks', true],          // -ics attracts stress (mathematics, politics)
+  [/^lity$/, 'ləti', false],       // -lity (quality, reality)  
+  [/^ity$/, 'əti', false],         // -ity (other cases)
+  [/^ty$/, 'ti', false],           // -ty (empty, sixty)
+  [/^ary$/, 'ɛri', false],         // -ary (library, military)  
+  [/^ory$/, 'ɔri', false],         // -ory (history, category)
+  [/^ery$/, 'ɛri', false],         // -ery (bakery, gallery)
+  [/^ry$/, 'ri', false],           // -ry (hungry, angry)
+  [/^y$/, 'i', false],             // -y
+  [/^le$/, 'əl', false],           // -le (simple, table)
 ];
 
-// PHONEME_RULES are applied iteratively to the beginning of the remaining syllable part.
-// ALL rules here MUST start with '^'.
+// Context-sensitive phoneme rules with improved accuracy
 const PHONEME_RULES: Array<[RegExp, string]> = [
-  // --- Priority 1: Special cases and complex patterns ---
-  [/^character/, 'kæɹəktɝ'], // special case for 'ch'
-  [/^school/, 'skul'],      // another 'ch' exception
-
-  // Silent letters at the beginning of words
-  [/^pn/, "n"], // pneumonia
-  [/^ps/, "s"], // psychology
-  [/^kn/, "n"],
-  [/^gn/, "n"],
-  [/^wr/, "ɹ"],
-
-  // Common digraphs
-  [/^ck/, 'k'],
-  [/^tsch/, 'tʃ'],
-  [/^ch/, "tʃ"],
-  [/^gh/, "ɡ"], // as in "ghost"
-  [/^ph/, "f"],
-  [/^sh/, "ʃ"],
-  [/^th/, "θ"], // Unvoiced 'th' as a default
-  [/^tch/, "tʃ"],
-  [/^wh/, "w"],
-  [/^qu/, "kw"],
-  [/^ng/, "ŋ"],
-  [/^sch/, "sk"], // as in "school" - Note: conflicts with school special case, but OK due to order.
-
-  // --- Vowel Teams / Digraphs ---
-  [/^ie/, "i"],   // as in "piece"
-  [/^ei/, "eɪ"],  // as in "vein"
-  [/^ey/, "i"],   // as in "key"
-  [/^ay/, "eɪ"],
-  [/^ai/, "eɪ"],
-  [/^ea/, "i"],   // as in "read" (can also be /ɛ/)
-  [/^ee/, "i"],
-  [/^eu/, "ju"],
-  [/^ew/, "ju"],
-  [/^oa/, "oʊ"],
-  [/^oi/, "ɔɪ"],
-  [/^oo/, "u"],   // as in "boot" (can also be /ʊ/)
-  [/^ou/, "aʊ"],  // as in "out"
-  [/^ow/, "aʊ"],  // as in "cow"
-  [/^oy/, "ɔɪ"],
-  [/^au/, "ɔ"],
-  [/^aw/, "ɔ"],
-  [/^augh/, "ɔ"],
-  [/^aught/, "ɔt"],
-
-  // --- R-controlled vowels ---
-  [/^ar/, "ɑɹ"],
-  [/^er/, "ɝ"],
-  [/^ir/, "ɝ"],
-  [/^or/, "ɔɹ"],
-  [/^ur/, "ɝ"],
-
-  // --- Context-dependent 'c' and 'g' ---
-  [/^c(?=[eiy])/, "s"], // soft c
-  // [/^g(?=[eiy])/, "dʒ"], // soft g - This rule is too broad and causes issues with words like 'buggie'.
-
-  // --- Basic Consonants ---
-  [/^b/, "b"],
-  [/^c/, "k"], // hard c
-  [/^d/, "d"],
-  [/^f/, "f"],
-  [/^g/, "ɡ"], // hard g
-  [/^h/, "h"],
-  [/^j/, "dʒ"],
-  [/^k/, "k"],
-  [/^l/, "l"],
-  [/^m/, "m"],
-  [/^n/, "n"],
-  [/^p/, "p"],
-  [/^r/, "ɹ"],
-  [/^s/, "s"],
-  [/^t/, "t"],
-  [/^v/, "v"],
-  [/^w/, "w"],
-  [/^x/, "ks"],
-  [/^y/, "j"], // as a consonant
-  [/^z/, "z"],
-
-  // --- Default Vowels (for closed syllables) ---
-  [/^a/, "æ"], // as in "cat"
-  [/^e/, "ɛ"], // as in "bed"
-  [/^i/, "ɪ"], // as in "sit"
-  [/^o/, "ɑ"], // as in "cot"
-  [/^u/, "ʌ"], // as in "cut"
+  // --- Prioritized complex patterns and exceptions ---
+  [/^character/, 'kæɹəktɚ'],      // exception for 'ch'
+  [/^school/, 'skul'],            // exception for 'sch'
+  [/^psychology/, 'saɪkɑlədʒi'],  // exception for 'ps'
+  [/^pneumonia/, 'numoʊnjə'],     // exception for 'pn'
+  
+  // Silent letter combinations
+  [/^pn/, 'n'],                   // pneumonia, pneumatic
+  [/^ps/, 's'],                   // psychology, psalm  
+  [/^pt/, 't'],                   // pterodactyl, ptomaine
+  [/^kn/, 'n'],                   // knee, knife, know
+  [/^gn/, 'n'],                   // gnome, gnat, gnu
+  [/^wr/, 'ɹ'],                   // write, wrong, wrist
+  [/^mb$/, 'm'],                  // thumb, lamb, comb (word-final)
+  [/^ght/, 't'],                  // right, might, fight
+  [/^lm/, 'm'],                   // palm, calm, psalm
+  
+  // Improved digraph handling
+  [/^tsch/, 'tʃ'],                // German loanwords
+  [/^sch/, 'sk'],                 // schema, schematic (not German)
+  [/^ch/, 'tʃ'],                  // chair, church, much
+  [/^ck/, 'k'],                   // back, pick, truck
+  [/^ggi/, 'ɡi'],                 // double g before i (buggie) - prevent soft g
+  [/^gge/, 'ɡe'],                 // double g before e (trigger) - prevent soft g
+  [/^ggy/, 'ɡi'],                 // double g before y (muggy) - prevent soft g
+  [/^gg/, 'ɡ'],                   // double g -> single g (buggy, trigger)
+  [/^dg/, 'dʒ'],                  // bridge, judge, edge
+  [/^gh/, 'ɡ'],                   // ghost, ghetto (at start)
+  [/^ph/, 'f'],                   // phone, graph, elephant
+  [/^sh/, 'ʃ'],                   // shoe, fish, wash
+  [/^thr/, 'θɹ'],                 // th + r cluster is always voiceless: through, three
+  [/^th(?=ink)/, 'θ'],            // voiceless: think, thinking
+  [/^th(?=ing$)/, 'θ'],           // voiceless: thing (complete word)
+  [/^th(?=ick)/, 'θ'],            // voiceless: thick, thicker
+  [/^th(?=orn)/, 'θ'],            // voiceless: thorn, thorny
+  [/^th(?=rough)/, 'θ'],          // voiceless: through (already handled above)
+  [/^th(?=[aeiou])/, 'ð'],        // voiced before vowels: the, this, that, they
+  [/^th/, 'θ'],                   // voiceless (default): path, math
+  [/^tch/, 'tʃ'],                 // watch, match, catch
+  [/^wh/, 'w'],                   // what, where, when
+  [/^qu/, 'kw'],                  // queen, quick, quote
+  [/^ng/, 'ŋ'],                   // sing, ring, king
+  
+  // Improved vowel teams with better quality distinctions
+  [/^oo/, 'u'],                   // boot, moon, cool, moose (long u)
+  [/^ou/, 'aʊ'],                  // house, about, cloud
+  [/^ow(?=[snmk])/, 'aʊ'],        // cow, down, brown (before consonants)
+  [/^ow/, 'oʊ'],                  // show, blow, know (at word end typically)
+  [/^oy/, 'ɔɪ'],                  // boy, toy, joy  
+  [/^oi/, 'ɔɪ'],                  // coin, join, voice
+  [/^au/, 'ɔ'],                   // caught, sauce, because
+  [/^aw/, 'ɔ'],                   // saw, law, draw
+  [/^ay/, 'eɪ'],                  // day, say, way
+  [/^ai/, 'eɪ'],                  // rain, main, paid
+  [/^ea/, 'i'],                   // read, seat, beat (default long)
+  [/^ee/, 'i'],                   // see, tree, free
+  [/^ie/, 'i'],                   // piece, field, believe  
+  [/^ei/, 'eɪ'],                  // vein, weight, eight
+  [/^ey/, 'eɪ'],                  // they, grey, key (at end)
+  [/^oa/, 'oʊ'],                  // boat, coat, road
+  [/^ross/, 'ɹoʊs'],              // gross -> groʊs
+  [/^oss/, 'ɔs'],                 // cross, loss (short o)
+  [/^eu/, 'ju'],                  // feud, neuter, Europe
+  [/^ew/, 'u'],                   // few, new, threw
+  [/^ue/, 'u'],                   // true, blue, glue (at end)
+  [/^ui/, 'u'],                   // fruit, suit, cruise
+  
+  // R-controlled vowels (rhotic)
+  [/^ar/, 'ɑɹ'],                  // car, far, start
+  [/^er/, 'ɚ'],                   // her, term, serve (use ɚ for unstressed)
+  [/^ir/, 'ɝ'],                   // bird, first, girl
+  [/^or/, 'ɔɹ'],                  // for, port, storm
+  [/^ur/, 'ɝ'],                   // fur, turn, hurt
+  [/^ear/, 'ɪɹ'],                 // hear, clear, year
+  [/^eer/, 'ɪɹ'],                 // deer, cheer, peer
+  [/^ier/, 'ɪɹ'],                 // pier, tier
+  [/^our/, 'aʊɹ'],                // hour, sour, flour
+  [/^air/, 'ɛɹ'],                 // hair, fair, chair
+  [/^are/, 'ɛɹ'],                 // care, share, prepare
+  
+  // Context-dependent consonants
+  [/^c(?=[eiy])/, 's'],           // soft c: cent, city, cycle
+  [/^g(?=[eiy])/, 'dʒ'],          // soft g: gem, gin, gym (but not all cases)
+  [/^s(?=[eiy])/, 's'],           // s before front vowels usually stays /s/
+  
+  // Improved consonant clusters
+  [/^spr/, 'spɹ'],                // spring, spray, spread
+  [/^str/, 'stɹ'],                // string, street, strong  
+  [/^scr/, 'skɹ'],                // screen, script, scratch
+  [/^spl/, 'spl'],                // split, splash, splice
+  [/^squ/, 'skw'],                // square, squash, squeeze
+  [/^thr/, 'θɹ'],                 // three, throw, through
+  [/^shr/, 'ʃɹ'],                 // shrimp, shrink, shrewd
+  [/^bl/, 'bl'],                  // blue, black, blow
+  [/^br/, 'bɹ'],                  // brown, bring, bread
+  [/^cl/, 'kl'],                  // clean, close, class
+  [/^cr/, 'kɹ'],                  // create, cross, cream
+  [/^dr/, 'dɹ'],                  // drive, dream, drop
+  [/^fl/, 'fl'],                  // fly, floor, flower
+  [/^fr/, 'fɹ'],                  // from, free, friend
+  [/^gl/, 'ɡl'],                  // glass, globe, glad
+  [/^gr/, 'ɡɹ'],                  // green, great, group
+  [/^pl/, 'pl'],                  // place, play, please
+  [/^pr/, 'pɹ'],                  // problem, provide, pretty
+  [/^sl/, 'sl'],                  // slow, sleep, slide
+  [/^sm/, 'sm'],                  // small, smile, smell
+  [/^sn/, 'sn'],                  // snow, snake, snack
+  [/^sp/, 'sp'],                  // speak, space, sport
+  [/^st/, 'st'],                  // start, stop, study
+  [/^sw/, 'sw'],                  // sweet, swim, switch
+  [/^tr/, 'tɹ'],                  // tree, try, travel
+  [/^tw/, 'tw'],                  // two, twelve, twenty
+  
+  // Basic consonants
+  [/^b/, 'b'],
+  [/^c/, 'k'],                    // hard c (default)
+  [/^d/, 'd'],
+  [/^f/, 'f'],
+  [/^g/, 'ɡ'],                    // hard g (default)
+  [/^h/, 'h'],
+  [/^j/, 'dʒ'],
+  [/^k/, 'k'],
+  [/^l/, 'l'],
+  [/^m/, 'm'],
+  [/^n/, 'n'],
+  [/^p/, 'p'],
+  [/^r/, 'ɹ'],                    // American English rhotic r
+  [/^s/, 's'],
+  [/^t/, 't'],
+  [/^v/, 'v'],
+  [/^w/, 'w'],
+  [/^x/, 'ks'],                   // tax, fix, mix
+  [/^y/, 'j'],                    // yes, you, year (consonantal)
+  [/^z/, 'z'],
+  
+  // Default vowels (short/lax in closed syllables)
+  [/^a/, 'æ'],                    // cat, hat, bad
+  [/^e/, 'ɛ'],                    // bed, red, get  
+  [/^i/, 'ɪ'],                    // sit, hit, big
+  [/^o/, 'ɑ'],                    // cot, hot, dog (American English)
+  [/^u/, 'ʌ'],                    // cut, but, run
 ];
 
 // --- G2PModel Class ---
@@ -317,9 +404,6 @@ export class G2PModel {
       return [word];
     }
 
-    // 1. Define a set of valid English onsets (consonant clusters that can start a syllable).
-    const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr', 'dw', 'f', 'fl', 'fr', 'g', 'gl', 'gr', 'gu', 'h', 'j', 'k', 'kl', 'kn', 'kr', 'l', 'm', 'n', 'p', 'ph', 'pl', 'pr', 'ps', 'qu', 'r', 'rh', 's', 'sc', 'sch', 'scr', 'sh', 'sk', 'sl', 'sm', 'sn', 'sp', 'sph', 'spl', 'spr', 'st', 'str', 'sv', 'sw', 't', 'th', 'thr', 'tr', 'ts', 'tw', 'v', 'w', 'wh', 'wr', 'x', 'y', 'z']);
-
     const chars = word.toLowerCase().split('');
     const syllables: string[] = [];
     let currentSyllable = '';
@@ -413,28 +497,140 @@ export class G2PModel {
     return syllables.filter(s => s && s.length > 0);
   }
 
-  private syllableToIPA(syllable: string, isLastSyllable: boolean): string {
+  // Improved stress assignment based on morphological and phonological rules
+  private assignStress(syllables: string[], word: string): number {
+    if (syllables.length <= 1) return 0;
+    
+    const lowerWord = word.toLowerCase();
+    
+    // Check for stress-attracting suffixes (stress BEFORE the suffix)
+    for (const [pattern, , attracts_stress] of SUFFIX_RULES) {
+      if (attracts_stress && lowerWord.match(pattern)) {
+        return Math.max(0, syllables.length - 2);
+      }
+    }
+    
+    // Specific suffix stress patterns
+    if (lowerWord.endsWith('tion') || lowerWord.endsWith('sion') || lowerWord.endsWith('cial') || lowerWord.endsWith('tial')) {
+      return Math.max(0, syllables.length - 2);
+    }
+    
+    // -ance/-ence words typically stress the antepenult (like dominance -> dəˈmɪnəns)
+    if ((lowerWord.endsWith('ance') || lowerWord.endsWith('ence')) && syllables.length >= 3) {
+      return 1; // Usually second syllable for these patterns
+    }
+    
+    if (lowerWord.endsWith('ic') && syllables.length > 1) {
+      return Math.max(0, syllables.length - 2);
+    }
+    
+    // Common prefixes that don't usually take stress
+    const unstressedPrefixes = ['un', 're', 'pre', 'dis', 'mis', 'over', 'under', 'out'];
+    for (const prefix of unstressedPrefixes) {
+      if (lowerWord.startsWith(prefix) && syllables.length > 2) {
+        return 1; // Stress usually falls on the root, not the prefix
+      }
+    }
+    
+    // For 2-syllable words, generally stress the first syllable unless it's a weak prefix
+    if (syllables.length === 2) {
+      // Check for weak prefixes
+      if (['be', 'de', 're', 'un', 'in', 'ex', 'pre'].some(prefix => lowerWord.startsWith(prefix))) {
+        return 1; // Stress the second syllable
+      }
+      return 0; // Default: stress first syllable
+    }
+    
+    // For 3+ syllables, use improved stress assignment
+    if (syllables.length >= 3) {
+      // Check for compound words (typically have primary stress on first part)
+      if (this.isLikelyCompound(lowerWord, syllables)) {
+        return 0; // First syllable gets primary stress in compounds
+      }
+      
+      const penult = syllables[syllables.length - 2];
+      if (this.isSyllableHeavy(penult)) {
+        return syllables.length - 2; // Stress the penult if heavy
+      } else {
+        return Math.max(0, syllables.length - 3); // Stress the antepenult if penult is light
+      }
+    }
+    
+    return 0; // Default fallback
+  }
+
+  private isSyllableHeavy(syllable: string): boolean {
+    // A syllable is heavy if it has:
+    // 1. A long vowel (vowel digraph)
+    // 2. A vowel followed by two or more consonants
+    // 3. Ends in a consonant (closed syllable)
+    
+    const vowelDigraphs = ['aa', 'ai', 'au', 'aw', 'ay', 'ea', 'ee', 'ei', 'eu', 'ey', 'ie', 'oa', 'oo', 'ou', 'ow', 'oy', 'ue', 'ui'];
+    
+    for (const digraph of vowelDigraphs) {
+      if (syllable.includes(digraph)) return true;
+    }
+    
+    // Count vowels and consonants after the vowel
+    let vowelFound = false;
+    let consonantCount = 0;
+    
+    for (const char of syllable) {
+      if (VOWELS.has(char)) {
+        vowelFound = true;
+        consonantCount = 0; // Reset consonant count after vowel
+      } else if (vowelFound && CONSONANTS.has(char)) {
+        consonantCount++;
+      }
+    }
+    
+    return consonantCount >= 1; // Closed syllable
+  }
+
+  private isLikelyCompound(word: string, syllables: string[]): boolean {
+    // Detect potential compound words based on patterns
+    if (syllables.length < 2) return false;
+    
+    // Common compound patterns
+    const compoundPatterns = [
+      /\w{4,}wide$/,    // worldwide, nationwide  
+      /\w{3,}land$/,    // homeland, woodland
+      /\w{3,}work$/,    // homework, network
+      /\w{3,}time$/,    // sometime, longtime
+      /\w{3,}way$/,     // highway, railway
+      /\w{3,}ward$/,    // forward, backward
+      /hundred/,        // hundred (often in compounds)
+      /\w{3,}side$/,    // outside, inside
+      /\w{3,}where$/,   // somewhere, anywhere
+    ];
+    
+    return compoundPatterns.some(pattern => pattern.test(word));
+  }
+
+  // Enhanced syllable to IPA conversion with stress-sensitive vowel reduction
+  private syllableToIPA(syllable: string, syllableIndex: number, isStressed: boolean, isLastSyllable: boolean): string {
     let phonemes: string[] = [];
     let remaining = syllable;
   
-    // New, corrected logic: Check for a full syllable suffix match first, *before* any modifications.
-    for (const [pattern, ipa] of SUFFIX_RULES) {
+    // Check for suffix rules first
+    for (const [pattern, ipa, ] of SUFFIX_RULES) {
       if (remaining.match(pattern)) {
         return ipa;
       }
     }
 
-    // Handle doubled consonants by only processing the first one.
-    // This is a simplification. e.g., 'buggie' -> 'bugi' not 'buggi'
+    // Handle doubled consonants
     remaining = remaining.replace(/([b-df-hj-np-tv-z])\1/g, '$1');
 
-    const endsWithSilentE = isLastSyllable && syllable.length > 1 && syllable.endsWith('e') && !syllable.endsWith('ee') && VOWELS.has(syllable[syllable.length - 2]) === false;
+    // Silent 'e' detection
+    const endsWithSilentE = isLastSyllable && syllable.length > 1 && syllable.endsWith('e') && 
+      !syllable.endsWith('ee') && !syllable.endsWith('le') && CONSONANTS.has(syllable[syllable.length - 2]);
 
     if (endsWithSilentE) {
         remaining = syllable.slice(0, -1);
     }
 
-    // This loop is now for non-suffix syllables.
+    // Apply phoneme rules
     while(remaining.length > 0) {
         let matchFound = false;
         for (const [pattern, ipa] of PHONEME_RULES) {
@@ -451,29 +647,65 @@ export class G2PModel {
         }
     }
     
-    // Magic 'e' rule: if the syllable ended with a silent e, change the preceding vowel to its long form.
-    if (endsWithSilentE && phonemes.length > 0) {
-      const shortToLong: Record<string, string> = { "æ": "eɪ", "ɛ": "i", "ɪ": "aɪ", "ɑ": "oʊ", "ʌ": "ju" };
+    // Apply conservative vowel modifications based on stress and position
+    if (!isStressed && syllableIndex > 0 && !isLastSyllable) {
+      // More conservative vowel reduction - only for clearly unstressed syllables
+      for (let i = 0; i < phonemes.length; i++) {
+        const vowelReductions: Record<string, string> = {
+          'æ': 'ə',   // cat -> ə in unstressed (but not in final syllables)
+          'ɛ': 'ə',   // bed -> ə in unstressed
+          'ɪ': 'ɪ',   // keep ɪ - common in unstressed syllables
+          'ɑ': 'ə',   // cot -> ə in unstressed  
+          'ʌ': 'ə',   // cut -> ə in unstressed
+          // Don't reduce diphthongs as aggressively
+          'eɪ': 'eɪ', // keep in most cases
+          'aɪ': 'aɪ', // keep in most cases  
+          'ɔɪ': 'ɔɪ', // keep in most cases
+          'oʊ': 'oʊ', // keep in most cases
+          'aʊ': 'aʊ', // keep in most cases
+        };
+        
+        if (vowelReductions[phonemes[i]]) {
+          phonemes[i] = vowelReductions[phonemes[i]];
+        }
+      }
+    }
+    
+    // Special handling for final unstressed syllables (less reduction)
+    if (!isStressed && isLastSyllable && syllableIndex > 0) {
+      for (let i = 0; i < phonemes.length; i++) {
+        const finalSyllableReductions: Record<string, string> = {
+          'æ': 'ə',   // cat -> ə 
+          'ɛ': 'ɪ',   // bed -> ɪ in final position (like "pocket")
+          'ɑ': 'ə',   // cot -> ə
+          'ʌ': 'ə',   // cut -> ə
+        };
+        
+        if (finalSyllableReductions[phonemes[i]]) {
+          phonemes[i] = finalSyllableReductions[phonemes[i]];
+        }
+      }
+    }
+    
+    // Magic 'e' rule for stressed syllables
+    if (endsWithSilentE && isStressed && phonemes.length > 0) {
+      const shortToLong: Record<string, string> = { 
+        'æ': 'eɪ',   // cap -> cape
+        'ɛ': 'i',    // met -> mete  
+        'ɪ': 'aɪ',   // bit -> bite
+        'ɑ': 'oʊ',   // hop -> hope
+        'ʌ': 'ju'    // cut -> cute
+      };
+      
       for (let i = phonemes.length - 1; i >= 0; i--) {
         if (shortToLong[phonemes[i]]) {
             phonemes[i] = shortToLong[phonemes[i]];
             break; 
         }
       }
-    } else {
-        // Handle open syllable pronunciation (ending with a vowel)
-        if (VOWELS.has(syllable.slice(-1))) {
-            const shortToLong: Record<string, string> = { "æ": "eɪ", "ɛ": "i", "ɪ": "aɪ", "ɑ": "oʊ", "ʌ": "u" }; // 'u' as in 'super'
-             for (let i = phonemes.length - 1; i >= 0; i--) {
-                if (shortToLong[phonemes[i]]) {
-                    phonemes[i] = shortToLong[phonemes[i]];
-                    break;
-                }
-            }
-        }
     }
   
-    return phonemes.join("");
+    return phonemes.join('');
   }
 
   public predict(
@@ -484,18 +716,18 @@ export class G2PModel {
   ): string {
     const lowerWord = word.toLowerCase();
 
-    // Priority 1: Morphological analysis. This is rule-based and should run even if dict lookup is disabled for G2P part.
-    const morphPron = this.tryMorphologicalAnalysis(lowerWord);
-    if (morphPron) {
-        return morphPron;
-    }
-
-    // Priority 2: Direct lookups (Dictionary, Homographs)
+    // Priority 1: Direct lookups (Dictionary, Homographs) - check known words first
     if (!disableDict) {
       const knownPronunciation = this.wellKnown(lowerWord, pos, true); // Skip morphology here to avoid re-running
       if (knownPronunciation) {
         return knownPronunciation;
       }
+    }
+
+    // Priority 2: Morphological analysis - only for unknown words
+    const morphPron = this.tryMorphologicalAnalysis(lowerWord);
+    if (morphPron) {
+        return morphPron;
     }
 
     // Priority 3: Language-specific G2P
@@ -535,15 +767,29 @@ export class G2PModel {
       }
     }
 
-    // Priority 6: Syllabification and rule-based G2P for unknown English words
+    // Priority 6: Improved syllabification and rule-based G2P
     const syllables = this.syllabify(lowerWord);
-    const result = syllables.map((s, i) => this.syllableToIPA(s, i === syllables.length - 1)).join("");
+    const stressedSyllableIndex = this.assignStress(syllables, lowerWord);
+    
+    const syllableIPA = syllables.map((s, i) => {
+      const isStressed = i === stressedSyllableIndex;
+      const isLastSyllable = i === syllables.length - 1;
+      return this.syllableToIPA(s, i, isStressed, isLastSyllable);
+    });
 
-    if (result) {
-      // Add primary stress to the first syllable for longer words
-      if (syllables.length > 1) {
-        return "ˈ" + result;
+    if (syllableIPA.length > 0) {
+      let result = syllableIPA.join('');
+      
+      // Add stress marker
+      if (syllables.length > 1 && stressedSyllableIndex >= 0) {
+        // Insert primary stress marker before the stressed syllable
+        let charIndex = 0;
+        for (let i = 0; i < stressedSyllableIndex; i++) {
+          charIndex += syllableIPA[i].length;
+        }
+        result = result.substring(0, charIndex) + 'ˈ' + result.substring(charIndex);
       }
+      
       return result;
     }
 

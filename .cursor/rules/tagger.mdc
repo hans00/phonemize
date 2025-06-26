@@ -1,0 +1,9 @@
+---
+description: 
+globs: pos-tagger.ts
+alwaysApply: false
+---
+Please follow the following rules when modifying POS Tagger:
+1. Comprehensive consideration of the context of English
+2. Try to implement your program in a general way
+3. Give me exquisite and useful code, reject high-level garbage

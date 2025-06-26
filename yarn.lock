@@ -2760,6 +2760,11 @@ open@10.1.2:
     is-inside-container "^1.0.0"
     is-wsl "^3.1.0"
 
+openai@^5.7.0:
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-5.7.0.tgz#5f26b51c8348017f014db51795a983f495abac7c"
+  integrity sha512-zXWawZl6J/P5Wz57/nKzVT3kJQZvogfuyuNVCdEp4/XU2UNrjL7SsuNpWAyLZbo6HVymwmnfno9toVzBhelygA==
+
 ora@8.2.0:
   version "8.2.0"
   resolved "https://registry.npmjs.org/ora/-/ora-8.2.0.tgz"

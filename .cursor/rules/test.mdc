@@ -1,0 +1,8 @@
+---
+description: 
+globs: *.test.ts
+alwaysApply: false
+---
+1. Don't use tricks to pass the test
+2. Some incorrect IPA pronunciations, please confirm with the user before modifying.
+3. Give me exquisite and useful code, reject high-level garbage

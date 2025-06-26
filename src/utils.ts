@@ -83,7 +83,10 @@ export function arpabetToIpa(arpabet: string): string {
   
   const phonemes = arpabet.split(/\s+/).filter(p => p.trim());
   const result: string[] = [];
+  let primaryStressFound = false;
+  let secondaryStressFound = false;
   
+  // First pass: convert phonemes without stress markers
   for (const phoneme of phonemes) {
     const stressMatch = phoneme.match(/([012])$/);
     const stress = stressMatch?.[0] || "";
@@ -91,15 +94,29 @@ export function arpabetToIpa(arpabet: string): string {
     
     const ipaPhoneme = ARPABET_TO_IPA[basePhoneme];
     if (ipaPhoneme) {
-      const stressMarker = stress ? IPA_STRESS_MAP[stress] : "";
-      result.push(stressMarker + ipaPhoneme);
+      result.push(ipaPhoneme);
+      
+      // Track stress positions
+      if (stress === "1") {
+        primaryStressFound = true;
+      } else if (stress === "2") {
+        secondaryStressFound = true;
+      }
     } else {
       // Preserve unknown phonemes as-is
       result.push(phoneme);
     }
   }
   
-  return result.join("");
+  // Add stress markers at the beginning if found
+  let finalResult = result.join("");
+  if (primaryStressFound) {
+    finalResult = "ˈ" + finalResult;
+  } else if (secondaryStressFound) {
+    finalResult = "ˌ" + finalResult;
+  }
+  
+  return finalResult;
 }
 
 /**
