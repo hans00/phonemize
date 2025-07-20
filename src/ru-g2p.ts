@@ -21,11 +21,6 @@ class RussianG2PModel implements G2PProcessor {
   readonly supportedLanguages = ["ru"];
 
   predict(word: string, language?: string, pos?: string): string | null {
-    // If language is specified and not Russian, return null
-    if (language && language !== 'ru') {
-      return null;
-    }
-    
     return this.processRussian(word);
   }
 

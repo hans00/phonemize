@@ -34,11 +34,6 @@ class JapaneseG2PModel implements G2PProcessor {
   readonly supportedLanguages = ["ja"];
 
   predict(word: string, language?: string, pos?: string): string | null {
-    // If language is specified and not Japanese, return null
-    if (language && language !== 'ja') {
-      return null;
-    }
-    
     return this.processJapanese(word);
   }
 

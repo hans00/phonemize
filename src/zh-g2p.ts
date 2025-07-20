@@ -172,17 +172,7 @@ class G2PModel implements G2PProcessor {
   readonly supportedLanguages = ["zh"];
 
   predict(word: string, language?: string, pos?: string): string | null {
-    // If language is specified and not Chinese, return null
-    if (language && language !== 'zh') {
-      return null;
-    }
-    
-    // Use the existing textToIPA method
     return this.textToIPA(word);
-  }
-
-  isChineseText(text: string): boolean {
-    return /[\u4e00-\u9fff]/.test(text);
   }
 
   /**
@@ -208,11 +198,8 @@ class G2PModel implements G2PProcessor {
     const results = this.textToPinyinResults(text);
     return results.map(result => {
       if (this.isChinese(result.word)) {
-        // Convert Chinese characters to Zhuyin
-        // result.pinyin already includes tone number, so use it directly
         return pinyinToZhuyin(result.pinyin);
       } else {
-        // Keep non-Chinese characters as-is
         return result.word;
       }
     }).join(' ');
@@ -229,7 +216,6 @@ class G2PModel implements G2PProcessor {
     const results: ChinesePinyinResult[] = [];
     
     try {
-      // Use pinyin-pro for pinyin conversion with tone numbers
       const pinyinResults = pinyin(text, {
         toneType: 'num',
         type: 'array', 

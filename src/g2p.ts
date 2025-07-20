@@ -177,16 +177,9 @@ export function detectLanguage(text: string): string | null {
  * Use a specific G2P processor by instance
  * 
  * @param processor - G2P processor instance to use
- * @returns True if processor was successfully registered
  */
-export function useG2P(processor: G2PProcessor): boolean {
-  try {
-    g2pRegistry.register(processor);
-    return true;
-  } catch (error) {
-    console.warn('Failed to register G2P processor:', error);
-    return false;
-  }
+export function useG2P(processor: G2PProcessor): void {
+  g2pRegistry.register(processor);
 }
 
 /**

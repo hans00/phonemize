@@ -52,11 +52,6 @@ class KoreanG2PModel implements G2PProcessor {
   readonly supportedLanguages = ["ko"];
 
   predict(word: string, language?: string, pos?: string): string | null {
-    // If language is specified and not Korean, return null
-    if (language && language !== 'ko') {
-      return null;
-    }
-    
     return this.processKorean(word);
   }
 

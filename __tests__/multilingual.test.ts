@@ -6,6 +6,7 @@ const tests = [
   { text: '中文', lang: 'zh', expected: 'ʈʂʊŋ˥˥ wən˧˥' },
   { text: '你好', lang: 'zh', expected: 'ni˧˩˧ xɑʊ˧˩˧' },
   { text: '北京', lang: 'zh', expected: 'peɪ˧˩˧ tɕiŋ˥˥' },
+  { text: 'a', lang: 'zh', expected: 'a' },
   // Japanese
   { text: 'こんにちは', lang: 'ja', expected: 'konnitɕiwa' },
   { text: 'にほん', lang: 'ja', expected: 'nihon' },
