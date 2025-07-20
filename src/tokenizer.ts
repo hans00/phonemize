@@ -19,8 +19,6 @@ const TOKEN_REGEX = /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+['']?\w*|[^\
  * Configuration options for tokenizer behavior
  */
 export interface TokenizerOptions {
-  /** Custom pronunciation overrides */
-  homograph?: Record<string, string>;
   /** Remove stress markers from output */
   stripStress?: boolean;
   /**
@@ -79,7 +77,6 @@ export class Tokenizer {
       format: "ipa",
       separator: " ",
       anyAscii: false,
-      homograph: {},
       toneFormat: "unicode",
       ...options,
     };
@@ -351,34 +348,24 @@ export class Tokenizer {
       const pos = posResults[cleanWordIndex]?.pos;
       cleanWordIndex++;
 
-      // Check for custom pronunciations
-      const customPronunciation = this.options.homograph?.[cleanToken.toLowerCase()];
       let phoneme: string;
+
+      // Check language map for multilingual words
+      const detectedLanguage = languageMap[cleanToken.toLowerCase()];
       
-      if (customPronunciation) {
-        phoneme = this._postProcess(customPronunciation);
-        // Apply custom separator to individual phonemes if needed
-        if (this.options.separator !== " ") {
-          phoneme = phoneme.split(' ').join(this.options.separator);
-        }
+      // Handle Zhuyin format specially
+      if (this.options.format === "zhuyin" && detectedLanguage === "zh") {
+        // Convert Chinese to Zhuyin
+        const g2p = getG2PProcessor(cleanToken, detectedLanguage) as ChineseG2P | null;
+        phoneme = g2p?.textToZhuyin?.(cleanToken) ?? this._predict(cleanToken, detectedLanguage, pos);
       } else {
-        // Check language map for multilingual words
-        const detectedLanguage = languageMap[cleanToken.toLowerCase()];
-        
-        // Handle Zhuyin format specially
-        if (this.options.format === "zhuyin" && detectedLanguage === "zh") {
-          // Convert Chinese to Zhuyin
-          const g2p = getG2PProcessor(cleanToken, detectedLanguage) as ChineseG2P | null;
-          phoneme = g2p?.textToZhuyin?.(cleanToken) ?? this._predict(cleanToken, detectedLanguage, pos);
-        } else {
-          // Regular IPA/ARPABET processing
-          phoneme = this._predict(cleanToken, detectedLanguage, pos);
-        }
-        
-        // Apply custom separator to individual phonemes if needed
-        if (this.options.separator !== " ") {
-          phoneme = phoneme.split(' ').join(this.options.separator);
-        }
+        // Regular IPA/ARPABET processing
+        phoneme = this._predict(cleanToken, detectedLanguage, pos);
+      }
+      
+      // Apply custom separator to individual phonemes if needed
+      if (this.options.separator !== " ") {
+        phoneme = phoneme.split(' ').join(this.options.separator);
       }
 
       const result = includePositions && position !== undefined 
