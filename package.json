@@ -8,6 +8,7 @@
     "test": "ts-mocha __tests__/**/*.ts",
     "test:coverage": "nyc --reporter=text --reporter=html --reporter=lcov yarn test",
     "test:eval": "tsx scripts/evaluate.ts",
+    "test:ai-eval": "tsx scripts/eval-with-ai.ts",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "build-dict": "tsx scripts/build-dict.ts",

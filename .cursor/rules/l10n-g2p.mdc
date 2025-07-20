@@ -1,15 +1,12 @@
 ---
-description: 
-globs: g2p.ts
+globs: *-g2p.ts
 alwaysApply: false
 ---
-Use your linguistics expertise to solve problems.
-And follow the following rules when modifying G2P:
+Please follow the following rules when modifying G2P:
 1. Use `g2pModel.predict('word', undefined, undefined, true)` to bypass dictionary processing for debug
 2. Do not have word lists or special processing in the code, which will destroy the spirit of rule based
-3. Rule-based G2P should be common process, never special-case for any word
+3. Rule-based G2P should not contain any special processing or word table
 4. Give me exquisite and useful code, reject high-level garbage
 5. Be sure to fully consider the details of pronunciation when modifying
 6. Try not to modify the dictionary
-7. Don't left useless comment in code
-8. After modification, please make sure that you have not damaged the operation of existing functions
+7. After modification, please make sure that you have not damaged the operation of existing functions

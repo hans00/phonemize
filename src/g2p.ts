@@ -81,12 +81,6 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
 
 // Context-sensitive phoneme rules with improved accuracy
 const PHONEME_RULES: Array<[RegExp, string]> = [
-  // --- Prioritized complex patterns and exceptions ---
-  [/^character/, 'kæɹəktɚ'],      // exception for 'ch'
-  [/^school/, 'skul'],            // exception for 'sch'
-  [/^psychology/, 'saɪkɑlədʒi'],  // exception for 'ps'
-  [/^pneumonia/, 'numoʊnjə'],     // exception for 'pn'
-  
   // Silent letter combinations
   [/^pn/, 'n'],                   // pneumonia, pneumatic
   [/^ps/, 's'],                   // psychology, psalm  
@@ -96,11 +90,15 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^wr/, 'ɹ'],                   // write, wrong, wrist
   [/^mb$/, 'm'],                  // thumb, lamb, comb (word-final)
   [/^ght/, 't'],                  // right, might, fight
+  [/^gh$/, ''],                   // silent gh at word end (though, bough)
+  [/^gh/, 'ɡ'],                   // ghost, ghetto (at start)
   [/^lm/, 'm'],                   // palm, calm, psalm
   
   // Improved digraph handling
   [/^tsch/, 'tʃ'],                // German loanwords
   [/^sch/, 'sk'],                 // schema, schematic (not German)
+  [/^she/, 'ʃi'],                 // she (irregular vowel)
+  [/^he/, 'hi'],                  // he (irregular vowel)
   [/^ch/, 'tʃ'],                  // chair, church, much
   [/^ck/, 'k'],                   // back, pick, truck
   [/^ggi/, 'ɡi'],                 // double g before i (buggie) - prevent soft g
@@ -108,7 +106,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ggy/, 'ɡi'],                 // double g before y (muggy) - prevent soft g
   [/^gg/, 'ɡ'],                   // double g -> single g (buggy, trigger)
   [/^dg/, 'dʒ'],                  // bridge, judge, edge
-  [/^gh/, 'ɡ'],                   // ghost, ghetto (at start)
   [/^ph/, 'f'],                   // phone, graph, elephant
   [/^sh/, 'ʃ'],                   // shoe, fish, wash
   [/^thr/, 'θɹ'],                 // th + r cluster is always voiceless: through, three
@@ -117,7 +114,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^th(?=ick)/, 'θ'],            // voiceless: thick, thicker
   [/^th(?=orn)/, 'θ'],            // voiceless: thorn, thorny
   [/^th(?=rough)/, 'θ'],          // voiceless: through (already handled above)
-  [/^th(?=[aeiou])/, 'ð'],        // voiced before vowels: the, this, that, they
+  [/^the/, 'ðə'],                 // the (definite article)
+  [/^th(?=[aeiou])/, 'ð'],        // voiced before vowels: this, that, they
   [/^th/, 'θ'],                   // voiceless (default): path, math
   [/^tch/, 'tʃ'],                 // watch, match, catch
   [/^wh/, 'w'],                   // what, where, when
@@ -125,7 +123,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ng/, 'ŋ'],                   // sing, ring, king
   
   // Improved vowel teams with better quality distinctions
-  [/^oo/, 'u'],                   // boot, moon, cool, moose (long u)
+  [/^oo/, 'uː'],                  // boot, moon, cool, moose (long u)
   [/^ou/, 'aʊ'],                  // house, about, cloud
   [/^ow(?=[snmk])/, 'aʊ'],        // cow, down, brown (before consonants)
   [/^ow/, 'oʊ'],                  // show, blow, know (at word end typically)
@@ -140,6 +138,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ie/, 'i'],                   // piece, field, believe  
   [/^ei/, 'eɪ'],                  // vein, weight, eight
   [/^ey/, 'eɪ'],                  // they, grey, key (at end)
+  [/^ight/, 'aɪt'],               // night, right, knight (i+ght)
   [/^oa/, 'oʊ'],                  // boat, coat, road
   [/^ross/, 'ɹoʊs'],              // gross -> groʊs
   [/^oss/, 'ɔs'],                 // cross, loss (short o)
@@ -149,6 +148,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ui/, 'u'],                   // fruit, suit, cruise
   
   // R-controlled vowels (rhotic)
+  [/^arr/, 'æɹ'],                 // carry, marry, arrow
   [/^ar/, 'ɑɹ'],                  // car, far, start
   [/^er/, 'ɚ'],                   // her, term, serve (use ɚ for unstressed)
   [/^ir/, 'ɝ'],                   // bird, first, girl
@@ -172,7 +172,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^scr/, 'skɹ'],                // screen, script, scratch
   [/^spl/, 'spl'],                // split, splash, splice
   [/^squ/, 'skw'],                // square, squash, squeeze
-  [/^thr/, 'θɹ'],                 // three, throw, through
   [/^shr/, 'ʃɹ'],                 // shrimp, shrink, shrewd
   [/^bl/, 'bl'],                  // blue, black, blow
   [/^br/, 'bɹ'],                  // brown, bring, bread
@@ -191,8 +190,9 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^sp/, 'sp'],                  // speak, space, sport
   [/^st/, 'st'],                  // start, stop, study
   [/^sw/, 'sw'],                  // sweet, swim, switch
+  [/^two/, 'tu'],                 // two (special case)
   [/^tr/, 'tɹ'],                  // tree, try, travel
-  [/^tw/, 'tw'],                  // two, twelve, twenty
+  [/^tw/, 'tw'],                  // twelve, twenty
   
   // Basic consonants
   [/^b/, 'b'],
@@ -213,14 +213,15 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^v/, 'v'],
   [/^w/, 'w'],
   [/^x/, 'ks'],                   // tax, fix, mix
-  [/^y/, 'j'],                    // yes, you, year (consonantal)
+  [/^y(?=[aeiou])/, 'j'],         // yes, you, year (consonantal before vowels)
+  [/^y/, 'aɪ'],                   // by, my, try (vowel in other positions)
   [/^z/, 'z'],
   
   // Default vowels (short/lax in closed syllables)
   [/^a/, 'æ'],                    // cat, hat, bad
-  [/^e/, 'ɛ'],                    // bed, red, get  
+  [/^e/, 'ɛ'],                    // bed, red, get (but she -> ʃi handled above)
   [/^i/, 'ɪ'],                    // sit, hit, big
-  [/^o/, 'ɑ'],                    // cot, hot, dog (American English)
+  [/^o/, 'ɑ'],                    // cot, hot, dog (American English short o)
   [/^u/, 'ʌ'],                    // cut, but, run
 ];
 
@@ -272,6 +273,22 @@ export class G2PModel {
     if (lowerWord.endsWith('s') && !lowerWord.endsWith('ss') && lowerWord.length > 2) {
       const singular = lowerWord.slice(0, -1);
       const basePron = this.wellKnown(singular);
+      if (basePron) {
+        const lastSound = basePron.slice(-1);
+        if (["s", "z", "ʃ", "ʒ", "tʃ", "dʒ"].includes(lastSound)) {
+          return basePron + 'ɪz';
+        }
+        if (["p", "t", "k", "f", "θ"].includes(lastSound)) {
+          return basePron + 's';
+        }
+        return basePron + 'z';
+      }
+    }
+    
+    // Try possessive forms ('s)
+    if (lowerWord.endsWith("'s") && lowerWord.length > 3) {
+      const base = lowerWord.slice(0, -2);
+      const basePron = this.wellKnown(base);
       if (basePron) {
         const lastSound = basePron.slice(-1);
         if (["s", "z", "ʃ", "ʒ", "tʃ", "dʒ"].includes(lastSound)) {
@@ -429,6 +446,13 @@ export class G2PModel {
         // If 'i' has not advanced, it means we hit a character that is neither
         // a vowel nor a consonant (like an apostrophe).
         if (i === i_before) {
+            // Skip apostrophes and other non-alphabetic characters for syllabification
+            // but keep them for the final result
+            if (chars[i] === "'" || chars[i] === "'" || chars[i] === "'") {
+                // Just skip the apostrophe, don't add it to any syllable
+                i++;
+                continue;
+            }
             // Append the character to the current syllable and advance the pointer.
             if (syllables.length > 0 && currentSyllable.length === 0) {
                  syllables[syllables.length - 1] += chars[i];
@@ -622,9 +646,11 @@ export class G2PModel {
     // Handle doubled consonants
     remaining = remaining.replace(/([b-df-hj-np-tv-z])\1/g, '$1');
 
-    // Silent 'e' detection
+    // Silent 'e' detection (but exclude common function words like "the")
     const endsWithSilentE = isLastSyllable && syllable.length > 1 && syllable.endsWith('e') && 
-      !syllable.endsWith('ee') && !syllable.endsWith('le') && CONSONANTS.has(syllable[syllable.length - 2]);
+      !syllable.endsWith('ee') && !syllable.endsWith('le') && !syllable.endsWith('he') && 
+      !syllable.endsWith('tte') && !syllable.endsWith('ght') && !syllable.endsWith('se') &&
+      CONSONANTS.has(syllable[syllable.length - 2]);
 
     if (endsWithSilentE) {
         remaining = syllable.slice(0, -1);
@@ -716,7 +742,22 @@ export class G2PModel {
   ): string {
     const lowerWord = word.toLowerCase();
 
-    // Priority 1: Direct lookups (Dictionary, Homographs) - check known words first
+    // Priority 1: Handle hyphenated compounds (e.g., "recession-hit")
+    if (lowerWord.includes('-')) {
+      const parts = lowerWord.split('-');
+      if (parts.length === 2) {
+        const part1 = this.predict(parts[0], pos, detectedLanguage, disableDict);
+        const part2 = this.predict(parts[1], pos, detectedLanguage, disableDict);
+        if (part1 && part2) {
+          // Remove stress from first part, add to second part for compound stress pattern
+          const cleanPart1 = part1.replace(/ˈ/g, '');
+          const cleanPart2 = part2.replace(/ˈ/g, '');
+          return cleanPart1 + 'ˈ' + cleanPart2;
+        }
+      }
+    }
+
+    // Priority 2: Direct lookups (Dictionary, Homographs) - check known words first
     if (!disableDict) {
       const knownPronunciation = this.wellKnown(lowerWord, pos, true); // Skip morphology here to avoid re-running
       if (knownPronunciation) {
@@ -724,13 +765,13 @@ export class G2PModel {
       }
     }
 
-    // Priority 2: Morphological analysis - only for unknown words
+    // Priority 3: Morphological analysis - only for unknown words
     const morphPron = this.tryMorphologicalAnalysis(lowerWord);
     if (morphPron) {
         return morphPron;
     }
 
-    // Priority 3: Language-specific G2P
+    // Priority 4: Language-specific G2P
     if (detectedLanguage === 'zh' || chineseG2P.isChineseText(word)) {
       const chineseResult = chineseG2P.textToIPA(word);
       if (chineseResult) return chineseResult;
@@ -740,7 +781,7 @@ export class G2PModel {
       if (multilingualResult) return multilingualResult;
     }
 
-    // Priority 4: Attempt to decompose the word into known dictionary parts
+    // Priority 5: Attempt to decompose the word into known dictionary parts
     const decomposition = this.tryDecomposition(lowerWord);
     if (decomposition && decomposition.length > 1) {
         const pronunciations = decomposition.map(part => this.wellKnown(part)?.replace(/ˈ/g, ''));
@@ -750,7 +791,7 @@ export class G2PModel {
         }
     }
 
-    // Priority 5: Handle acronyms with or without periods, e.g., "TTS" or "M.L."
+    // Priority 6: Handle acronyms with or without periods, e.g., "TTS" or "M.L."
     const acronymMatch = word.match(/^([A-Z]\.?){2,8}$/);
     if (acronymMatch) {
       const containsPeriods = word.includes('.');
@@ -767,7 +808,7 @@ export class G2PModel {
       }
     }
 
-    // Priority 6: Improved syllabification and rule-based G2P
+    // Priority 7: Improved syllabification and rule-based G2P
     const syllables = this.syllabify(lowerWord);
     const stressedSyllableIndex = this.assignStress(syllables, lowerWord);
     

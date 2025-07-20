@@ -2,37 +2,10 @@ import OpenAI from 'openai';
 import { G2PModel } from '../src/g2p';
 import { expandText } from '../src/expand';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI();
 
 const text = expandText(`\
-Yet again the global demand for
-moose will be met largely by the
-US and Canada. The recession-hit
-States is taking comfort in its moose
-growth figures with gross production
-expected to break 700,000 and net exports to grow by 2%. The worldwide
-dominance of Canada shows no signs
-of abating though with this year’s
-moose population expected to match
-last year’s record figures of one hundred million billion.
-
-Europe’s rise as an international
-moose power will slow slightly this
-year as a response to the European
-Union’s move towards standardising
-the European moose. Stringent quality controls are holding back the development of the eastern european
-populations compared to last year
-when they contributed significantly
-to europe’s strong growth figures.
-Norway, which is not an EU member
-but has observer status, strengthed
-in numbers relative to the Euro area
-with numbers of Norweigian moose,
-known locally as elk’’ expected to rise
-for the tenth consecutive year, particularly thanks to a strong showing in
-the last quarter.`.replace(/\n/g, " ")
+Through the rough thoroughfare, the knight’s subtle cough echoed as he strutted past the island’s crumbling lighthouse. The colonel, musing on the rhyme “Though the bough breaks, the bough will bend,” weighed enough wood for the bonfire. His mnemonic for the irregular pronunciation of colonel, island, and knight proved indispensable.`.replace(/\n/g, " ")
 );
 
 const model = new G2PModel();
@@ -68,8 +41,7 @@ ${result}
 ===
 
 Please give me detailed feedback on the phonetic transcription under 400 words.
-And give me a score between 0 and 100.
-P.S. The score should at the end of the response and formatted as "Score: <score>".`;
+And give me a score between 0 and 100.`;
 
 openai.chat.completions.create({
   model: "o3-mini",
@@ -77,9 +49,4 @@ openai.chat.completions.create({
 }).then(res => {
   const content = res.choices[0].message.content;
   console.log(content + "\n");
-
-//   if (content) {
-//     const score = content.match(/Score: (\d+)$/)?.[1];
-//     console.log(`Score: ${score}`);
-//   }
 });
