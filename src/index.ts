@@ -10,12 +10,16 @@
  * - Number and abbreviation expansion
  */
 
-import { g2pModel } from "./g2p";
+import EnglishG2P from "./en-g2p";
 import { Tokenizer, TokenizerOptions, PhonemeToken } from "./tokenizer";
+import { getG2PProcessor, useG2P } from "./g2p";
 
 // Re-export core types and classes for public API
 export type { TokenizerOptions, PhonemeToken };
-export { Tokenizer };
+export { Tokenizer, useG2P };
+
+// Initialize default G2P processors, here only english G2P is required others are not default in use
+useG2P(new EnglishG2P());
 
 /**
  * Convert text to phonetic representation
@@ -149,12 +153,14 @@ export function toZhuyin(
  * toIPA("github") // "ɡɪthʌb"
  * ```
  */
-export function addPronunciation(word: string, pronunciation: string): void {
+export function addPronunciation(word: string, pronunciation: string, language?: string): void {
   if (!word?.trim() || !pronunciation?.trim()) {
     throw new Error("Both word and pronunciation must be non-empty strings");
   }
   
-  g2pModel.addPronunciation(word.toLowerCase(), pronunciation);
+  // Use the registered English G2P processor to add pronunciation
+  const processor = getG2PProcessor(word, language);
+  processor?.addPronunciation(word.toLowerCase(), pronunciation);
 }
 
 /**

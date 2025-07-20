@@ -93,7 +93,7 @@ describe('Index', function() {
   it('Options and configurations', function() {
     // Test various options
     expect(phonemize('hello', { stripStress: true })).to.be.equal('həɫoʊ')
-    expect(phonemize('hello', { separator: '|' })).to.include('|')
+    expect(phonemize('hello', { separator: '|', format: 'arpabet' })).to.include('|')
     expect(phonemize('hello', { format: 'arpabet' })).to.be.equal('HH AX EL1 OW')
     
     // Test combination of options

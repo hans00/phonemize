@@ -6,8 +6,10 @@
 import { pinyin, addDict } from 'pinyin-pro';
 import dict from '../data/zh/dict.json';
 import { pinyinToZhuyin } from './utils';
+import { G2PProcessor } from "./g2p";
 
 addDict(dict, 'phonemize-zh');
+addDict({}, 'custom');
 
 /**
  * Comprehensive pinyin to IPA phoneme mapping
@@ -162,10 +164,27 @@ export interface ChinesePinyinResult {
   word: string;
 }
 
-/**
- * Main Chinese G2P processor class
- */
-export class ChineseG2P {
+// === Chinese G2P Processor ===
+
+class G2PModel implements G2PProcessor {
+  readonly id = "zh-g2p";
+  readonly name = "Chinese G2P Processor";
+  readonly supportedLanguages = ["zh"];
+
+  predict(word: string, language?: string, pos?: string): string | null {
+    // If language is specified and not Chinese, return null
+    if (language && language !== 'zh') {
+      return null;
+    }
+    
+    // Use the existing textToIPA method
+    return this.textToIPA(word);
+  }
+
+  isChineseText(text: string): boolean {
+    return /[\u4e00-\u9fff]/.test(text);
+  }
+
   /**
    * Convert Chinese text to IPA phonetic notation
    * @param text - Chinese text to convert
@@ -344,17 +363,9 @@ export class ChineseG2P {
            (code >= 0x2ceb0 && code <= 0x2ebef);     // CJK Extension F
   }
 
-  /**
-   * Check if text contains Chinese characters
-   * @param text - Text to check
-   * @returns True if text contains Chinese characters
-   */
-  public isChineseText(text: string): boolean {
-    return Array.from(text).some(char => this.isChinese(char));
+  public addPronunciation(word: string, pronunciation: string): void {
+    addDict({ [word.trim()]: pronunciation }, { name: 'custom', dict1: 'add' });
   }
 }
 
-/**
- * Global Chinese G2P instance for convenient usage
- */
-export const chineseG2P = new ChineseG2P(); 
+export default G2PModel;

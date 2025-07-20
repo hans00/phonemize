@@ -1,4 +1,4 @@
-import { G2PModel } from '../src/g2p';
+import { G2PModel } from '../src/en-g2p';
 import dictionary from '../data/en/dict.json';
 import fs from 'fs';
 

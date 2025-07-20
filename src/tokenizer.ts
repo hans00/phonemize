@@ -4,13 +4,11 @@
  */
 
 import anyAscii from "any-ascii";
-import { predict } from "./g2p";
 import { expandText } from "./expand";
-import { simplePOSTagger, POSResult } from "./pos-tagger";
+import { simplePOSTagger } from "./pos-tagger";
 import { ARPABET_TO_IPA, IPA_STRESS_MAP, PUNCTUATION } from "./consts";
-import { detectLanguage } from "./l10n-g2p";
-import { chineseG2P } from "./zh-g2p";
-import { ipaToArpabet, convertChineseTonesToArrows, pinyinToZhuyin } from "./utils";
+import { detectLanguage, getG2PProcessor, predictPhonemes } from "./g2p";
+import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
 
 /**
  * Configuration options for tokenizer behavior
@@ -99,9 +97,23 @@ export class Tokenizer {
     const segments = this._segmentByLanguage(text);
     
     if (!this.options.anyAscii) {
+      // Even when anyAscii is false, we still need to detect languages for G2P processing
+      const words = text.split(/(\s+)/);
+      const languageMap: Record<string, string> = {};
+      
+      for (const word of words) {
+        const trimmed = word.trim();
+        if (trimmed && !PUNCTUATION.includes(trimmed)) {
+          const detectedLang = detectLanguage(trimmed);
+          if (detectedLang) {
+            languageMap[trimmed.toLowerCase()] = detectedLang;
+          }
+        }
+      }
+      
       return {
         text,
-        languageMap: {},
+        languageMap,
         segments,
       };
     }
@@ -116,7 +128,7 @@ export class Tokenizer {
       if (trimmed && !PUNCTUATION.includes(trimmed)) {
         const detectedLang = detectLanguage(trimmed);
         if (detectedLang) {
-          if (detectedLang === 'zh' && chineseG2P.isChineseText(trimmed)) {
+          if (detectedLang === 'zh') {
             // Preserve Chinese text for G2P processing
             processedText += word;
             languageMap[trimmed.toLowerCase()] = detectedLang;
@@ -124,6 +136,8 @@ export class Tokenizer {
             // Convert non-Chinese multilingual text to ASCII
             const asciiWord = anyAscii(trimmed);
             processedText += word.replace(trimmed, asciiWord);
+            // Store language mapping for both original and ASCII versions
+            languageMap[trimmed.toLowerCase()] = detectedLang;
             languageMap[asciiWord.toLowerCase()] = detectedLang;
           }
         } else {
@@ -322,12 +336,23 @@ export class Tokenizer {
         let pronunciation: string;
         
         // Check if it's Chinese text
-        if (chineseG2P.isChineseText(cleanToken)) {
+        if (cleanToken.match(/[\u4e00-\u9fff]/)) {
           // Convert Chinese to Zhuyin
-          pronunciation = chineseG2P.textToZhuyin(cleanToken);
+          const g2p = getG2PProcessor(cleanToken, detectedLanguage || "zh");
+          if (g2p && "textToZhuyin" in g2p) {
+            pronunciation = (g2p as any).textToZhuyin(cleanToken);
+          } else {
+            // fallback: non-Chinese or no zhuyin support
+            const predicted = predictPhonemes(cleanToken, detectedLanguage, pos);
+            pronunciation = predicted || cleanToken;
+            if (this.options.stripStress) {
+              pronunciation = pronunciation.replace(/[ˈˌ]/g, "");
+            }
+          }
         } else {
           // Convert non-Chinese to IPA as fallback
-          pronunciation = predict(cleanToken, pos, detectedLanguage);
+          const predicted = predictPhonemes(cleanToken, detectedLanguage, pos);
+          pronunciation = predicted || cleanToken; // Fallback to original text if prediction fails
           // Apply IPA post-processing but not tone format conversion
           if (this.options.stripStress) {
             pronunciation = pronunciation.replace(/[ˈˌ]/g, "");
@@ -342,7 +367,8 @@ export class Tokenizer {
         phonemes.push(pronunciation);
       } else {
         // Regular IPA/ARPABET processing
-        let pronunciation = predict(cleanToken, pos, detectedLanguage);
+        const predicted = predictPhonemes(cleanToken, detectedLanguage, pos);
+        let pronunciation = predicted || cleanToken; // Fallback to original text if prediction fails
         pronunciation = this._postProcess(pronunciation);
         
         // Apply custom separator to individual phonemes if needed
@@ -409,16 +435,12 @@ export class Tokenizer {
           result.push(phoneme);
         }
       } else {
-        // For custom separators, split phonemes into characters
-        if (this.options.separator !== " ") {
-          result.push(phoneme.split('').join(this.options.separator));
-        } else {
-          result.push(phoneme);
-        }
+        // Add phoneme as-is (separator is already applied in tokenize method)
+        result.push(phoneme);
       }
     }
     
-    return result.join(this.options.separator === " " ? " " : " ");
+    return result.join(this.options.separator);
   }
 
   /**
@@ -479,20 +501,21 @@ export class Tokenizer {
           
           // Handle Zhuyin format specially
           if (this.options.format === "zhuyin") {
-            if (chineseG2P.isChineseText(token)) {
-              // Convert Chinese to Zhuyin
-              phoneme = chineseG2P.textToZhuyin(token);
+            const g2p = getG2PProcessor(token, detectedLanguage || "zh");
+            if (g2p && "textToZhuyin" in g2p) {
+              phoneme = (g2p as any).textToZhuyin(token);
             } else {
-              // Convert non-Chinese to IPA as fallback
-              phoneme = predict(token, pos, detectedLanguage);
-              // Apply IPA post-processing but not tone format conversion
+              // fallback: non-Chinese or no zhuyin support
+              const predicted = predictPhonemes(token, detectedLanguage, pos);
+              phoneme = predicted || token;
               if (this.options.stripStress) {
                 phoneme = phoneme.replace(/[ˈˌ]/g, "");
               }
             }
           } else {
             // Regular IPA/ARPABET processing
-            const pronunciation = predict(token, pos, detectedLanguage);
+            const predicted = predictPhonemes(token, detectedLanguage, pos);
+            const pronunciation = predicted || token; // Fallback to original text if prediction fails
             phoneme = this._postProcess(pronunciation);
           }
         }
