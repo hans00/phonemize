@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 const { phonemize, useG2P } = require('../dist/index');
-const ChineseG2P = require('../dist/zh-g2p');
-const JapaneseG2P = require('../dist/ja-g2p');
-const KoreanG2P = require('../dist/ko-g2p');
-const RussianG2P = require('../dist/ru-g2p');
+const ChineseG2P = require('../dist/zh-g2p').default;
+const JapaneseG2P = require('../dist/ja-g2p').default;
+const KoreanG2P = require('../dist/ko-g2p').default;
+const RussianG2P = require('../dist/ru-g2p').default;
 
 useG2P(new ChineseG2P());
 useG2P(new JapaneseG2P());
