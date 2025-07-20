@@ -1,6 +1,15 @@
 #!/usr/bin/env node
 
-const { phonemize } = require('../dist/index');
+const { phonemize, useG2P } = require('../dist/index');
+const ChineseG2P = require('../dist/zh-g2p');
+const JapaneseG2P = require('../dist/ja-g2p');
+const KoreanG2P = require('../dist/ko-g2p');
+const RussianG2P = require('../dist/ru-g2p');
+
+useG2P(new ChineseG2P());
+useG2P(new JapaneseG2P());
+useG2P(new KoreanG2P());
+useG2P(new RussianG2P());
 
 function runPerformanceBenchmark() {
   // Test different scenarios
