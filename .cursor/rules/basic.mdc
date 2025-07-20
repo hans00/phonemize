@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+
+This project struct is:
+1. `index.ts` export API for user, internal test functions never export here
+2. `expand.ts` expand abbreviations, num to text and normalize text
+3. `tokenizer.ts` split text -> anyAscii (optional) -> apply G2P -> convert format
+4. `*-g2p.ts` make G2P prediction
+5. `g2p.ts` abstraction for G2P models
+6. Core only provide english G2P, others are optional

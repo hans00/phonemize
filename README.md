@@ -17,8 +17,8 @@ Inspired by [ttstokenizer](https://github.com/neuml/ttstokenizer)
 - 🎯 **Intelligent compound word support** - Automatic decomposition of complex words
 - 📚 **Comprehensive dictionary** - 125,000+ word pronunciations
 - 🧠 **Smart rule-based G2P** - Advanced phonetic rules for unknown words
-- 🌍 **Multiple formats** - IPA and ARPABET output
-- 🌐 **Multilingual support** - Chinese, Japanese, Korean and more via anyAscii
+- 🌍 **Multiple formats** - IPA, ARPABET, and Zhuyin output
+- 🌐 **Modular multilingual support** - G2P models are modularize load
 - 💻 **Pure JavaScript** - No native dependencies, works everywhere
 - 🔧 **Simple API** - Easy to integrate and use
 
@@ -42,49 +42,22 @@ console.log(toARPABET('Hello world!'))
 // Output: HH AX EL1 OW W1 ER EL D!
 ```
 
-## Smart Word Processing
+### Presets
 
-### Compound Word Decomposition
-Automatically detects and decomposes compound words:
-
-```javascript
-phonemize('supercar')    // → ˈsupɝˈkɑɹ (super + car)
-phonemize('playground')  // → ˈpɫeɪˌɡɹaʊn (play + ground)  
-phonemize('superman')    // → ˈsupɝˌmæn (super + man)
-```
-
-### Multi-Compound Words
-Handles extremely long compound words intelligently:
+For different language support needs, you can use preset modules:
 
 ```javascript
-phonemize('supercalifragilisticexpialidocious')
-phonemize('antidisestablishmentarianism')
-phonemize('pneumonoultramicroscopicsilicovolcanoconiosss')
+// Default: English only
+import { phonemize } from 'phonemize'
+
+// Chinese + English
+import { phonemize } from 'phonemize/zh'
+
+// All languages (English + Chinese + Japanese + Korean + Russian)
+import { phonemize } from 'phonemize/all'
+
+// Clean
 ```
-
-
-## Multilingual Support
-
-Supports multiple languages through anyAscii transliteration:
-
-```javascript
-// Chinese (direct processing with tone numbers)
-phonemize('你好世界')  // → ni˧˥ xɑʊ˨˩˦ ʂɻ̩˥˩ tɕiɛ˥˩
-phonemize('北京')      // → peɪ˧˩˧ tɕiŋ˥˥
-
-// Japanese (with anyAscii and rule-based processing)
-phonemize('こんにちは', { anyAscii: true }) // → konnitɕiwa
-phonemize('東京', { anyAscii: true })      // → tʊŋ˥˥ tɕiŋ˥˥
-
-// Korean (with anyAscii and rule-based processing)
-phonemize('안녕하세요', { anyAscii: true }) // → ʔannjʌŋhaseyo
-phonemize('서울', { anyAscii: true })      // → ˈsoʊɫ
-
-// Other languages fallback to English G2P after anyAscii
-phonemize('Привет', { anyAscii: true })    // → ˈpɹaɪvɛt
-```
-
-Note: anyascii only ensures an approximation and is likely not the correct pronunciation
 
 ## API Reference
 
@@ -132,6 +105,23 @@ import { toZhuyin } from 'phonemize';
 toZhuyin('中文'); // "ㄓㄨㄥ1 ㄨㄣ2"
 toZhuyin('你好世界'); // "ㄋㄧ3 ㄏㄠ3 ㄕ4 ㄐㄧㄝ4"
 toZhuyin('中文 and English'); // "ㄓㄨㄥ1 ㄨㄣ2 ænd ˈɪŋɡlɪʃ"
+```
+
+#### `useG2P(processor)`
+Register a G2P processor for multilingual support.
+
+```javascript
+import { useG2P } from 'phonemize'
+import ChineseG2P from 'phonemize/zh-g2p'
+import JapaneseG2P from 'phonemize/ja-g2p'
+
+// Register G2P processors
+useG2P(new ChineseG2P())
+useG2P(new JapaneseG2P())
+
+// Now phonemize can handle Chinese and Japanese text
+phonemize('你好')  // → ni˧˥ xɑʊ˨˩˦
+phonemize('こんにちは', { anyAscii: true })  // → konnitɕiwa
 ```
 
 ### Custom Pronunciations

@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { G2PModel } from '../src/g2p';
+import { G2PModel } from '../src/en-g2p';
 import { expandText } from '../src/expand';
 
 const openai = new OpenAI();
@@ -8,18 +8,18 @@ const text = expandText(`\
 Through the rough thoroughfare, the knight’s subtle cough echoed as he strutted past the island’s crumbling lighthouse. The colonel, musing on the rhyme “Though the bough breaks, the bough will bend,” weighed enough wood for the bonfire. His mnemonic for the irregular pronunciation of colonel, island, and knight proved indispensable.`.replace(/\n/g, " ")
 );
 
-const model = new G2PModel();
+const model = new G2PModel({ disableDict: true });
 
 // tokenize the text
 const words = text.split(/(?:\s+|[.,!?])/).filter(Boolean);
 
 // predict the phonemes
-const phonemes = words.map(word => model.predict(word, undefined, "en", true));
+const phonemes = words.map(word => model.predict(word, "en"));
 
 // replace original words with phonemes
 let result = text;
 for (let i = 0; i < words.length; i++) {
-  result = result.replace(words[i], phonemes[i]);
+  result = result.replace(words[i], phonemes[i] || words[i]);
 }
 
 console.log(`Predicted phonemes:\n${result}\n`);

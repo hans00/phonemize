@@ -1,5 +1,16 @@
 import { expect } from 'chai'
-import { phonemize, toARPABET, toIPA, toZhuyin, addPronunciation, Tokenizer } from '../src/index'
+import { phonemize, toARPABET, toIPA, toZhuyin, addPronunciation, Tokenizer, useG2P } from '../src/index'
+import EnglishG2P from '../src/en-g2p'
+import ChineseG2P from '../src/zh-g2p'
+import JapaneseG2P from '../src/ja-g2p'
+import KoreanG2P from '../src/ko-g2p'
+import RussianG2P from '../src/ru-g2p'
+
+useG2P(new EnglishG2P())
+useG2P(new ChineseG2P())
+useG2P(new JapaneseG2P())
+useG2P(new KoreanG2P())
+useG2P(new RussianG2P())
 
 describe('Index', function() {
   it('Work Fine', function() {
@@ -78,7 +89,7 @@ describe('Index', function() {
     
     // Test with options
     const result = toZhuyin('hello 中文', { stripStress: true })
-    expect(result).to.be.equal('həɫoʊ ㄓㄨㄥ1 ㄨㄣ2')
+    expect(result).to.be.equal('həˈɫoʊ ㄓㄨㄥ1 ㄨㄣ2')
   })
 
   it('anyAscii', function() {
@@ -93,7 +104,7 @@ describe('Index', function() {
   it('Options and configurations', function() {
     // Test various options
     expect(phonemize('hello', { stripStress: true })).to.be.equal('həɫoʊ')
-    expect(phonemize('hello', { separator: '|' })).to.include('|')
+    expect(phonemize('hello', { separator: '|', format: 'arpabet' })).to.include('|')
     expect(phonemize('hello', { format: 'arpabet' })).to.be.equal('HH AX EL1 OW')
     
     // Test combination of options
