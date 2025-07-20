@@ -120,13 +120,22 @@ class G2PRegistry {
     
     return null;
   }
-  
+
   /**
    * Clear all registered processors
    */
   clear(): void {
     this.processors.clear();
     this.languageMap.clear();
+  }
+
+  /**
+   * Get all supported languages
+   * 
+   * @returns Array of supported language codes
+   */
+  getSupportedLanguages(): string[] {
+    return Array.from(this.languageMap.keys());
   }
 }
 
@@ -244,11 +253,5 @@ export function getProcessorsForLanguage(language: string): G2PProcessor[] {
  * @returns Array of supported language codes
  */
 export function getSupportedLanguages(): string[] {
-  const languages = new Set<string>();
-  for (const processor of g2pRegistry.getAllProcessors()) {
-    for (const lang of processor.supportedLanguages) {
-      languages.add(lang);
-    }
-  }
-  return Array.from(languages);
+  return g2pRegistry.getSupportedLanguages();
 }

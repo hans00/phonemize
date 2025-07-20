@@ -355,7 +355,7 @@ export class G2PModel implements G2PProcessor {
   }
 
   private wellKnown(word: string, pos?: string, skipMorphology = false): string | undefined {
-    if (this.homographs[word] && pos) {
+    if (pos && Array.isArray(this.homographs[word])) {
       const homograph = this.homographs[word].find((entry: HomographEntry) =>
         this.matchPos(entry, pos),
       );

@@ -19,7 +19,7 @@ const phonemes = words.map(word => model.predict(word, "en"));
 // replace original words with phonemes
 let result = text;
 for (let i = 0; i < words.length; i++) {
-  result = result.replace(words[i], phonemes[i]);
+  result = result.replace(words[i], phonemes[i] || words[i]);
 }
 
 console.log(`Predicted phonemes:\n${result}\n`);

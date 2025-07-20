@@ -55,7 +55,7 @@ function canonizePhonemeString(phonemeStr: string): string {
 async function evaluate() {
   console.log('Starting G2P rule-based evaluation...');
 
-  const g2p = new G2PModel();
+  const g2p = new G2PModel({ disableDict: true });
   const words = Object.keys(dictionary as Record<string, string>);
   const MAX_WORD_LENGTH = 12; // Words longer than this are considered "compound" and excluded.
   
@@ -94,10 +94,10 @@ async function evaluate() {
     if (!expectedPron) continue;
 
     // Force rule-based prediction
-    const predictedPron = g2p.predict(word, undefined, 'en', true);
+    const predictedPron = g2p.predict(word, 'en');
 
     const normExpected = normalizePhonemes(expectedPron);
-    const normPredicted = normalizePhonemes(predictedPron);
+    const normPredicted = normalizePhonemes(predictedPron || '');
 
     if (normExpected === normPredicted) {
       strictCorrect++;
@@ -118,7 +118,7 @@ async function evaluate() {
         mismatches.push({
             word,
             expected: expectedPron,
-            predicted: predictedPron,
+            predicted: predictedPron || '',
             distance: levenshtein.get(normExpected, normPredicted),
         });
     }
