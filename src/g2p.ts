@@ -3,7 +3,7 @@ import homographs from "../data/en/homographs.json";
 import {
   processMultilingualText,
   isMultilingualText,
-} from "./multilingual-processor";
+} from "./l10n-g2p";
 import { arpabetToIpa } from "./utils";
 import { chineseG2P } from "./zh-g2p";
 

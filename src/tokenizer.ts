@@ -8,7 +8,7 @@ import { predict } from "./g2p";
 import { expandText } from "./expand";
 import { simplePOSTagger, POSResult } from "./pos-tagger";
 import { ARPABET_TO_IPA, IPA_STRESS_MAP, PUNCTUATION } from "./consts";
-import { detectLanguage } from "./multilingual-processor";
+import { detectLanguage } from "./l10n-g2p";
 import { chineseG2P } from "./zh-g2p";
 import { ipaToArpabet, convertChineseTonesToArrows, pinyinToZhuyin } from "./utils";
 
