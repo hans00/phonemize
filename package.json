@@ -4,6 +4,17 @@
   "description": "Fast phonemizer with rule-based G2P prediction. Pure JavaScript implementation.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./core": "./dist/core.js",
+    "./zh": "./dist/zh.js",
+    "./all": "./dist/all.js",
+    "./zh-g2p": "./dist/zh-g2p.js",
+    "./ja-g2p": "./dist/ja-g2p.js",
+    "./ko-g2p": "./dist/ko-g2p.js",
+    "./ru-g2p": "./dist/ru-g2p.js",
+    "./en-g2p": "./dist/en-g2p.js"
+  },
   "scripts": {
     "test": "ts-mocha __tests__/**/*.ts",
     "test:coverage": "nyc --reporter=text --reporter=html --reporter=lcov yarn test",
