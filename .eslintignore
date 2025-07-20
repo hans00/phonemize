@@ -1,0 +1,22 @@
+# Build outputs
+dist/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Generated files
+*.d.ts
+*.js
+
+# Config files
+*.config.js
+*.config.ts
+
+# Data files
+data/
+src-data/
+
+# Other
+.git/
+.husky/ 

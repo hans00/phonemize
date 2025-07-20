@@ -14,7 +14,10 @@
     "build-dict": "tsx scripts/build-dict.ts",
     "prebuild": "yarn build-dict",
     "dev": "tsx src/index.ts",
-    "release": "release-it"
+    "release": "release-it",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:check": "eslint . --max-warnings 0"
   },
   "files": [
     "dist/",
@@ -47,7 +50,12 @@
     "@types/fast-levenshtein": "^0.0.4",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.12.12",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
     "chai": "^5.0.0",
+    "eslint": "^9.31.0",
+    "eslint-plugin-chai-expect": "^3.1.0",
+    "eslint-plugin-mocha": "^11.1.0",
     "fast-levenshtein": "^3.0.0",
     "husky": "^9.1.7",
     "json5": "^2.2.3",
