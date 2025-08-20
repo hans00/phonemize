@@ -275,3 +275,8 @@ export function convertChineseTonesToUnicode(ipa: string): string {
   
   return result;
 }
+
+export function resolveJson<T>(data: {default: T} | T): T {
+  // @ts-ignore
+  return (typeof data.default === 'object' ? data.default : data) as T;
+}

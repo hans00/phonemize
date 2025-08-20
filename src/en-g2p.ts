@@ -1,9 +1,11 @@
-import dictionary from "../data/en/dict.json";
-import homographs from "../data/en/homographs.json";
-import { arpabetToIpa } from "./utils";
+import * as dictionary from "../data/en/dict.json";
+import * as homographs from "../data/en/homographs.json";
+import { arpabetToIpa, resolveJson } from "./utils";
 import { G2PProcessor } from "./g2p";
 
 // --- Type Definitions ---
+
+type EnDict = Record<string, string>;
 
 export interface HomographEntry {
   pronunciation: string;
@@ -224,8 +226,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
 // --- G2PModel Class ---
 
 export class G2PModel implements G2PProcessor {
-  private dictionary: { [word: string]: string };
-  private homographs: { [word: string]: any };
+  private dictionary: EnDict;
+  private homographs: HomographDict;
   private disableDict: boolean;
 
   // G2PProcessor interface implementation
@@ -235,8 +237,8 @@ export class G2PModel implements G2PProcessor {
 
   constructor(options: { disableDict?: boolean } = {}) {
     this.disableDict = options.disableDict || false;
-    this.dictionary = dictionary as { [word: string]: string };
-    this.homographs = homographs as HomographDict;
+    this.dictionary = resolveJson<EnDict>(dictionary);
+    this.homographs = resolveJson<HomographDict>(homographs);
   }
 
   predict(word: string, language?: string, pos?: string): string | null {

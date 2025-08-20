@@ -6,3 +6,6 @@ dist/
 coverage/
 .nyc_output/
 *report.txt
+*.tsbuildinfo
+src/*.js
+

@@ -137,6 +137,20 @@ function trimDictionary(dictionary: DictEntry): DictEntry {
   return trimmedDict;
 }
 
+// AnyAscii
+function loadAnyAscii(sourceText: string): { [key: number]: string[] } {
+  // parse, match 'case (\d+): return "..."'
+  const regex = /case\s+(\d+):\s*return\s*"([^"]+)"/g;
+  const anyAsciiMap: { [key: number]: string[] } = {};
+  let match: RegExpExecArray | null = null;
+  while ((match = regex.exec(sourceText)) !== null) {
+    const codePoint = parseInt(match[1], 10);
+    const replacement = match[2];
+    anyAsciiMap[codePoint] = replacement.split("\t");
+  }
+  return anyAsciiMap;
+}
+
 async function main(): Promise<void> {
   console.log("Building phoneme dictionaries...");
 
@@ -235,6 +249,16 @@ async function main(): Promise<void> {
   fs.writeFileSync(path.join(zhDir, "dict.json"), JSON.stringify(jsonContent));
   console.log(`Saved dictionary to: ${path.join(zhDir, "dict.json")}`);
   console.log(`Total entries: ${Object.keys(jsonContent).length}`);
+
+  // Load and save AnyAscii
+  {
+    const res = await fetch("https://raw.githubusercontent.com/anyascii/anyascii/master/impl/js/block.js");
+    const src = await res.text();
+    const anyAsciiMap = loadAnyAscii(src);
+    const anyAsciiPath = path.join(dataDir, "anyascii.json");
+    fs.writeFileSync(anyAsciiPath, JSON.stringify(anyAsciiMap));
+    console.log(`AnyAscii blocks: ${Object.keys(anyAsciiMap).length}`);
+  }
 
   console.log("Dictionary build complete!");
 }

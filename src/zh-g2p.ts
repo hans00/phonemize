@@ -4,11 +4,11 @@
  */
 
 import { pinyin, addDict } from 'pinyin-pro';
-import dict from '../data/zh/dict.json';
-import { pinyinToZhuyin } from './utils';
+import * as dict from '../data/zh/dict.json';
+import { pinyinToZhuyin, resolveJson } from './utils';
 import { G2PProcessor } from "./g2p";
 
-addDict(dict, 'phonemize-zh');
+addDict(resolveJson(dict), 'phonemize-zh');
 addDict({}, 'custom');
 
 /**

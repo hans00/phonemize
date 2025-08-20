@@ -3,7 +3,7 @@
  * Handles language detection, preprocessing, and format conversion
  */
 
-import anyAscii from "any-ascii";
+import anyAscii from "./anyascii";
 import { expandText } from "./expand";
 import { simplePOSTagger } from "./pos-tagger";
 import { ARPABET_TO_IPA, IPA_STRESS_MAP, PUNCTUATION } from "./consts";
