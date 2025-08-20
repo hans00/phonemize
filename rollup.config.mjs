@@ -1,7 +1,7 @@
 import cleanup from 'rollup-plugin-cleanup';
 import typescript from '@rollup/plugin-typescript';
 import json from '@rollup/plugin-json';
-import minify from 'rollup-plugin-tdewolff-minify';
+import Oxc from 'unplugin-oxc/rollup';
 import pkg from './package.json' with { type: 'json' };
 
 export default {
@@ -27,6 +27,10 @@ export default {
       compact: true,
       preferConst: true,
     }),
-    minify(),
+    Oxc({
+      minify: {
+        sourceMap: false,
+      }
+    }),
   ],
 };
