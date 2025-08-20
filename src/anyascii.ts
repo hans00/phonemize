@@ -14,9 +14,7 @@ export default function anyAscii(str: string): string {
     const blockNum = codePoint >>> 8;
     const lo = codePoint & 0xff;
     const b = blocks[blockNum] ?? '';
-    if (b.length > lo) {
-      result += b[lo];
-    }
+    result += b[lo] ?? '';
   }
   return result;
 }

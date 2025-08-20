@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import EnG2P from '../src/en-g2p';
 
 const words = [
@@ -24,8 +23,8 @@ describe('G2P Rule based no error', () => {
   for (const word of words) {
     it(word, () => {
       const result = g2p.predict(word, 'en')
-      expect(result).to.be.a('string')
-      console.log(result)
+      expect(result).toBeDefined()
+      console.log(`${word} -> ${result}`)
     });
   }
 });

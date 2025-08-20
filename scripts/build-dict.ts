@@ -137,15 +137,28 @@ function trimDictionary(dictionary: DictEntry): DictEntry {
   return trimmedDict;
 }
 
+function unescapeString(str: string): string {
+  return str
+    .replace(/\\u\{([0-9A-F]+)\}/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/\\(["'])/g, "$1")
+    .replace(/\\n/g, "\n")
+    .replace(/\\t/g, "\t")
+    .replace(/\\r/g, "\r")
+    .replace(/\\f/g, "\f")
+    .replace(/\\b/g, "\b")
+    .replace(/\\a/g, "\a")
+    .replace(/\\v/g, "\v")
+}
+
 // AnyAscii
 function loadAnyAscii(sourceText: string): { [key: number]: string[] } {
   // parse, match 'case (\d+): return "..."'
-  const regex = /case\s+(\d+):\s*return\s*"([^"]+)"/g;
+  const regex = /case\s+(\d+):\s*return\s*"(.+)";?/g;
   const anyAsciiMap: { [key: number]: string[] } = {};
   let match: RegExpExecArray | null = null;
   while ((match = regex.exec(sourceText)) !== null) {
     const codePoint = parseInt(match[1], 10);
-    const replacement = match[2];
+    const replacement = unescapeString(match[2]);
     anyAsciiMap[codePoint] = replacement.split("\t");
   }
   return anyAsciiMap;

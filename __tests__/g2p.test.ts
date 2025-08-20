@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { 
   G2PProcessor, 
   detectLanguage
@@ -105,8 +104,8 @@ describe('G2P Registry and Language Detection', () => {
       registry.register(processor1);
       registry.register(processor2);
 
-      expect(registry.getProcessor("mock-processor")).to.equal(processor1);
-      expect(registry.getProcessor("mock-processor-2")).to.equal(processor2);
+      expect(registry.getProcessor("mock-processor")).toEqual(processor1);
+      expect(registry.getProcessor("mock-processor-2")).toEqual(processor2);
     });
 
     it('should get processors for specific language', () => {
@@ -114,12 +113,12 @@ describe('G2P Registry and Language Detection', () => {
       registry.register(processor2);
 
       const enProcessors = registry.getProcessorsForLanguage("en");
-      expect(enProcessors).to.have.length(1);
-      expect(enProcessors[0]).to.equal(processor1);
+      expect(enProcessors).toHaveLength(1);
+      expect(enProcessors[0]).toEqual(processor1);
 
       const zhProcessors = registry.getProcessorsForLanguage("zh");
-      expect(zhProcessors).to.have.length(1);
-      expect(zhProcessors[0]).to.equal(processor2);
+      expect(zhProcessors).toHaveLength(1);
+      expect(zhProcessors[0]).toEqual(processor2);
     });
 
     it('should get all processors', () => {
@@ -127,9 +126,9 @@ describe('G2P Registry and Language Detection', () => {
       registry.register(processor2);
 
       const allProcessors = registry.getAllProcessors();
-      expect(allProcessors).to.have.length(2);
-      expect(allProcessors).to.include(processor1);
-      expect(allProcessors).to.include(processor2);
+      expect(allProcessors).toHaveLength(2);
+      expect(allProcessors).toContain(processor1);
+      expect(allProcessors).toContain(processor2);
     });
 
     it('should find best processor for word and language', () => {
@@ -138,74 +137,74 @@ describe('G2P Registry and Language Detection', () => {
 
       // Test with specific language
       const enProcessor = registry.findBestProcessor("test", "en");
-      expect(enProcessor).to.equal(processor1);
+      expect(enProcessor).toEqual(processor1);
 
       const zhProcessor = registry.findBestProcessor("test", "zh");
-      expect(zhProcessor).to.equal(processor2);
+      expect(zhProcessor).toEqual(processor2);
 
       // Test without language specification
       const anyProcessor = registry.findBestProcessor("test");
-      expect(anyProcessor).to.equal(processor1); // First registered processor
+      expect(anyProcessor).toEqual(processor1); // First registered processor
     });
 
     it('should return null when no processor found', () => {
       const processor = registry.findBestProcessor("test", "unknown");
-      expect(processor).to.be.null;
+      expect(processor).toBeNull();
     });
 
     it('should clear all processors', () => {
       registry.register(processor1);
       registry.register(processor2);
 
-      expect(registry.getAllProcessors()).to.have.length(2);
+      expect(registry.getAllProcessors()).toHaveLength(2);
 
       registry.clear();
 
-      expect(registry.getAllProcessors()).to.have.length(0);
-      expect(registry.getProcessorsForLanguage("en")).to.have.length(0);
+      expect(registry.getAllProcessors()).toHaveLength(0);
+      expect(registry.getProcessorsForLanguage("en")).toHaveLength(0);
     });
   });
 
   describe('Language Detection', () => {
     it('should detect Chinese characters', () => {
-      expect(detectLanguage('你好')).to.equal('zh');
-      expect(detectLanguage('世界')).to.equal('zh');
+      expect(detectLanguage('你好')).toEqual('zh');
+      expect(detectLanguage('世界')).toEqual('zh');
     });
 
     it('should detect Japanese characters', () => {
-      expect(detectLanguage('こんにちは')).to.equal('ja');
-      expect(detectLanguage('カタカナ')).to.equal('ja');
+      expect(detectLanguage('こんにちは')).toEqual('ja');
+      expect(detectLanguage('カタカナ')).toEqual('ja');
     });
 
     it('should detect Korean characters', () => {
-      expect(detectLanguage('안녕하세요')).to.equal('ko');
-      expect(detectLanguage('한국어')).to.equal('ko');
+      expect(detectLanguage('안녕하세요')).toEqual('ko');
+      expect(detectLanguage('한국어')).toEqual('ko');
     });
 
     it('should detect Russian characters', () => {
-      expect(detectLanguage('привет')).to.equal('ru');
-      expect(detectLanguage('мир')).to.equal('ru');
+      expect(detectLanguage('привет')).toEqual('ru');
+      expect(detectLanguage('мир')).toEqual('ru');
     });
 
     it('should detect German characters', () => {
-      expect(detectLanguage('grüße')).to.equal('de');
-      expect(detectLanguage('Müller')).to.equal('de');
+      expect(detectLanguage('grüße')).toEqual('de');
+      expect(detectLanguage('Müller')).toEqual('de');
     });
 
     it('should detect Arabic characters', () => {
-      expect(detectLanguage('مرحبا')).to.equal('ar');
-      expect(detectLanguage('عالم')).to.equal('ar');
+      expect(detectLanguage('مرحبا')).toEqual('ar');
+      expect(detectLanguage('عالم')).toEqual('ar');
     });
 
     it('should detect Thai characters', () => {
-      expect(detectLanguage('สวัสดี')).to.equal('th');
-      expect(detectLanguage('โลก')).to.equal('th');
+      expect(detectLanguage('สวัสดี')).toEqual('th');
+      expect(detectLanguage('โลก')).toEqual('th');
     });
 
     it('should return null for unsupported languages', () => {
-      expect(detectLanguage('hello')).to.be.null;
-      expect(detectLanguage('123')).to.be.null;
-      expect(detectLanguage('')).to.be.null;
+      expect(detectLanguage('hello')).toBeNull();
+      expect(detectLanguage('123')).toBeNull();
+      expect(detectLanguage('')).toBeNull();
     });
   });
 
@@ -216,15 +215,15 @@ describe('G2P Registry and Language Detection', () => {
 
       // Test English processor
       const enResult = processor1.predict("hello", "en");
-      expect(enResult).to.equal("mock-hello");
+      expect(enResult).toEqual("mock-hello");
 
       // Test Chinese processor
       const zhResult = processor2.predict("你好", "zh");
-      expect(zhResult).to.equal("mock2-你好");
+      expect(zhResult).toEqual("mock2-你好");
 
       // Test language mismatch
       const mismatchResult = processor1.predict("hello", "zh");
-      expect(mismatchResult).to.be.null;
+      expect(mismatchResult).toBeNull();
     });
 
     it('should handle processor prediction without language specification', () => {
@@ -232,10 +231,10 @@ describe('G2P Registry and Language Detection', () => {
       registry.register(processor2);
 
       const result1 = processor1.predict("hello");
-      expect(result1).to.equal("mock-hello");
+      expect(result1).toEqual("mock-hello");
 
       const result2 = processor2.predict("你好");
-      expect(result2).to.equal("mock2-你好");
+      expect(result2).toEqual("mock2-你好");
     });
   });
 }); 

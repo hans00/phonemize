@@ -1,5 +1,4 @@
-import { expect } from 'chai'
-import anyAscii from 'any-ascii'
+import anyAscii from '../src/anyascii'
 import { predictPhonemes } from '../src/g2p'
 
 const tests = [
@@ -30,14 +29,12 @@ const tests = [
 const withoutAnyAscii = ['en', 'zh']
 
 describe('Multilingual Processor', function() {
-  for (const test of tests) {
-    it(`should process ${test.text}`, function() {
-      const { text, lang, expected } = test
-      const result = predictPhonemes(
-        withoutAnyAscii.includes(lang) ? text : anyAscii(text),
-        lang,
-      )
-      expect(result).to.be.equal(expected)
+  for (const { text, lang, expected } of tests) {
+    const payload = withoutAnyAscii.includes(lang) ? text : anyAscii(text)
+    it(`should process ${text} (payload: ${payload})`, function() {
+      const result = predictPhonemes(payload, lang)
+      expect(result).toEqual(expected)
+      console.log(`${text} -> ${result}`)
     })
   }
 })
