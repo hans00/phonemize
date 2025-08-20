@@ -1,6 +1,6 @@
 {
   "name": "phonemize",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Fast phonemizer with rule-based G2P prediction. Pure JavaScript implementation.",
   "main": "dist/index.cjs",
   "types": "dist/index.d.ts",
