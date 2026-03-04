@@ -16,10 +16,10 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       
     - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
@@ -54,10 +54,10 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: '20.x'
         cache: 'yarn'
@@ -87,7 +87,7 @@ jobs:
         
     - name: Comment PR with performance results
       if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           const performanceReport = `${{ steps.performance.outputs.report }}`;
@@ -128,7 +128,7 @@ jobs:
           
     - name: Commit performance results to commit status
       if: github.event_name == 'push'
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           const performanceReport = `${{ steps.performance.outputs.report }}`;
