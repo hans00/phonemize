@@ -66,24 +66,6 @@ function loadCmuDict(content: string): DictEntry {
   return arpaDict;
 }
 
-/**
- * Fix the STRUT vowel: ipa-dict uses ə (schwa) for the STRUT vowel in words
- * like "but", "cut", "come", "love", "other", "mother", "nothing", etc.
- * In standard IPA for English, the STRUT vowel is /ʌ/, a distinct phoneme
- * from schwa /ə/. This function detects ə in stressed closed syllables
- * and replaces it with ʌ. Open syllable ə (like "the" = ðə) is preserved.
- */
-function fixStrutVowel(dict: DictEntry): DictEntry {
-  const vowels = 'ɑɒæəɔɛɜɪʊʌaeioɚuɝ';
-  // Match ə that is the first vowel after a stress mark, in a closed syllable
-  const re = new RegExp(`([ˈˌ][^\${vowels}\\sˈˌ]*)ə(?=[^\${vowels}\\sˈˌ])`, 'g');
-  const fixed: DictEntry = {};
-  for (const [word, ipa] of Object.entries(dict)) {
-    fixed[word] = ipa.replace(re, '$1ʌ');
-  }
-  return fixed;
-}
-
 function trimDictionary(dictionary: DictEntry): DictEntry {
   const trimmedDict = { ...dictionary };
   let totalRemoved = 0;
@@ -223,15 +205,7 @@ async function main(): Promise<void> {
     );
 
     // Merge dictionaries (custom overrides CMU)
-    const mergedDict = { ...dict, ...customDict };
-
-    // Fix STRUT vowel: ə → ʌ in stressed closed syllables
-    console.log("\nApplying STRUT vowel fix (ə → ʌ in stressed syllables)...");
-    const finalArpaDict = fixStrutVowel(mergedDict);
-    const strutFixedCount = Object.keys(mergedDict).filter(
-      w => mergedDict[w] !== finalArpaDict[w]
-    ).length;
-    console.log(`Fixed STRUT vowel in \${strutFixedCount} entries`);
+    const finalArpaDict = { ...dict, ...customDict };
 
     // Apply dictionary trimming
     console.log("\nApplying dictionary trimming...");

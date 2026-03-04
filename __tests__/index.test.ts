@@ -6,7 +6,7 @@ describe('Index', function() {
     expect(phonemize('this is an apple.')).toEqual('ˈðɪs ˈɪz ˈæn ˈæpəɫ.')
     expect(phonemize('John\'s package', true)).toEqual([
       {
-        "phoneme": "ˈdʒɑnz",
+        "phoneme": "ˈdʒɑːnz",
         "position": 0,
         "word": "John's"
       },
@@ -33,12 +33,12 @@ describe('Index', function() {
 
   it('rule based or compound word', function() {
     expect(phonemize('buggie')).toEqual('ˈbʌɡi')
-    expect(phonemize('supercar')).toEqual('ˈsupɝˈkɑɹ')
-    expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).toEqual('ˈnumoʊˈnoʊˈəɫtɹəˈˌmaɪkɹəskɑpɪkˈsiˈɫikoʊˈvɑɫkeɪnoʊˈkɑnˈaɪoʊˈsɪs')
+    expect(phonemize('supercar')).toEqual('ˈsuːpɝˈkɑːɹ')
+    expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).toEqual('ˈnuːmoʊˈnoʊˈəɫtɹəˈˌmaɪkɹəskɑːpɪkˈsiːˈɫiːkoʊˈvɑːɫkeɪnoʊˈkɑːnˈaɪoʊˈsɪs')
   })
 
   it('chinese', function() {
-    expect(phonemize('中文 TTS')).toEqual('ʈʂʊŋ˥˥ wən˧˥ ˈtiˈtiˈɛs')
+    expect(phonemize('中文 TTS')).toEqual('ʈʂʊŋ˥˥ wən˧˥ ˈtiːˈtiːˈɛs')
     expect(phonemize('中文的抑揚頓挫')).toEqual('ʈʂʊŋ˥˥ wən˧˥ tə˧ i˥˩ jɑŋ˧˥ tuən˥˩ tsʰuɔ˥˩')
     expect(phonemize('還原 還你 還是 還不是')).toEqual('xuan˧˥ juan˧˥ xuan˧˥ ni˧˩˧ xaɪ˧˥ ʂɨ˥˩ xaɪ˧˥ pu˥˩ ʂɨ˥˩')
   })
@@ -102,13 +102,13 @@ describe('Index', function() {
   it('Number processing', function() {
     // Basic number expansion tests
     expect(phonemize('5')).toEqual('ˈfaɪv')
-    expect(phonemize('123')).toEqual('ˈwən ˈhəndɝd ˈtwɛni ˈθɹi')
+    expect(phonemize('123')).toEqual('ˈwən ˈhəndɝd ˈtwɛni ˈθɹiː')
   })
 
   it('Abbreviation expansion', function() {
     // Basic abbreviation tests
     expect(phonemize('Mr. Smith')).toContain('ˈmɪstɝ')
-    expect(phonemize('Dr. Johnson')).toContain('ˈdɑktɝ')
+    expect(phonemize('Dr. Johnson')).toContain('ˈdɑːktɝ')
   })
 
   it('Custom tokenizer creation', function() {
@@ -125,7 +125,7 @@ describe('Index', function() {
   })
 
   it('Uppercase acronym processing', function() {
-    expect(phonemize('TTS')).toEqual('ˈtiˈtiˈɛs')
+    expect(phonemize('TTS')).toEqual('ˈtiːˈtiːˈɛs')
     expect(phonemize('AI')).toEqual('ˈeɪaɪ')
 
     expect(phonemize('Xyz')).not.toContain('ˌɛks')
