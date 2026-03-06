@@ -21,8 +21,15 @@ function parseDict(content: string): DictEntry {
 
     let [, word, phonesStr] = match;
 
-    const ipa = phonesStr.match(/^\/([^\/]+)\//)?.[1];
-    if (!ipa) continue;
+    // Parse all pronunciation variants (format: /vɑr1/, /vɔr2/, ...)
+    const variants = [...phonesStr.matchAll(/\/([^\/]+)\//g)].map(m => m[1]);
+    if (variants.length === 0) continue;
+
+    // When multiple variants exist, prefer the one containing ɔ (THOUGHT vowel)
+    // over ɑ (LOT vowel). The ipa-dict source lists ɑ variants first for words
+    // like "caught", "bought", "law", "fall", "walk", etc., but ɔ better
+    // represents standard American English pronunciation for these words.
+    const ipa = variants.find(v => v.includes("ɔ")) ?? variants[0];
     dict[word.toLowerCase()] = ipa;
   }
 
