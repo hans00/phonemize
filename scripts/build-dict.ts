@@ -21,12 +21,126 @@ function parseDict(content: string): DictEntry {
 
     let [, word, phonesStr] = match;
 
-    const ipa = phonesStr.match(/^\/([^\/]+)\//)?.[1];
-    if (!ipa) continue;
+    // Parse all pronunciation variants (format: /vɑr1/, /vɔr2/, ...)
+    const variants = [...phonesStr.matchAll(/\/([^\/]+)\//g)].map(m => m[1]);
+    if (variants.length === 0) continue;
+
+    // When multiple variants exist, prefer the one containing ɔ (THOUGHT vowel)
+    // over ɑ (LOT vowel). The ipa-dict source lists ɑ variants first for words
+    // like "caught", "bought", "law", "fall", "walk", etc., but ɔ better
+    // represents standard American English pronunciation for these words.
+    const ipa = variants.find(v => v.includes("ɔ")) ?? variants[0];
     dict[word.toLowerCase()] = ipa;
   }
 
   return dict;
+}
+
+/**
+ * Apply British English (RP) pronunciation corrections to a dictionary
+ * derived from en_US IPA data. Fixes systematic differences between
+ * General American and Received Pronunciation that the source data
+ * does not account for.
+ */
+function fixBritishDict(dict: DictEntry): DictEntry {
+  const result: DictEntry = { ...dict };
+  let nurseCount = 0;
+  let ageCount = 0;
+  let arilyCount = 0;
+  let ormationCount = 0;
+  let yodCount = 0;
+
+  // --- Fix 1: NURSE vowel ---
+  // əː is not a real English phoneme. The NURSE vowel is always /ɜː/
+  // regardless of stress. Source dictionaries sometimes use əː erroneously.
+  for (const word of Object.keys(result)) {
+    const before = result[word];
+    const after = before.replace(/əː/g, "ɜː");
+    if (after !== before) {
+      result[word] = after;
+      nurseCount++;
+    }
+  }
+
+  // --- Fix 2: French -age loanwords ---
+  // RP uses the fricative /ʒ/ (not the affricate /dʒ/) for French
+  // borrowings ending in -age: garage → /ɡæɹɑːʒ/, not /ɡæɹɑːdʒ/.
+  const frenchAgeWords = new Set([
+    "garage", "massage", "barrage", "camouflage", "sabotage",
+    "espionage", "reportage", "decoupage", "persiflage", "badinage",
+  ]);
+  for (const word of frenchAgeWords) {
+    if (result[word] && result[word].endsWith("ɑːʤ")) {
+      result[word] = result[word].slice(0, -1) + "ʒ";
+      ageCount++;
+    }
+  }
+
+  // --- Fix 3: -arily adverb stress ---
+  // In BrE, adverbs ending in -arily place secondary stress on the
+  // penultimate -ɛɹ- syllable (e.g. priˈmɛɹɪli), unlike AmE which
+  // stresses the first syllable. We add a secondary stress marker ˌ
+  // before the ɛɹ sequence if one is not already present.
+  const arilyWords = new Set([
+    "primarily", "necessarily", "temporarily", "ordinarily",
+    "momentarily", "voluntarily", "militarily", "extraordinarily",
+    "customarily", "involuntarily",
+  ]);
+  for (const word of arilyWords) {
+    if (!result[word]) continue;
+    const pron = result[word];
+    // Only fix if the word contains ɛɹ and does not already have
+    // a stress mark immediately before it
+    if (pron.includes("ɛɹ") && !pron.includes("ˌɛɹ") && !pron.includes("ˈɛɹ")) {
+      result[word] = pron.replace("ɛɹ", "ˌɛɹ");
+      arilyCount++;
+    }
+  }
+
+  // --- Fix 4: -ormation derivatives ---
+  // BrE preserves /ɔː/ in the -form- syllable of -ormation words,
+  // rather than reducing it to /ə/ as in casual AmE.
+  const ormationWords = new Set([
+    "information", "transformation", "reformation", "confirmation",
+    "disinformation", "misinformation",
+  ]);
+  for (const word of ormationWords) {
+    if (!result[word]) continue;
+    const pron = result[word];
+    // Replace schwa (ə) before ɹmeɪʃən with ɔː — targeting the
+    // reduced -form- vowel specifically
+    if (pron.includes("fəɹm") && !pron.includes("fɔːɹm")) {
+      result[word] = pron.replace("fəɹm", "fɔːɹm");
+      ormationCount++;
+    }
+  }
+
+  // --- Fix 5: Yod insertion after /s/ ---
+  // BrE retains /j/ before /uː/ after /s/, where AmE drops it.
+  // e.g. "suit" → /sjuːt/ not /suːt/
+  const yodWords: Record<string, [string, string]> = {
+    "sue":      ["suː",     "sjuː"],
+    "suit":     ["suːt",    "sjuːt"],
+    "super":    ["suːpəɹ",  "sjuːpəɹ"],
+    "superb":   ["suːpɜːb", "sjuːpɜːb"],
+    "superior": ["suːpɪɹiəɹ", "sjuːpɪəɹɪə"],
+  };
+  for (const [word, [amPattern, brReplacement]] of Object.entries(yodWords)) {
+    if (!result[word]) continue;
+    // Only apply if the pronunciation matches the AmE pattern
+    if (result[word].includes(amPattern)) {
+      result[word] = result[word].replace(amPattern, brReplacement);
+      yodCount++;
+    }
+  }
+
+  console.log(`  NURSE vowel (əː→ɜː): ${nurseCount} entries`);
+  console.log(`  French -age loanwords: ${ageCount} entries`);
+  console.log(`  -arily adverb stress: ${arilyCount} entries`);
+  console.log(`  -ormation /ɔː/: ${ormationCount} entries`);
+  console.log(`  Yod insertion /sj/: ${yodCount} entries`);
+
+  return result;
 }
 
 function loadCmuDict(content: string): DictEntry {
@@ -217,6 +331,36 @@ async function main(): Promise<void> {
     fs.writeFileSync(arpaPath, JSON.stringify(trimmedDict));
     console.log(`Saved dictionary to: ${arpaPath}`);
     console.log(`Total entries: ${Object.keys(trimmedDict).length}`);
+  }
+
+  // Build British English (en-gb) dictionary
+  // Derived from the same en_US IPA source with RP pronunciation fixes applied.
+  {
+    const gbDir = path.join(dataDir, "en-gb");
+    if (!fs.existsSync(gbDir)) {
+      fs.mkdirSync(gbDir, { recursive: true });
+    }
+
+    const gbRes = await fetch(
+      "https://raw.githubusercontent.com/open-dict-data/ipa-dict/refs/heads/master/data/en_US.txt",
+    );
+    const gbBaseDict = parseDict(await gbRes.text());
+
+    // Load custom dictionary (same overrides apply to both dialects)
+    const gbCustomDictPath = new URL("../src-data/en/custom.dict", import.meta.url)
+      .pathname;
+    const gbCustomDict = loadCmuDict(fs.readFileSync(gbCustomDictPath, "utf-8"));
+
+    const gbMerged = { ...gbBaseDict, ...gbCustomDict };
+
+    console.log("\nApplying British English pronunciation fixes...");
+    const gbFixed = fixBritishDict(gbMerged);
+    const gbTrimmed = trimDictionary(gbFixed);
+
+    const gbPath = path.join(gbDir, "dict.json");
+    fs.writeFileSync(gbPath, JSON.stringify(gbTrimmed));
+    console.log(`Saved GB dictionary to: ${gbPath}`);
+    console.log(`Total GB entries: ${Object.keys(gbTrimmed).length}`);
   }
 
   {
