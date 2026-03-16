@@ -15,6 +15,35 @@ import type ChineseG2P from "./zh-g2p";
 // Tokenization regex patterns
 const TOKEN_REGEX = /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+['']?\w*|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
 
+// All IPA vowel symbols used for rhotacized vowel detection
+const IPA_VOWELS = 'ɑɒæəɔɛɜɪʊʌaeioɚuɝ';
+
+/**
+ * Fix rhotacized vowel distinctions for English IPA output.
+ *
+ * The G2P dictionary uses ɝ for all rhotacized vowels, but standard IPA
+ * distinguishes:
+ *   - Stressed NURSE vowel (ɜː): "bird" = bɜːd, "word" = wɜːd
+ *   - Unstressed rhotacized schwa (ɚ): "doctor" = dɑːktɚ, "letter" = lɛtɚ
+ *
+ * Additionally, when ɚ appears before a vowel, a linking ɹ consonant
+ * surfaces (e.g. "centuries" = sɛntʃɚɹiz, "batteries" = bætɚɹiz).
+ */
+function fixRhotacizedVowels(ipa: string): string {
+  // 1. Stressed ɝ → ɜː (NURSE vowel: first vowel after a stress mark)
+  const reStressedRhot = new RegExp(`([ˈˌ][^${IPA_VOWELS}\\sˈˌ]*)ɝ`, 'g')
+  let result = ipa.replace(reStressedRhot, '$1ɜː')
+
+  // 2. Remaining unstressed ɝ → ɚ
+  result = result.replace(/ɝ/g, 'ɚ')
+
+  // 3. Linking ɹ: insert ɹ between ɚ and a following vowel
+  const reLinkingR = new RegExp(`ɚ(?=[${IPA_VOWELS}])`, 'g')
+  result = result.replace(reLinkingR, 'ɚɹ')
+
+  return result
+}
+
 /**
  * Configuration options for tokenizer behavior
  */
@@ -265,6 +294,9 @@ export class Tokenizer {
       return phonemes;
     } else {
       // IPA format processing
+      
+      // Fix rhotacized vowel distinctions (ɝ → ɜː stressed, ɚ unstressed)
+      phonemes = fixRhotacizedVowels(phonemes);
       
       // Convert Chinese tone format if requested
       if (this.options.toneFormat === "arrow") {
