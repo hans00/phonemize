@@ -2,6 +2,9 @@ import * as dictionary from "../data/en/dict.json";
 import * as homographs from "../data/en/homographs.json";
 import { arpabetToIpa, resolveJson } from "./utils";
 import { G2PProcessor } from "./g2p";
+import { transformAmericanToRP } from "./en-gb";
+
+export type EnglishDialect = "en-US" | "en-GB";
 
 // --- Type Definitions ---
 
@@ -227,28 +230,53 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
 
 export class G2PModel implements G2PProcessor {
   private dictionary: EnDict;
+  /**
+   * Per-instance custom pronunciations. We keep these separate from
+   * `this.dictionary` (which references the shared module-level JSON
+   * object) so that `addPronunciation()` on one instance doesn't leak
+   * to other instances created in the same process.
+   */
+  private customDict: EnDict = {};
   private homographs: HomographDict;
   private disableDict: boolean;
+  private dialect: EnglishDialect;
 
   // G2PProcessor interface implementation
   readonly id = "en-g2p";
   readonly name = "English G2P Processor";
-  readonly supportedLanguages = ["en"];
+  /**
+   * Accepts the bare `en` tag plus both major dialects. The same
+   * instance can serve both — see `predict()` for per-call dispatch.
+   */
+  readonly supportedLanguages = ["en", "en-US", "en-GB"];
 
-  constructor(options: { disableDict?: boolean } = {}) {
+  constructor(options: { disableDict?: boolean; dialect?: EnglishDialect } = {}) {
     this.disableDict = options.disableDict || false;
+    this.dialect = options.dialect ?? "en-US";
     this.dictionary = resolveJson<EnDict>(dictionary);
     this.homographs = resolveJson<HomographDict>(homographs);
   }
 
   predict(word: string, language?: string, pos?: string): string | null {
-    // If language is specified and not English, return null
-    if (language && language !== 'en') {
-      return null;
+    // Reject non-English requests. We accept `en`, `en-US`, `en-GB`,
+    // and any unspecified language (registry fallback uses us).
+    if (language) {
+      const primary = language.indexOf("-") === -1 ? language : language.slice(0, language.indexOf("-"));
+      if (primary !== "en") return null;
     }
-    
-    // Use the existing predict method
-    return this.predictInternal(word, pos, this.disableDict);
+
+    // Resolve effective dialect: explicit dialect tag > instance default.
+    // Bare "en" (no region) defers to whichever dialect this instance
+    // was constructed with.
+    const dialect: EnglishDialect =
+      language === "en-GB" ? "en-GB" :
+      language === "en-US" ? "en-US" :
+      this.dialect;
+
+    const base = this.predictInternal(word, pos, this.disableDict);
+    if (!base) return base;
+
+    return dialect === "en-GB" ? transformAmericanToRP(word, base) : base;
   }
 
   private predictInternal(
@@ -364,6 +392,9 @@ export class G2PModel implements G2PProcessor {
       if (homograph) {
         return homograph.pronunciation;
       }
+    }
+    if (this.customDict[word]) {
+      return this.customDict[word];
     }
     if (this.dictionary[word]) {
       return this.dictionary[word];
@@ -848,7 +879,7 @@ export class G2PModel implements G2PProcessor {
     if (!pronunciation.match(/^[A-Z0-9]+$/)) {
       pronunciation = arpabetToIpa(pronunciation);
     }
-    this.dictionary[word.toLowerCase()] = pronunciation;
+    this.customDict[word.toLowerCase()] = pronunciation;
   }
 }
 

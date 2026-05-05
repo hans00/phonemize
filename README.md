@@ -77,6 +77,15 @@ phonemize('Hello world!', { returnArray: true })  // IPA array
 - `stripStress` (boolean): Remove stress markers
 - `separator` (string): Phoneme separator (default: ' ')
 - `anyAscii` (boolean): Enable multilingual support via anyAscii transliteration
+- `language` (string): Preferred language tag (BCP 47, e.g. `'en-GB'`). Words written in unambiguously different scripts (CJK, Cyrillic, …) still go through their own processor.
+
+**Language shorthand:** pass a string as the second argument to set `language` directly:
+
+```javascript
+phonemize('doctor', 'en-GB')   // "ˈdɑktə"  (RP)
+phonemize('doctor', 'en-US')   // "ˈdɑktɝ"  (GA, default)
+toIPA('car', 'en-GB')          // "ˈkɑː"
+```
 
 #### `toIPA(text, options?)`
 Convert text to IPA phonemes.
@@ -133,6 +142,57 @@ import { addPronunciation } from 'phonemize'
 addPronunciation('myword', 'ˈmaɪwərd') // Can be IPA or ARPABET
 console.log(phonemize('myword'))  // "ˈmaɪwərd"
 ```
+
+### English Dialects (en-US / en-GB)
+
+The English G2P ships with American English (en-US) as default and a
+rule-based RP (Received Pronunciation) post-processor for en-GB. No
+separate dictionary is shipped — RP is derived from the AmE base via:
+
+- non-rhotic conversion (drop coda /ɹ/, lengthen vowel: `car` → `ˈkɑː`)
+- NURSE split (`bird` → `ˈbɜːd`, `doctor` → `ˈdɑktə`)
+- SQUARE/NEAR/CURE diphthongs (`hair` → `ˈhɛə`, `near` → `ˈnɪə`)
+- word-level overrides for `garage`, `sue`, `super`, `information`,
+  `schedule`, …
+
+```javascript
+import { phonemize, createPhonemizer, EnglishG2P } from 'phonemize'
+
+phonemize('hello world', 'en-GB')  // "həˈɫoʊ ˈwɜːɫd"
+phonemize('garage', 'en-GB')       // "ˈɡæɹɑːʒ"
+
+// Or fix a Phonemizer instance to RP:
+const rp = createPhonemizer({
+  g2ps: [new EnglishG2P({ dialect: 'en-GB' })],
+  language: 'en-GB',
+})
+rp.phonemize('information')        // "ˌɪnfəˈmeɪʃən"
+```
+
+### Multi-instance (`createPhonemizer`)
+
+The default `phonemize()` and `useG2P()` work against a single shared
+G2P registry — convenient, but if you need multiple isolated language
+configurations in the same process, use `createPhonemizer()`:
+
+```javascript
+import { createPhonemizer, EnglishG2P, ChineseG2P } from 'phonemize'
+
+// English-only — won't see Chinese G2P even if registered globally
+const enOnly = createPhonemizer({ g2ps: [new EnglishG2P()] })
+enOnly.phonemize('hello 中文')   // "həˈɫoʊ 中文"  (zh untouched)
+
+// Stack what you want
+const full = createPhonemizer()
+full.useG2P(new EnglishG2P()).useG2P(new ChineseG2P())
+
+// addPronunciation only mutates this instance
+enOnly.addPronunciation('myword', 'ˈmaɪwərd')
+```
+
+`Phonemizer` instances expose the same surface (`phonemize`, `toIPA`,
+`toARPABET`, `toZhuyin`, `addPronunciation`, `createTokenizer`,
+`useG2P`, `unregister`).
 
 ### Advanced Tokenization
 
