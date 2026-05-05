@@ -156,7 +156,8 @@ separate dictionary is shipped — RP is derived from the AmE base via:
   `schedule`, …
 
 ```javascript
-import { phonemize, createPhonemizer, EnglishG2P } from 'phonemize'
+import { phonemize, createPhonemizer } from 'phonemize'
+import EnglishG2P from 'phonemize/en-g2p'
 
 phonemize('hello world', 'en-GB')  // "həˈɫoʊ ˈwɜːɫd"
 phonemize('garage', 'en-GB')       // "ˈɡæɹɑːʒ"
@@ -176,7 +177,9 @@ G2P registry — convenient, but if you need multiple isolated language
 configurations in the same process, use `createPhonemizer()`:
 
 ```javascript
-import { createPhonemizer, EnglishG2P, ChineseG2P } from 'phonemize'
+import { createPhonemizer } from 'phonemize'
+import EnglishG2P from 'phonemize/en-g2p'
+import ChineseG2P from 'phonemize/zh-g2p'
 
 // English-only — won't see Chinese G2P even if registered globally
 const enOnly = createPhonemizer({ g2ps: [new EnglishG2P()] })
