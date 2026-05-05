@@ -6,10 +6,13 @@
 import anyAscii from "./anyascii";
 import { expandText } from "./expand";
 import { simplePOSTagger } from "./pos-tagger";
-import { ARPABET_TO_IPA, IPA_STRESS_MAP, PUNCTUATION } from "./consts";
-import { detectLanguage, getG2PProcessor, predictPhonemes } from "./g2p";
+import { PUNCTUATION } from "./consts";
+import {
+  detectLanguage,
+  g2pRegistry as defaultRegistry,
+  G2PRegistry,
+} from "./g2p";
 import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
-import type { G2PProcessor } from "./g2p";
 import type ChineseG2P from "./zh-g2p";
 
 // Tokenization regex patterns
@@ -23,7 +26,7 @@ export interface TokenizerOptions {
   stripStress?: boolean;
   /**
    * Output format (IPA, ARPABET, or Zhuyin)
-   * 
+   *
    * Note: Non-chinese in zhuyin format will be converted to IPA
    **/
   format?: "ipa" | "arpabet" | "zhuyin";
@@ -33,6 +36,23 @@ export interface TokenizerOptions {
   anyAscii?: boolean;
   /** Chinese tone format: 'unicode' (˧˩˧) or 'arrow' (↓↗↘→). Only applies when format is 'ipa' */
   toneFormat?: "unicode" | "arrow";
+  /**
+   * Preferred language tag (BCP 47, e.g. "en", "en-GB", "zh").
+   *
+   * When set, the tokenizer skips Unicode-based auto-detection for words
+   * that don't clearly belong to a different script and routes them to
+   * a G2P processor matching this tag. Words written in a script that
+   * unambiguously identifies another language (e.g. Han for Chinese)
+   * still go through their script-detected processor.
+   */
+  language?: string;
+  /**
+   * G2P registry to use for phoneme prediction. Defaults to the global
+   * registry populated by the package's `useG2P()` calls. Pass a custom
+   * registry (or use `createPhonemizer()`) for isolated multi-instance
+   * setups.
+   */
+  registry?: G2PRegistry;
 }
 
 /**
@@ -69,17 +89,21 @@ interface PreprocessResult {
  * Main tokenizer class for phoneme processing
  */
 export class Tokenizer {
-  protected readonly options: Required<TokenizerOptions>;
+  protected readonly options: Required<Omit<TokenizerOptions, "language" | "registry">> & {
+    language: string | undefined;
+  };
+  protected readonly registry: G2PRegistry;
 
   constructor(options: TokenizerOptions = {}) {
     this.options = {
-      stripStress: false,
-      format: "ipa",
-      separator: " ",
-      anyAscii: false,
-      toneFormat: "unicode",
-      ...options,
+      stripStress: options.stripStress ?? false,
+      format: options.format ?? "ipa",
+      separator: options.separator ?? " ",
+      anyAscii: options.anyAscii ?? false,
+      toneFormat: options.toneFormat ?? "unicode",
+      language: options.language,
     };
+    this.registry = options.registry ?? defaultRegistry;
   }
 
   /**
@@ -281,7 +305,7 @@ export class Tokenizer {
   }
 
   private _predict(token: string, language: string, pos: string): string {
-    const predicted = predictPhonemes(token, language, pos);
+    const predicted = this.registry.predictPhonemes(token, language, pos);
     return this._postProcess(predicted || token);
   }
 
@@ -350,13 +374,26 @@ export class Tokenizer {
 
       let phoneme: string;
 
-      // Check language map for multilingual words
-      const detectedLanguage = languageMap[cleanToken.toLowerCase()];
-      
+      // Resolve language for this token. Script-detected languages (CJK,
+      // Cyrillic, etc.) win over the user-supplied preferred language —
+      // e.g. `phonemize("hello 中文", "en-GB")` still routes 中文 to the
+      // Chinese processor. The languageMap is keyed by whitespace-split
+      // chunks, but the actual tokenizer can split a chunk further
+      // (e.g. "hello中文" without a space → tokens "hello" + "中文"),
+      // so we re-run script detection on the per-token string before
+      // falling back to the preferred language.
+      const detectedLanguage =
+        languageMap[cleanToken.toLowerCase()]
+        ?? detectLanguage(cleanToken)
+        ?? this.options.language;
+
       // Handle Zhuyin format specially
       if (this.options.format === "zhuyin" && detectedLanguage === "zh") {
         // Convert Chinese to Zhuyin
-        const g2p = getG2PProcessor(cleanToken, detectedLanguage) as ChineseG2P | null;
+        const g2p = this.registry.findBestProcessor(
+          cleanToken,
+          detectedLanguage,
+        ) as ChineseG2P | null;
         phoneme = g2p?.textToZhuyin?.(cleanToken) ?? this._predict(cleanToken, detectedLanguage, pos);
       } else {
         // Regular IPA/ARPABET processing

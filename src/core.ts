@@ -1,182 +1,282 @@
 /**
  * Phonemize Library - Main API
- * 
+ *
  * A comprehensive text-to-phoneme conversion library supporting:
  * - IPA (International Phonetic Alphabet) output
  * - ARPABET phonetic notation
  * - Number and abbreviation expansion
+ *
+ * The default exports (`phonemize`, `useG2P`, `addPronunciation`, ...) read
+ * and write a single global G2P registry, which is what `phonemize/index`
+ * and `phonemize/all` populate. To run an isolated set of processors —
+ * e.g. force English-only output, or stack two unrelated language
+ * configurations in the same process — use `createPhonemizer()` instead.
  */
 
 import { Tokenizer, TokenizerOptions, PhonemeToken } from "./tokenizer";
-import { getG2PProcessor, useG2P } from "./g2p";
+import {
+  G2PRegistry,
+  g2pRegistry as defaultRegistry,
+  useG2P,
+} from "./g2p";
+import type { G2PProcessor } from "./g2p";
 
 // Re-export core types and classes for public API
 export type { TokenizerOptions, PhonemeToken };
-export { Tokenizer, useG2P };
+export { Tokenizer, useG2P, G2PRegistry };
 
 export type { G2PProcessor } from "./g2p";
 
+/** Optional second-argument shorthand: bare string is treated as `language`. */
+type PhonemizeArg =
+  | true
+  | string
+  | (TokenizerOptions & { returnArray?: boolean });
+
+function normalizeArg(
+  arg: PhonemizeArg | undefined,
+): TokenizerOptions & { returnArray?: boolean } {
+  if (arg === undefined) return {};
+  if (arg === true) return { returnArray: true };
+  if (typeof arg === "string") return { language: arg };
+  return arg;
+}
+
 /**
  * Convert text to phonetic representation
- * 
- * @param text - Input text to convert
- * @param options - Configuration options with returnArray flag
- * @returns Array of phoneme tokens with metadata
  */
 export function phonemize(
   text: string,
   options: TokenizerOptions & { returnArray: true },
 ): PhonemeToken[];
-
-/**
- * Convert text to phonetic representation
- * 
- * @param text - Input text to convert
- * @param options - Configuration options
- * @returns Space-separated phoneme string
- */
 export function phonemize(text: string, options?: TokenizerOptions): string;
-
-/**
- * Convert text to phonetic representation (legacy array format)
- * 
- * @param text - Input text to convert
- * @param returnArray - If true, return array format
- * @returns Array of phoneme tokens
- */
 export function phonemize(text: string, returnArray: true): PhonemeToken[];
-
 /**
- * Main phonemize function implementation
+ * Shorthand: pass a language tag (e.g. `"en-GB"`) as the second argument
+ * to bias dispatch toward processors matching that tag.
  */
-export function phonemize(
-  text: string,
-  options: true | (TokenizerOptions & { returnArray?: boolean }) = {},
-): string | PhonemeToken[] {
-  // Handle legacy boolean parameter
-  if (options === true) {
-    options = { returnArray: true };
-  }
-
+export function phonemize(text: string, language: string): string;
+export function phonemize(text: string, arg: PhonemizeArg = {}): string | PhonemeToken[] {
+  const options = normalizeArg(arg);
   const tokenizer = new Tokenizer(options);
-  
-  if (options.returnArray) {
-    return tokenizer.tokenizeToTokens(text);
-  }
-  
-  return tokenizer.tokenizeToString(text);
+  return options.returnArray
+    ? tokenizer.tokenizeToTokens(text)
+    : tokenizer.tokenizeToString(text);
 }
 
 /**
  * Convert text to International Phonetic Alphabet (IPA) notation
- * 
- * @param text - Input text to convert
- * @param options - Configuration options (format will be overridden to 'ipa')
- * @returns IPA phonetic string
- * 
+ *
  * @example
  * ```typescript
  * toIPA("hello world") // "həloʊ wɝld"
  * toIPA("中文", { anyAscii: false }) // "ʈʂʊŋ˥˥ wən˧˥"
+ * toIPA("hello", "en-GB") // RP-flavored output
  * ```
  */
 export function toIPA(
   text: string,
-  options?: Omit<TokenizerOptions, "format">,
+  options?: Omit<TokenizerOptions, "format"> | string,
 ): string {
-  const ipaOptions: TokenizerOptions = { ...options, format: "ipa" };
-  const tokenizer = new Tokenizer(ipaOptions);
-  return tokenizer.tokenizeToString(text);
+  const opts =
+    typeof options === "string" ? { language: options } : options ?? {};
+  const ipaOptions: TokenizerOptions = { ...opts, format: "ipa" };
+  return new Tokenizer(ipaOptions).tokenizeToString(text);
 }
 
 /**
  * Convert text to ARPABET phonetic notation
- * 
- * @param text - Input text to convert
- * @param options - Configuration options (format will be overridden to 'arpabet')
- * @returns ARPABET phonetic string
- * 
- * @example
- * ```typescript
- * toARPABET("hello world") // "HH AH L OW W ER L D"
- * toARPABET("testing", { stripStress: true }) // "T EH S T IH NG"
- * ```
  */
 export function toARPABET(
   text: string,
-  options?: Omit<TokenizerOptions, "format">,
+  options?: Omit<TokenizerOptions, "format"> | string,
 ): string {
-  const arpabetOptions: TokenizerOptions = { ...options, format: "arpabet" };
-  const tokenizer = new Tokenizer(arpabetOptions);
-  return tokenizer.tokenizeToString(text);
+  const opts =
+    typeof options === "string" ? { language: options } : options ?? {};
+  const arpabetOptions: TokenizerOptions = { ...opts, format: "arpabet" };
+  return new Tokenizer(arpabetOptions).tokenizeToString(text);
 }
 
 /**
- * Convert text to Zhuyin (Bopomofo) notation
- * Chinese characters are converted to Zhuyin with tone numbers,
- * non-Chinese characters are converted to IPA as fallback.
- * 
- * @param text - Input text to convert
- * @param options - Configuration options (format will be overridden to 'zhuyin')
- * @returns Zhuyin phonetic string with tone numbers
- * 
- * @example
- * ```typescript
- * toZhuyin("中文") // "ㄓㄨㄥ1 ㄨㄣ2"
- * toZhuyin("中文 hello") // "ㄓㄨㄥ1 ㄨㄣ2 həˈloʊ"
- * toZhuyin("測試", { stripStress: true }) // "ㄘㄜ4 ㄕ4"
- * ```
+ * Convert text to Zhuyin (Bopomofo) notation. Chinese characters are
+ * converted to Zhuyin with tone numbers; non-Chinese characters fall
+ * back to IPA.
  */
 export function toZhuyin(
   text: string,
-  options?: Omit<TokenizerOptions, "format">,
+  options?: Omit<TokenizerOptions, "format"> | string,
 ): string {
-  const zhuyinOptions: TokenizerOptions = { ...options, format: "zhuyin" };
-  const tokenizer = new Tokenizer(zhuyinOptions);
-  return tokenizer.tokenizeToString(text);
+  const opts =
+    typeof options === "string" ? { language: options } : options ?? {};
+  const zhuyinOptions: TokenizerOptions = { ...opts, format: "zhuyin" };
+  return new Tokenizer(zhuyinOptions).tokenizeToString(text);
 }
 
 /**
- * Add custom pronunciation to the internal dictionary
- * 
- * @param word - Word to add pronunciation for
- * @param pronunciation - IPA pronunciation string
- * 
- * @example
- * ```typescript
- * addPronunciation("github", "ɡɪthʌb");
- * toIPA("github") // "ɡɪthʌb"
- * ```
+ * Add a custom pronunciation to the default global registry's matching
+ * processor. For multi-instance setups, use `Phonemizer#addPronunciation`.
  */
-export function addPronunciation(word: string, pronunciation: string, language?: string): void {
+export function addPronunciation(
+  word: string,
+  pronunciation: string,
+  language?: string,
+): void {
   if (!word?.trim() || !pronunciation?.trim()) {
     throw new Error("Both word and pronunciation must be non-empty strings");
   }
-  
-  // Use the registered English G2P processor to add pronunciation
-  const processor = getG2PProcessor(word, language);
+  const processor = defaultRegistry.findBestProcessor(word, language);
   processor?.addPronunciation(word.toLowerCase(), pronunciation);
 }
 
 /**
- * Create a custom tokenizer instance with specific configuration
- * 
- * @param options - Tokenizer configuration options
- * @returns Configured Tokenizer instance
- * 
- * @example
- * ```typescript
- * const tokenizer = createTokenizer({
- *   format: "ipa",
- *   stripStress: true,
- *   separator: "-"
- * });
- * 
- * const result = tokenizer.tokenizeToString("hello");
- * ```
+ * Create a custom tokenizer instance with specific configuration. Useful
+ * when you want to reuse the same options across many calls.
  */
 export function createTokenizer(options: TokenizerOptions = {}): Tokenizer {
   return new Tokenizer(options);
+}
+
+// === Multi-instance API =====================================================
+
+/**
+ * Options for `createPhonemizer()`.
+ */
+export interface PhonemizerOptions {
+  /**
+   * Initial set of G2P processors. Equivalent to calling `useG2P()` for
+   * each on a freshly created instance. The first registered processor
+   * is the default fallback when no language is provided.
+   */
+  g2ps?: G2PProcessor[];
+  /**
+   * Default language tag applied to every call (overridable per-call).
+   */
+  language?: string;
+}
+
+/**
+ * An isolated phonemizer with its own G2P registry. Use this when you
+ * want to register a different set of languages per call site without
+ * mutating the global registry — for example, a server that handles
+ * one user request with English-only output and another with the full
+ * multilingual stack.
+ *
+ * @example
+ * ```ts
+ * import { createPhonemizer, EnglishG2P } from "phonemize";
+ *
+ * const enOnly = createPhonemizer({ g2ps: [new EnglishG2P()] });
+ * enOnly.phonemize("hello 中文"); // "həˈɫoʊ 中文"  (zh untouched)
+ *
+ * const rp = createPhonemizer({
+ *   g2ps: [new EnglishG2P({ dialect: "en-GB" })],
+ *   language: "en-GB",
+ * });
+ * rp.phonemize("doctor"); // RP transformation applied
+ * ```
+ */
+export class Phonemizer {
+  readonly registry: G2PRegistry;
+  private readonly defaultLanguage?: string;
+
+  constructor(options: PhonemizerOptions = {}) {
+    this.registry = new G2PRegistry();
+    if (options.g2ps) {
+      for (const p of options.g2ps) this.registry.register(p);
+    }
+    this.defaultLanguage = options.language;
+  }
+
+  useG2P(processor: G2PProcessor): this {
+    this.registry.register(processor);
+    return this;
+  }
+
+  unregister(id: string): boolean {
+    return this.registry.unregister(id);
+  }
+
+  private _resolve(
+    arg?: PhonemizeArg,
+  ): TokenizerOptions & { returnArray?: boolean } {
+    const opts = normalizeArg(arg);
+    return {
+      ...opts,
+      registry: this.registry,
+      language: opts.language ?? this.defaultLanguage,
+    };
+  }
+
+  phonemize(
+    text: string,
+    options: TokenizerOptions & { returnArray: true },
+  ): PhonemeToken[];
+  phonemize(text: string, options?: TokenizerOptions): string;
+  phonemize(text: string, returnArray: true): PhonemeToken[];
+  phonemize(text: string, language: string): string;
+  phonemize(text: string, arg: PhonemizeArg = {}): string | PhonemeToken[] {
+    const options = this._resolve(arg);
+    const tokenizer = new Tokenizer(options);
+    return options.returnArray
+      ? tokenizer.tokenizeToTokens(text)
+      : tokenizer.tokenizeToString(text);
+  }
+
+  toIPA(text: string, options?: Omit<TokenizerOptions, "format"> | string): string {
+    const opts = typeof options === "string" ? { language: options } : options ?? {};
+    return new Tokenizer({
+      ...opts,
+      format: "ipa",
+      registry: this.registry,
+      language: opts.language ?? this.defaultLanguage,
+    }).tokenizeToString(text);
+  }
+
+  toARPABET(text: string, options?: Omit<TokenizerOptions, "format"> | string): string {
+    const opts = typeof options === "string" ? { language: options } : options ?? {};
+    return new Tokenizer({
+      ...opts,
+      format: "arpabet",
+      registry: this.registry,
+      language: opts.language ?? this.defaultLanguage,
+    }).tokenizeToString(text);
+  }
+
+  toZhuyin(text: string, options?: Omit<TokenizerOptions, "format"> | string): string {
+    const opts = typeof options === "string" ? { language: options } : options ?? {};
+    return new Tokenizer({
+      ...opts,
+      format: "zhuyin",
+      registry: this.registry,
+      language: opts.language ?? this.defaultLanguage,
+    }).tokenizeToString(text);
+  }
+
+  addPronunciation(word: string, pronunciation: string, language?: string): void {
+    if (!word?.trim() || !pronunciation?.trim()) {
+      throw new Error("Both word and pronunciation must be non-empty strings");
+    }
+    const processor = this.registry.findBestProcessor(
+      word,
+      language ?? this.defaultLanguage,
+    );
+    processor?.addPronunciation(word.toLowerCase(), pronunciation);
+  }
+
+  createTokenizer(options: TokenizerOptions = {}): Tokenizer {
+    return new Tokenizer({
+      ...options,
+      registry: this.registry,
+      language: options.language ?? this.defaultLanguage,
+    });
+  }
+}
+
+/**
+ * Factory shorthand for `new Phonemizer(options)`.
+ */
+export function createPhonemizer(options: PhonemizerOptions = {}): Phonemizer {
+  return new Phonemizer(options);
 }
 
 /**
@@ -194,9 +294,12 @@ const phonemizer = {
   addPronunciation,
   createTokenizer,
   useG2P,
+  createPhonemizer,
 
   // === Classes ===
   Tokenizer,
+  Phonemizer,
+  G2PRegistry,
 } as const;
 
 export default phonemizer;

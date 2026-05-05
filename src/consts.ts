@@ -130,11 +130,21 @@ export const CHINESE_TONE_TO_ARROW: Record<string, string> = {
 };
 
 /**
- * Reverse mappings for conversion utilities
+ * Reverse mappings for conversion utilities. Auto-generated from the
+ * ARPABET→IPA table, plus a few extras for IPA symbols that the
+ * en-GB / RP transform produces but that don't appear in the canonical
+ * ARPABET inventory (which is American-English flavoured).
  */
-export const IPA_TO_ARPABET = Object.fromEntries(
-  Object.entries(ARPABET_TO_IPA).map(([key, value]) => [value, key])
-) as Record<string, string>;
+export const IPA_TO_ARPABET: Record<string, string> = {
+  ...Object.fromEntries(
+    Object.entries(ARPABET_TO_IPA).map(([key, value]) => [value, key]),
+  ),
+  // RP NURSE — same vowel as ɝ when stripped of rhoticity.
+  "ɜ": "ER",
+  // RP LOT — rounded back vowel; map to AA so consumers get a back
+  // vowel rather than nothing.
+  "ɒ": "AA",
+};
 
 export const IPA_TO_STRESS = Object.fromEntries(
   Object.entries(IPA_STRESS_MAP).map(([key, value]) => [value, key])
