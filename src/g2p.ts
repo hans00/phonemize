@@ -126,25 +126,36 @@ export class G2PRegistry {
     // Compare on normalized tags so `en-GB` and `en-gb` match alike.
     const requestNorm = normalizeTag(language);
     const exact: G2PProcessor[] = [];
-    const parent: G2PProcessor[] = [];
+    // Among parent matches, the most-specific prefix should win — so
+    // for a request `en-US-x-foo` a processor declaring `en-US` must
+    // outrank one declaring bare `en`. We track each parent's best
+    // matching prefix length and stable-sort by it descending.
+    const parentEntries: { proc: G2PProcessor; matchLen: number; order: number }[] = [];
+    let idx = 0;
     for (const p of this.order) {
-      // Scan all tags; an exact (case-insensitive) match anywhere
-      // bumps the processor into the exact bucket. Otherwise classify
-      // on the first parent-cover.
       let isExact = false;
-      let isParent = false;
+      let bestParentLen = 0;
       for (const tag of p.supportedLanguages) {
-        if (normalizeTag(tag) === requestNorm) {
+        const tagNorm = normalizeTag(tag);
+        if (tagNorm === requestNorm) {
           isExact = true;
           break;
         }
-        if (tagCovers(tag, language)) isParent = true;
+        if (tagCovers(tag, language) && tagNorm.length > bestParentLen) {
+          bestParentLen = tagNorm.length;
+        }
       }
       if (isExact) exact.push(p);
-      else if (isParent) parent.push(p);
+      else if (bestParentLen > 0) {
+        parentEntries.push({ proc: p, matchLen: bestParentLen, order: idx });
+      }
+      idx++;
     }
+    parentEntries.sort((a, b) =>
+      b.matchLen - a.matchLen || a.order - b.order,
+    );
     // Prefer exact dialect match (en-GB) over parent (en) match.
-    return exact.concat(parent);
+    return exact.concat(parentEntries.map((e) => e.proc));
   }
 
   getAllProcessors(): G2PProcessor[] {

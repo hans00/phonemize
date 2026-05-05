@@ -128,6 +128,17 @@ describe("Multi-instance and language preference", () => {
       expect(reg.findBestProcessor("hello", "EN-gb")?.id).toBe("en-g2p");
     });
 
+    it("phonemize honors dialect even with extended BCP 47 subtags", () => {
+      // `en-US-x-foo` (private use) and `en-GB-u-ca-gregory` (extension)
+      // both have the dialect region nested past additional subtags.
+      // Without proper region parsing these would fall back to the
+      // instance default and silently emit AmE for an en-GB request.
+      expect(phonemize("car", "en-GB-u-ca-gregory")).toBe("ˈkɑː");
+      expect(phonemize("car", "en-US-x-private")).toBe("ˈkɑɹ");
+      // Tag with script subtag — region is the third subtag, not second.
+      expect(phonemize("car", "en-Latn-GB")).toBe("ˈkɑː");
+    });
+
     it("mixed-case request still prefers exact dialect over parent", () => {
       // EnglishG2P declares ['en','en-US','en-GB']. A processor
       // declaring only 'en-GB' must outrank the bare-'en' fallback,
@@ -200,6 +211,35 @@ describe("Multi-instance and language preference", () => {
       reg.register(new EnglishG2P());
       const proc = reg.findBestProcessor("hello", "en-GB");
       expect(proc?.id).toBe("en-g2p");
+    });
+
+    it("among parent matches, the longest-prefix tag wins", () => {
+      // For `en-US-x-foo` neither processor exact-matches; both are
+      // parent matches. `en-US` is a longer prefix than `en`, so it
+      // should outrank the bare-`en` processor regardless of registration
+      // order.
+      class EnUS implements G2PProcessor {
+        readonly id = "en-us-only";
+        readonly name = "American";
+        readonly supportedLanguages = ["en-US"];
+        predict() {
+          return "us";
+        }
+        addPronunciation() {}
+      }
+      class EnBare implements G2PProcessor {
+        readonly id = "en-bare";
+        readonly name = "Generic";
+        readonly supportedLanguages = ["en"];
+        predict() {
+          return "bare";
+        }
+        addPronunciation() {}
+      }
+      const reg = new G2PRegistry();
+      reg.register(new EnBare()); // shorter prefix, registered first
+      reg.register(new EnUS()); // longer prefix, registered second
+      expect(reg.findBestProcessor("x", "en-US-x-foo")?.id).toBe("en-us-only");
     });
 
     it("prefers exact dialect match over parent-tag fallback", () => {

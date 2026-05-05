@@ -278,12 +278,16 @@ export class G2PModel implements G2PProcessor {
       return this.customDict[lowerWord];
     }
 
-    // Resolve effective dialect: explicit dialect tag > instance default.
-    // Bare "en" (no region) defers to whichever dialect this instance
-    // was constructed with.
+    // Extract the region subtag from a BCP 47 tag. Skips an optional
+    // 4-letter script (e.g. `en-Latn-US`) and stops at any extension
+    // singleton (`-u-…`, `-x-…`). Matches alpha-2 (`gb`) or digit-3
+    // (`419`) regions. So `en-US-x-foo`, `en-Latn-GB`, and `EN-GB-u-ca-gregory`
+    // all surface their region correctly.
+    const regionMatch = tag?.match(/^en(?:-[a-z]{4})?-([a-z]{2}|\d{3})(?:$|-)/);
+    const region = regionMatch?.[1];
     const dialect: EnglishDialect =
-      tag === "en-gb" ? "en-GB" :
-      tag === "en-us" ? "en-US" :
+      region === "gb" ? "en-GB" :
+      region === "us" ? "en-US" :
       this.dialect;
 
     const base = this.predictInternal(word, pos, this.disableDict);
