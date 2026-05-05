@@ -21,9 +21,21 @@ function parseDict(content: string): DictEntry {
 
     let [, word, phonesStr] = match;
 
-    const ipa = phonesStr.match(/^\/([^\/]+)\//)?.[1];
-    if (!ipa) continue;
-    dict[word.toLowerCase()] = ipa;
+    // Parse all pronunciation variants (format: /vɑr1/, /vɔr2/, ...)
+    const variants = [...phonesStr.matchAll(/\/([^\/]+)\//g)].map(m => m[1]);
+    if (variants.length === 0) continue;
+
+    // ipa-dict often lists both ɑ and ɔ variants for cot-caught merger
+    // ambiguous words. For THOUGHT-class words (spelled with augh/ough/aw/au/
+    // alk/alm/all/alt) the ɔ variant matches standard General American better.
+    // For other words (LOT-class like "doctor", "lot", "hot") keep first
+    // variant — choosing ɔ universally would mispronounce them.
+    const lowerWord = word.toLowerCase();
+    const isThoughtSpelling = /augh|ough|aw|au[a-z]|alk|alm|all|alt/.test(lowerWord);
+    const ipa = isThoughtSpelling
+      ? (variants.find(v => v.includes("ɔ")) ?? variants[0])
+      : variants[0];
+    dict[lowerWord] = ipa;
   }
 
   return dict;
