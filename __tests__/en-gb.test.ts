@@ -63,9 +63,25 @@ describe("en-GB (Received Pronunciation) transformation", () => {
     });
 
     it("retains yod /j/ after /s/ where AmE drops it", () => {
-      expect(phonemize("sue", "en-GB")).toBe("sjuː");
-      expect(phonemize("suit", "en-GB")).toBe("sjuːt");
+      expect(phonemize("sue", "en-GB")).toBe("ˈsjuː");
+      expect(phonemize("suit", "en-GB")).toBe("ˈsjuːt");
       expect(phonemize("super", "en-GB")).toBe("ˈsjuːpə");
+    });
+
+    it("yod rule does not fire on words like 'sushi' (next IPA is /ʃ/)", () => {
+      expect(phonemize("sushi", "en-GB")).not.toContain("sj");
+    });
+
+    it("French /-age/ rule lengthens the final back vowel and drops /d/", () => {
+      // garage and sabotage have stressed /ɑʒ/ — should lengthen to /ɑːʒ/
+      expect(phonemize("garage", "en-GB")).toContain("ɑːʒ");
+      expect(phonemize("sabotage", "en-GB")).toContain("ɑːʒ");
+      // espionage has /ɑdʒ/ — should drop the /d/ and lengthen
+      expect(phonemize("espionage", "en-GB")).toContain("ɑːʒ");
+      expect(phonemize("espionage", "en-GB")).not.toContain("dʒ");
+      // native English -age stays untouched (no false positive on
+      // marriage / package / image / etc.)
+      expect(phonemize("package", "en-GB")).toContain("dʒ");
     });
 
     it("preserves /ɔː/ in -ormation words", () => {
@@ -110,10 +126,10 @@ describe("en-GB (Received Pronunciation) transformation", () => {
       expect(transformAmericanToRP("bird", "ˈbɝd")).toBe("ˈbɜːd");
     });
 
-    it("word-override takes precedence over rule-based transform", () => {
-      // sue's rule-based transform would just be "ˈsu" (no ɝ/ɹ); the
-      // override forces yod retention to "sjuː"
-      expect(transformAmericanToRP("sue", "ˈsu")).toBe("sjuː");
+    it("lexical exception (en-gb/lexical.json) wins over rule-based transform", () => {
+      // 'schedule' has no rule-derivable form (initial /sk/ → /ʃ/);
+      // the JSON lookup short-circuits the rule pass.
+      expect(transformAmericanToRP("schedule", "ˈskɛdʒuɫ")).toBe("ˈʃɛdjuːl");
     });
   });
 });
