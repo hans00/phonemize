@@ -377,11 +377,15 @@ export class Tokenizer {
       // Resolve language for this token. Script-detected languages (CJK,
       // Cyrillic, etc.) win over the user-supplied preferred language —
       // e.g. `phonemize("hello 中文", "en-GB")` still routes 中文 to the
-      // Chinese processor. For tokens with no script-derived language
-      // (Latin script falls through to "en" by default), use the
-      // preferred language so en-GB / en-US can be selected explicitly.
+      // Chinese processor. The languageMap is keyed by whitespace-split
+      // chunks, but the actual tokenizer can split a chunk further
+      // (e.g. "hello中文" without a space → tokens "hello" + "中文"),
+      // so we re-run script detection on the per-token string before
+      // falling back to the preferred language.
       const detectedLanguage =
-        languageMap[cleanToken.toLowerCase()] ?? this.options.language;
+        languageMap[cleanToken.toLowerCase()]
+        ?? detectLanguage(cleanToken)
+        ?? this.options.language;
 
       // Handle Zhuyin format specially
       if (this.options.format === "zhuyin" && detectedLanguage === "zh") {

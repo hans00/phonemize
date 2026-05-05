@@ -258,19 +258,32 @@ export class G2PModel implements G2PProcessor {
   }
 
   predict(word: string, language?: string, pos?: string): string | null {
-    // Reject non-English requests. We accept `en`, `en-US`, `en-GB`,
+    // BCP 47 tags are case-insensitive — `en-gb`, `EN-GB`, `en-GB`
+    // all mean the same dialect.
+    const tag = language?.toLowerCase();
+
+    // Reject non-English requests. We accept `en`, `en-us`, `en-gb`,
     // and any unspecified language (registry fallback uses us).
-    if (language) {
-      const primary = language.indexOf("-") === -1 ? language : language.slice(0, language.indexOf("-"));
+    if (tag) {
+      const primary = tag.indexOf("-") === -1 ? tag : tag.slice(0, tag.indexOf("-"));
       if (primary !== "en") return null;
+    }
+
+    // User-supplied custom pronunciations short-circuit dialect
+    // routing: if the caller explicitly set a pronunciation via
+    // addPronunciation(), they presumably picked one that's right
+    // for their use case. Don't run the RP transform over it.
+    const lowerWord = word.toLowerCase();
+    if (this.customDict[lowerWord]) {
+      return this.customDict[lowerWord];
     }
 
     // Resolve effective dialect: explicit dialect tag > instance default.
     // Bare "en" (no region) defers to whichever dialect this instance
     // was constructed with.
     const dialect: EnglishDialect =
-      language === "en-GB" ? "en-GB" :
-      language === "en-US" ? "en-US" :
+      tag === "en-gb" ? "en-GB" :
+      tag === "en-us" ? "en-US" :
       this.dialect;
 
     const base = this.predictInternal(word, pos, this.disableDict);

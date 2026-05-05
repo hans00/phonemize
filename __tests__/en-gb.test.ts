@@ -1,4 +1,4 @@
-import { phonemize, toIPA, createPhonemizer } from "../src/all";
+import { phonemize, toIPA, toARPABET, createPhonemizer } from "../src/all";
 import EnglishG2P from "../src/en-g2p";
 import { transformAmericanToRP } from "../src/en-gb";
 
@@ -116,6 +116,33 @@ describe("en-GB (Received Pronunciation) transformation", () => {
         g2ps: [new EnglishG2P({ dialect: "en-GB" })],
       });
       expect(p.phonemize("car", "en-US")).toBe("ˈkɑɹ");
+    });
+  });
+
+  describe("ARPABET output for en-GB", () => {
+    it("emits no 'undefined' tokens for words the RP transform touches", () => {
+      // ɜ and ː are RP-only IPA symbols not in the canonical ARPABET
+      // inventory; they should be mapped (ɜ → ER) or stripped (ː) so
+      // ARPABET output is clean.
+      const out = toARPABET("car", "en-GB");
+      expect(out).not.toContain("undefined");
+      expect(out).toContain("AA"); // car → AA1
+    });
+
+    it("NURSE words round-trip to ER in ARPABET", () => {
+      expect(toARPABET("bird", "en-GB")).toContain("ER");
+    });
+  });
+
+  describe("user customDict beats RP lexical override", () => {
+    it("addPronunciation on a shibboleth still wins under en-GB", () => {
+      // 'schedule' is in src-data/en-gb/lexical.json — without this
+      // fix, calling addPronunciation('schedule', ...) would have no
+      // effect for en-GB output.
+      const p = createPhonemizer({ g2ps: [new EnglishG2P()] });
+      p.addPronunciation("schedule", "ɛksɛkjuːʃən"); // arbitrary marker
+      expect(p.phonemize("schedule", "en-GB")).toBe("ɛksɛkjuːʃən");
+      expect(p.phonemize("schedule", "en-US")).toBe("ɛksɛkjuːʃən");
     });
   });
 

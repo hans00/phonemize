@@ -34,6 +34,16 @@ describe("Multi-instance and language preference", () => {
       expect(result).toContain("həˈɫoʊ"); // English part still phonemized
       expect(result).toMatch(/[˥˧]/); // Chinese tones present
     });
+
+    it("re-detects per-token script when source has no whitespace boundary", () => {
+      // 'hello中文' tokenizes as 'hello' + '中文'. The languageMap
+      // (built from whitespace-split chunks) only knows the combined
+      // chunk; without per-token re-detection the CJK side would
+      // wrongly inherit the preferred 'en-GB' tag.
+      const result = phonemize("hello中文", "en-GB");
+      expect(result).toContain("həˈɫoʊ");
+      expect(result).toMatch(/[˥˧]/);
+    });
   });
 
   describe("toIPA() language shorthand", () => {
@@ -101,6 +111,55 @@ describe("Multi-instance and language preference", () => {
       expect(a.phonemize("xyzzy")).toBe("ɛksɪzi");
       // b was created with a fresh EnglishG2P — must not see a's override
       expect(b.phonemize("xyzzy")).not.toBe("ɛksɪzi");
+    });
+  });
+
+  describe("BCP 47 case-insensitive matching", () => {
+    it("phonemize accepts en-gb (lowercase) the same as en-GB", () => {
+      expect(phonemize("car", "en-gb")).toBe("ˈkɑː");
+      expect(phonemize("car", "EN-GB")).toBe("ˈkɑː");
+      expect(phonemize("car", "en-Gb")).toBe("ˈkɑː");
+    });
+
+    it("registry lookup is case-insensitive on the request tag", () => {
+      const reg = new G2PRegistry();
+      reg.register(new EnglishG2P());
+      expect(reg.findBestProcessor("hello", "en-GB")?.id).toBe("en-g2p");
+      expect(reg.findBestProcessor("hello", "EN-gb")?.id).toBe("en-g2p");
+    });
+  });
+
+  describe("registry register / unregister hygiene", () => {
+    it("re-registering an id swaps the implementation in place", () => {
+      class FakeEn implements G2PProcessor {
+        readonly id = "en-g2p";
+        readonly name: string;
+        readonly supportedLanguages = ["en"];
+        constructor(public marker: string) {
+          this.name = "Fake " + marker;
+        }
+        predict() {
+          return this.marker;
+        }
+        addPronunciation() {}
+      }
+      const reg = new G2PRegistry();
+      reg.register(new FakeEn("v1"));
+      reg.register(new FakeEn("v2"));
+      // After swap, only one entry per id and dispatch hits the new one.
+      expect(reg.getAllProcessors()).toHaveLength(1);
+      expect(reg.findBestProcessor("anything", "en")?.predict("anything")).toBe(
+        "v2",
+      );
+    });
+
+    it("unregister removes every reference, not just one", () => {
+      const reg = new G2PRegistry();
+      reg.register(new EnglishG2P());
+      reg.register(new EnglishG2P()); // same id, replaces in place
+      expect(reg.unregister("en-g2p")).toBe(true);
+      expect(reg.getAllProcessors()).toHaveLength(0);
+      expect(reg.findBestProcessor("hello", "en")).toBeNull();
     });
   });
 

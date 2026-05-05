@@ -2,14 +2,13 @@
  * Utility functions for phoneme format conversion
  */
 
-import { 
-  IPA_TO_ARPABET, 
-  IPA_TO_STRESS, 
-  ARPABET_TO_IPA, 
-  IPA_STRESS_MAP, 
+import {
+  IPA_TO_ARPABET,
+  IPA_TO_STRESS,
+  ARPABET_TO_IPA,
   CHINESE_TONE_TO_ARROW,
   PINYIN_INITIALS_TO_ZHUYIN,
-  PINYIN_FINALS_TO_ZHUYIN
+  PINYIN_FINALS_TO_ZHUYIN,
 } from "./consts";
 
 /**
@@ -27,7 +26,15 @@ export function ipaToArpabet(ipa: string): string {
   
   while (i < ipa.length) {
     const char = ipa[i];
-    
+
+    // ARPABET has no length distinction. Strip the IPA length mark
+    // ('ː', U+02D0) silently — it's emitted by the en-GB transform
+    // but carries no information ARPABET can represent.
+    if (char === "ː") {
+      i++;
+      continue;
+    }
+
     // Handle stress markers
     if (IPA_TO_STRESS[char]) {
       const stress = IPA_TO_STRESS[char];

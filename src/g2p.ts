@@ -62,16 +62,27 @@ export function primaryLang(tag: string): string {
 }
 
 /**
+ * Normalize a BCP 47 tag for comparison. The spec defines tag matching
+ * as case-insensitive, so we lowercase before any equality check.
+ */
+export function normalizeTag(tag: string): string {
+  return tag.toLowerCase();
+}
+
+/**
  * True when `processorTag` covers `requestTag` under BCP 47 fallback:
- * exact match, or processor's tag is a prefix of the request.
+ * exact match (case-insensitive), or processor's tag is a prefix of
+ * the request.
  *
- *   "en"     covers "en", "en-US", "en-GB"
- *   "en-GB"  covers "en-GB" only
+ *   "en"     covers "en", "en-US", "en-GB", "en-gb"
+ *   "en-GB"  covers "en-GB" / "en-gb" only
  *   "en-US"  does NOT cover "en-GB"
  */
 function tagCovers(processorTag: string, requestTag: string): boolean {
-  if (processorTag === requestTag) return true;
-  return requestTag.startsWith(processorTag + "-");
+  const p = normalizeTag(processorTag);
+  const r = normalizeTag(requestTag);
+  if (p === r) return true;
+  return r.startsWith(p + "-");
 }
 
 // === G2P Registry ===
@@ -82,17 +93,28 @@ export class G2PRegistry {
   private order: G2PProcessor[] = [];
 
   register(processor: G2PProcessor): void {
-    this.processors.set(processor.id, processor);
-    if (!this.order.includes(processor)) {
+    // Re-registering the same id should swap the implementation in
+    // place, not stack a stale clone behind the live one. We replace
+    // the existing entry at its current position so dispatch order
+    // is preserved across rolling upgrades.
+    const existing = this.processors.get(processor.id);
+    if (existing) {
+      const idx = this.order.indexOf(existing);
+      if (idx !== -1) this.order[idx] = processor;
+      else this.order.push(processor);
+    } else {
       this.order.push(processor);
     }
+    this.processors.set(processor.id, processor);
   }
 
   unregister(id: string): boolean {
     const proc = this.processors.get(id);
     if (!proc) return false;
     this.processors.delete(id);
-    this.order = this.order.filter((p) => p !== proc);
+    // Remove every order-array reference, in case earlier code paths
+    // ever left duplicates behind.
+    this.order = this.order.filter((p) => p.id !== id);
     return true;
   }
 
