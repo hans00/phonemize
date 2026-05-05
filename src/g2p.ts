@@ -123,15 +123,18 @@ export class G2PRegistry {
   }
 
   getProcessorsForLanguage(language: string): G2PProcessor[] {
+    // Compare on normalized tags so `en-GB` and `en-gb` match alike.
+    const requestNorm = normalizeTag(language);
     const exact: G2PProcessor[] = [];
     const parent: G2PProcessor[] = [];
     for (const p of this.order) {
-      // Scan all tags; an exact match anywhere bumps the processor into
-      // the exact bucket. Otherwise classify on the first parent-cover.
+      // Scan all tags; an exact (case-insensitive) match anywhere
+      // bumps the processor into the exact bucket. Otherwise classify
+      // on the first parent-cover.
       let isExact = false;
       let isParent = false;
       for (const tag of p.supportedLanguages) {
-        if (tag === language) {
+        if (normalizeTag(tag) === requestNorm) {
           isExact = true;
           break;
         }

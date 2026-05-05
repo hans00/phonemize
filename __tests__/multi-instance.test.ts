@@ -127,6 +127,37 @@ describe("Multi-instance and language preference", () => {
       expect(reg.findBestProcessor("hello", "en-GB")?.id).toBe("en-g2p");
       expect(reg.findBestProcessor("hello", "EN-gb")?.id).toBe("en-g2p");
     });
+
+    it("mixed-case request still prefers exact dialect over parent", () => {
+      // EnglishG2P declares ['en','en-US','en-GB']. A processor
+      // declaring only 'en-GB' must outrank the bare-'en' fallback,
+      // even when the request tag is mixed case.
+      class GBOnly implements G2PProcessor {
+        readonly id = "gb-only";
+        readonly name = "British";
+        readonly supportedLanguages = ["en-GB"];
+        predict() {
+          return "rp-only";
+        }
+        addPronunciation() {}
+      }
+      class EnOnly implements G2PProcessor {
+        readonly id = "en-only";
+        readonly name = "English";
+        readonly supportedLanguages = ["en"];
+        predict() {
+          return "en-only";
+        }
+        addPronunciation() {}
+      }
+      const reg = new G2PRegistry();
+      reg.register(new EnOnly()); // parent tag, registered first
+      reg.register(new GBOnly()); // exact dialect, registered second
+      // Without case-insensitive exact match, 'EN-GB' would skip the
+      // exact bucket and the parent EnOnly would win.
+      expect(reg.findBestProcessor("x", "EN-GB")?.id).toBe("gb-only");
+      expect(reg.findBestProcessor("x", "en-gb")?.id).toBe("gb-only");
+    });
   });
 
   describe("registry register / unregister hygiene", () => {
