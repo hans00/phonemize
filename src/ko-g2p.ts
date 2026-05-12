@@ -1,4 +1,5 @@
-import { G2PProcessor } from "./g2p";
+import { LanguageProcessor } from "./g2p";
+import { expandKoreanText } from "./expand-ko";
 
 // === Korean G2P Processor ===
 
@@ -46,10 +47,14 @@ interface KoreanSyllable {
   original: string;
 }
 
-class KoreanG2PModel implements G2PProcessor {
+class KoreanG2P implements LanguageProcessor {
   readonly id = "ko-g2p";
   readonly name = "Korean G2P Processor";
   readonly supportedLanguages = ["ko"];
+
+  preProcess(text: string): string {
+    return expandKoreanText(text);
+  }
 
   predict(word: string, language?: string, pos?: string): string | null {
     return this.processKorean(word);
@@ -127,4 +132,4 @@ class KoreanG2PModel implements G2PProcessor {
 }
 
 // Default export for the Korean G2P Model
-export default KoreanG2PModel; 
+export default KoreanG2P; 

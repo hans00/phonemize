@@ -6,7 +6,8 @@
 import { pinyin, addDict } from 'pinyin-pro';
 import * as dict from '../data/zh/dict.json';
 import { pinyinToZhuyin, resolveJson } from './utils';
-import { G2PProcessor } from "./g2p";
+import { LanguageProcessor } from "./g2p";
+import { expandChineseText } from "./expand-zh";
 
 addDict(resolveJson(dict), 'phonemize-zh');
 addDict({}, 'custom');
@@ -166,10 +167,14 @@ export interface ChinesePinyinResult {
 
 // === Chinese G2P Processor ===
 
-class G2PModel implements G2PProcessor {
+class ChineseG2P implements LanguageProcessor {
   readonly id = "zh-g2p";
   readonly name = "Chinese G2P Processor";
   readonly supportedLanguages = ["zh"];
+
+  preProcess(text: string): string {
+    return expandChineseText(text);
+  }
 
   predict(word: string, language?: string, pos?: string): string | null {
     return this.textToIPA(word);
@@ -354,4 +359,4 @@ class G2PModel implements G2PProcessor {
   }
 }
 
-export default G2PModel;
+export default ChineseG2P;

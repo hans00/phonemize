@@ -3,9 +3,9 @@ import {
   toIPA,
   createPhonemizer,
   Phonemizer,
-  G2PRegistry,
+  LanguageRegistry,
 } from "../src/all";
-import type { G2PProcessor } from "../src/g2p";
+import type { LanguageProcessor } from "../src/g2p";
 import EnglishG2P from "../src/en-g2p";
 import ChineseG2P from "../src/zh-g2p";
 
@@ -64,7 +64,7 @@ describe("Multi-instance and language preference", () => {
     });
 
     it("scopes processors to its own registry", () => {
-      const enOnly = createPhonemizer({ g2ps: [new EnglishG2P()] });
+      const enOnly = createPhonemizer({ processors: [new EnglishG2P()] });
       const result = enOnly.phonemize("hello 中文");
       expect(result).toContain("həˈɫoʊ");
       // No Chinese processor on this instance → 中文 falls through unchanged
@@ -73,7 +73,7 @@ describe("Multi-instance and language preference", () => {
 
     it("applies a default language across calls", () => {
       const rp = createPhonemizer({
-        g2ps: [new EnglishG2P()],
+        processors: [new EnglishG2P()],
         language: "en-GB",
       });
       expect(rp.phonemize("car")).toBe("ˈkɑː");
@@ -82,22 +82,22 @@ describe("Multi-instance and language preference", () => {
 
     it("lets per-call language override the instance default", () => {
       const rp = createPhonemizer({
-        g2ps: [new EnglishG2P()],
+        processors: [new EnglishG2P()],
         language: "en-GB",
       });
       expect(rp.phonemize("car", "en-US")).toBe("ˈkɑɹ");
     });
 
-    it("supports useG2P() chaining for late registration", () => {
+    it("supports useProcessor() chaining for late registration", () => {
       const p = new Phonemizer();
-      p.useG2P(new EnglishG2P()).useG2P(new ChineseG2P());
+      p.useProcessor(new EnglishG2P()).useProcessor(new ChineseG2P());
       const result = p.phonemize("hello 中文");
       expect(result).toContain("həˈɫoʊ");
       expect(result).toMatch(/[˥˧]/);
     });
 
     it("unregister removes a processor from the registry", () => {
-      const p = createPhonemizer({ g2ps: [new EnglishG2P()] });
+      const p = createPhonemizer({ processors: [new EnglishG2P()] });
       expect(p.phonemize("hello")).toBe("həˈɫoʊ");
       const removed = p.unregister("en-g2p");
       expect(removed).toBe(true);
@@ -105,8 +105,8 @@ describe("Multi-instance and language preference", () => {
     });
 
     it("addPronunciation only mutates the instance registry", () => {
-      const a = createPhonemizer({ g2ps: [new EnglishG2P()] });
-      const b = createPhonemizer({ g2ps: [new EnglishG2P()] });
+      const a = createPhonemizer({ processors: [new EnglishG2P()] });
+      const b = createPhonemizer({ processors: [new EnglishG2P()] });
       a.addPronunciation("xyzzy", "ɛksɪzi");
       expect(a.phonemize("xyzzy")).toBe("ɛksɪzi");
       // b was created with a fresh EnglishG2P — must not see a's override
@@ -122,7 +122,7 @@ describe("Multi-instance and language preference", () => {
     });
 
     it("registry lookup is case-insensitive on the request tag", () => {
-      const reg = new G2PRegistry();
+      const reg = new LanguageRegistry();
       reg.register(new EnglishG2P());
       expect(reg.findBestProcessor("hello", "en-GB")?.id).toBe("en-g2p");
       expect(reg.findBestProcessor("hello", "EN-gb")?.id).toBe("en-g2p");
@@ -143,7 +143,7 @@ describe("Multi-instance and language preference", () => {
       // EnglishG2P declares ['en','en-US','en-GB']. A processor
       // declaring only 'en-GB' must outrank the bare-'en' fallback,
       // even when the request tag is mixed case.
-      class GBOnly implements G2PProcessor {
+      class GBOnly implements LanguageProcessor {
         readonly id = "gb-only";
         readonly name = "British";
         readonly supportedLanguages = ["en-GB"];
@@ -152,7 +152,7 @@ describe("Multi-instance and language preference", () => {
         }
         addPronunciation() {}
       }
-      class EnOnly implements G2PProcessor {
+      class EnOnly implements LanguageProcessor {
         readonly id = "en-only";
         readonly name = "English";
         readonly supportedLanguages = ["en"];
@@ -161,7 +161,7 @@ describe("Multi-instance and language preference", () => {
         }
         addPronunciation() {}
       }
-      const reg = new G2PRegistry();
+      const reg = new LanguageRegistry();
       reg.register(new EnOnly()); // parent tag, registered first
       reg.register(new GBOnly()); // exact dialect, registered second
       // Without case-insensitive exact match, 'EN-GB' would skip the
@@ -173,7 +173,7 @@ describe("Multi-instance and language preference", () => {
 
   describe("registry register / unregister hygiene", () => {
     it("re-registering an id swaps the implementation in place", () => {
-      class FakeEn implements G2PProcessor {
+      class FakeEn implements LanguageProcessor {
         readonly id = "en-g2p";
         readonly name: string;
         readonly supportedLanguages = ["en"];
@@ -185,7 +185,7 @@ describe("Multi-instance and language preference", () => {
         }
         addPronunciation() {}
       }
-      const reg = new G2PRegistry();
+      const reg = new LanguageRegistry();
       reg.register(new FakeEn("v1"));
       reg.register(new FakeEn("v2"));
       // After swap, only one entry per id and dispatch hits the new one.
@@ -196,7 +196,7 @@ describe("Multi-instance and language preference", () => {
     });
 
     it("unregister removes every reference, not just one", () => {
-      const reg = new G2PRegistry();
+      const reg = new LanguageRegistry();
       reg.register(new EnglishG2P());
       reg.register(new EnglishG2P()); // same id, replaces in place
       expect(reg.unregister("en-g2p")).toBe(true);
@@ -205,9 +205,9 @@ describe("Multi-instance and language preference", () => {
     });
   });
 
-  describe("G2PRegistry language tag matching", () => {
+  describe("LanguageRegistry language tag matching", () => {
     it("processor declaring 'en' matches en-GB request (parent fallback)", () => {
-      const reg = new G2PRegistry();
+      const reg = new LanguageRegistry();
       reg.register(new EnglishG2P());
       const proc = reg.findBestProcessor("hello", "en-GB");
       expect(proc?.id).toBe("en-g2p");
@@ -218,7 +218,7 @@ describe("Multi-instance and language preference", () => {
       // parent matches. `en-US` is a longer prefix than `en`, so it
       // should outrank the bare-`en` processor regardless of registration
       // order.
-      class EnUS implements G2PProcessor {
+      class EnUS implements LanguageProcessor {
         readonly id = "en-us-only";
         readonly name = "American";
         readonly supportedLanguages = ["en-US"];
@@ -227,7 +227,7 @@ describe("Multi-instance and language preference", () => {
         }
         addPronunciation() {}
       }
-      class EnBare implements G2PProcessor {
+      class EnBare implements LanguageProcessor {
         readonly id = "en-bare";
         readonly name = "Generic";
         readonly supportedLanguages = ["en"];
@@ -236,14 +236,14 @@ describe("Multi-instance and language preference", () => {
         }
         addPronunciation() {}
       }
-      const reg = new G2PRegistry();
+      const reg = new LanguageRegistry();
       reg.register(new EnBare()); // shorter prefix, registered first
       reg.register(new EnUS()); // longer prefix, registered second
       expect(reg.findBestProcessor("x", "en-US-x-foo")?.id).toBe("en-us-only");
     });
 
     it("prefers exact dialect match over parent-tag fallback", () => {
-      class GBOnly implements G2PProcessor {
+      class GBOnly implements LanguageProcessor {
         readonly id = "gb-only";
         readonly name = "British";
         readonly supportedLanguages = ["en-GB"];
@@ -252,7 +252,7 @@ describe("Multi-instance and language preference", () => {
         }
         addPronunciation() {}
       }
-      const reg = new G2PRegistry();
+      const reg = new LanguageRegistry();
       reg.register(new EnglishG2P()); // declares en, en-US, en-GB
       reg.register(new GBOnly()); // only en-GB
       const proc = reg.findBestProcessor("x", "en-GB");

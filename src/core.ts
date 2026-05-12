@@ -6,26 +6,27 @@
  * - ARPABET phonetic notation
  * - Number and abbreviation expansion
  *
- * The default exports (`phonemize`, `useG2P`, `addPronunciation`, ...) read
- * and write a single global G2P registry, which is what `phonemize/index`
- * and `phonemize/all` populate. To run an isolated set of processors —
- * e.g. force English-only output, or stack two unrelated language
- * configurations in the same process — use `createPhonemizer()` instead.
+ * The default exports (`phonemize`, `useProcessor`, `addPronunciation`, ...)
+ * read and write a single global LanguageRegistry, which is what
+ * `phonemize/index` and `phonemize/all` populate. To run an isolated set
+ * of processors — e.g. force English-only output, or stack two unrelated
+ * language configurations in the same process — use `createPhonemizer()`
+ * instead.
  */
 
 import { Tokenizer, TokenizerOptions, PhonemeToken } from "./tokenizer";
 import {
-  G2PRegistry,
-  g2pRegistry as defaultRegistry,
-  useG2P,
+  LanguageRegistry,
+  languageRegistry as defaultRegistry,
+  useProcessor,
 } from "./g2p";
-import type { G2PProcessor } from "./g2p";
+import type { LanguageProcessor } from "./g2p";
 
 // Re-export core types and classes for public API
 export type { TokenizerOptions, PhonemeToken };
-export { Tokenizer, useG2P, G2PRegistry };
+export { Tokenizer, useProcessor, LanguageRegistry };
 
-export type { G2PProcessor } from "./g2p";
+export type { LanguageProcessor } from "./g2p";
 
 /** Optional second-argument shorthand: bare string is treated as `language`. */
 type PhonemizeArg =
@@ -143,11 +144,12 @@ export function createTokenizer(options: TokenizerOptions = {}): Tokenizer {
  */
 export interface PhonemizerOptions {
   /**
-   * Initial set of G2P processors. Equivalent to calling `useG2P()` for
-   * each on a freshly created instance. The first registered processor
-   * is the default fallback when no language is provided.
+   * Initial set of language processors. Equivalent to calling
+   * `useProcessor()` for each on a freshly created instance. The first
+   * registered processor is the default fallback when no language is
+   * provided.
    */
-  g2ps?: G2PProcessor[];
+  processors?: LanguageProcessor[];
   /**
    * Default language tag applied to every call (overridable per-call).
    */
@@ -155,7 +157,7 @@ export interface PhonemizerOptions {
 }
 
 /**
- * An isolated phonemizer with its own G2P registry. Use this when you
+ * An isolated phonemizer with its own language registry. Use this when you
  * want to register a different set of languages per call site without
  * mutating the global registry — for example, a server that handles
  * one user request with English-only output and another with the full
@@ -165,29 +167,29 @@ export interface PhonemizerOptions {
  * ```ts
  * import { createPhonemizer, EnglishG2P } from "phonemize";
  *
- * const enOnly = createPhonemizer({ g2ps: [new EnglishG2P()] });
+ * const enOnly = createPhonemizer({ processors: [new EnglishG2P()] });
  * enOnly.phonemize("hello 中文"); // "həˈɫoʊ 中文"  (zh untouched)
  *
  * const rp = createPhonemizer({
- *   g2ps: [new EnglishG2P({ dialect: "en-GB" })],
+ *   processors: [new EnglishG2P({ dialect: "en-GB" })],
  *   language: "en-GB",
  * });
  * rp.phonemize("doctor"); // RP transformation applied
  * ```
  */
 export class Phonemizer {
-  readonly registry: G2PRegistry;
+  readonly registry: LanguageRegistry;
   private readonly defaultLanguage?: string;
 
   constructor(options: PhonemizerOptions = {}) {
-    this.registry = new G2PRegistry();
-    if (options.g2ps) {
-      for (const p of options.g2ps) this.registry.register(p);
+    this.registry = new LanguageRegistry();
+    if (options.processors) {
+      for (const p of options.processors) this.registry.register(p);
     }
     this.defaultLanguage = options.language;
   }
 
-  useG2P(processor: G2PProcessor): this {
+  useProcessor(processor: LanguageProcessor): this {
     this.registry.register(processor);
     return this;
   }
@@ -293,13 +295,13 @@ const phonemizer = {
   // === Utilities ===
   addPronunciation,
   createTokenizer,
-  useG2P,
+  useProcessor,
   createPhonemizer,
 
   // === Classes ===
   Tokenizer,
   Phonemizer,
-  G2PRegistry,
+  LanguageRegistry,
 } as const;
 
 export default phonemizer;

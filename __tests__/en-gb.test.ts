@@ -106,14 +106,14 @@ describe("en-GB (Received Pronunciation) transformation", () => {
 
     it("EnglishG2P({ dialect: 'en-GB' }) instance defaults to RP without explicit tag", () => {
       const p = createPhonemizer({
-        g2ps: [new EnglishG2P({ dialect: "en-GB" })],
+        processors: [new EnglishG2P({ dialect: "en-GB" })],
       });
       expect(p.phonemize("car")).toBe("ˈkɑː");
     });
 
     it("explicit language tag overrides the instance dialect", () => {
       const p = createPhonemizer({
-        g2ps: [new EnglishG2P({ dialect: "en-GB" })],
+        processors: [new EnglishG2P({ dialect: "en-GB" })],
       });
       expect(p.phonemize("car", "en-US")).toBe("ˈkɑɹ");
     });
@@ -139,7 +139,7 @@ describe("en-GB (Received Pronunciation) transformation", () => {
       // 'schedule' is in src-data/en-gb/lexical.json — without this
       // fix, calling addPronunciation('schedule', ...) would have no
       // effect for en-GB output.
-      const p = createPhonemizer({ g2ps: [new EnglishG2P()] });
+      const p = createPhonemizer({ processors: [new EnglishG2P()] });
       p.addPronunciation("schedule", "ɛksɛkjuːʃən"); // arbitrary marker
       expect(p.phonemize("schedule", "en-GB")).toBe("ɛksɛkjuːʃən");
       expect(p.phonemize("schedule", "en-US")).toBe("ɛksɛkjuːʃən");

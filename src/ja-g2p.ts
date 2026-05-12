@@ -1,4 +1,5 @@
-import { G2PProcessor } from "./g2p";
+import { LanguageProcessor } from "./g2p";
+import { expandJapaneseText } from "./expand-ja";
 
 // === Japanese G2P Processor ===
 
@@ -28,10 +29,14 @@ const JAPANESE_LONG_VOWEL_RULES: { [key:string]: string } = {
   'aa': 'aː', 'ii': 'iː', 'uu': 'uː', 'ee': 'eː', 'oo': 'oː',
 };
 
-class JapaneseG2PModel implements G2PProcessor {
+class JapaneseG2P implements LanguageProcessor {
   readonly id = "ja-g2p";
   readonly name = "Japanese G2P Processor";
   readonly supportedLanguages = ["ja"];
+
+  preProcess(text: string): string {
+    return expandJapaneseText(text);
+  }
 
   predict(word: string, language?: string, pos?: string): string | null {
     return this.processJapanese(word);
@@ -106,4 +111,4 @@ class JapaneseG2PModel implements G2PProcessor {
 }
 
 // Default export for the Japanese G2P Model
-export default JapaneseG2PModel; 
+export default JapaneseG2P; 

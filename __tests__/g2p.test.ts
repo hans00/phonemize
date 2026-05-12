@@ -1,10 +1,10 @@
 import { 
-  G2PProcessor, 
+  LanguageProcessor, 
   detectLanguage
 } from '../src/g2p';
 
 // Mock G2P processor for testing
-class MockG2PProcessor implements G2PProcessor {
+class MockLanguageProcessor implements LanguageProcessor {
   readonly id = "mock-processor";
   readonly name = "Mock G2P Processor";
   readonly supportedLanguages = ["en", "test"];
@@ -21,7 +21,7 @@ class MockG2PProcessor implements G2PProcessor {
   }
 }
 
-class MockG2PProcessor2 implements G2PProcessor {
+class MockLanguageProcessor2 implements LanguageProcessor {
   readonly id = "mock-processor-2";
   readonly name = "Mock G2P Processor 2";
   readonly supportedLanguages = ["zh", "ja"];
@@ -39,11 +39,11 @@ class MockG2PProcessor2 implements G2PProcessor {
 }
 
 // Create a local registry class for testing
-class TestG2PRegistry {
-  private processors: Map<string, G2PProcessor> = new Map();
-  private languageMap: Map<string, G2PProcessor[]> = new Map();
+class TestLanguageRegistry {
+  private processors: Map<string, LanguageProcessor> = new Map();
+  private languageMap: Map<string, LanguageProcessor[]> = new Map();
   
-  register(processor: G2PProcessor): void {
+  register(processor: LanguageProcessor): void {
     this.processors.set(processor.id, processor);
     
     for (const lang of processor.supportedLanguages) {
@@ -54,19 +54,19 @@ class TestG2PRegistry {
     }
   }
   
-  getProcessor(id: string): G2PProcessor | undefined {
+  getProcessor(id: string): LanguageProcessor | undefined {
     return this.processors.get(id);
   }
   
-  getProcessorsForLanguage(language: string): G2PProcessor[] {
+  getProcessorsForLanguage(language: string): LanguageProcessor[] {
     return this.languageMap.get(language) || [];
   }
   
-  getAllProcessors(): G2PProcessor[] {
+  getAllProcessors(): LanguageProcessor[] {
     return Array.from(this.processors.values());
   }
   
-  findBestProcessor(word: string, language?: string): G2PProcessor | null {
+  findBestProcessor(word: string, language?: string): LanguageProcessor | null {
     if (language) {
       const langProcessors = this.getProcessorsForLanguage(language);
       if (langProcessors.length > 0) {
@@ -89,17 +89,17 @@ class TestG2PRegistry {
 }
 
 describe('G2P Registry and Language Detection', () => {
-  let registry: TestG2PRegistry;
-  let processor1: MockG2PProcessor;
-  let processor2: MockG2PProcessor2;
+  let registry: TestLanguageRegistry;
+  let processor1: MockLanguageProcessor;
+  let processor2: MockLanguageProcessor2;
 
   beforeEach(() => {
-    registry = new TestG2PRegistry();
-    processor1 = new MockG2PProcessor();
-    processor2 = new MockG2PProcessor2();
+    registry = new TestLanguageRegistry();
+    processor1 = new MockLanguageProcessor();
+    processor2 = new MockLanguageProcessor2();
   });
 
-  describe('G2PRegistry', () => {
+  describe('LanguageRegistry', () => {
     it('should register processors correctly', () => {
       registry.register(processor1);
       registry.register(processor2);

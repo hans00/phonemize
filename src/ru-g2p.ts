@@ -1,4 +1,5 @@
-import { G2PProcessor } from "./g2p";
+import { LanguageProcessor } from "./g2p";
+import { expandRussianText } from "./expand-ru";
 
 // === Russian G2P Processor ===
 
@@ -15,10 +16,14 @@ const RUSSIAN_TO_PHONEME: { [key: string]: string } = {
   '"': '' // Hard sign is often unpronounced or causes a slight pause
 };
 
-class RussianG2PModel implements G2PProcessor {
+class RussianG2P implements LanguageProcessor {
   readonly id = "ru-g2p";
   readonly name = "Russian G2P Processor";
   readonly supportedLanguages = ["ru"];
+
+  preProcess(text: string): string {
+    return expandRussianText(text);
+  }
 
   predict(word: string, language?: string, pos?: string): string | null {
     return this.processRussian(word);
@@ -57,4 +62,4 @@ class RussianG2PModel implements G2PProcessor {
 }
 
 // Default export for the Russian G2P Model
-export default RussianG2PModel; 
+export default RussianG2P; 

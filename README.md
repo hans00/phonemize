@@ -116,17 +116,17 @@ toZhuyin('你好世界'); // "ㄋㄧ3 ㄏㄠ3 ㄕ4 ㄐㄧㄝ4"
 toZhuyin('中文 and English'); // "ㄓㄨㄥ1 ㄨㄣ2 ænd ˈɪŋɡlɪʃ"
 ```
 
-#### `useG2P(processor)`
-Register a G2P processor for multilingual support.
+#### `useProcessor(processor)`
+Register a language processor (text normalization + G2P) for multilingual support.
 
 ```javascript
-import { useG2P } from 'phonemize'
+import { useProcessor } from 'phonemize'
 import ChineseG2P from 'phonemize/zh-g2p'
 import JapaneseG2P from 'phonemize/ja-g2p'
 
-// Register G2P processors
-useG2P(new ChineseG2P())
-useG2P(new JapaneseG2P())
+// Register language processors
+useProcessor(new ChineseG2P())
+useProcessor(new JapaneseG2P())
 
 // Now phonemize can handle Chinese and Japanese text
 phonemize('你好')  // → ni˧˥ xɑʊ˨˩˦
@@ -164,7 +164,7 @@ phonemize('garage', 'en-GB')       // "ˈɡæɹɑːʒ"
 
 // Or fix a Phonemizer instance to RP:
 const rp = createPhonemizer({
-  g2ps: [new EnglishG2P({ dialect: 'en-GB' })],
+  processors: [new EnglishG2P({ dialect: 'en-GB' })],
   language: 'en-GB',
 })
 rp.phonemize('information')        // "ˌɪnfəˈmeɪʃən"
@@ -172,7 +172,7 @@ rp.phonemize('information')        // "ˌɪnfəˈmeɪʃən"
 
 ### Multi-instance (`createPhonemizer`)
 
-The default `phonemize()` and `useG2P()` work against a single shared
+The default `phonemize()` and `useProcessor()` work against a single shared
 G2P registry — convenient, but if you need multiple isolated language
 configurations in the same process, use `createPhonemizer()`:
 
@@ -182,12 +182,12 @@ import EnglishG2P from 'phonemize/en-g2p'
 import ChineseG2P from 'phonemize/zh-g2p'
 
 // English-only — won't see Chinese G2P even if registered globally
-const enOnly = createPhonemizer({ g2ps: [new EnglishG2P()] })
+const enOnly = createPhonemizer({ processors: [new EnglishG2P()] })
 enOnly.phonemize('hello 中文')   // "həˈɫoʊ 中文"  (zh untouched)
 
 // Stack what you want
 const full = createPhonemizer()
-full.useG2P(new EnglishG2P()).useG2P(new ChineseG2P())
+full.useProcessor(new EnglishG2P()).useProcessor(new ChineseG2P())
 
 // addPronunciation only mutates this instance
 enOnly.addPronunciation('myword', 'ˈmaɪwərd')
@@ -195,7 +195,7 @@ enOnly.addPronunciation('myword', 'ˈmaɪwərd')
 
 `Phonemizer` instances expose the same surface (`phonemize`, `toIPA`,
 `toARPABET`, `toZhuyin`, `addPronunciation`, `createTokenizer`,
-`useG2P`, `unregister`).
+`useProcessor`, `unregister`).
 
 ### Advanced Tokenization
 

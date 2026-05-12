@@ -1,7 +1,8 @@
 import * as dictionary from "../data/en/dict.json";
 import * as homographs from "../data/en/homographs.json";
 import { arpabetToIpa, resolveJson } from "./utils";
-import { G2PProcessor } from "./g2p";
+import { LanguageProcessor } from "./g2p";
+import { expandText } from "./expand-en";
 import { transformAmericanToRP } from "./en-gb";
 
 export type EnglishDialect = "en-US" | "en-GB";
@@ -226,9 +227,9 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^u/, 'ʌ'],                    // cut, but, run
 ];
 
-// --- G2PModel Class ---
+// --- EnglishG2P Class ---
 
-export class G2PModel implements G2PProcessor {
+export class EnglishG2P implements LanguageProcessor {
   private dictionary: EnDict;
   /**
    * Per-instance custom pronunciations. We keep these separate from
@@ -241,7 +242,7 @@ export class G2PModel implements G2PProcessor {
   private disableDict: boolean;
   private dialect: EnglishDialect;
 
-  // G2PProcessor interface implementation
+  // LanguageProcessor interface implementation
   readonly id = "en-g2p";
   readonly name = "English G2P Processor";
   /**
@@ -255,6 +256,14 @@ export class G2PModel implements G2PProcessor {
     this.dialect = options.dialect ?? "en-US";
     this.dictionary = resolveJson<EnDict>(dictionary);
     this.homographs = resolveJson<HomographDict>(homographs);
+  }
+
+  /**
+   * Expand numbers, abbreviations, currency, dates, times, etc. into
+   * spoken English form before tokenization.
+   */
+  preProcess(text: string): string {
+    return expandText(text);
   }
 
   predict(word: string, language?: string, pos?: string): string | null {
@@ -900,4 +909,4 @@ export class G2PModel implements G2PProcessor {
   }
 }
 
-export default G2PModel;
+export default EnglishG2P;

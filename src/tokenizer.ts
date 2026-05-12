@@ -4,13 +4,14 @@
  */
 
 import anyAscii from "./anyascii";
-import { expandText } from "./expand";
 import { simplePOSTagger } from "./pos-tagger";
 import { PUNCTUATION } from "./consts";
 import {
+  analyzeText,
   detectLanguage,
-  g2pRegistry as defaultRegistry,
-  G2PRegistry,
+  languageRegistry as defaultRegistry,
+  LanguageRegistry,
+  preProcessByScript,
 } from "./g2p";
 import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
 import type ChineseG2P from "./zh-g2p";
@@ -48,11 +49,11 @@ export interface TokenizerOptions {
   language?: string;
   /**
    * G2P registry to use for phoneme prediction. Defaults to the global
-   * registry populated by the package's `useG2P()` calls. Pass a custom
+   * registry populated by the package's `useProcessor()` calls. Pass a custom
    * registry (or use `createPhonemizer()`) for isolated multi-instance
    * setups.
    */
-  registry?: G2PRegistry;
+  registry?: LanguageRegistry;
 }
 
 /**
@@ -83,6 +84,10 @@ interface PreprocessResult {
   text: string;
   languageMap: Record<string, string>;
   segments: LanguageSegment[];
+  /** Document-wide dominant language (from `analyzeText`). */
+  primary?: string;
+  /** Whether Han chars in this text should be routed as Japanese. */
+  hanIsJa: boolean;
 }
 
 /**
@@ -92,7 +97,7 @@ export class Tokenizer {
   protected readonly options: Required<Omit<TokenizerOptions, "language" | "registry">> & {
     language: string | undefined;
   };
-  protected readonly registry: G2PRegistry;
+  protected readonly registry: LanguageRegistry;
 
   constructor(options: TokenizerOptions = {}) {
     this.options = {
@@ -107,34 +112,55 @@ export class Tokenizer {
   }
 
   /**
-   * Preprocess text with language detection and segmentation
+   * Preprocess text: per-language normalization (numbers, abbreviations, …)
+   * via each script-run's `LanguageProcessor.preProcess`, then optional
+   * anyAscii Latinization. Language detection runs on the post-expansion
+   * text so the downstream `languageMap` reflects what the tokenizer will
+   * actually see.
+   *
+   * Expansion happens before anyAscii so non-Latin expanders (e.g. Russian)
+   * operate on their original script — anyAscii would otherwise Latinize
+   * the run and strip the language signal.
+   *
+   * The document-level analysis (`primary`, `hanIsJa`) is computed on the
+   * post-expansion text and carried out so the per-token dispatch later
+   * applies the same Han→ja reassignment and primary-language fallback.
    */
   protected _preprocess(text: string): PreprocessResult {
-    const { words, languageMap, segments } = this._detectLanguagesAndSegment(text);
-    
+    const expanded = preProcessByScript(text, this.registry, this.options.language);
+    const analysis = analyzeText(expanded);
+    const { words, languageMap, segments } = this._detectLanguagesAndSegment(expanded, analysis.hanIsJa);
+
     if (!this.options.anyAscii) {
       return {
-        text,
+        text: expanded,
         languageMap,
         segments,
+        primary: analysis.primary,
+        hanIsJa: analysis.hanIsJa,
       };
     }
 
-    // Apply anyAscii conversion while preserving Chinese for G2P
     const processedText = this._applyAnyAscii(words, languageMap);
 
     return {
       text: processedText,
       languageMap,
       segments,
+      primary: analysis.primary,
+      hanIsJa: analysis.hanIsJa,
     };
   }
 
   /**
-   * Detect languages for words and create character-level segments
+   * Detect languages for words and create character-level segments.
+   *
+   * `hanIsJa` (from the document-level `analyzeText`) makes both the
+   * per-character segment language and the per-word `languageMap` agree
+   * with whichever G2P will actually be dispatched to.
    */
-  private _detectLanguagesAndSegment(text: string): { 
-    words: string[], 
+  private _detectLanguagesAndSegment(text: string, hanIsJa: boolean = false): {
+    words: string[],
     languageMap: Record<string, string>,
     segments: LanguageSegment[]
   } {
@@ -148,8 +174,9 @@ export class Tokenizer {
     
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
-      const charLang = this._detectCharLanguage(char);
-      
+      let charLang = this._detectCharLanguage(char);
+      if (hanIsJa && charLang === 'zh') charLang = 'ja';
+
       if (charLang !== currentLanguage) {
         // Language changed - save current segment if not empty
         if (currentSegment.trim()) {
@@ -167,7 +194,7 @@ export class Tokenizer {
         currentSegment += char;
       }
     }
-    
+
     // Add final segment
     if (currentSegment.trim()) {
       segments.push({
@@ -176,18 +203,19 @@ export class Tokenizer {
         startIndex: segmentStartIndex
       });
     }
-    
+
     // Detect languages for words
     for (const word of words) {
       const trimmed = word.trim();
       if (trimmed && !PUNCTUATION.includes(trimmed)) {
-        const detectedLang = detectLanguage(trimmed);
+        let detectedLang = detectLanguage(trimmed);
+        if (hanIsJa && detectedLang === 'zh') detectedLang = 'ja';
         if (detectedLang) {
           languageMap[trimmed.toLowerCase()] = detectedLang;
         }
       }
     }
-    
+
     return { words, languageMap, segments };
   }
 
@@ -316,23 +344,22 @@ export class Tokenizer {
     if (!text?.trim()) return [];
 
     const { text: processedText, languageMap } = this._preprocess(text);
-    const expandedText = expandText(processedText);
-    
+
     // Get tokens with or without positions
     const tokenMatches: { token: string; position?: number }[] = [];
-    
+
     if (includePositions) {
       // Use regex to get tokens with their positions in original text
       let match;
-      
-      while ((match = TOKEN_REGEX.exec(expandedText)) !== null) {
+
+      while ((match = TOKEN_REGEX.exec(processedText)) !== null) {
         const token = match[1];
-        
+
         // Skip pure whitespace tokens
         if (/^\s+$/.test(token)) {
           continue;
         }
-        
+
         // Only process non-whitespace tokens
         if (token.trim()) {
           tokenMatches.push({
@@ -343,7 +370,7 @@ export class Tokenizer {
       }
     } else {
       // Use simple tokenization
-      const tokens = this._smartTokenize(expandedText);
+      const tokens = this._smartTokenize(processedText);
       tokenMatches.push(...tokens.map(token => ({ token })));
     }
     
