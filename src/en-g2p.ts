@@ -138,8 +138,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // Improved digraph handling
   [/^tsch/, 'tʃ'],                // German loanwords
   [/^sch/, 'sk'],                 // schema, schematic (not German)
-  [/^she/, 'ʃi'],                 // she (irregular vowel)
-  [/^he/, 'hi'],                  // he (irregular vowel)
+  [/^she$/, 'ʃi'],                // she (pronoun; anchored so it doesn't eat shed/shell)
+  [/^he$/, 'hi'],                 // he  (pronoun; anchored so it doesn't eat here/hen)
   [/^ch/, 'tʃ'],                  // chair, church, much
   [/^ck/, 'k'],                   // back, pick, truck
   [/^ggi/, 'ɡi'],                 // double g before i (buggie) - prevent soft g
@@ -188,6 +188,18 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ue/, 'u'],                   // true, blue, glue (at end)
   [/^ui/, 'u'],                   // fruit, suit, cruise
   
+  // R-controlled magic-e rimes — anchored at end of syllable. These run
+  // BEFORE the generic ^ir/^ar/^or/^ur rules so the silent-e + r combo
+  // produces the long-vowel + rhotic reading (care=kɛɹ, fire=faɪɹ,
+  // more=mɔɹ, cure=kjʊɹ, here=hɪɹ) instead of collapsing the vowel.
+  // The silent-e detection above keeps the trailing 'e' on these
+  // syllables so the rules see the full -Vre pattern.
+  [/^are$/, 'ɛɹ'],                // care, bare, share, prepare
+  [/^ire$/, 'aɪɹ'],               // fire, hire, wire, tire
+  [/^ore$/, 'ɔɹ'],                // more, sore, store, before
+  [/^ure$/, 'jʊɹ'],               // cure, pure, secure
+  [/^ere$/, 'ɪɹ'],                // here, mere, sphere
+
   // R-controlled vowels (rhotic)
   [/^arr/, 'æɹ'],                 // carry, marry, arrow
   [/^ar/, 'ɑɹ'],                  // car, far, start
@@ -200,7 +212,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ier/, 'ɪɹ'],                 // pier, tier
   [/^our/, 'aʊɹ'],                // hour, sour, flour
   [/^air/, 'ɛɹ'],                 // hair, fair, chair
-  [/^are/, 'ɛɹ'],                 // care, share, prepare
   
   // Context-dependent consonants
   [/^c(?=[eiy])/, 's'],           // soft c: cent, city, cycle
@@ -741,6 +752,20 @@ export class EnglishG2P implements LanguageProcessor {
         }
     }
 
+    // Post-processing: r-controlled magic-e rimes. Maximal-onset syllabifies
+    // "fire" as ["fi", "re"] because the lone consonant 'r' starts a new
+    // onset; but linguistically -Vre is one r-controlled rime, and the
+    // ^are/^ire/^ore/^ure/^ere rules in PHONEME_RULES need to see the
+    // full pattern in one syllable. Merge when the last syllable is "re"
+    // and the previous ends with a vowel.
+    if (syllables.length > 1 && syllables[syllables.length - 1] === 're') {
+      const prev = syllables[syllables.length - 2];
+      if (prev && VOWELS.has(prev[prev.length - 1])) {
+        syllables.pop();
+        syllables[syllables.length - 1] += 're';
+      }
+    }
+
     // Post-processing: Merge any leftover single-consonant syllables into the previous one.
     // This can happen with words like "apple" -> ap-ple, where current logic might give a-p-ple
      for (let j = syllables.length - 1; j > 0; j--) {
@@ -880,10 +905,18 @@ export class EnglishG2P implements LanguageProcessor {
     // Handle doubled consonants
     remaining = remaining.replace(/([b-df-hj-np-tv-z])\1/g, '$1');
 
-    // Silent 'e' detection (but exclude common function words like "the")
-    const endsWithSilentE = isLastSyllable && syllable.length > 1 && syllable.endsWith('e') && 
-      !syllable.endsWith('ee') && !syllable.endsWith('le') && !syllable.endsWith('he') && 
+    // Silent 'e' detection (but exclude common function words like "the").
+    // Vowel + r + e patterns (-are/-ere/-ire/-ore/-ure) are also excluded
+    // — those are r-controlled magic-e rimes (care/here/fire/more/cure)
+    // handled as full-rime rules below; stripping the 'e' first would let
+    // the generic `^ar/^ir/^ur` rules collapse the vowel+r into /ɑɹ/ /ɝ/
+    // /ɝ/ before the magic-e upgrade can fire, and the upgrade tables
+    // can't disambiguate ir-source-ɝ (→ aɪɹ) from ur-source-ɝ (→ jʊɹ).
+    const endsWithSilentE = isLastSyllable && syllable.length > 1 && syllable.endsWith('e') &&
+      !syllable.endsWith('ee') && !syllable.endsWith('le') && !syllable.endsWith('he') &&
       !syllable.endsWith('tte') && !syllable.endsWith('ght') && !syllable.endsWith('se') &&
+      !syllable.endsWith('are') && !syllable.endsWith('ere') &&
+      !syllable.endsWith('ire') && !syllable.endsWith('ore') && !syllable.endsWith('ure') &&
       CONSONANTS.has(syllable[syllable.length - 2]);
 
     if (endsWithSilentE) {
