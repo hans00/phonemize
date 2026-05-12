@@ -14,13 +14,9 @@ const KANJI_WORD_KEYS = Object.keys(KANJI_WORDS).sort((a, b) => b.length - a.len
 const KANJI_RE = /[一-龥㐀-䶿豈-﫿]/;
 const HIRA_RE = /[ぁ-ゟ]/;
 
-// Palatalized digraphs (consonant + small ゃ/ゅ/ょ). anyAscii treats the
-// small kana as a separate syllable, romanizing きょう as "kiyou" instead
-// of Hepburn "kyou", which then mis-syllabifies in ja-g2p as ki+yo+u.
-// We pre-emit these as Hepburn romaji so anyAscii passes them through
-// and the ja-g2p syllable map matches the proper kyo/sho/cho/… rows.
-const PALATAL_DIGRAPHS: Record<string, string> = {
-  // Hiragana
+// Bigram kana → Hepburn romaji. Covers palatalized digraphs
+// (consonant + small ゃ/ゅ/ょ) for both hiragana and katakana.
+const KANA_DIGRAPH: Record<string, string> = {
   'きゃ': 'kya', 'きゅ': 'kyu', 'きょ': 'kyo',
   'ぎゃ': 'gya', 'ぎゅ': 'gyu', 'ぎょ': 'gyo',
   'しゃ': 'sha', 'しゅ': 'shu', 'しょ': 'sho',
@@ -33,7 +29,6 @@ const PALATAL_DIGRAPHS: Record<string, string> = {
   'ぴゃ': 'pya', 'ぴゅ': 'pyu', 'ぴょ': 'pyo',
   'みゃ': 'mya', 'みゅ': 'myu', 'みょ': 'myo',
   'りゃ': 'rya', 'りゅ': 'ryu', 'りょ': 'ryo',
-  // Katakana counterparts
   'キャ': 'kya', 'キュ': 'kyu', 'キョ': 'kyo',
   'ギャ': 'gya', 'ギュ': 'gyu', 'ギョ': 'gyo',
   'シャ': 'sha', 'シュ': 'shu', 'ショ': 'sho',
@@ -46,6 +41,110 @@ const PALATAL_DIGRAPHS: Record<string, string> = {
   'ミャ': 'mya', 'ミュ': 'myu', 'ミョ': 'myo',
   'リャ': 'rya', 'リュ': 'ryu', 'リョ': 'ryo',
 };
+
+// Single-char kana → Hepburn romaji. Both hiragana (U+3040..U+309F) and
+// katakana (U+30A0..U+30FF) covered so katakana foreign-word renderings
+// (コーヒー / スターバックス) also flow through preProcess cleanly. anyAscii's
+// per-char romanization mangles the small-kana digraphs (きょ → "kiyo"),
+// so we replace its job for Japanese entirely.
+const KANA_SINGLE: Record<string, string> = {
+  // basic vowels
+  'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
+  'ア': 'a', 'イ': 'i', 'ウ': 'u', 'エ': 'e', 'オ': 'o',
+  // k / g
+  'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
+  'カ': 'ka', 'キ': 'ki', 'ク': 'ku', 'ケ': 'ke', 'コ': 'ko',
+  'が': 'ga', 'ぎ': 'gi', 'ぐ': 'gu', 'げ': 'ge', 'ご': 'go',
+  'ガ': 'ga', 'ギ': 'gi', 'グ': 'gu', 'ゲ': 'ge', 'ゴ': 'go',
+  // s / z
+  'さ': 'sa', 'し': 'shi', 'す': 'su', 'せ': 'se', 'そ': 'so',
+  'サ': 'sa', 'シ': 'shi', 'ス': 'su', 'セ': 'se', 'ソ': 'so',
+  'ざ': 'za', 'じ': 'ji', 'ず': 'zu', 'ぜ': 'ze', 'ぞ': 'zo',
+  'ザ': 'za', 'ジ': 'ji', 'ズ': 'zu', 'ゼ': 'ze', 'ゾ': 'zo',
+  // t / d
+  'た': 'ta', 'ち': 'chi', 'つ': 'tsu', 'て': 'te', 'と': 'to',
+  'タ': 'ta', 'チ': 'chi', 'ツ': 'tsu', 'テ': 'te', 'ト': 'to',
+  'だ': 'da', 'ぢ': 'ji', 'づ': 'zu', 'で': 'de', 'ど': 'do',
+  'ダ': 'da', 'ヂ': 'ji', 'ヅ': 'zu', 'デ': 'de', 'ド': 'do',
+  // n
+  'な': 'na', 'に': 'ni', 'ぬ': 'nu', 'ね': 'ne', 'の': 'no',
+  'ナ': 'na', 'ニ': 'ni', 'ヌ': 'nu', 'ネ': 'ne', 'ノ': 'no',
+  // h / b / p
+  'は': 'ha', 'ひ': 'hi', 'ふ': 'fu', 'へ': 'he', 'ほ': 'ho',
+  'ハ': 'ha', 'ヒ': 'hi', 'フ': 'fu', 'ヘ': 'he', 'ホ': 'ho',
+  'ば': 'ba', 'び': 'bi', 'ぶ': 'bu', 'べ': 'be', 'ぼ': 'bo',
+  'バ': 'ba', 'ビ': 'bi', 'ブ': 'bu', 'ベ': 'be', 'ボ': 'bo',
+  'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po',
+  'パ': 'pa', 'ピ': 'pi', 'プ': 'pu', 'ペ': 'pe', 'ポ': 'po',
+  // m
+  'ま': 'ma', 'み': 'mi', 'む': 'mu', 'め': 'me', 'も': 'mo',
+  'マ': 'ma', 'ミ': 'mi', 'ム': 'mu', 'メ': 'me', 'モ': 'mo',
+  // y
+  'や': 'ya', 'ゆ': 'yu', 'よ': 'yo',
+  'ヤ': 'ya', 'ユ': 'yu', 'ヨ': 'yo',
+  // r
+  'ら': 'ra', 'り': 'ri', 'る': 'ru', 'れ': 're', 'ろ': 'ro',
+  'ラ': 'ra', 'リ': 'ri', 'ル': 'ru', 'レ': 're', 'ロ': 'ro',
+  // w (を → 'o' as particle; ヲ same)
+  'わ': 'wa', 'ゐ': 'wi', 'ゑ': 'we', 'を': 'o',
+  'ワ': 'wa', 'ヰ': 'wi', 'ヱ': 'we', 'ヲ': 'o',
+  // moraic ん
+  'ん': 'n', 'ン': 'n',
+  // small vowels (independent, sans preceding consonant)
+  'ぁ': 'a', 'ぃ': 'i', 'ぅ': 'u', 'ぇ': 'e', 'ぉ': 'o',
+  'ァ': 'a', 'ィ': 'i', 'ゥ': 'u', 'ェ': 'e', 'ォ': 'o',
+  // small ゃゅょ alone (shouldn't normally occur — digraph table catches them)
+  'ゃ': 'ya', 'ゅ': 'yu', 'ょ': 'yo',
+  'ャ': 'ya', 'ュ': 'yu', 'ョ': 'yo',
+};
+
+/**
+ * Convert a mixed hiragana/katakana/Latin string to lowercase Hepburn
+ * romaji. Sokuon (っ/ッ) doubles the next consonant; chōonpu (ー) repeats
+ * the preceding vowel; any chars we don't recognize pass through.
+ */
+function kanaToRomaji(text: string): string {
+  let out = "";
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+
+    // Sokuon: peek at the next kana's romaji and double its initial consonant.
+    if (ch === "っ" || ch === "ッ") {
+      const next2 = i + 2 < text.length + 1 ? text.slice(i + 1, i + 3) : "";
+      const next1 = text[i + 1] ?? "";
+      const nextRomaji = KANA_DIGRAPH[next2] ?? KANA_SINGLE[next1] ?? "";
+      if (nextRomaji && /^[bcdfghjklmpqrstvwxyz]/.test(nextRomaji)) {
+        out += nextRomaji[0];
+      }
+      continue;
+    }
+
+    // Long-vowel mark: repeat the last vowel of the output so far.
+    if (ch === "ー") {
+      const last = out[out.length - 1];
+      if (last && /[aeiou]/.test(last)) out += last;
+      continue;
+    }
+
+    // Digraph first (palatalized consonant + small y).
+    const bi = text.slice(i, i + 2);
+    if (KANA_DIGRAPH[bi]) {
+      out += KANA_DIGRAPH[bi];
+      i++;
+      continue;
+    }
+
+    // Single kana.
+    if (KANA_SINGLE[ch]) {
+      out += KANA_SINGLE[ch];
+      continue;
+    }
+
+    // Unknown (Latin, punctuation, kanji we couldn't map, etc.).
+    out += ch;
+  }
+  return out;
+}
 
 // === Japanese G2P Processor ===
 
@@ -98,10 +197,6 @@ class JapaneseG2P implements LanguageProcessor {
         text = text.split(key).join(KANJI_WORDS[key]);
       }
     }
-    // Step 1.5: palatalized digraphs → Hepburn romaji (see PALATAL_DIGRAPHS).
-    for (const [key, val] of Object.entries(PALATAL_DIGRAPHS)) {
-      if (text.includes(key)) text = text.split(key).join(val);
-    }
     // Step 2: per-kanji substitution with context-aware on/kun selection.
     //   - A kanji immediately followed by hiragana is acting as a verb or
     //     adjective stem (okurigana follows) → prefer kun reading.
@@ -126,7 +221,12 @@ class JapaneseG2P implements LanguageProcessor {
         ? (entry.k ?? entry.o ?? ch)
         : (entry.o ?? entry.k ?? ch);
     }
-    return out;
+    // Step 3: full kana → Hepburn romaji. anyAscii's per-char approach
+    // misrenders palatalized digraphs and small-vowel combinations
+    // (きょう → "kiyou" instead of "kyou"), so we do the conversion
+    // ourselves and let the downstream tokenizer anyAscii pass become
+    // an identity for Japanese.
+    return kanaToRomaji(out);
   }
 
   predict(word: string, language?: string, pos?: string): string | null {

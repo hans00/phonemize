@@ -118,21 +118,23 @@ export class Tokenizer {
   /**
    * Preprocess text: per-language normalization (numbers, abbreviations, …)
    * via each script-run's `LanguageProcessor.preProcess`, then optional
-   * anyAscii Latinization. Language detection runs on the post-expansion
-   * text so the downstream `languageMap` reflects what the tokenizer will
-   * actually see.
+   * anyAscii Latinization.
+   *
+   * The document-level analysis (`primary`, `hanIsJa`) is computed on the
+   * **original** text — preProcess for some languages (notably Japanese)
+   * Latinizes its segments to give the downstream G2P a clean Hepburn
+   * romaji stream, which would otherwise erase the script signal and
+   * cause the tokenizer to re-route everything as English. Running
+   * analyzeText first preserves the language identity for the per-token
+   * dispatch's primary-language fallback.
    *
    * Expansion happens before anyAscii so non-Latin expanders (e.g. Russian)
    * operate on their original script — anyAscii would otherwise Latinize
    * the run and strip the language signal.
-   *
-   * The document-level analysis (`primary`, `hanIsJa`) is computed on the
-   * post-expansion text and carried out so the per-token dispatch later
-   * applies the same Han→ja reassignment and primary-language fallback.
    */
   protected _preprocess(text: string): PreprocessResult {
+    const analysis = analyzeText(text);
     const expanded = preProcessByScript(text, this.registry, this.options.language);
-    const analysis = analyzeText(expanded);
     const { words, languageMap, segments } = this._detectLanguagesAndSegment(expanded, analysis.hanIsJa);
 
     if (!this.options.anyAscii) {
