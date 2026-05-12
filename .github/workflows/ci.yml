@@ -52,6 +52,7 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+      statuses: write
     
     steps:
     - name: Checkout code
@@ -88,7 +89,7 @@ jobs:
         
     - name: Comment PR with performance results
       if: github.event_name == 'pull_request'
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       with:
         script: |
           const performanceReport = `${{ steps.performance.outputs.report }}`;
@@ -129,7 +130,7 @@ jobs:
           
     - name: Commit performance results to commit status
       if: github.event_name == 'push'
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       with:
         script: |
           const performanceReport = `${{ steps.performance.outputs.report }}`;
