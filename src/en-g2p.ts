@@ -115,6 +115,25 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^gh$/, ''],                   // silent gh at word end (though, bough)
   [/^gh/, 'ɡ'],                   // ghost, ghetto (at start)
   [/^lm/, 'm'],                   // palm, calm, psalm
+
+  // Rime-conditioned vowel patterns. English research (Hanna 1966,
+  // Treiman, Sublexical Toolkit) consistently finds the rime (vowel +
+  // coda) is the most predictive sub-syllable unit, more so than the
+  // vowel alone. These full-rime rules match BEFORE generic onset-only
+  // vowel rules and resolve the otherwise-irregular cases.
+  [/^ought/, 'ɔt'],               // thought, bought, fought, sought, ought, nought
+  [/^aught/, 'ɔt'],               // caught, taught, daughter, naughty, fraught
+  [/^ough$/, 'ʌf'],               // rough, tough, enough (default; misses though/cough/through/bough)
+  [/^alm$/, 'ɑm'],                // calm, palm, psalm (silent l + a→ɑ)
+  [/^alk$/, 'ɔk'],                // walk, talk, chalk, stalk
+  // Doubled consonants collapse before PHONEME_RULES iteration, so the
+  // post-dedupe form for all/ball/call/… is "al" — anchor on that.
+  [/^al$/, 'ɔl'],                 // all, ball, call, fall, hall, mall, tall, wall, small
+  [/^ind$/, 'aɪnd'],              // kind, mind, find, bind, blind, behind, rewind
+  [/^ild$/, 'aɪld'],              // mild, wild, child
+  [/^old$/, 'oʊld'],              // old, cold, gold, fold, hold, mold, sold, told
+  [/^olt$/, 'oʊlt'],              // bolt, colt, jolt, volt
+  [/^ost$/, 'oʊst'],              // most, post, host (loses cost/lost; majority pattern wins)
   
   // Improved digraph handling
   [/^tsch/, 'tʃ'],                // German loanwords
@@ -896,28 +915,38 @@ export class EnglishG2P implements LanguageProcessor {
     // initial-unstress words like "about" (ə·baut), "today" (tə·deɪ),
     // "potato" (pə·teɪ·toʊ). The previous gate of `syllableIndex > 0`
     // wrongly left position-0 vowels at their full quality.
+    // Reduction-with-prefix-match: rime-conditioned rules above emit
+    // composite phoneme strings ("ɔl", "aɪnd", "oʊld", …), so an
+    // equality-only lookup misses the vowel buried at the front. We
+    // strip a matching leading short vowel and substitute schwa,
+    // preserving any trailing consonants.
+    const applyReduction = (table: Record<string, string>) => {
+      for (let i = 0; i < phonemes.length; i++) {
+        for (const from of Object.keys(table)) {
+          if (phonemes[i].startsWith(from)) {
+            phonemes[i] = table[from] + phonemes[i].slice(from.length);
+            break;
+          }
+        }
+      }
+    };
+
     if (!isStressed && !isLastSyllable) {
-      const reduction: Record<string, string> = {
+      applyReduction({
         'æ': 'ə', 'ɛ': 'ə', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
         // Keep ɪ — it's a common unstressed surface form in English.
         // Diphthongs preserved: they resist reduction in fast speech less
         // than short vowels (Treiman, Kessler — vowel weight).
-      };
-      for (let i = 0; i < phonemes.length; i++) {
-        if (reduction[phonemes[i]]) phonemes[i] = reduction[phonemes[i]];
-      }
+      });
     }
 
     // Final unstressed syllables: same idea but ɛ keeps a slightly higher
     // realization /ɪ/ (e.g. "pocket" /ˈpɑkɪt/, "rocket" /ˈɹɑkɪt/) which
     // is the standard GA pattern for -et/-it/-id endings.
     if (!isStressed && isLastSyllable && syllableIndex > 0) {
-      const finalReduction: Record<string, string> = {
+      applyReduction({
         'æ': 'ə', 'ɛ': 'ɪ', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
-      };
-      for (let i = 0; i < phonemes.length; i++) {
-        if (finalReduction[phonemes[i]]) phonemes[i] = finalReduction[phonemes[i]];
-      }
+      });
     }
     
     // Magic 'e' rule for stressed syllables
