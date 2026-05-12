@@ -343,7 +343,7 @@ export class Tokenizer {
   private _processTokens(text: string, includePositions = false): (PhonemeToken | { phoneme: string })[] {
     if (!text?.trim()) return [];
 
-    const { text: processedText, languageMap } = this._preprocess(text);
+    const { text: processedText, languageMap, primary, hanIsJa } = this._preprocess(text);
 
     // Get tokens with or without positions
     const tokenMatches: { token: string; position?: number }[] = [];
@@ -409,10 +409,19 @@ export class Tokenizer {
       // (e.g. "hello中文" without a space → tokens "hello" + "中文"),
       // so we re-run script detection on the per-token string before
       // falling back to the preferred language.
-      const detectedLanguage =
+      //
+      // For CJK Han, the document-level `hanIsJa` (from `analyzeText`)
+      // outranks the per-char default of "zh" — text without whitespace
+      // (which is most Japanese prose) misses the languageMap entirely
+      // and would otherwise fall straight through to Chinese G2P.
+      // Document `primary` is the last-resort fallback when nothing else
+      // identifies the token, beating only the static user option.
+      let detectedLanguage =
         languageMap[cleanToken.toLowerCase()]
         ?? detectLanguage(cleanToken)
-        ?? this.options.language;
+        ?? this.options.language
+        ?? primary;
+      if (hanIsJa && detectedLanguage === "zh") detectedLanguage = "ja";
 
       // Handle Zhuyin format specially
       if (this.options.format === "zhuyin" && detectedLanguage === "zh") {

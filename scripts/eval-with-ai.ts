@@ -177,7 +177,10 @@ Conclude with a score between 0 and 100.`;
 
   for (const tc of cases) {
     const langName = LANG_NAMES[tc.lang] ?? tc.lang;
-    const transcription = phonemizer.toIPA(tc.text, tc.lang);
+    // anyAscii is mandatory for ja/ko/ru — their G2Ps expect romaji/romaja/
+    // Latinized Cyrillic input. Enabling unconditionally is harmless for en
+    // (already Latin) and zh (the tokenizer preserves Han for pinyin-pro).
+    const transcription = phonemizer.toIPA(tc.text, { language: tc.lang, anyAscii: true });
 
     console.log(`\n━━━ ${tc.name}  [${langName}] ━━━`);
     console.log(`Text:\n${tc.text}\n`);
