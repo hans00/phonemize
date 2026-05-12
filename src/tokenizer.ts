@@ -4,7 +4,6 @@
  */
 
 import anyAscii from "./anyascii";
-import { simplePOSTagger } from "./pos-tagger";
 import { PUNCTUATION } from "./consts";
 import {
   analyzeText,
@@ -344,7 +343,7 @@ export class Tokenizer {
     return phonemes;
   }
 
-  private _predict(token: string, language: string, pos: string): string {
+  private _predict(token: string, language?: string, pos?: string): string {
     const predicted = this.registry.predictPhonemes(token, language, pos);
     return this._postProcess(predicted || token);
   }
@@ -386,54 +385,58 @@ export class Tokenizer {
       tokenMatches.push(...tokens.map(token => ({ token })));
     }
     
-    // Get POS tags for homograph disambiguation
-    const cleanWords = tokenMatches.filter(({ token }) => 
-      !PUNCTUATION.includes(token)
-    );
-    const posResults = simplePOSTagger.tagWords(cleanWords.map(({ token }) => token));
-    
+    // For each clean (non-punctuation) token, resolve its language and ask
+    // the matching language processor to POS-tag it. POS dispatch is now
+    // per-language so non-English processors can supply their own tagger
+    // without falling back to the English heuristics — English keeps the
+    // existing simplePOSTagger via EnglishG2P.tagWord.
+    //
+    // Language resolution order (same chain reused for predict below):
+    //   1. languageMap[token]                — from _detectLanguagesAndSegment
+    //   2. detectLanguage(token)             — script-based fallback
+    //   3. this.options.language             — user-supplied preferred lang
+    //   4. primary                           — document-level dominant lang
+    // Then Han chars get the hanIsJa flip (analyzeText already factored in
+    // the user-supplied ja* override at _preprocess time).
+    const cleanWords = tokenMatches.filter(({ token }) => !PUNCTUATION.includes(token));
+    const resolveLang = (token: string): string | undefined => {
+      let lang =
+        languageMap[token.toLowerCase()]
+        ?? detectLanguage(token)
+        ?? this.options.language
+        ?? primary;
+      if (hanIsJa && lang === "zh") lang = "ja";
+      return lang;
+    };
+    const cleanInfo = cleanWords.map((entry, i) => {
+      const lang = resolveLang(entry.token);
+      const proc = this.registry.findBestProcessor(entry.token, lang);
+      const prev = i > 0 ? cleanWords[i - 1].token : undefined;
+      const next = i + 1 < cleanWords.length ? cleanWords[i + 1].token : undefined;
+      const posRes = proc?.tagWord?.(entry.token, { prev, next });
+      return { lang, pos: posRes?.pos };
+    });
+
     const results: (PhonemeToken | { phoneme: string })[] = [];
     let cleanWordIndex = 0;
 
     for (const { token, position } of tokenMatches) {
       const cleanToken = token.trim();
-      
+
       // Handle punctuation - preserve it
       if (PUNCTUATION.includes(cleanToken)) {
-        const result = includePositions && position !== undefined 
+        const result = includePositions && position !== undefined
           ? { phoneme: cleanToken, word: cleanToken, position }
           : { phoneme: cleanToken };
         results.push(result);
         continue;
       }
 
-      // Get POS tag for homograph disambiguation
-      const pos = posResults[cleanWordIndex]?.pos;
-      cleanWordIndex++;
+      const info = cleanInfo[cleanWordIndex++];
+      const detectedLanguage = info.lang;
+      const pos = info.pos;
 
       let phoneme: string;
-
-      // Resolve language for this token. Script-detected languages (CJK,
-      // Cyrillic, etc.) win over the user-supplied preferred language —
-      // e.g. `phonemize("hello 中文", "en-GB")` still routes 中文 to the
-      // Chinese processor. The languageMap is keyed by whitespace-split
-      // chunks, but the actual tokenizer can split a chunk further
-      // (e.g. "hello中文" without a space → tokens "hello" + "中文"),
-      // so we re-run script detection on the per-token string before
-      // falling back to the preferred language.
-      //
-      // For CJK Han, the document-level `hanIsJa` (from `analyzeText`)
-      // outranks the per-char default of "zh" — text without whitespace
-      // (which is most Japanese prose) misses the languageMap entirely
-      // and would otherwise fall straight through to Chinese G2P.
-      // Document `primary` is the last-resort fallback when nothing else
-      // identifies the token, beating only the static user option.
-      let detectedLanguage =
-        languageMap[cleanToken.toLowerCase()]
-        ?? detectLanguage(cleanToken)
-        ?? this.options.language
-        ?? primary;
-      if (hanIsJa && detectedLanguage === "zh") detectedLanguage = "ja";
 
       // Handle Zhuyin format specially
       if (this.options.format === "zhuyin" && detectedLanguage === "zh") {

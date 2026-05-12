@@ -3,6 +3,7 @@ import * as homographs from "../data/en/homographs.json";
 import { arpabetToIpa, resolveJson } from "./utils";
 import { LanguageProcessor } from "./g2p";
 import { expandText } from "./expand-en";
+import { simplePOSTagger } from "./pos-tagger";
 import { transformAmericanToRP } from "./en-gb";
 
 export type EnglishDialect = "en-US" | "en-GB";
@@ -265,6 +266,18 @@ export class EnglishG2P implements LanguageProcessor {
    */
   preProcess(text: string): string {
     return expandText(text);
+  }
+
+  /**
+   * Per-word POS tagging for homograph disambiguation (read/lead/wind/…).
+   * Delegates to the rule-based simplePOSTagger in pos-tagger.ts, which
+   * is English-only by design — other languages plug in their own tagger
+   * via LanguageProcessor.tagWord if they need POS.
+   */
+  tagWord(word: string, context?: { prev?: string; next?: string }): { pos: string; confidence: number } {
+    const ctx = [context?.prev ?? "", context?.next ?? ""].filter((w) => w);
+    const result = simplePOSTagger.tagWord(word, ctx);
+    return { pos: result.pos, confidence: result.confidence };
   }
 
   predict(word: string, language?: string, pos?: string): string | null {

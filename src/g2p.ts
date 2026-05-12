@@ -50,6 +50,19 @@ export interface LanguageProcessor {
   preProcess?(text: string): string;
 
   /**
+   * Optional per-token POS tag (mostly for homograph disambiguation).
+   * The tokenizer routes each token to the matching processor's
+   * `tagWord` (if any), then passes the returned `pos` into `predict`.
+   * Context is the (optional) immediately neighboring tokens in original
+   * surface form so taggers that need local cues — preceding determiner,
+   * following particle, etc. — have access to them.
+   *
+   * Implementations that don't model POS should leave this undefined;
+   * `predict` will then receive `undefined` for the `pos` argument.
+   */
+  tagWord?(word: string, context?: { prev?: string; next?: string }): { pos: string; confidence: number } | null;
+
+  /**
    * Predict phonemes for a given word
    *
    * @param word - Word to convert to phonemes
