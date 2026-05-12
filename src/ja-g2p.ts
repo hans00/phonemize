@@ -153,7 +153,7 @@ const JAPANESE_SYLLABLE_MAP: { [key: string]: string } = {
   'a': 'a', 'i': 'i', 'u': 'ɯ', 'e': 'e', 'o': 'o',
   'ka': 'ka', 'ki': 'ki', 'ku': 'kɯ', 'ke': 'ke', 'ko': 'ko',
   'ga': 'ɡa', 'gi': 'ɡi', 'gu': 'ɡɯ', 'ge': 'ɡe', 'go': 'ɡo',
-  'sa': 'sa', 'shi': 'ʃi', 'su': 'sɯ', 'se': 'se', 'so': 'so',
+  'sa': 'sa', 'shi': 'ɕi', 'su': 'sɯ', 'se': 'se', 'so': 'so',
   'za': 'za', 'ji': 'dʑi', 'zu': 'zɯ', 'ze': 'ze', 'zo': 'zo',
   'ta': 'ta', 'chi': 'tɕi', 'tsu': 'tsɯ', 'te': 'te', 'to': 'to',
   'da': 'da', 'de': 'de', 'do': 'do', 'na': 'na', 'ni': 'ni',
@@ -164,10 +164,11 @@ const JAPANESE_SYLLABLE_MAP: { [key: string]: string } = {
   'mu': 'mɯ', 'me': 'mɛ', 'mo': 'mo', 'ya': 'ja', 'yu': 'jɯ',
   'yo': 'jo', 'ra': 'ɾa', 'ri': 'ɾi', 'ru': 'ɾɯ', 'wa': 'wa',
   'wo': 'o', 'n': 'n', 'kya': 'kja', 'kyu': 'kjɯ', 'kyo': 'kjo',
-  'gya': 'ɡja', 'gyu': 'ɡjɯ', 'gyo': 'ɡjo', 'sha': 'ʃa', 'shu': 'ʃɯ',
-  'sho': 'ʃo', 'ja': 'dʑa', 'ju': 'dʑɯ', 'jo': 'dʑo', 'cha': 'tɕa',
+  'gya': 'ɡja', 'gyu': 'ɡjɯ', 'gyo': 'ɡjo', 'sha': 'ɕa', 'shu': 'ɕɯ',
+  'sho': 'ɕo', 'ja': 'dʑa', 'ju': 'dʑɯ', 'jo': 'dʑo', 'cha': 'tɕa',
   'chu': 'tɕɯ', 'cho': 'tɕo', 'nya': 'ɲa', 'nyu': 'ɲɯ', 'nyo': 'ɲo',
-  'hya': 'ça', 'hyu': 'çɯ', 'hyo': 'ço', 'ryu': 'ɾjɯ'
+  'hya': 'ça', 'hyu': 'çɯ', 'hyo': 'ço',
+  'rya': 'ɾʲa', 'ryu': 'ɾʲɯ', 'ryo': 'ɾʲo'
 };
 
 const JAPANESE_LONG_VOWEL_RULES: { [key:string]: string } = {
@@ -189,6 +190,31 @@ class JapaneseG2P implements LanguageProcessor {
 
   preProcess(text: string): string {
     text = expandJapaneseText(text);
+    // Step 0.5: topic-particle は handling. は after a content-word
+    // boundary (kanji / katakana / single-char hiragana particle) and
+    // followed by another content boundary is almost always the topic
+    // particle, pronounced /wa/. Rewriting it to わ here lets the
+    // downstream kana converter pick up the right romaji without
+    // misclassifying word-internal は (はじめる, はやい, …) which sit
+    // inside hiragana sequences without those boundaries. Done before
+    // kanji conversion so the kanji context is still intact.
+    //
+    // The preceding-char class includes ASCII Latin too: katakana
+    // sometimes leaks through anyAscii as Latin, and "wikipediaは" or
+    // "TikTokは" patterns should still flip to /wa/.
+    // Boundary chars that signal a preceding word/particle has just ended:
+    // kanji/katakana/Latin (clear lexical boundaries) plus the short
+    // hiragana particles that frequently precede は (には, では, とは, やは,
+    // もは). Word-internal は (はじめる, はやい, あはは, …) sits after a
+    // generic hiragana char that isn't in this set, so it stays as /ha/.
+    text = text.replace(
+      /([一-龥ァ-ヶa-zA-Z0-9にでとやも])は/g,
+      "$1わ",
+    );
+    // Same idea for を: as object particle it's always /o/, never /wo/.
+    // The single-char mapping below already handles this; kept as a
+    // note to future maintainers.
+
     // Step 1: replace known irregular compounds (longest first) with their
     // canonical hiragana readings. This catches gikun like 今日 → きょう
     // that a per-kanji map cannot reconstruct from on/kun alone.
