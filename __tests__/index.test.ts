@@ -33,8 +33,8 @@ describe('Index', function() {
 
   it('rule based or compound word', function() {
     expect(phonemize('buggie')).toEqual('ˈbʌɡi')
-    expect(phonemize('supercar')).toEqual('ˈsupɝˈkɑɹ')
-    expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).toEqual('ˈnumoʊˈnoʊˈəɫtɹəˈˌmaɪkɹəskɑpɪkˈsiˈɫikoʊˈvɑɫkeɪnoʊˈkɑnˈaɪoʊˈsɪs')
+    expect(phonemize('supercar')).toEqual('ˈsupɝˌkɑɹ')
+    expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).toEqual('ˈnumoʊˌnoʊˌəɫtɹəˌmaɪkɹəˌskɑpɪkˌsiˌɫikoʊvɑɫˌkeɪnoʊˌkɑnˌaɪoʊˌsɪs')
   })
 
   it('chinese', function() {

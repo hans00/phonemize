@@ -26,6 +26,24 @@ export interface HomographDict {
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
 const CONSONANTS = new Set("bcdfghjklmnpqrstvwxyz".split(""));
 
+/**
+ * Productive English prefixes that shift primary stress onto the
+ * following stem when they lead a decomposed form. Limited to the
+ * inseparable Latin/Anglo-Saxon prefixes that linguists generally treat
+ * as bound morphemes — these almost always carry secondary (not primary)
+ * stress.
+ *
+ * NOT in this list: super-, hyper-, ultra-, mega-, mini-, post-, mid-,
+ * inter-, multi-, etc. — these behave as noun-compound heads in English
+ * and keep primary stress on the leading element (ˈSUPERcar, ˈHYPERloop,
+ * ˈULTRAviolet). Putting them here would mis-stress those words.
+ */
+const EN_PREFIXES = new Set([
+  "a", "ab", "ad", "anti", "be", "com", "con", "contra", "counter", "de",
+  "dis", "em", "en", "ex", "il", "im", "in", "ir", "mis", "non", "pre",
+  "pro", "re", "un",
+]);
+
 // Valid English onsets (consonant clusters that can start a syllable)
 const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr', 'dw', 'f', 'fl', 'fr', 'g', 'gl', 'gr', 'gu', 'h', 'j', 'k', 'kl', 'kn', 'kr', 'l', 'm', 'n', 'p', 'ph', 'pl', 'pr', 'ps', 'qu', 'r', 'rh', 's', 'sc', 'sch', 'scr', 'sh', 'sk', 'sl', 'sm', 'sn', 'sp', 'sph', 'spl', 'spr', 'st', 'str', 'sv', 'sw', 't', 'th', 'thr', 'tr', 'ts', 'tw', 'v', 'w', 'wh', 'wr', 'x', 'y', 'z']);
 
@@ -360,10 +378,26 @@ export class EnglishG2P implements LanguageProcessor {
     // Priority 5: Attempt to decompose the word into known dictionary parts
     const decomposition = this.tryDecomposition(lowerWord);
     if (decomposition && decomposition.length > 1) {
-        const pronunciations = decomposition.map(part => this.wellKnown(part)?.replace(/ˈ/g, ''));
+        const pronunciations = decomposition.map(part => this.wellKnown(part));
         if (pronunciations.every(p => p)) {
-            // Re-add stress markers between parts
-            return 'ˈ' + pronunciations.join('ˈ');
+            // Stress in compounds and prefixed forms: exactly one primary
+            // stress on the head, secondary on the rest. The head is the
+            // semantic root — for noun compounds (light+house) that's the
+            // first element, for prefix+stem (in+dispense, un+happy) it's
+            // the stem (skip the prefix). Internal stress within the head
+            // part is preserved verbatim; other parts have their ˈ demoted
+            // to ˌ. This replaces the previous behavior of slapping
+            // primary stress on every part, which produced multi-stress
+            // outputs like ˈɪnˈdaɪˈspɛnsəbəl.
+            const headIdx =
+              decomposition.length > 1 && EN_PREFIXES.has(decomposition[0]) ? 1 : 0;
+            return pronunciations
+              .map((p, idx) => {
+                if (!p) return "";
+                if (idx === headIdx) return p;
+                return p.replace(/ˈ/g, "ˌ");
+              })
+              .join("");
         }
     }
 
@@ -854,43 +888,35 @@ export class EnglishG2P implements LanguageProcessor {
         }
     }
     
-    // Apply conservative vowel modifications based on stress and position
-    if (!isStressed && syllableIndex > 0 && !isLastSyllable) {
-      // More conservative vowel reduction - only for clearly unstressed syllables
+    // Vowel reduction in unstressed syllables. Linguistically motivated:
+    // English unstressed vowels collapse to /ə/ (or /ɪ/ in final closed
+    // syllables); this is one of the strongest cross-cuts in English
+    // pronunciation (Treiman et al.) and applies regardless of where in
+    // the word the unstressed syllable sits — including position 0 in
+    // initial-unstress words like "about" (ə·baut), "today" (tə·deɪ),
+    // "potato" (pə·teɪ·toʊ). The previous gate of `syllableIndex > 0`
+    // wrongly left position-0 vowels at their full quality.
+    if (!isStressed && !isLastSyllable) {
+      const reduction: Record<string, string> = {
+        'æ': 'ə', 'ɛ': 'ə', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
+        // Keep ɪ — it's a common unstressed surface form in English.
+        // Diphthongs preserved: they resist reduction in fast speech less
+        // than short vowels (Treiman, Kessler — vowel weight).
+      };
       for (let i = 0; i < phonemes.length; i++) {
-        const vowelReductions: Record<string, string> = {
-          'æ': 'ə',   // cat -> ə in unstressed (but not in final syllables)
-          'ɛ': 'ə',   // bed -> ə in unstressed
-          'ɪ': 'ɪ',   // keep ɪ - common in unstressed syllables
-          'ɑ': 'ə',   // cot -> ə in unstressed  
-          'ʌ': 'ə',   // cut -> ə in unstressed
-          // Don't reduce diphthongs as aggressively
-          'eɪ': 'eɪ', // keep in most cases
-          'aɪ': 'aɪ', // keep in most cases  
-          'ɔɪ': 'ɔɪ', // keep in most cases
-          'oʊ': 'oʊ', // keep in most cases
-          'aʊ': 'aʊ', // keep in most cases
-        };
-        
-        if (vowelReductions[phonemes[i]]) {
-          phonemes[i] = vowelReductions[phonemes[i]];
-        }
+        if (reduction[phonemes[i]]) phonemes[i] = reduction[phonemes[i]];
       }
     }
-    
-    // Special handling for final unstressed syllables (less reduction)
+
+    // Final unstressed syllables: same idea but ɛ keeps a slightly higher
+    // realization /ɪ/ (e.g. "pocket" /ˈpɑkɪt/, "rocket" /ˈɹɑkɪt/) which
+    // is the standard GA pattern for -et/-it/-id endings.
     if (!isStressed && isLastSyllable && syllableIndex > 0) {
+      const finalReduction: Record<string, string> = {
+        'æ': 'ə', 'ɛ': 'ɪ', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
+      };
       for (let i = 0; i < phonemes.length; i++) {
-        const finalSyllableReductions: Record<string, string> = {
-          'æ': 'ə',   // cat -> ə 
-          'ɛ': 'ɪ',   // bed -> ɪ in final position (like "pocket")
-          'ɑ': 'ə',   // cot -> ə
-          'ʌ': 'ə',   // cut -> ə
-        };
-        
-        if (finalSyllableReductions[phonemes[i]]) {
-          phonemes[i] = finalSyllableReductions[phonemes[i]];
-        }
+        if (finalReduction[phonemes[i]]) phonemes[i] = finalReduction[phonemes[i]];
       }
     }
     
