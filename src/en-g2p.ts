@@ -111,6 +111,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^mn/, 'n'],                   // mnemonic, mnesic (silent initial m)
   [/^wr/, 'ɹ'],                   // write, wrong, wrist
   [/^mb$/, 'm'],                  // thumb, lamb, comb (word-final)
+  [/^bt$/, 't'],                  // debt, doubt, subtle (silent b in word/syllable-final bt)
   [/^ght/, 't'],                  // right, might, fight
   [/^gh$/, ''],                   // silent gh at word end (though, bough)
   [/^gh/, 'ɡ'],                   // ghost, ghetto (at start)
