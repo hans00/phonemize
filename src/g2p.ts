@@ -463,8 +463,13 @@ export function preProcessByScript(
   defaultLang?: string,
 ): string {
   const analysis = analyzeText(text);
+  // An explicit user-supplied `ja*` overrides the kana-cluster heuristic:
+  // for short Japanese fragments like `待っている` (single hiragana cluster)
+  // analyzeText conservatively keeps Han on the zh path, but a caller
+  // who has already declared the language wants Han to follow that lead.
+  const hanIsJa = analysis.hanIsJa || (defaultLang?.toLowerCase().startsWith("ja") ?? false);
   const fallback = defaultLang ?? analysis.primary;
-  const runs = splitByScript(text, { hanIsJa: analysis.hanIsJa });
+  const runs = splitByScript(text, { hanIsJa });
   let out = "";
   for (const run of runs) {
     const lang = run.lang || fallback;

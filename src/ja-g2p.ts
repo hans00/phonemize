@@ -296,8 +296,12 @@ class JapaneseG2P implements LanguageProcessor {
       }
     }
 
-    // Final cleanup for sokuon representation
-    return result.replace(/っ/g, '');
+    // Sokuon → IPA gemination: copy the next phoneme's leading character
+    // back onto the っ slot (matte = [mat:te] in linguistic literature is
+    // commonly written 'matte' in IPA; we follow that convention). For
+    // affricates like tɕ, the gemination falls on the stop element (t),
+    // which is the standard Japanese sokuon realization.
+    return result.replace(/っ(.)/g, "$1$1").replace(/っ/g, "");
   }
 }
 

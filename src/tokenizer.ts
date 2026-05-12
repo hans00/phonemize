@@ -134,8 +134,14 @@ export class Tokenizer {
    */
   protected _preprocess(text: string): PreprocessResult {
     const analysis = analyzeText(text);
+    // Mirror the user-language override that preProcessByScript applies:
+    // an explicit `ja*` option upgrades Han routing even when the kana-
+    // cluster heuristic is too conservative for short fragments.
+    const hanIsJa =
+      analysis.hanIsJa ||
+      (this.options.language?.toLowerCase().startsWith("ja") ?? false);
     const expanded = preProcessByScript(text, this.registry, this.options.language);
-    const { words, languageMap, segments } = this._detectLanguagesAndSegment(expanded, analysis.hanIsJa);
+    const { words, languageMap, segments } = this._detectLanguagesAndSegment(expanded, hanIsJa);
 
     if (!this.options.anyAscii) {
       return {
@@ -143,7 +149,7 @@ export class Tokenizer {
         languageMap,
         segments,
         primary: analysis.primary,
-        hanIsJa: analysis.hanIsJa,
+        hanIsJa,
       };
     }
 
