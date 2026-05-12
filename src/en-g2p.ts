@@ -137,6 +137,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^old$/, 'oʊld'],              // old, cold, gold, fold, hold, mold, sold, told
   [/^olt$/, 'oʊlt'],              // bolt, colt, jolt, volt
   [/^ost$/, 'oʊst'],              // most, post, host (loses cost/lost; majority pattern wins)
+  [/^ould$/, 'ʊd'],               // would, could, should (silent l, lax u — closed function-word family)
   
   // Improved digraph handling
   [/^tsch/, 'tʃ'],                // German loanwords
