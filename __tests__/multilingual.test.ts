@@ -13,7 +13,7 @@ const tests = [
   { text: 'he', lang: 'ja', expected: 'e' },
   { text: 'wo', lang: 'ja', expected: 'o' },
   { text: 'さくら', lang: 'ja', expected: 'sakɯɾa' },
-  { text: 'きょうと', lang: 'ja', expected: 'kijoɯto' },
+  { text: 'きょうと', lang: 'ja', expected: 'kijoːto' },
   // Korean
   { text: '감사합니다', lang: 'ko', expected: 'kamsahamnida' },
   { text: '한국', lang: 'ko', expected: 'hanɡuk̚' },

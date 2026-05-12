@@ -275,6 +275,61 @@ async function main(): Promise<void> {
   console.log(`Saved dictionary to: ${path.join(zhDir, "dict.json")}`);
   console.log(`Total entries: ${Object.keys(jsonContent).length}`);
 
+  // === Japanese kanji-readings + compound overrides ===
+  {
+    const jaDir = path.join(dataDir, "ja");
+    if (!fs.existsSync(jaDir)) fs.mkdirSync(jaDir, { recursive: true });
+
+    // Per-kanji map: store BOTH on'yomi and kun'yomi when present so the
+    // ja-g2p preProcess can pick the right one based on context (an
+    // immediately following hiragana = okurigana = verb/adjective stem
+    // → kun; followed by another kanji or punctuation → likely compound
+    // → on). Both are normalized katakana → hiragana so the downstream
+    // ja-g2p (romaji-based after anyAscii) sees a uniform hiragana
+    // stream regardless of which row the source listed.
+    // Source: KEINOS/joyo2010 gist — a parsed JSON of the 2010 Japanese
+    // Ministry of Education Jōyō kanji list (2,136 chars) with on/kun
+    // readings derived from cjkvi-tables. We fetch rather than bundle to
+    // keep src-data/ slim (the raw JSON is ~400 KB).
+    const joyoUrl = "https://gist.githubusercontent.com/KEINOS/fb660943484008b7f5297bb627e0e1b1/raw/joyo2010.json";
+    const joyoRes = await fetch(joyoUrl);
+    const joyo = (await joyoRes.json()) as Record<string, {
+      joyo_kanji: string;
+      yomi: { on_yomi?: string[]; kun_yomi?: string[]; example_yomi?: string[] };
+    }>;
+    // Joyo katakana → hiragana shift (U+30A1..U+30F6 → U+3041..U+3096),
+    // then strip example-reading suffix markers (`ひと-つ` → `ひと`).
+    const normalize = (raw: string) =>
+      raw.replace(/[ァ-ヶ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0x60))
+        .replace(/[-.・].*$/, "")
+        .trim();
+    const kanjiDict: Record<string, { o?: string; k?: string }> = {};
+    for (const entry of Object.values(joyo)) {
+      const on = entry.yomi.on_yomi?.[0];
+      const kun = entry.yomi.kun_yomi?.[0];
+      const e: { o?: string; k?: string } = {};
+      if (on) {
+        const n = normalize(on);
+        if (n) e.o = n;
+      }
+      if (kun) {
+        const n = normalize(kun);
+        if (n) e.k = n;
+      }
+      if (e.o || e.k) kanjiDict[entry.joyo_kanji] = e;
+    }
+    fs.writeFileSync(path.join(jaDir, "kanji.json"), JSON.stringify(kanjiDict));
+    console.log(`Saved kanji readings: ${path.join(jaDir, "kanji.json")} (${Object.keys(kanjiDict).length} entries)`);
+
+    // Compound-word overrides: irregular readings (gikun, fossilized
+    // compounds) that the per-kanji map can't derive correctly.
+    const wordsPath = new URL("../src-data/ja/words.json5", import.meta.url).pathname;
+    const wordsContent = fs.readFileSync(wordsPath, "utf-8");
+    const wordsJson = json5.parse(wordsContent);
+    fs.writeFileSync(path.join(jaDir, "words.json"), JSON.stringify(wordsJson));
+    console.log(`Saved kanji compound overrides: ${path.join(jaDir, "words.json")} (${Object.keys(wordsJson).length} entries)`);
+  }
+
   // Load and save AnyAscii
   {
     const res = await fetch("https://raw.githubusercontent.com/anyascii/anyascii/master/impl/js/block.js");

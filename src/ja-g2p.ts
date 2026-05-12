@@ -1,5 +1,51 @@
+import * as kanjiDict from "../data/ja/kanji.json";
+import * as kanjiWords from "../data/ja/words.json";
+import { resolveJson } from "./utils";
 import { LanguageProcessor } from "./g2p";
 import { expandJapaneseText } from "./expand-ja";
+
+interface KanjiReading { o?: string; k?: string }
+const KANJI_READINGS = resolveJson<Record<string, KanjiReading>>(kanjiDict);
+const KANJI_WORDS = resolveJson<Record<string, string>>(kanjiWords);
+
+// Longest-first compound key list — used in preProcess so e.g. 今日 wins
+// over 今 / 日 individual lookups during scanning.
+const KANJI_WORD_KEYS = Object.keys(KANJI_WORDS).sort((a, b) => b.length - a.length);
+const KANJI_RE = /[一-龥㐀-䶿豈-﫿]/;
+const HIRA_RE = /[ぁ-ゟ]/;
+
+// Palatalized digraphs (consonant + small ゃ/ゅ/ょ). anyAscii treats the
+// small kana as a separate syllable, romanizing きょう as "kiyou" instead
+// of Hepburn "kyou", which then mis-syllabifies in ja-g2p as ki+yo+u.
+// We pre-emit these as Hepburn romaji so anyAscii passes them through
+// and the ja-g2p syllable map matches the proper kyo/sho/cho/… rows.
+const PALATAL_DIGRAPHS: Record<string, string> = {
+  // Hiragana
+  'きゃ': 'kya', 'きゅ': 'kyu', 'きょ': 'kyo',
+  'ぎゃ': 'gya', 'ぎゅ': 'gyu', 'ぎょ': 'gyo',
+  'しゃ': 'sha', 'しゅ': 'shu', 'しょ': 'sho',
+  'じゃ': 'ja',  'じゅ': 'ju',  'じょ': 'jo',
+  'ちゃ': 'cha', 'ちゅ': 'chu', 'ちょ': 'cho',
+  'ぢゃ': 'ja',  'ぢゅ': 'ju',  'ぢょ': 'jo',
+  'にゃ': 'nya', 'にゅ': 'nyu', 'にょ': 'nyo',
+  'ひゃ': 'hya', 'ひゅ': 'hyu', 'ひょ': 'hyo',
+  'びゃ': 'bya', 'びゅ': 'byu', 'びょ': 'byo',
+  'ぴゃ': 'pya', 'ぴゅ': 'pyu', 'ぴょ': 'pyo',
+  'みゃ': 'mya', 'みゅ': 'myu', 'みょ': 'myo',
+  'りゃ': 'rya', 'りゅ': 'ryu', 'りょ': 'ryo',
+  // Katakana counterparts
+  'キャ': 'kya', 'キュ': 'kyu', 'キョ': 'kyo',
+  'ギャ': 'gya', 'ギュ': 'gyu', 'ギョ': 'gyo',
+  'シャ': 'sha', 'シュ': 'shu', 'ショ': 'sho',
+  'ジャ': 'ja',  'ジュ': 'ju',  'ジョ': 'jo',
+  'チャ': 'cha', 'チュ': 'chu', 'チョ': 'cho',
+  'ニャ': 'nya', 'ニュ': 'nyu', 'ニョ': 'nyo',
+  'ヒャ': 'hya', 'ヒュ': 'hyu', 'ヒョ': 'hyo',
+  'ビャ': 'bya', 'ビュ': 'byu', 'ビョ': 'byo',
+  'ピャ': 'pya', 'ピュ': 'pyu', 'ピョ': 'pyo',
+  'ミャ': 'mya', 'ミュ': 'myu', 'ミョ': 'myo',
+  'リャ': 'rya', 'リュ': 'ryu', 'リョ': 'ryo',
+};
 
 // === Japanese G2P Processor ===
 
@@ -27,6 +73,14 @@ const JAPANESE_SYLLABLE_MAP: { [key: string]: string } = {
 
 const JAPANESE_LONG_VOWEL_RULES: { [key:string]: string } = {
   'aa': 'aː', 'ii': 'iː', 'uu': 'uː', 'ee': 'eː', 'oo': 'oː',
+  // お段+う almost always realizes as long ō in kango compounds
+  // (とうきょう = tōkyō, がっこう = gakkō). Over-lengthens a few native
+  // verb forms (思う omou → omoː) but those are a tiny minority.
+  'ou': 'oː',
+  // え段+い is NOT added: while it's right for kango (英語 → ēgo), it
+  // wrongly fuses the te-form/i-renyōkei pair across morpheme boundary
+  // (待って+いる → mateːru instead of matte-iru), and the verb pattern
+  // is overwhelmingly more frequent than the kango one.
 };
 
 class JapaneseG2P implements LanguageProcessor {
@@ -35,7 +89,44 @@ class JapaneseG2P implements LanguageProcessor {
   readonly supportedLanguages = ["ja"];
 
   preProcess(text: string): string {
-    return expandJapaneseText(text);
+    text = expandJapaneseText(text);
+    // Step 1: replace known irregular compounds (longest first) with their
+    // canonical hiragana readings. This catches gikun like 今日 → きょう
+    // that a per-kanji map cannot reconstruct from on/kun alone.
+    for (const key of KANJI_WORD_KEYS) {
+      if (text.includes(key)) {
+        text = text.split(key).join(KANJI_WORDS[key]);
+      }
+    }
+    // Step 1.5: palatalized digraphs → Hepburn romaji (see PALATAL_DIGRAPHS).
+    for (const [key, val] of Object.entries(PALATAL_DIGRAPHS)) {
+      if (text.includes(key)) text = text.split(key).join(val);
+    }
+    // Step 2: per-kanji substitution with context-aware on/kun selection.
+    //   - A kanji immediately followed by hiragana is acting as a verb or
+    //     adjective stem (okurigana follows) → prefer kun reading.
+    //     Example: 待っている → ま+っている (kun ま), not たい.
+    //   - Otherwise (next char is another kanji, punctuation, or end of
+    //     string) it is part of a compound → prefer on reading.
+    //     Example: 待機 → たい+き (on たい).
+    let out = "";
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (!KANJI_RE.test(ch)) {
+        out += ch;
+        continue;
+      }
+      const entry = KANJI_READINGS[ch];
+      if (!entry) {
+        out += ch;
+        continue;
+      }
+      const nextIsHira = i + 1 < text.length && HIRA_RE.test(text[i + 1]);
+      out += nextIsHira
+        ? (entry.k ?? entry.o ?? ch)
+        : (entry.o ?? entry.k ?? ch);
+    }
+    return out;
   }
 
   predict(word: string, language?: string, pos?: string): string | null {
