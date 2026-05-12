@@ -3,18 +3,44 @@ import { expandRussianText } from "./expand-ru";
 
 // === Russian G2P Processor ===
 
+/**
+ * Single-char map for Latin-script Russian after anyAscii. Multi-char
+ * sequences (zh/kh/ch/sh/shch/ts) are handled separately below via
+ * longest-match digraph lookup — they live in this map only as a
+ * structural reminder of what digraphs exist; processRussian consults
+ * DIGRAPHS first, then falls through to single chars.
+ */
 const RUSSIAN_TO_PHONEME: { [key: string]: string } = {
-  // Vowels (after anyascii) - a, e, i, o, u, y
+  // Vowels (after anyAscii) — a, e, i, o, u, y
   'a': 'a', 'e': 'e', 'i': 'i', 'o': 'o', 'u': 'u', 'y': 'ɨ',
   // Consonants
-  'b': 'b', 'v': 'v', 'g': 'ɡ', 'd': 'd', 'zh': 'ʐ', 'z': 'z',
+  'b': 'b', 'v': 'v', 'g': 'ɡ', 'd': 'd', 'z': 'z',
   'j': 'j', 'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'p': 'p',
-  'r': 'r', 's': 's', 't': 't', 'f': 'f', 'kh': 'x', 'ts': 'ts',
-  'ch': 'tɕ', 'sh': 'ʂ', 'shch': 'ɕː',
-  // Special characters
-  '\'': 'ʲ', // Soft sign
-  '"': '' // Hard sign is often unpronounced or causes a slight pause
+  'r': 'r', 's': 's', 't': 't', 'f': 'f',
+  // Special characters from anyAscii passthrough
+  "'": 'ʲ', // Soft sign Ь
+  '"': '',  // Hard sign Ъ — silent, but blocks palatalization spread
 };
+
+const DIGRAPHS: Array<[string, string]> = [
+  // Longest first so "shch" wins over "sh".
+  ['shch', 'ɕː'],
+  ['zh',   'ʐ'],
+  ['kh',   'x'],
+  ['ts',   't͡s'],
+  ['ch',   't͡ɕ'],
+  ['sh',   'ʂ'],
+];
+
+/** Consonant phonemes that do not palatalize (already palatal or affricate). */
+const NON_PALATALIZING = new Set(['j', 'ʃ', 'ʒ', 't͡s', 'ts', 'ɕː', 'ʂ']);
+
+/** Voiced obstruents → their voiceless counterparts (for final devoicing). */
+const DEVOICE: Record<string, string> = {
+  'b': 'p', 'd': 't', 'ɡ': 'k', 'z': 's', 'v': 'f', 'ʐ': 'ʂ',
+};
+
+const VOWELS_LATIN = new Set(['a', 'e', 'i', 'o', 'u', 'y']);
 
 class RussianG2P implements LanguageProcessor {
   readonly id = "ru-g2p";
@@ -29,30 +55,90 @@ class RussianG2P implements LanguageProcessor {
     return this.processRussian(word);
   }
 
+  /**
+   * Token-level G2P. Input is the post-anyAscii Latin transliteration:
+   *
+   * - digraphs (zh/kh/ch/sh/shch/ts) → real IPA, looked up longest-first
+   *   so the bare `s`/`z`/`t`/`c`/`k`/`h` fallbacks never preempt them.
+   * - "y" before a/o/u is the anyAscii rendering of я/ё/ю — when it
+   *   follows a consonant it palatalizes that consonant and the `y` is
+   *   absorbed; word-initially or after a vowel it surfaces as /j/.
+   * - "e" and "i" after a consonant also palatalize.
+   * - Final voiced obstruent → voiceless (final devoicing).
+   *
+   * This is a phonemic approximation only — Russian needs lexical stress
+   * to do unstressed-vowel reduction (akan'e / ikan'e) properly, and we
+   * don't have a stress dictionary, so vowel quality stays full.
+   */
   private processRussian(text: string): string {
     text = text.toLowerCase();
-    let ipa = '';
-    const softVowels = ['е', 'ё', 'и', 'ю', 'я'];
-    const anyasciiSoftVowels = ['e', 'yo', 'i', 'yu', 'ya'];
-    
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      const nextChar = text[i+1];
-      
-      let phoneme = RUSSIAN_TO_PHONEME[char] || char;
+    const tokens: string[] = [];
 
-      // Palatalization rule for consonants
-      if (RUSSIAN_TO_PHONEME[char] && !anyasciiSoftVowels.includes(char) && nextChar && anyasciiSoftVowels.includes(nextChar)) {
-         if (!['j', 'ʃ', 'ʒ', 'ts'].includes(phoneme)) { // These don't get palatalized
-            phoneme += 'ʲ';
-         }
+    let i = 0;
+    while (i < text.length) {
+      // Longest-match digraph first.
+      let digraphHit: { ipa: string; len: number } | null = null;
+      for (const [seq, ipa] of DIGRAPHS) {
+        if (text.startsWith(seq, i)) {
+          digraphHit = { ipa, len: seq.length };
+          break;
+        }
       }
-      
-      ipa += phoneme;
+
+      if (digraphHit) {
+        tokens.push(digraphHit.ipa);
+        i += digraphHit.len;
+        continue;
+      }
+
+      // Iotated vowels: y + {a,o,u} after a consonant palatalizes the
+      // preceding consonant and emits just the bare vowel; elsewhere we
+      // surface the /j/ glide.
+      if (text[i] === 'y' && i + 1 < text.length && 'aou'.includes(text[i + 1])) {
+        const vowel = text[i + 1];
+        const prev = tokens[tokens.length - 1];
+        if (prev && !VOWELS_LATIN.has(prev[0]) && !NON_PALATALIZING.has(prev) && prev !== 'j') {
+          tokens[tokens.length - 1] = prev + 'ʲ';
+          tokens.push(vowel);
+        } else {
+          tokens.push('j', vowel);
+        }
+        i += 2;
+        continue;
+      }
+
+      const ch = text[i];
+      let phoneme = RUSSIAN_TO_PHONEME[ch] ?? ch;
+
+      // Palatalization before "e"/"i" attaches to the preceding consonant.
+      // The map already emitted the consonant in the previous iteration,
+      // so patch it in-place rather than queuing on the vowel.
+      if (ch === 'e' || ch === 'i') {
+        const prev = tokens[tokens.length - 1];
+        if (prev && !VOWELS_LATIN.has(prev[0]) && !NON_PALATALIZING.has(prev) && prev !== 'j' && !prev.endsWith('ʲ')) {
+          tokens[tokens.length - 1] = prev + 'ʲ';
+        }
+      }
+
+      tokens.push(phoneme);
+      i++;
     }
-    
-    // We clean up some artifacts from the simple palatalization.
-    return ipa.replace(/ʲj/g, 'j');
+
+    // Final devoicing — applies to the last obstruent of the word.
+    for (let j = tokens.length - 1; j >= 0; j--) {
+      const t = tokens[j];
+      if (!t) continue;
+      if (DEVOICE[t]) {
+        tokens[j] = DEVOICE[t];
+        break;
+      }
+      // Skip trailing palatalization mark / soft sign attached to a stop.
+      if (t === 'ʲ') continue;
+      // Stop at the first non-obstruent (vowel or sonorant).
+      if (VOWELS_LATIN.has(t) || ['m', 'n', 'l', 'r', 'j'].includes(t)) break;
+    }
+
+    return tokens.join('');
   }
 
   public addPronunciation(word: string, pronunciation: string): void {

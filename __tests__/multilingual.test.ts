@@ -15,15 +15,15 @@ const tests = [
   { text: 'さくら', lang: 'ja', expected: 'sakɯɾa' },
   { text: 'きょうと', lang: 'ja', expected: 'kijoɯto' },
   // Korean
-  { text: '감사합니다', lang: 'ko', expected: 'kamsahap̚nida' },
+  { text: '감사합니다', lang: 'ko', expected: 'kamsahamnida' },
   { text: '한국', lang: 'ko', expected: 'hanɡuk̚' },
-  { text: '안녕', lang: 'ko', expected: 'ʔannjʌŋ' },
-  { text: '사랑', lang: 'ko', expected: 'salaŋ' },
+  { text: '안녕', lang: 'ko', expected: 'annjʌŋ' },
+  { text: '사랑', lang: 'ko', expected: 'saɾaŋ' },
   // Russian
   { text: 'Привет', lang: 'ru', expected: 'prʲivʲet' },
   { text: 'Москва', lang: 'ru', expected: 'moskva' },
   { text: 'Спасибо', lang: 'ru', expected: 'spasʲibo' },
-  { text: 'Добро пожаловать', lang: 'ru', expected: 'dobro pozhalovatʲ' },
+  { text: 'Добро пожаловать', lang: 'ru', expected: 'dobro poʐalovatʲ' },
 ]
 
 const withoutAnyAscii = ['en', 'zh']

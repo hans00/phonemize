@@ -17,7 +17,11 @@ import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
 import type ChineseG2P from "./zh-g2p";
 
 // Tokenization regex patterns
-const TOKEN_REGEX = /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+['']?\w*|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
+// Apostrophe class includes the ASCII straight apostrophe plus U+2018/U+2019
+// curly quotes (often produced by smart-quote substitution in source text),
+// so that `knight's`, `it's`, and `o'clock` survive as single word tokens
+// regardless of which apostrophe variant the input uses.
+const TOKEN_REGEX = /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+[''\u2018\u2019]?\w*|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
 
 /**
  * Configuration options for tokenizer behavior

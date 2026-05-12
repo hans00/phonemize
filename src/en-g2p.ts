@@ -85,10 +85,11 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
 const PHONEME_RULES: Array<[RegExp, string]> = [
   // Silent letter combinations
   [/^pn/, 'n'],                   // pneumonia, pneumatic
-  [/^ps/, 's'],                   // psychology, psalm  
+  [/^ps/, 's'],                   // psychology, psalm
   [/^pt/, 't'],                   // pterodactyl, ptomaine
   [/^kn/, 'n'],                   // knee, knife, know
   [/^gn/, 'n'],                   // gnome, gnat, gnu
+  [/^mn/, 'n'],                   // mnemonic, mnesic (silent initial m)
   [/^wr/, 'ɹ'],                   // write, wrong, wrist
   [/^mb$/, 'm'],                  // thumb, lamb, comb (word-final)
   [/^ght/, 't'],                  // right, might, fight
@@ -452,8 +453,8 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
     
-    // Try possessive forms ('s)
-    if (lowerWord.endsWith("'s") && lowerWord.length > 3) {
+    // Try possessive forms ('s) — accept ASCII or curly apostrophe.
+    if (/[''‘’]s$/.test(lowerWord) && lowerWord.length > 3) {
       const base = lowerWord.slice(0, -2);
       const basePron = this.wellKnown(base);
       if (basePron) {
