@@ -561,17 +561,22 @@ export class EnglishG2P implements LanguageProcessor {
     
     // Try past tense (-ed)
     if (lowerWord.endsWith('ed') && lowerWord.length > 3) {
+      const edPast = (basePron: string) => {
+        const lastSound = basePron.slice(-1);
+        if (['t', 'd'].includes(lastSound)) return basePron + 'ɪd';
+        if (['p', 'k', 's', 'ʃ', 'tʃ', 'f', 'θ'].includes(lastSound)) return basePron + 't';
+        return basePron + 'd';
+      };
       const base = lowerWord.slice(0, -2);
       const basePron = this.wellKnown(base);
-      if (basePron) {
-        const lastSound = basePron.slice(-1);
-        if (['t', 'd'].includes(lastSound)) {
-          return basePron + 'ɪd';
-        }
-        if (['p', 'k', 's', 'ʃ', 'tʃ', 'f', 'θ'].includes(lastSound)) {
-          return basePron + 't';
-        }
-        return basePron + 'd';
+      if (basePron) return edPast(basePron);
+
+      // Doubled-consonant base: "strutted" → "strut", "stopped" → "stop".
+      // Mirrors the -ing fallback below.
+      const baseShort = lowerWord.slice(0, -3);
+      if (lowerWord.length > 4 && lowerWord.slice(-4, -3) === baseShort.slice(-1)) {
+        const basePronShort = this.wellKnown(baseShort);
+        if (basePronShort) return edPast(basePronShort);
       }
     }
     
