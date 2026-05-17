@@ -73,13 +73,11 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
   [/^sion$/, 'ʒən', false],        // -sion is always unstressed
   [/^cian$/, 'ʃən', false],        // -cian (technician, electrician, musician)
-  [/^cial$/, 'ʃəl', false],        // -cial (commercial, social)
-  [/^tial$/, 'ʃəl', false],        // -tial (potential, partial)
+  [/^[ct]ial$/, 'ʃəl', false],     // -cial/-tial (commercial, social, potential, partial)
   [/^ture$/, 'tʃɝ', false],        // -ture (future, nature)
   [/^sure$/, 'ʒɝ', false],         // -sure (measure, pleasure)
   [/^geous$/, 'dʒəs', false],      // -geous (gorgeous, advantageous)
-  [/^cious$/, 'ʃəs', false],       // -cious (delicious, precious)
-  [/^tious$/, 'ʃəs', false],       // -tious (ambitious, nutritious)
+  [/^[ct]ious$/, 'ʃəs', false],    // -cious/-tious (delicious, precious, ambitious, nutritious)
   [/^[ei]ous$/, 'iəs', false],      // -eous/-ious (miscellaneous, various, serious)
   [/^uous$/, 'juəs', false],       // -uous (continuous, ambiguous)
   [/^[ai]ble$/, 'əbəl', false],     // -able/-ible
@@ -198,7 +196,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ey/, 'eɪ'],                  // they, grey, obey (stressed -ey)
   [/^ight/, 'aɪt'],               // night, right, knight (i+ght)
   [/^oa/, 'oʊ'],                  // boat, coat, road
-  [/^ross/, 'ɹoʊs'],              // gross -> groʊs
   [/^oss/, 'ɔs'],                 // cross, loss (short o)
   [/^eur/, 'ɝ'],                  // connoisseur, entrepreneur (French -eur → /ɝ/)
   [/^eu/, 'ju'],                  // feud, neuter, Europe
@@ -223,10 +220,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ar/, 'ɑɹ'],                  // car, far, start
   [/^[eiu]r/, 'ɝ'],               // her/bird/fur (er/ir/ur → /ɝ/)
   [/^or/, 'ɔɹ'],                  // for, port, storm
-  [/^ear/, 'ɪɹ'],                 // hear, clear, year
-  [/^eer/, 'ɪɹ'],                 // deer, cheer, peer
-  [/^ier/, 'ɪɹ'],                 // pier, tier
-  [/^our/, 'aʊɹ'],                // hour, sour, flour
   
   // Context-dependent consonants
   [/^c(?=[eiy])/, 's'],           // soft c: cent, city, cycle
