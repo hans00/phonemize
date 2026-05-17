@@ -1,10 +1,23 @@
-import { G2PModel } from '../src/en-g2p';
+import EnglishG2P from '../src/en-g2p';
 import dictionary from '../data/en/dict.json';
 import fs from 'fs';
-
-// Using an external library for Levenshtein distance for simplicity and accuracy
-// We'll need to add this to devDependencies
+import { join } from 'path';
 import levenshtein from 'fast-levenshtein';
+
+const BASELINE_PATH = join(__dirname, 'eval-baseline.json');
+
+interface Baseline {
+  date: string;
+  strictAccuracy: number;
+  lenientAccuracy: number;
+  averageDistance: number;
+  medianDistance: number;
+}
+
+const cliArgs = {
+  cluster:         process.argv.includes('--cluster')         || process.argv.includes('-c'),
+  updateBaseline:  process.argv.includes('--update-baseline') || process.argv.includes('-u'),
+};
 
 /**
  * Normalizes a phoneme string for comparison.
@@ -52,10 +65,48 @@ function canonizePhonemeString(phonemeStr: string): string {
 }
 
 
+function clusterFailures(
+  mismatches: Array<{ word: string; expected: string; predicted: string; distance: number }>,
+  g2p: EnglishG2P,
+): void {
+  interface Cluster { rule: string; grapheme: string; phoneme: string; words: string[] }
+  const clusters = new Map<string, Cluster>();
+
+  for (const { word, expected, predicted } of mismatches) {
+    const tr = g2p.trace(word);
+    if (tr.path !== 'rules' || tr.steps.length === 0) continue;
+
+    const normPred = predicted.replace(/[ˈˌ]/g, '');
+    const normExp  = expected.replace(/[ˈˌ]/g, '');
+    let pos = 0;
+    while (pos < normPred.length && pos < normExp.length && normPred[pos] === normExp[pos]) pos++;
+
+    let stepEnd = 0;
+    let hit = tr.steps[0];
+    for (const step of tr.steps) {
+      if (stepEnd + step.phoneme.length > pos) { hit = step; break; }
+      stepEnd += step.phoneme.length;
+    }
+
+    const key = `${hit.rule}|${hit.grapheme}→${hit.phoneme}`;
+    const existing = clusters.get(key);
+    if (existing) existing.words.push(word);
+    else clusters.set(key, { rule: hit.rule, grapheme: hit.grapheme, phoneme: hit.phoneme, words: [word] });
+  }
+
+  const top = [...clusters.values()].sort((a, b) => b.words.length - a.words.length).slice(0, 20);
+  console.log('\n--- Top Failure Clusters ---\n');
+  top.forEach((c, i) => {
+    const ex = c.words.slice(0, 5).join(', ') + (c.words.length > 5 ? ` +${c.words.length - 5} more` : '');
+    console.log(`${i + 1}. [${c.rule}]  "${c.grapheme}" → /${c.phoneme}/  (${c.words.length} words)`);
+    console.log(`   e.g.: ${ex}`);
+  });
+}
+
 async function evaluate() {
   console.log('Starting G2P rule-based evaluation...');
 
-  const g2p = new G2PModel({ disableDict: true });
+  const g2p = new EnglishG2P({ disableDict: true });
   const words = Object.keys(dictionary as Record<string, string>);
   const MAX_WORD_LENGTH = 12; // Words longer than this are considered "compound" and excluded.
   
@@ -138,19 +189,34 @@ async function evaluate() {
   const mid = Math.floor(total / 2);
   const medianDistance = total % 2 !== 0 ? allDistances[mid] : (allDistances[mid - 1] + allDistances[mid]) / 2;
 
+  let baseline: Baseline | null = null;
+  if (fs.existsSync(BASELINE_PATH)) {
+    try { baseline = JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf-8')); } catch { /* ignore */ }
+  }
+
+  const delta = (now: number, prev: number | undefined, higherIsBetter = true) => {
+    if (prev === undefined) return '';
+    const d = now - prev;
+    if (Math.abs(d) < 0.005) return '';
+    const sign = d > 0 ? '+' : '';
+    const arrow = higherIsBetter ? (d > 0 ? ' ↑' : ' ↓') : (d < 0 ? ' ↑' : ' ↓');
+    return ` (${sign}${d.toFixed(2)}${arrow})`;
+  };
+
   console.log(`\n--- G2P Rule-based Evaluation Results ---`);
+  if (baseline) console.log(`    baseline: ${baseline.date}`);
   console.log(`Total words evaluated: ${total}`);
   console.log(`\nStrict Accuracy (exact match after stress removal):`);
   console.log(`  - Correct: ${strictCorrect}`);
-  console.log(`  - Accuracy: ${strictAccuracy.toFixed(2)}%`);
-  
+  console.log(`  - Accuracy: ${strictAccuracy.toFixed(2)}%${delta(strictAccuracy, baseline?.strictAccuracy)}`);
+
   console.log(`\nLenient Accuracy (allowing Levenshtein distance <= 1):`);
   console.log(`  - Correct: ${lenientCorrect}`);
-  console.log(`  - Accuracy: ${lenientAccuracy.toFixed(2)}%`);
+  console.log(`  - Accuracy: ${lenientAccuracy.toFixed(2)}%${delta(lenientAccuracy, baseline?.lenientAccuracy)}`);
 
   console.log(`\nError distance metrics (Levenshtein):`);
-  console.log(`  - Average Distance: ${averageDistance.toFixed(2)}`);
-  console.log(`  - Median Distance: ${medianDistance.toFixed(2)}`);
+  console.log(`  - Average Distance: ${averageDistance.toFixed(2)}${delta(averageDistance, baseline?.averageDistance, false)}`);
+  console.log(`  - Median Distance: ${medianDistance.toFixed(2)}${delta(medianDistance, baseline?.medianDistance, false)}`);
 
 
   if (mismatches.length > 0) {
@@ -174,6 +240,19 @@ async function evaluate() {
 
     fs.writeFileSync(reportPath, reportContent);
     console.log(`\nFull mismatch report for the top 100 errors saved to: ${reportPath}`);
+    if (cliArgs.cluster) clusterFailures(mismatches, g2p);
+  }
+
+  if (cliArgs.updateBaseline) {
+    const b: Baseline = {
+      date: new Date().toISOString().slice(0, 10),
+      strictAccuracy,
+      lenientAccuracy,
+      averageDistance,
+      medianDistance,
+    };
+    fs.writeFileSync(BASELINE_PATH, JSON.stringify(b, null, 2) + '\n');
+    console.log(`\nBaseline saved to ${BASELINE_PATH}`);
   }
 }
 

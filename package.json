@@ -56,6 +56,7 @@
     "test": "jest",
     "test:coverage": "nyc --reporter=text --reporter=html --reporter=lcov yarn test",
     "test:eval": "tsx scripts/evaluate.ts",
+    "trace": "tsx scripts/trace.ts",
     "test:ai-eval": "tsx scripts/eval-with-ai.ts",
     "typecheck": "tsc -b",
     "build": "rollup -c",

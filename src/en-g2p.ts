@@ -21,6 +21,20 @@ export interface HomographDict {
   [word: string]: HomographEntry[];
 }
 
+export interface TraceStep {
+  grapheme: string;
+  phoneme: string;
+  rule: string;
+}
+
+export interface TraceResult {
+  word: string;
+  ipa: string;
+  path: 'dictionary' | 'morphology' | 'decomposition' | 'rules';
+  syllables?: string[];
+  steps: TraceStep[];
+}
+
 // --- Linguistics-based Constants ---
 
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
@@ -291,7 +305,7 @@ export class EnglishG2P implements LanguageProcessor {
    * object) so that `addPronunciation()` on one instance doesn't leak
    * to other instances created in the same process.
    */
-  private customDict: EnDict = {};
+  private customDict: EnDict = Object.create(null);
   private homographs: HomographDict;
   private disableDict: boolean;
   private dialect: EnglishDialect;
@@ -308,8 +322,8 @@ export class EnglishG2P implements LanguageProcessor {
   constructor(options: { disableDict?: boolean; dialect?: EnglishDialect } = {}) {
     this.disableDict = options.disableDict || false;
     this.dialect = options.dialect ?? "en-US";
-    this.dictionary = resolveJson<EnDict>(dictionary);
-    this.homographs = resolveJson<HomographDict>(homographs);
+    this.dictionary = Object.assign(Object.create(null), resolveJson<EnDict>(dictionary));
+    this.homographs = Object.assign(Object.create(null), resolveJson<HomographDict>(homographs));
   }
 
   /**
@@ -369,6 +383,44 @@ export class EnglishG2P implements LanguageProcessor {
     if (!base) return base;
 
     return dialect === "en-GB" ? transformAmericanToRP(word, base) : base;
+  }
+
+  public trace(word: string, language?: string, pos?: string): TraceResult {
+    const lowerWord = word.toLowerCase();
+    const ipa = this.predict(word, language, pos) ?? lowerWord;
+
+    if (!this.disableDict) {
+      if (pos && Array.isArray(this.homographs[lowerWord])) {
+        if (this.homographs[lowerWord].find((entry: HomographEntry) => this.matchPos(entry, pos)))
+          return { word, ipa, path: 'dictionary', steps: [{ grapheme: word, phoneme: ipa, rule: 'homograph' }] };
+      }
+      if (this.customDict[lowerWord])
+        return { word, ipa, path: 'dictionary', steps: [{ grapheme: word, phoneme: ipa, rule: 'custom-dict' }] };
+      if (this.dictionary[lowerWord])
+        return { word, ipa, path: 'dictionary', steps: [{ grapheme: word, phoneme: ipa, rule: 'dict' }] };
+    }
+
+    if (this.tryMorphologicalAnalysis(lowerWord))
+      return { word, ipa, path: 'morphology', steps: [{ grapheme: word, phoneme: ipa, rule: 'morphology' }] };
+
+    const decomp = this.tryDecomposition(lowerWord);
+    if (decomp && decomp.length > 1) {
+      const prons = decomp.map(p => this.wellKnown(p));
+      if (prons.every(p => p))
+        return {
+          word, ipa, path: 'decomposition',
+          steps: decomp.map((part, i) => ({ grapheme: part, phoneme: prons[i]!, rule: 'decomposition' })),
+        };
+    }
+
+    const syllables = this.syllabify(lowerWord);
+    const stressedIdx = this.assignStress(syllables, lowerWord);
+    const traceSteps: TraceStep[] = [];
+    syllables.forEach((syl, i) => {
+      this.syllableToIPA(syl, i, i === stressedIdx, i === syllables.length - 1, traceSteps);
+    });
+
+    return { word, ipa, path: 'rules', syllables, steps: traceSteps };
   }
 
   private predictInternal(
@@ -900,13 +952,15 @@ export class EnglishG2P implements LanguageProcessor {
   }
 
   // Enhanced syllable to IPA conversion with stress-sensitive vowel reduction
-  private syllableToIPA(syllable: string, syllableIndex: number, isStressed: boolean, isLastSyllable: boolean): string {
+  private syllableToIPA(syllable: string, syllableIndex: number, isStressed: boolean, isLastSyllable: boolean, steps?: TraceStep[]): string {
+    const stepsStart = steps?.length ?? 0;
     let phonemes: string[] = [];
     let remaining = syllable;
-  
+
     // Check for suffix rules first
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
       if (remaining.match(pattern)) {
+        steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
         return ipa;
       }
     }
@@ -939,12 +993,14 @@ export class EnglishG2P implements LanguageProcessor {
             const match = remaining.match(pattern);
             if (match) {
                 phonemes.push(ipa);
+                steps?.push({ grapheme: match[0], phoneme: ipa, rule: `phoneme:${pattern.source}` });
                 remaining = remaining.substring(match[0].length);
                 matchFound = true;
                 break;
             }
         }
         if (!matchFound) {
+            steps?.push({ grapheme: remaining[0], phoneme: '', rule: 'unmatched' });
             remaining = remaining.substring(1);
         }
     }
@@ -1004,11 +1060,18 @@ export class EnglishG2P implements LanguageProcessor {
       for (let i = phonemes.length - 1; i >= 0; i--) {
         if (shortToLong[phonemes[i]]) {
             phonemes[i] = shortToLong[phonemes[i]];
-            break; 
+            break;
         }
       }
     }
-  
+
+    if (steps) {
+      let pi = 0;
+      for (let si = stepsStart; si < steps.length; si++) {
+        if (steps[si].phoneme !== '') steps[si].phoneme = phonemes[pi++] ?? steps[si].phoneme;
+      }
+    }
+
     return phonemes.join('');
   }
 

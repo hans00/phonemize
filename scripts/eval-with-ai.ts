@@ -155,7 +155,7 @@ Conclude with a score between 0 and 100.`;
 (async () => {
   const phonemizer = createPhonemizer({
     processors: [
-      new EnglishG2P({ disableDict: true }),
+      new EnglishG2P(),
       new ChineseG2P(),
       new JapaneseG2P(),
       new KoreanG2P(),
