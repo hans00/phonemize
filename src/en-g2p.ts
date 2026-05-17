@@ -65,7 +65,7 @@ const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr',
 
 // Improved stress-sensitive suffix rules
 const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
-  // [pattern, IPA, attracts_stress]
+  [/^stion$/, 'stʃən', false],     // -stion: question, digestion, combustion
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
   [/^sion$/, 'ʒən', false],        // -sion is always unstressed
   [/^cian$/, 'ʃən', false],        // -cian (technician, electrician, musician)
@@ -1003,7 +1003,7 @@ export class EnglishG2P implements LanguageProcessor {
     const hadDoubledL = /ll/i.test(syllable);
     // Word-final y → /i/ when the syllable has a prior non-y vowel (city, happy)
     // but stays /aɪ/ when y is the only vowel (by, fly) — guard checked in loop.
-    const hasVowelBeforeTerminalY = isLastSyllable && /[aeiou]/i.test(syllable.replace(/y$/i, ''));
+    const hasVowelBeforeTerminalY = /[aeiou]/i.test(syllable.replace(/y$/i, ''));
     remaining = remaining.replace(/([b-df-hj-np-tv-z])\1/g, '$1');
 
     // Silent 'e' detection (but exclude common function words like "the").
