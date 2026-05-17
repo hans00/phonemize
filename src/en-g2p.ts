@@ -178,7 +178,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ng/, 'ŋ'],                   // sing, ring, king
   
   // Improved vowel teams with better quality distinctions
-  [/^oor/, 'ɔɹ'],                 // door, floor, poor, moor (oo before r → /ɔɹ/)
+  [/^o[ao]r/, 'ɔɹ'],              // door/floor (oor) and board/soar/roar (oar) → /ɔɹ/
   [/^ook/, 'ʊk'],                 // book, cook, look, hook, took (oo before k → /ʊ/)
   [/^oo/, 'uː'],                  // boot, moon, cool, moose (long u)
   [/^ou/, 'aʊ'],                  // house, about, cloud
@@ -291,8 +291,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^y(?=[aeiou])/, 'j'],         // yes, you, year (consonantal before vowels)
   [/^y/, 'aɪ'],                   // by, my, try (vowel in other positions)
   [/^z/, 'z'],
-  
   // Default vowels (short/lax in closed syllables)
+  [/^a(?=[^aeioun]y$)/, 'eɪ'],   // baby, lazy, navy, gravy, shady — aCy → long a
   [/^a$/, 'eɪ'],                  // nation/station/abrasion — open-syllable a before -tion/-sion (guard in loop)
   [/^a/, 'æ'],                    // cat, hat, bad
   [/^e/, 'ɛ'],                    // bed, red, get (but she -> ʃi handled above)
@@ -1042,9 +1042,8 @@ export class EnglishG2P implements LanguageProcessor {
             // open syllables (notion/motion/social/vocal) — skip only when non-final
             // AND unstressed (tobacco/tomato: unstressed 'to' → /ɑ/ → reduction → /ə/).
             if (!isLastSyllable && !isStressed && pattern.source === '^o$') continue;
-            // ^a$ → /eɪ/ when next syllable is "tion"/"sion" (nation/abrasion), a
-            // consonant-cluster-le ending (ta·ble→/teɪ/), or a magic-e 2-char syllable
-            // (sa·me→/seɪm/, la·te→/leɪt/, ma·ke→/meɪk/, bra·ve→/bɹeɪv/).
+            // ^a$ fires only before tion/sion (nation), consonant-le (table), or magic-e (same/late).
+            if (!isStressed && pattern.source === '^a(?=[^aeioun]y$)') continue;
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsCle && !nextIsMagicE && pattern.source === '^a$') continue;
             // ^u$ → /uː/ when next syllable is "tion"/"sion" (solution/confusion/revolution).
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && pattern.source === '^u$') continue;
