@@ -195,7 +195,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ee/, 'i'],                   // see, tree, free
   [/^ie/, 'i'],                   // piece, field, believe  
   [/^ei/, 'eɪ'],                  // vein, weight, eight
-  [/^ey/, 'eɪ'],                  // they, grey, key (at end)
+  [/^ey$/, 'i'],                   // honey, abbey, valley, turkey (unstressed final -ey; guard skips when stressed)
+  [/^ey/, 'eɪ'],                  // they, grey, obey (stressed -ey)
   [/^ight/, 'aɪt'],               // night, right, knight (i+ght)
   [/^oa/, 'oʊ'],                  // boat, coat, road
   [/^ross/, 'ɹoʊs'],              // gross -> groʊs
@@ -1052,6 +1053,7 @@ export class EnglishG2P implements LanguageProcessor {
             // ^le$ → /əl/ only in the final syllable (table→/bəl/, simple→/pəl/).
             // A non-final "le" syllable (legal/legend/legible) should give /l/+vowel.
             if (!isLastSyllable && pattern.source === '^le$') continue;
+            if (isStressed && pattern.source === '^ey$') continue;
             const match = remaining.match(pattern);
             if (match) {
                 phonemes.push(ipa);
