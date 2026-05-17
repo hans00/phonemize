@@ -300,6 +300,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^a$/, 'eɪ'],                  // nation/station/abrasion — open-syllable a before -tion/-sion (guard in loop)
   [/^a/, 'æ'],                    // cat, hat, bad
   [/^e/, 'ɛ'],                    // bed, red, get (but she -> ʃi handled above)
+  [/^i$/, 'aɪ'],                  // mine, vine, time, like — open-syllable i before magic-e (guard in loop)
   [/^i/, 'ɪ'],                    // sit, hit, big
   [/^o$/, 'oʊ'],                  // piano, hero, zero, echo, cargo — word-final bare o (guard in loop)
   [/^o/, 'ɑ'],                    // cot, hot, dog (American English short o)
@@ -1028,12 +1029,16 @@ export class EnglishG2P implements LanguageProcessor {
             // open syllables (notion/motion/social/vocal) — skip only when non-final
             // AND unstressed (tobacco/tomato: unstressed 'to' → /ɑ/ → reduction → /ə/).
             if (!isLastSyllable && !isStressed && pattern.source === '^o$') continue;
-            // ^a$ → /eɪ/ when next syllable is "tion"/"sion" (nation/abrasion) or a
-            // consonant-cluster-le ending — open syllable: ta·ble→/teɪ/, sta·ble→/steɪ/.
+            // ^a$ → /eɪ/ when next syllable is "tion"/"sion" (nation/abrasion), a
+            // consonant-cluster-le ending (ta·ble→/teɪ/), or a magic-e 2-char syllable
+            // (sa·me→/seɪm/, la·te→/leɪt/, ma·ke→/meɪk/, bra·ve→/bɹeɪv/).
             const nextIsCle = !!nextSyllable?.match(/^[bdfgkmnprstvz]le$/);
-            if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsCle && pattern.source === '^a$') continue;
+            const nextIsMagicE = isStressed && !!nextSyllable?.match(/^[^aeiou]e$/);
+            if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsCle && !nextIsMagicE && pattern.source === '^a$') continue;
             // ^u$ → /uː/ when next syllable is "tion"/"sion" (solution/confusion/revolution).
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && pattern.source === '^u$') continue;
+            // ^i$ → /aɪ/ only in magic-e context: ti·me→/taɪm/, li·ke→/laɪk/, mi·ne→/maɪn/.
+            if (!nextIsMagicE && !endsWithSilentE && pattern.source === '^i$') continue;
             // ^le$ → /əl/ only in the final syllable (table→/bəl/, simple→/pəl/).
             // A non-final "le" syllable (legal/legend/legible) should give /l/+vowel.
             if (!isLastSyllable && pattern.source === '^le$') continue;
