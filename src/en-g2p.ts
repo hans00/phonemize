@@ -300,6 +300,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^z/, 'z'],
   
   // Default vowels (short/lax in closed syllables)
+  [/^a$/, 'eɪ'],                  // nation/station/vacation — open-syllable a before -tion (guard in loop)
   [/^a/, 'æ'],                    // cat, hat, bad
   [/^e/, 'ɛ'],                    // bed, red, get (but she -> ʃi handled above)
   [/^i/, 'ɪ'],                    // sit, hit, big
@@ -430,7 +431,7 @@ export class EnglishG2P implements LanguageProcessor {
     const stressedIdx = this.assignStress(syllables, lowerWord);
     const traceSteps: TraceStep[] = [];
     syllables.forEach((syl, i) => {
-      this.syllableToIPA(syl, i, i === stressedIdx, i === syllables.length - 1, traceSteps);
+      this.syllableToIPA(syl, i, i === stressedIdx, i === syllables.length - 1, i < syllables.length - 1 ? syllables[i + 1] : undefined, traceSteps);
     });
 
     return { word, ipa, path: 'rules', syllables, steps: traceSteps };
@@ -524,7 +525,7 @@ export class EnglishG2P implements LanguageProcessor {
     const syllableIPA = syllables.map((s, i) => {
       const isStressed = i === stressedSyllableIndex;
       const isLastSyllable = i === syllables.length - 1;
-      return this.syllableToIPA(s, i, isStressed, isLastSyllable);
+      return this.syllableToIPA(s, i, isStressed, isLastSyllable, i < syllables.length - 1 ? syllables[i + 1] : undefined);
     });
 
     if (syllableIPA.length > 0) {
@@ -968,7 +969,7 @@ export class EnglishG2P implements LanguageProcessor {
   }
 
   // Enhanced syllable to IPA conversion with stress-sensitive vowel reduction
-  private syllableToIPA(syllable: string, syllableIndex: number, isStressed: boolean, isLastSyllable: boolean, steps?: TraceStep[]): string {
+  private syllableToIPA(syllable: string, syllableIndex: number, isStressed: boolean, isLastSyllable: boolean, nextSyllable?: string, steps?: TraceStep[]): string {
     const stepsStart = steps?.length ?? 0;
     let phonemes: string[] = [];
     let remaining = syllable;
@@ -1022,6 +1023,8 @@ export class EnglishG2P implements LanguageProcessor {
             // ^o$ → /oʊ/ only in the last syllable (piano/hero/zero); skip for
             // mid-word bare-o syllables like "to-" in tobacco (unstressed /ə/).
             if (!isLastSyllable && pattern.source === '^o$') continue;
+            // ^a$ → /eɪ/ only when the next syllable is "tion" (nation/station/vacation).
+            if (nextSyllable !== 'tion' && pattern.source === '^a$') continue;
             const match = remaining.match(pattern);
             if (match) {
                 phonemes.push(ipa);
