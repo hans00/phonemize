@@ -65,6 +65,8 @@ const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr',
 
 // Improved stress-sensitive suffix rules
 const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
+  [/^ge$/, 'dʒ', false],           // -ge: cage, stage, village, manage, message
+  [/^ce$/, 's', false],            // -ce: face, race, dance, force, sentence
   [/^que$/, 'k', false],           // -que: antique, boutique, baroque, physique
   [/^stion$/, 'stʃən', false],     // -stion: question, digestion, combustion
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
