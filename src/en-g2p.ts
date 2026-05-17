@@ -159,6 +159,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^sch/, 'sk'],                 // schema, schematic (not German)
   [/^she$/, 'ʃi'],                // she (pronoun; anchored so it doesn't eat shed/shell)
   [/^he$/, 'hi'],                 // he  (pronoun; anchored so it doesn't eat here/hen)
+  [/^chr/, 'kɹ'],                  // chrome, chronic, Christ (Greek ch before r)
+  [/^chl/, 'kl'],                  // chlorine, chlorinated (Greek ch before l)
   [/^ch/, 'tʃ'],                  // chair, church, much
   [/^ck/, 'k'],                   // back, pick, truck
   [/^ggi/, 'ɡi'],                 // double g before i (buggie) - prevent soft g
@@ -183,6 +185,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ng/, 'ŋ'],                   // sing, ring, king
   
   // Improved vowel teams with better quality distinctions
+  [/^oor/, 'ɔɹ'],                 // door, floor, poor, moor (oo before r → /ɔɹ/)
   [/^oo/, 'uː'],                  // boot, moon, cool, moose (long u)
   [/^ou/, 'aʊ'],                  // house, about, cloud
   [/^ow(?=[snmk])/, 'aʊ'],        // cow, down, brown (before consonants)
@@ -286,6 +289,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^x/, 'ks'],                   // tax, fix, mix
   [/^ym(?![aeiou])/, 'ɪm'],       // gym, symbol, symptom (Greek short y before m)
   [/^yn(?![aeiou])/, 'ɪn'],       // syntax, synchronize (Greek short y before n)
+  [/^y$/, 'i'],                   // city, happy, country — final y after prior vowel (guard in loop)
   [/^y(?=[aeiou])/, 'j'],         // yes, you, year (consonantal before vowels)
   [/^y/, 'aɪ'],                   // by, my, try (vowel in other positions)
   [/^z/, 'z'],
@@ -970,6 +974,9 @@ export class EnglishG2P implements LanguageProcessor {
 
     // Handle doubled consonants
     const hadDoubledL = /ll/i.test(syllable);
+    // Word-final y → /i/ when the syllable has a prior non-y vowel (city, happy)
+    // but stays /aɪ/ when y is the only vowel (by, fly) — guard checked in loop.
+    const hasVowelBeforeTerminalY = isLastSyllable && /[aeiou]/i.test(syllable.replace(/y$/i, ''));
     remaining = remaining.replace(/([b-df-hj-np-tv-z])\1/g, '$1');
 
     // Silent 'e' detection (but exclude common function words like "the").
@@ -997,6 +1004,9 @@ export class EnglishG2P implements LanguageProcessor {
             // ^al$ is for the -all rime (all/ball/call); skip it when the
             // original syllable had no doubled-l (e.g. "cal" in "calculator").
             if (!hadDoubledL && pattern.source === '^al$') continue;
+            // ^y$ → /i/ only when the syllable already has a prior vowel
+            // (city/happy/novelty); skip for monosyllables like by/fly/try.
+            if (!hasVowelBeforeTerminalY && pattern.source === '^y$') continue;
             const match = remaining.match(pattern);
             if (match) {
                 phonemes.push(ipa);

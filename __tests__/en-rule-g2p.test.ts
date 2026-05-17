@@ -55,4 +55,31 @@ describe('G2P rule fixes', () => {
   it('^al$ fires for genuine -all rime (ball)', () => {
     expect(g2p.predict('ball', 'en')).toMatch(/ɔl/);
   });
+
+  it('word-final y → /i/ when syllable has prior vowel (city)', () => {
+    expect(g2p.predict('city', 'en')).toMatch(/i$/);
+    expect(g2p.predict('city', 'en')).not.toMatch(/aɪ/);
+  });
+
+  it('word-final y → /i/ for happy/novelty', () => {
+    expect(g2p.predict('happy', 'en')).toMatch(/i$/);
+    expect(g2p.predict('novelty', 'en')).toMatch(/i$/);
+  });
+
+  it('word-final y → /aɪ/ for monosyllables (by)', () => {
+    expect(g2p.predict('by', 'en')).toMatch(/aɪ/);
+  });
+
+  it('chr → /kɹ/ (chrome)', () => {
+    expect(g2p.predict('chrome', 'en')).toMatch(/kɹ/);
+  });
+
+  it('chl → /kl/ (chlorinated)', () => {
+    expect(g2p.predict('chlorinated', 'en')).toMatch(/kl/);
+  });
+
+  it('oor → /ɔɹ/ (door, floor)', () => {
+    expect(g2p.predict('door', 'en')).toMatch(/ɔɹ/);
+    expect(g2p.predict('floor', 'en')).toMatch(/ɔɹ/);
+  });
 });
