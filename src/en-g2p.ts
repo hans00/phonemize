@@ -159,6 +159,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^sch/, 'sk'],                 // schema, schematic (not German)
   [/^she$/, 'ʃi'],                // she (pronoun; anchored so it doesn't eat shed/shell)
   [/^he$/, 'hi'],                 // he  (pronoun; anchored so it doesn't eat here/hen)
+  [/^cz/, 'tʃ'],                   // czech, czechoslovak, czar (Polish/Czech cz)
   [/^chr/, 'kɹ'],                  // chrome, chronic, Christ (Greek ch before r)
   [/^chl/, 'kl'],                  // chlorine, chlorinated (Greek ch before l)
   [/^ch/, 'tʃ'],                  // chair, church, much
@@ -205,6 +206,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^oa/, 'oʊ'],                  // boat, coat, road
   [/^ross/, 'ɹoʊs'],              // gross -> groʊs
   [/^oss/, 'ɔs'],                 // cross, loss (short o)
+  [/^eur/, 'ɝ'],                  // connoisseur, entrepreneur (French -eur → /ɝ/)
   [/^eu/, 'ju'],                  // feud, neuter, Europe
   [/^ew/, 'u'],                   // few, new, threw
   [/^ue/, 'u'],                   // true, blue, glue (at end)
@@ -668,11 +670,14 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
     if (lowerWord.endsWith('ly') && !lowerWord.endsWith('ally') && lowerWord.length > 2) {
-      // e.g., "quickly" -> "quick"
+      // e.g., "quickly" -> "quick"; require base ≥ 3 chars to avoid
+      // treating "fly" (base "f") or "rely" (base "re") as -ly derivatives.
       const base = lowerWord.slice(0, -2);
-      const basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-      if (basePron) {
-        return basePron + 'li';
+      if (base.length >= 3) {
+        const basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
+        if (basePron) {
+          return basePron + 'li';
+        }
       }
     }
     
@@ -966,6 +971,9 @@ export class EnglishG2P implements LanguageProcessor {
 
     // Check for suffix rules first
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
+      // ^le$ is a word-ending syllable pattern (table, castle); skip it on
+      // non-final syllables where "le" is a prefix/initial chunk (legionnaire).
+      if (pattern.source === '^le$' && !isLastSyllable) continue;
       if (remaining.match(pattern)) {
         steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
         return ipa;
