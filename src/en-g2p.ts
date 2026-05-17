@@ -71,8 +71,8 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^cian$/, 'ʃən', false],        // -cian (technician, electrician, musician)
   [/^cial$/, 'ʃəl', false],        // -cial (commercial, social)
   [/^tial$/, 'ʃəl', false],        // -tial (potential, partial)
-  [/^ture$/, 'tʃɚ', false],        // -ture (future, nature)
-  [/^sure$/, 'ʒɚ', false],         // -sure (measure, pleasure)
+  [/^ture$/, 'tʃɝ', false],        // -ture (future, nature)
+  [/^sure$/, 'ʒɝ', false],         // -sure (measure, pleasure)
   [/^geous$/, 'dʒəs', false],      // -geous (gorgeous, advantageous)
   [/^cious$/, 'ʃəs', false],       // -cious (delicious, precious)
   [/^tious$/, 'ʃəs', false],       // -tious (ambitious, nutritious)
@@ -86,8 +86,8 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^less$/, 'ləs', false],        // -less
   [/^ful$/, 'fəl', false],         // -ful
   [/^ly$/, 'li', false],           // -ly
-  [/^er$/, 'ɚ', false],            // -er (comparative, agentive)
-  [/^ers$/, 'ɚz', false],          // -ers (plural of -er)
+  [/^er$/, 'ɝ', false],            // -er (comparative, agentive)
+  [/^ers$/, 'ɝz', false],          // -ers (plural of -er)
   [/^est$/, 'əst', false],         // -est (superlative)
   [/^ing$/, 'ɪŋ', false],          // -ing
   [/^ed$/, 'd', false],            // -ed (past tense base)
@@ -226,7 +226,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // R-controlled vowels (rhotic)
   [/^arr/, 'æɹ'],                 // carry, marry, arrow
   [/^ar/, 'ɑɹ'],                  // car, far, start
-  [/^er/, 'ɚ'],                   // her, term, serve (use ɚ for unstressed)
+  [/^er/, 'ɝ'],                   // her, term, serve
   [/^ir/, 'ɝ'],                   // bird, first, girl
   [/^or/, 'ɔɹ'],                  // for, port, storm
   [/^ur/, 'ɝ'],                   // fur, turn, hurt
@@ -894,13 +894,15 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
     
-    // For 2-syllable words, generally stress the first syllable unless it's a weak prefix
+    // For 2-syllable words, generally stress the first syllable unless it's a weak prefix.
+    // Check the first SYLLABLE (not the raw word) so that "bet·ter" doesn't
+    // false-match the "be" prefix and stress the wrong syllable.
     if (syllables.length === 2) {
-      // Check for weak prefixes
-      if (['be', 'de', 're', 'un', 'in', 'ex', 'pre'].some(prefix => lowerWord.startsWith(prefix))) {
-        return 1; // Stress the second syllable
+      const firstSyl = syllables[0];
+      if (['be', 'de', 're', 'un', 'in', 'ex', 'pre'].some(prefix => firstSyl === prefix)) {
+        return 1;
       }
-      return 0; // Default: stress first syllable
+      return 0;
     }
     
     // For 3+ syllables, use improved stress assignment
