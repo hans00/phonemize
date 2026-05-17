@@ -75,14 +75,11 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^geous$/, 'dʒəs', false],      // -geous (gorgeous, advantageous)
   [/^cious$/, 'ʃəs', false],       // -cious (delicious, precious)
   [/^tious$/, 'ʃəs', false],       // -tious (ambitious, nutritious)
-  [/^eous$/, 'iəs', false],        // -eous (aneous, miscellaneous)
+  [/^[ei]ous$/, 'iəs', false],      // -eous/-ious (miscellaneous, various, serious)
   [/^ous$/, 'əs', false],          // -ous (famous, nervous)
-  [/^ious$/, 'iəs', false],        // -ious (various, serious)
   [/^uous$/, 'juəs', false],       // -uous (continuous, ambiguous)
-  [/^able$/, 'əbəl', false],       // -able
-  [/^ible$/, 'əbəl', false],       // -ible  
-  [/^ance$/, 'əns', false],        // -ance (dominance, balance)
-  [/^ence$/, 'əns', false],        // -ence (presence, silence)
+  [/^[ai]ble$/, 'əbəl', false],     // -able/-ible
+  [/^[ae]nce$/, 'əns', false],      // -ance/-ence (dominance, presence)
   [/^ness$/, 'nəs', false],        // -ness
   [/^ment$/, 'mənt', false],       // -ment
   [/^less$/, 'ləs', false],        // -less
@@ -106,9 +103,8 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^lity$/, 'ləti', false],       // -lity (quality, reality)  
   [/^ity$/, 'əti', false],         // -ity (other cases)
   [/^ty$/, 'ti', false],           // -ty (empty, sixty)
-  [/^ary$/, 'ɛri', false],         // -ary (library, military)  
+  [/^[ae]ry$/, 'ɛri', false],       // -ary/-ery (library, bakery)
   [/^ory$/, 'ɔri', false],         // -ory (history, category)
-  [/^ery$/, 'ɛri', false],         // -ery (bakery, gallery)
   [/^ry$/, 'ri', false],           // -ry (hungry, angry)
   [/^y$/, 'i', false],             // -y
   [/^le$/, 'əl', false],           // -le (simple, table)
@@ -122,10 +118,9 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^pt/, 't'],                   // pterodactyl, ptomaine
   [/^kn/, 'n'],                   // knee, knife, know
   [/^gn/, 'n'],                   // gnome, gnat, gnu
-  [/^mn$/, 'm'],                  // column, autumn, condemn, solemn (word-final mn: silent n)
+  [/^m[bn]$/, 'm'],               // thumb/lamb/comb (^mb$) and column/autumn/condemn (^mn$): word-final silent stop/nasal
   [/^mn/, 'n'],                   // mnemonic, mnesic (silent initial m)
   [/^wr/, 'ɹ'],                   // write, wrong, wrist
-  [/^mb$/, 'm'],                  // thumb, lamb, comb (word-final)
   [/^bt$/, 't'],                  // debt, doubt, subtle (silent b in word/syllable-final bt)
   [/^rh/, 'ɹ'],                   // rhyme, rhino, rhythm, rhetoric (silent h after r)
   [/^sph/, 'sf'],                 // sphere, sphinx (Greek-origin /sf/)
@@ -198,6 +193,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^au/, 'ɔ'],                   // caught, sauce, because
   [/^aw/, 'ɔ'],                   // saw, law, draw
   [/^ay/, 'eɪ'],                  // day, say, way
+  [/^air/, 'ɛɹ'],                 // hair, fair, chair, stair (must precede ^ai)
   [/^ai/, 'eɪ'],                  // rain, main, paid
   [/^ea/, 'i'],                   // read, seat, beat (default long)
   [/^ee/, 'i'],                   // see, tree, free
@@ -237,7 +233,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^eer/, 'ɪɹ'],                 // deer, cheer, peer
   [/^ier/, 'ɪɹ'],                 // pier, tier
   [/^our/, 'aʊɹ'],                // hour, sour, flour
-  [/^air/, 'ɛɹ'],                 // hair, fair, chair
   
   // Context-dependent consonants
   [/^c(?=[eiy])/, 's'],           // soft c: cent, city, cycle
