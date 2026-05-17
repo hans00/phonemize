@@ -155,6 +155,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   
   // Improved digraph handling
   [/^tsch/, 'tʃ'],                // German loanwords
+  [/^sch(?=[^aeiou])/, 'ʃ'],     // schmaltz, schnapps (German sch before consonant)
   [/^sch/, 'sk'],                 // schema, schematic (not German)
   [/^she$/, 'ʃi'],                // she (pronoun; anchored so it doesn't eat shed/shell)
   [/^he$/, 'hi'],                 // he  (pronoun; anchored so it doesn't eat here/hen)
@@ -283,6 +284,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^v/, 'v'],
   [/^w/, 'w'],
   [/^x/, 'ks'],                   // tax, fix, mix
+  [/^ym(?![aeiou])/, 'ɪm'],       // gym, symbol, symptom (Greek short y before m)
+  [/^yn(?![aeiou])/, 'ɪn'],       // syntax, synchronize (Greek short y before n)
   [/^y(?=[aeiou])/, 'j'],         // yes, you, year (consonantal before vowels)
   [/^y/, 'aɪ'],                   // by, my, try (vowel in other positions)
   [/^z/, 'z'],
@@ -966,6 +969,7 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     // Handle doubled consonants
+    const hadDoubledL = /ll/i.test(syllable);
     remaining = remaining.replace(/([b-df-hj-np-tv-z])\1/g, '$1');
 
     // Silent 'e' detection (but exclude common function words like "the").
@@ -990,6 +994,9 @@ export class EnglishG2P implements LanguageProcessor {
     while(remaining.length > 0) {
         let matchFound = false;
         for (const [pattern, ipa] of PHONEME_RULES) {
+            // ^al$ is for the -all rime (all/ball/call); skip it when the
+            // original syllable had no doubled-l (e.g. "cal" in "calculator").
+            if (!hadDoubledL && pattern.source === '^al$') continue;
             const match = remaining.match(pattern);
             if (match) {
                 phonemes.push(ipa);
