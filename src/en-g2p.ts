@@ -65,6 +65,7 @@ const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr',
 
 // Improved stress-sensitive suffix rules
 const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
+  [/^que$/, 'k', false],           // -que: antique, boutique, baroque, physique
   [/^stion$/, 'stʃən', false],     // -stion: question, digestion, combustion
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
   [/^sion$/, 'ʒən', false],        // -sion is always unstressed
@@ -159,10 +160,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^chl/, 'kl'],                  // chlorine, chlorinated (Greek ch before l)
   [/^ch/, 'tʃ'],                  // chair, church, much
   [/^ck/, 'k'],                   // back, pick, truck
-  [/^ggi/, 'ɡi'],                 // double g before i (buggie) - prevent soft g
-  [/^gge/, 'ɡe'],                 // double g before e (trigger) - prevent soft g
-  [/^ggy/, 'ɡi'],                 // double g before y (muggy) - prevent soft g
-  [/^gg/, 'ɡ'],                   // double g -> single g (buggy, trigger)
   [/^dg/, 'dʒ'],                  // bridge, judge, edge
   [/^ph/, 'f'],                   // phone, graph, elephant
   [/^sh/, 'ʃ'],                   // shoe, fish, wash
@@ -191,6 +188,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ay/, 'eɪ'],                  // day, say, way
   [/^air/, 'ɛɹ'],                 // hair, fair, chair, stair (must precede ^ai)
   [/^ai/, 'eɪ'],                  // rain, main, paid
+  [/^eau/, 'oʊ'],                 // plateau, beau, bureau, chateau (French -eau → /oʊ/)
   [/^ea/, 'i'],                   // read, seat, beat (default long)
   [/^ee/, 'i'],                   // see, tree, free
   [/^ie/, 'i'],                   // piece, field, believe  
