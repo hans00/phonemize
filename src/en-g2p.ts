@@ -295,12 +295,13 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^z/, 'z'],
   
   // Default vowels (short/lax in closed syllables)
-  [/^a$/, 'eɪ'],                  // nation/station/vacation — open-syllable a before -tion (guard in loop)
+  [/^a$/, 'eɪ'],                  // nation/station/abrasion — open-syllable a before -tion/-sion (guard in loop)
   [/^a/, 'æ'],                    // cat, hat, bad
   [/^e/, 'ɛ'],                    // bed, red, get (but she -> ʃi handled above)
   [/^i/, 'ɪ'],                    // sit, hit, big
   [/^o$/, 'oʊ'],                  // piano, hero, zero, echo, cargo — word-final bare o (guard in loop)
   [/^o/, 'ɑ'],                    // cot, hot, dog (American English short o)
+  [/^u$/, 'u'],                   // solution/confusion — open-syllable u before -tion/-sion (guard in loop)
   [/^u/, 'ʌ'],                    // cut, but, run
 ];
 
@@ -1018,8 +1019,10 @@ export class EnglishG2P implements LanguageProcessor {
             // ^o$ → /oʊ/ only in the last syllable (piano/hero/zero); skip for
             // mid-word bare-o syllables like "to-" in tobacco (unstressed /ə/).
             if (!isLastSyllable && pattern.source === '^o$') continue;
-            // ^a$ → /eɪ/ only when the next syllable is "tion" (nation/station/vacation).
-            if (nextSyllable !== 'tion' && pattern.source === '^a$') continue;
+            // ^a$ → /eɪ/ when next syllable is "tion"/"sion" (nation/abrasion/occasion).
+            if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && pattern.source === '^a$') continue;
+            // ^u$ → /uː/ when next syllable is "tion"/"sion" (solution/confusion/revolution).
+            if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && pattern.source === '^u$') continue;
             const match = remaining.match(pattern);
             if (match) {
                 phonemes.push(ipa);
