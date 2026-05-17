@@ -179,7 +179,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // Improved vowel teams with better quality distinctions
   [/^o[ao]r/, 'ɔɹ'],              // door/floor (oor) and board/soar/roar (oar) → /ɔɹ/
   [/^ook/, 'ʊk'],                 // book, cook, look, hook, took (oo before k → /ʊ/)
-  [/^oo/, 'uː'],                  // boot, moon, cool, moose (long u)
+  [/^oo/, 'u'],                   // boot, moon, cool, moose (long u; dict uses /u/ not /uː/)
   [/^ous$/, 'əs'],                 // -ous suffix: famous/nervous/dangerous (guarded: last+unstressed in loop)
   [/^ou/, 'aʊ'],                  // house, about, cloud
   [/^ow(?=[snmk])/, 'aʊ'],        // cow, down, brown (before consonants)
