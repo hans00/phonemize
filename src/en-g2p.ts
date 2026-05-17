@@ -247,16 +247,16 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^spl/, 'spl'],                // split, splash, splice
   [/^squ/, 'skw'],                // square, squash, squeeze
   [/^shr/, 'ʃɹ'],                 // shrimp, shrink, shrewd
-  [/^bl/, 'bl'],                  // blue, black, blow
+  [/^bl(?!e$)/, 'bl'],             // blue, black, blow (not -ble syllable)
   [/^br/, 'bɹ'],                  // brown, bring, bread
   [/^cl/, 'kl'],                  // clean, close, class
   [/^cr/, 'kɹ'],                  // create, cross, cream
   [/^dr/, 'dɹ'],                  // drive, dream, drop
-  [/^fl/, 'fl'],                  // fly, floor, flower
+  [/^fl(?!e$)/, 'fl'],             // fly, floor, flower (not -fle syllable)
   [/^fr/, 'fɹ'],                  // from, free, friend
-  [/^gl/, 'ɡl'],                  // glass, globe, glad
+  [/^gl(?!e$)/, 'ɡl'],             // glass, globe, glad (not -gle syllable)
   [/^gr/, 'ɡɹ'],                  // green, great, group
-  [/^pl/, 'pl'],                  // place, play, please
+  [/^pl(?!e$)/, 'pl'],             // place, play, please (not -ple syllable)
   [/^pr/, 'pɹ'],                  // problem, provide, pretty
   [/^sl/, 'sl'],                  // slow, sleep, slide
   [/^sm/, 'sm'],                  // small, smile, smell
@@ -277,6 +277,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^h/, 'h'],
   [/^j/, 'dʒ'],
   [/^k/, 'k'],
+  [/^le$/, 'əl'],                  // syllabic-l ending (-ble/-ple/-tle/-dle/-gle)
   [/^l/, 'l'],
   [/^m/, 'm'],
   [/^nk/, 'ŋk'],                  // bank, think, drink, sink, link, chunk
@@ -687,8 +688,8 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
     
-    // Try -able suffix
-    if (lowerWord.endsWith('able') && lowerWord.length > 5) {
+    // Try -able suffix (base must be ≥ 3 chars, so word ≥ 7 chars)
+    if (lowerWord.endsWith('able') && lowerWord.length > 6) {
       let base = lowerWord.slice(0, -4);
       let basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
       if (basePron) {
@@ -1026,8 +1027,10 @@ export class EnglishG2P implements LanguageProcessor {
             // ^o$ → /oʊ/ only in the last syllable (piano/hero/zero); skip for
             // mid-word bare-o syllables like "to-" in tobacco (unstressed /ə/).
             if (!isLastSyllable && pattern.source === '^o$') continue;
-            // ^a$ → /eɪ/ when next syllable is "tion"/"sion" (nation/abrasion/occasion).
-            if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && pattern.source === '^a$') continue;
+            // ^a$ → /eɪ/ when next syllable is "tion"/"sion" (nation/abrasion) or a
+            // consonant-cluster-le ending — open syllable: ta·ble→/teɪ/, sta·ble→/steɪ/.
+            const nextIsCle = !!nextSyllable?.match(/^[bdfgkmnprstvz]le$/);
+            if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsCle && pattern.source === '^a$') continue;
             // ^u$ → /uː/ when next syllable is "tion"/"sion" (solution/confusion/revolution).
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && pattern.source === '^u$') continue;
             const match = remaining.match(pattern);
