@@ -1024,9 +1024,10 @@ export class EnglishG2P implements LanguageProcessor {
             // ^y$ → /i/ only when the syllable already has a prior vowel
             // (city/happy/novelty); skip for monosyllables like by/fly/try.
             if (!hasVowelBeforeTerminalY && pattern.source === '^y$') continue;
-            // ^o$ → /oʊ/ only in the last syllable (piano/hero/zero); skip for
-            // mid-word bare-o syllables like "to-" in tobacco (unstressed /ə/).
-            if (!isLastSyllable && pattern.source === '^o$') continue;
+            // ^o$ → /oʊ/ for the last syllable (piano/hero/zero) AND for stressed
+            // open syllables (notion/motion/social/vocal) — skip only when non-final
+            // AND unstressed (tobacco/tomato: unstressed 'to' → /ɑ/ → reduction → /ə/).
+            if (!isLastSyllable && !isStressed && pattern.source === '^o$') continue;
             // ^a$ → /eɪ/ when next syllable is "tion"/"sion" (nation/abrasion) or a
             // consonant-cluster-le ending — open syllable: ta·ble→/teɪ/, sta·ble→/steɪ/.
             const nextIsCle = !!nextSyllable?.match(/^[bdfgkmnprstvz]le$/);
