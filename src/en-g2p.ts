@@ -67,7 +67,8 @@ const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr',
 const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   // [pattern, IPA, attracts_stress]
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
-  [/^sion$/, 'ʒən', false],        // -sion is always unstressed  
+  [/^sion$/, 'ʒən', false],        // -sion is always unstressed
+  [/^cian$/, 'ʃən', false],        // -cian (technician, electrician, musician)
   [/^cial$/, 'ʃəl', false],        // -cial (commercial, social)
   [/^tial$/, 'ʃəl', false],        // -tial (potential, partial)
   [/^ture$/, 'tʃɚ', false],        // -ture (future, nature)
@@ -526,7 +527,11 @@ export class EnglishG2P implements LanguageProcessor {
 
     if (syllableIPA.length > 0) {
       let result = syllableIPA.join('');
-      
+
+      // Deduplicate consecutive identical consonants across syllable boundaries
+      // (balloon/collision/pollution: doubled spelling = single phoneme).
+      result = result.replace(/([pbtdkɡfvszʃʒθðmnŋlɹhjw])\1/g, '$1');
+
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
         // Insert primary stress marker before the stressed syllable
