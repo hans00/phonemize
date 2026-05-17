@@ -122,6 +122,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^pt/, 't'],                   // pterodactyl, ptomaine
   [/^kn/, 'n'],                   // knee, knife, know
   [/^gn/, 'n'],                   // gnome, gnat, gnu
+  [/^mn$/, 'm'],                  // column, autumn, condemn, solemn (word-final mn: silent n)
   [/^mn/, 'n'],                   // mnemonic, mnesic (silent initial m)
   [/^wr/, 'ɹ'],                   // write, wrong, wrist
   [/^mb$/, 'm'],                  // thumb, lamb, comb (word-final)
@@ -302,6 +303,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^a/, 'æ'],                    // cat, hat, bad
   [/^e/, 'ɛ'],                    // bed, red, get (but she -> ʃi handled above)
   [/^i/, 'ɪ'],                    // sit, hit, big
+  [/^o$/, 'oʊ'],                  // piano, hero, zero, echo, cargo — word-final bare o (guard in loop)
   [/^o/, 'ɑ'],                    // cot, hot, dog (American English short o)
   [/^u/, 'ʌ'],                    // cut, but, run
 ];
@@ -1017,6 +1019,9 @@ export class EnglishG2P implements LanguageProcessor {
             // ^y$ → /i/ only when the syllable already has a prior vowel
             // (city/happy/novelty); skip for monosyllables like by/fly/try.
             if (!hasVowelBeforeTerminalY && pattern.source === '^y$') continue;
+            // ^o$ → /oʊ/ only in the last syllable (piano/hero/zero); skip for
+            // mid-word bare-o syllables like "to-" in tobacco (unstressed /ə/).
+            if (!isLastSyllable && pattern.source === '^o$') continue;
             const match = remaining.match(pattern);
             if (match) {
                 phonemes.push(ipa);
