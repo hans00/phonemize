@@ -1034,6 +1034,9 @@ export class EnglishG2P implements LanguageProcessor {
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsCle && pattern.source === '^a$') continue;
             // ^u$ → /uː/ when next syllable is "tion"/"sion" (solution/confusion/revolution).
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && pattern.source === '^u$') continue;
+            // ^le$ → /əl/ only in the final syllable (table→/bəl/, simple→/pəl/).
+            // A non-final "le" syllable (legal/legend/legible) should give /l/+vowel.
+            if (!isLastSyllable && pattern.source === '^le$') continue;
             const match = remaining.match(pattern);
             if (match) {
                 phonemes.push(ipa);
