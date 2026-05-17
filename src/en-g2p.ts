@@ -102,7 +102,6 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ic$/, 'ɪk', true],            // -ic attracts stress (economic, systemic)
   [/^ics$/, 'ɪks', true],          // -ics attracts stress (mathematics, politics)
   [/^lity$/, 'ləti', false],       // -lity (quality, reality)  
-  [/^ity$/, 'əti', false],         // -ity (other cases)
   [/^ty$/, 'ti', false],           // -ty (empty, sixty)
   [/^[ae]ry$/, 'ɛri', false],       // -ary/-ery (library, bakery)
   [/^ory$/, 'ɔri', false],         // -ory (history, category)
@@ -169,11 +168,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ph/, 'f'],                   // phone, graph, elephant
   [/^sh/, 'ʃ'],                   // shoe, fish, wash
   [/^thr/, 'θɹ'],                 // th + r cluster is always voiceless: through, three
-  [/^th(?=ink)/, 'θ'],            // voiceless: think, thinking
-  [/^th(?=ing$)/, 'θ'],           // voiceless: thing (complete word)
-  [/^th(?=ick)/, 'θ'],            // voiceless: thick, thicker
-  [/^th(?=orn)/, 'θ'],            // voiceless: thorn, thorny
-  [/^th(?=rough)/, 'θ'],          // voiceless: through (already handled above)
+  [/^th(?=ink|ing$|ick|orn)/, 'θ'], // voiceless: think/thing/thick/thorn (exceptions to voiced-before-vowel)
   [/^the/, 'ðə'],                 // the (definite article)
   [/^th(?=[aeiou])/, 'ð'],        // voiced before vowels: this, that, they
   [/^th/, 'θ'],                   // voiceless (default): path, math
@@ -847,6 +842,19 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
 
+    // Post-processing: vowel-l-e magic-e rime. Maximal-onset splits "hole"
+    // as ["ho", "le"], but the 'le' here is magic-e (the 'l' is a normal
+    // consonant, not syllabic), not the syllabic-L pattern (-Cle).
+    // Merge when last syllable is "le" and the previous syllable ends in a vowel.
+    // (Syllabic-L syllables "ble/ple/tle" are 3+ chars and are unaffected.)
+    if (syllables.length > 1 && syllables[syllables.length - 1] === 'le') {
+      const prev = syllables[syllables.length - 2];
+      if (prev && VOWELS.has(prev[prev.length - 1])) {
+        syllables.pop();
+        syllables[syllables.length - 1] += 'le';
+      }
+    }
+
     // Post-processing: Merge any leftover single-consonant syllables into the previous one.
     // This can happen with words like "apple" -> ap-ple, where current logic might give a-p-ple
      for (let j = syllables.length - 1; j > 0; j--) {
@@ -1004,8 +1012,10 @@ export class EnglishG2P implements LanguageProcessor {
     // the generic `^ar/^ir/^ur` rules collapse the vowel+r into /ɑɹ/ /ɝ/
     // /ɝ/ before the magic-e upgrade can fire, and the upgrade tables
     // can't disambiguate ir-source-ɝ (→ aɪɹ) from ur-source-ɝ (→ jʊɹ).
+    // Exclude "-Cle" endings (consonant + le: table/simple/castle) but allow
+    // "-Vle" endings (vowel + le: hole/mole/pole/rule/pale) — those are magic-e.
     const endsWithSilentE = isLastSyllable && syllable.length > 1 && syllable.endsWith('e') &&
-      !syllable.endsWith('ee') && !syllable.endsWith('le') && !syllable.endsWith('he') &&
+      !syllable.endsWith('ee') && !/[^aeiou]le$/.test(syllable) && !syllable.endsWith('he') &&
       !syllable.endsWith('tte') && !syllable.endsWith('ght') && !syllable.endsWith('se') &&
       !syllable.endsWith('are') && !syllable.endsWith('ere') &&
       !syllable.endsWith('ire') && !syllable.endsWith('ore') && !syllable.endsWith('ure') &&
