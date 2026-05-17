@@ -187,6 +187,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   
   // Improved vowel teams with better quality distinctions
   [/^oor/, 'ɔɹ'],                 // door, floor, poor, moor (oo before r → /ɔɹ/)
+  [/^ook/, 'ʊk'],                 // book, cook, look, hook, took (oo before k → /ʊ/)
   [/^oo/, 'uː'],                  // boot, moon, cool, moose (long u)
   [/^ou/, 'aʊ'],                  // house, about, cloud
   [/^ow(?=[snmk])/, 'aʊ'],        // cow, down, brown (before consonants)
@@ -281,6 +282,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^k/, 'k'],
   [/^l/, 'l'],
   [/^m/, 'm'],
+  [/^nk/, 'ŋk'],                  // bank, think, drink, sink, link, chunk
   [/^n/, 'n'],
   [/^p/, 'p'],
   [/^r/, 'ɹ'],                    // American English rhotic r
@@ -971,9 +973,9 @@ export class EnglishG2P implements LanguageProcessor {
 
     // Check for suffix rules first
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
-      // ^le$ is a word-ending syllable pattern (table, castle); skip it on
-      // non-final syllables where "le" is a prefix/initial chunk (legionnaire).
-      if (pattern.source === '^le$' && !isLastSyllable) continue;
+      // ^le$ and ^al$ are word-ending patterns; skip on non-final syllables
+      // where they are prefix/initial chunks (legionnaire, album, algebra).
+      if ((pattern.source === '^le$' || pattern.source === '^al$') && !isLastSyllable) continue;
       if (remaining.match(pattern)) {
         steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
         return ipa;
