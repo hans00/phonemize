@@ -67,6 +67,7 @@ const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr',
 const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ge$/, 'dʒ', false],           // -ge: cage, stage, village, manage, message
   [/^ce$/, 's', false],            // -ce: face, race, dance, force, sentence
+  [/^se$/, 'z', false],            // -se: rise, wise, please, these, those, close
   [/^que$/, 'k', false],           // -que: antique, boutique, baroque, physique
   [/^stion$/, 'stʃən', false],     // -stion: question, digestion, combustion
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
@@ -183,10 +184,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ou/, 'aʊ'],                  // house, about, cloud
   [/^ow(?=[snmk])/, 'aʊ'],        // cow, down, brown (before consonants)
   [/^ow/, 'oʊ'],                  // show, blow, know (at word end typically)
-  [/^oy/, 'ɔɪ'],                  // boy, toy, joy  
-  [/^oi/, 'ɔɪ'],                  // coin, join, voice
-  [/^au/, 'ɔ'],                   // caught, sauce, because
-  [/^aw/, 'ɔ'],                   // saw, law, draw
+  [/^o[yi]/, 'ɔɪ'],               // boy/toy (oy) and coin/voice (oi)
+  [/^a[uw]/, 'ɔ'],                // caught/sauce (au) and saw/draw (aw)
   [/^ay/, 'eɪ'],                  // day, say, way
   [/^air/, 'ɛɹ'],                 // hair, fair, chair, stair (must precede ^ai)
   [/^ai/, 'eɪ'],                  // rain, main, paid
@@ -222,10 +221,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // R-controlled vowels (rhotic)
   [/^arr/, 'æɹ'],                 // carry, marry, arrow
   [/^ar/, 'ɑɹ'],                  // car, far, start
-  [/^er/, 'ɝ'],                   // her, term, serve
-  [/^ir/, 'ɝ'],                   // bird, first, girl
+  [/^[eiu]r/, 'ɝ'],               // her/bird/fur (er/ir/ur → /ɝ/)
   [/^or/, 'ɔɹ'],                  // for, port, storm
-  [/^ur/, 'ɝ'],                   // fur, turn, hurt
   [/^ear/, 'ɪɹ'],                 // hear, clear, year
   [/^eer/, 'ɪɹ'],                 // deer, cheer, peer
   [/^ier/, 'ɪɹ'],                 // pier, tier
