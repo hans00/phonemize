@@ -1026,6 +1026,8 @@ export class EnglishG2P implements LanguageProcessor {
         remaining = syllable.slice(0, -1);
     }
 
+    const nextIsCle = !!nextSyllable?.match(/^[bdfgkmnprstvz]le$/);
+    const nextIsMagicE = isStressed && !!nextSyllable?.match(/^[^aeiou]e$/);
     // Apply phoneme rules
     while(remaining.length > 0) {
         let matchFound = false;
@@ -1043,8 +1045,6 @@ export class EnglishG2P implements LanguageProcessor {
             // ^a$ → /eɪ/ when next syllable is "tion"/"sion" (nation/abrasion), a
             // consonant-cluster-le ending (ta·ble→/teɪ/), or a magic-e 2-char syllable
             // (sa·me→/seɪm/, la·te→/leɪt/, ma·ke→/meɪk/, bra·ve→/bɹeɪv/).
-            const nextIsCle = !!nextSyllable?.match(/^[bdfgkmnprstvz]le$/);
-            const nextIsMagicE = isStressed && !!nextSyllable?.match(/^[^aeiou]e$/);
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsCle && !nextIsMagicE && pattern.source === '^a$') continue;
             // ^u$ → /uː/ when next syllable is "tion"/"sion" (solution/confusion/revolution).
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && pattern.source === '^u$') continue;
@@ -1107,7 +1107,7 @@ export class EnglishG2P implements LanguageProcessor {
     // is the standard GA pattern for -et/-it/-id endings.
     if (!isStressed && isLastSyllable && syllableIndex > 0) {
       applyReduction({
-        'æ': 'ə', 'ɛ': 'ɪ', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
+        'ɔɹ': 'ɝ', 'æ': 'ə', 'ɛ': 'ɪ', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
       });
     }
     
