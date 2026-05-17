@@ -77,7 +77,6 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^cious$/, 'ʃəs', false],       // -cious (delicious, precious)
   [/^tious$/, 'ʃəs', false],       // -tious (ambitious, nutritious)
   [/^[ei]ous$/, 'iəs', false],      // -eous/-ious (miscellaneous, various, serious)
-  [/^ous$/, 'əs', false],          // -ous (famous, nervous)
   [/^uous$/, 'juəs', false],       // -uous (continuous, ambiguous)
   [/^[ai]ble$/, 'əbəl', false],     // -able/-ible
   [/^[ae]nce$/, 'əns', false],      // -ance/-ence (dominance, presence)
@@ -181,6 +180,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^o[ao]r/, 'ɔɹ'],              // door/floor (oor) and board/soar/roar (oar) → /ɔɹ/
   [/^ook/, 'ʊk'],                 // book, cook, look, hook, took (oo before k → /ʊ/)
   [/^oo/, 'uː'],                  // boot, moon, cool, moose (long u)
+  [/^ous$/, 'əs'],                 // -ous suffix: famous/nervous/dangerous (guarded: last+unstressed in loop)
   [/^ou/, 'aʊ'],                  // house, about, cloud
   [/^ow(?=[snmk])/, 'aʊ'],        // cow, down, brown (before consonants)
   [/^ow/, 'oʊ'],                  // show, blow, know (at word end typically)
@@ -1043,6 +1043,7 @@ export class EnglishG2P implements LanguageProcessor {
             // AND unstressed (tobacco/tomato: unstressed 'to' → /ɑ/ → reduction → /ə/).
             if (!isLastSyllable && !isStressed && pattern.source === '^o$') continue;
             // ^a$ fires only before tion/sion (nation), consonant-le (table), or magic-e (same/late).
+            if ((!isLastSyllable || isStressed) && pattern.source === '^ous$') continue;
             if (!isStressed && pattern.source === '^a(?=[^aeioun]y$)') continue;
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsCle && !nextIsMagicE && pattern.source === '^a$') continue;
             // ^u$ → /uː/ when next syllable is "tion"/"sion" (solution/confusion/revolution).
