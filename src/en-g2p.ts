@@ -592,7 +592,6 @@ export class EnglishG2P implements LanguageProcessor {
            : p + 'd';
     };
 
-    // Trailing-apostrophe possessive: "executives'" → "executives"
     if (/['''']$/.test(lowerWord) && lowerWord.length > 2 && !/['''']s$/.test(lowerWord)) {
       const basePron = this.wellKnown(lowerWord.replace(/['''']$/, ''));
       if (basePron) return basePron;
@@ -610,7 +609,6 @@ export class EnglishG2P implements LanguageProcessor {
       if (basePron) return basePron + 'ɪz';
     }
 
-    // y→ied/ies/ier inflection: "testified" → "testify", "multiplies" → "multiply"
     if (lowerWord.endsWith('ied') && lowerWord.length > 4) {
       const basePron = this.wellKnown(lowerWord.slice(0, -3) + 'y');
       if (basePron) return edPast(basePron);
@@ -624,7 +622,6 @@ export class EnglishG2P implements LanguageProcessor {
       if (basePron) return basePron + 'ɝ';
     }
 
-    // magic-e agentive/comparative: "driver" → "drive", "nicer" → "nice"
     if (lowerWord.endsWith('er') && lowerWord.length > 3) {
       const basePron = this.wellKnown(lowerWord.slice(0, -2) + 'e');
       if (basePron) return basePron + 'ɝ';
@@ -656,16 +653,21 @@ export class EnglishG2P implements LanguageProcessor {
       if (magicPron) return magicPron + 'ɪŋ';
     }
 
-    if (lowerWord.endsWith('ally') && lowerWord.length > 4) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -2), undefined, true) || this.predictInternal(lowerWord.slice(0, -2), undefined, false);
-      if (basePron) return basePron.replace(/ə$/, '') + 'əli';
-    }
-    if (lowerWord.endsWith('ly') && !lowerWord.endsWith('ally') && lowerWord.length > 2) {
-      const base = lowerWord.slice(0, -2);
-      if (base.length >= 3) {
-        const basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-        if (basePron) return basePron + 'li';
+    if (lowerWord.endsWith('ally') && lowerWord.length > 6) {
+      const base2 = lowerWord.slice(0, -2);
+      let basePron = this.wellKnown(base2, undefined, true);
+      if (!basePron) {
+        const base4 = lowerWord.slice(0, -4);
+        basePron = this.wellKnown(base4, undefined, true) || this.predictInternal(base4, undefined, false);
       }
+      if (basePron) {
+        if (/[lɫ]$/.test(basePron)) return basePron + 'i';
+        return basePron.replace(/ə$/, '') + 'əli';
+      }
+    }
+    if (lowerWord.endsWith('ly') && !lowerWord.endsWith('ally') && lowerWord.length > 4) {
+      const basePron = this.wellKnown(lowerWord.slice(0, -2), undefined, true) || this.predictInternal(lowerWord.slice(0, -2), undefined, false);
+      if (basePron) return basePron + 'li';
     }
 
     if (lowerWord.endsWith('able') && lowerWord.length > 6) {
