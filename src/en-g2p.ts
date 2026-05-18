@@ -1043,8 +1043,8 @@ export class EnglishG2P implements LanguageProcessor {
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsCle && !nextIsMagicE && pattern.source === '^a$') continue;
             // ^u$ → /u/ for open-syllable u before tion/sion (solution) or magic-e (cute/tube/rude).
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsMagicE && pattern.source === '^u$') continue;
-            // ^i$ → /aɪ/ only in magic-e context: ti·me→/taɪm/, li·ke→/laɪk/, mi·ne→/maɪn/.
-            if (!nextIsMagicE && !endsWithSilentE && pattern.source === '^i$') continue;
+            // ^i$ → /aɪ/ in magic-e context or stressed before syllabic-l (bible/idle/rifle/title).
+            if (!nextIsMagicE && !endsWithSilentE && (!nextIsCle || !isStressed) && pattern.source === '^i$') continue;
             // ^le$ → /əl/ only in the final syllable (table→/bəl/, simple→/pəl/).
             // A non-final "le" syllable (legal/legend/legible) should give /l/+vowel.
             if (!isLastSyllable && pattern.source === '^le$') continue;
