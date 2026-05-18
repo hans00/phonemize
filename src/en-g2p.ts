@@ -201,6 +201,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^eu/, 'ju'],                  // feud, neuter, Europe
   [/^ew/, 'u'],                   // few, new, threw
   [/^ue/, 'u'],                   // true, blue, glue (at end)
+  [/^uil/, 'ɪl'],                  // build, built, guild, guilt, guile (ɪ not u before l)
   [/^ui/, 'u'],                   // fruit, suit, cruise
   
   // R-controlled magic-e rimes — anchored at end of syllable. These run
