@@ -1061,19 +1061,8 @@ export class EnglishG2P implements LanguageProcessor {
         }
     }
     
-    // Vowel reduction in unstressed syllables. Linguistically motivated:
-    // English unstressed vowels collapse to /ə/ (or /ɪ/ in final closed
-    // syllables); this is one of the strongest cross-cuts in English
-    // pronunciation (Treiman et al.) and applies regardless of where in
-    // the word the unstressed syllable sits — including position 0 in
-    // initial-unstress words like "about" (ə·baut), "today" (tə·deɪ),
-    // "potato" (pə·teɪ·toʊ). The previous gate of `syllableIndex > 0`
-    // wrongly left position-0 vowels at their full quality.
-    // Reduction-with-prefix-match: rime-conditioned rules above emit
-    // composite phoneme strings ("ɔl", "aɪnd", "oʊld", …), so an
-    // equality-only lookup misses the vowel buried at the front. We
-    // strip a matching leading short vowel and substitute schwa,
-    // preserving any trailing consonants.
+    // Unstressed-vowel reduction; startsWith handles rime-conditioned composites ("ɔl", "aɪnd", …).
+    // Applies at all positions including position-0 (about/today/potato).
     const applyReduction = (table: Record<string, string>) => {
       for (let i = 0; i < phonemes.length; i++) {
         for (const from of Object.keys(table)) {
@@ -1105,6 +1094,10 @@ export class EnglishG2P implements LanguageProcessor {
       const len = phonemes.length;
       if (len >= 3 && phonemes[len-1] === 't' && phonemes[len-2] === 'n' && phonemes[len-3] === 'ɪ') {
         phonemes[len-3] = 'ə';
+      }
+      // -ory/-ary 2-syl: /ɔɹ|ɑɹ/ before /i/ → /ɝ/ (memory/factory/salary); 3-syl+ secondary-stressed → skip.
+      if (syllableIndex === 1 && len >= 2 && phonemes[len-1] === 'i' && (phonemes[len-2] === 'ɔɹ' || phonemes[len-2] === 'ɑɹ')) {
+        phonemes[len-2] = 'ɝ';
       }
     }
     
