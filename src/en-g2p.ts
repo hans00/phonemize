@@ -686,6 +686,19 @@ export class EnglishG2P implements LanguageProcessor {
       if (basePron) return basePron.replace(/ə$/, '') + 'lədʒi';
     }
 
+    if (lowerWord.endsWith('ness') && lowerWord.length > 6) {
+      const basePron = this.wellKnown(lowerWord.slice(0, -4), undefined, true) || this.predictInternal(lowerWord.slice(0, -4), undefined, false);
+      if (basePron) return basePron + 'nɪs';
+    }
+    if (lowerWord.endsWith('less') && lowerWord.length > 6) {
+      const basePron = this.wellKnown(lowerWord.slice(0, -4), undefined, true) || this.predictInternal(lowerWord.slice(0, -4), undefined, false);
+      if (basePron) return basePron + 'ləs';
+    }
+    if (lowerWord.endsWith('ful') && lowerWord.length > 5) {
+      const basePron = this.wellKnown(lowerWord.slice(0, -3), undefined, true) || this.predictInternal(lowerWord.slice(0, -3), undefined, false);
+      if (basePron) return basePron + 'fəl';
+    }
+
     return undefined;
   }
 
