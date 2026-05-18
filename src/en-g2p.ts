@@ -1093,7 +1093,7 @@ export class EnglishG2P implements LanguageProcessor {
 
     if (!isStressed && !isLastSyllable) {
       applyReduction({
-        'ɑɹ': 'ɑɹ',
+        'ɑɹ': 'ɑɹ', 'ɔɹ': 'ɔɹ',
         'æ': 'ə', 'ɛ': 'ə', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
       });
     }
