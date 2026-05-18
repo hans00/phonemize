@@ -526,6 +526,7 @@ export class EnglishG2P implements LanguageProcessor {
       // Deduplicate consecutive identical consonants across syllable boundaries
       // (balloon/collision/pollution: doubled spelling = single phoneme).
       result = result.replace(/([pbtdkɡfvszʃʒθðmnŋlɹhjw])\1/g, '$1');
+      result = result.replace(/sʒ/g, 'ʃ');
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
