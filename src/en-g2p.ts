@@ -1099,6 +1099,11 @@ export class EnglishG2P implements LanguageProcessor {
       if (lastIdx >= 0 && (phonemes[lastIdx] === 'ɔɹ' || phonemes[lastIdx] === 'ɑɹ')) {
         phonemes[lastIdx] = 'ɝ';
       }
+      // -ent final syllable: /ɪ/ before "nt" → /ə/ (different, innocent, permanent)
+      const len = phonemes.length;
+      if (len >= 3 && phonemes[len-1] === 't' && phonemes[len-2] === 'n' && phonemes[len-3] === 'ɪ') {
+        phonemes[len-3] = 'ə';
+      }
     }
     
     // Magic 'e' rule for stressed syllables
