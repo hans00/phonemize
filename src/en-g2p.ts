@@ -193,6 +193,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ea/, 'i'],                   // read, seat, beat (default long)
   [/^ee/, 'i'],                   // see, tree, free
   [/^ie/, 'i'],                   // piece, field, believe  
+  [/^cei/, 'si'],                  // receive, ceiling, conceive (i before e after c)
   [/^ei/, 'eɪ'],                  // vein, weight, eight
   [/^ey$/, 'i'],                   // honey, abbey, valley, turkey (unstressed final -ey; guard skips when stressed)
   [/^ey/, 'eɪ'],                  // they, grey, obey (stressed -ey)
