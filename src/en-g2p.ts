@@ -682,9 +682,10 @@ export class EnglishG2P implements LanguageProcessor {
       if (p) return p + 'ɪst';
     }
     if (lowerWord.endsWith('ify') && lowerWord.length > 5) {
-      const base = lowerWord.slice(0, -3);
-      const p = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-      if (p) return p + 'əˌfaɪ';
+      const p=this.wellKnown(lowerWord.slice(0,-3),undefined,true)||this.predictInternal(lowerWord.slice(0,-3),undefined,false); if (p) return p + 'əˌfaɪ';
+    }
+    if ((lowerWord.endsWith('cial') || (!lowerWord.endsWith('stial') && lowerWord.endsWith('tial'))) && lowerWord.length > 5) {
+      const bp=lowerWord.slice(0,-4),pp=this.wellKnown(bp,undefined,true)||this.predictInternal(bp,undefined,false); if(pp&&/[aeiouæɑɔɛɪʊʌɝə]/.test(pp))return pp+'ʃəl';
     }
     if (lowerWord.endsWith('ization') && lowerWord.length > 9) {
       const b = this.wellKnown(lowerWord.slice(0, -7), undefined, true); if (b) return b.replace(/ˈ/g, 'ˌ') + 'əˌzeɪʃən';
