@@ -192,6 +192,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^air/, 'ɛɹ'],                 // hair, fair, chair, stair (must precede ^ai)
   [/^ai/, 'eɪ'],                  // rain, main, paid
   [/^eau/, 'oʊ'],                 // plateau, beau, bureau, chateau (French -eau → /oʊ/)
+  [/^ealth/, 'ɛlθ'],              // health, wealth, stealth (ea+lth → /ɛ/)
   [/^ea/, 'i'],                   // read, seat, beat (default long)
   [/^ee/, 'i'],                   // see, tree, free
   [/^ie/, 'i'],                   // piece, field, believe  
