@@ -64,15 +64,15 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^stion$/, 'stʃən', false],     // -stion: question, digestion, combustion
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
   [/^sion$/, 'ʒən', false],        // -sion is always unstressed
-  [/^cian$/, 'ʃən', false],        // -cian (technician, electrician, musician)
+  [/^cian$/, 'ʃən', false],  [/^cean$/, 'ʃən', false],  // -cian/-cean: technician/ocean
   [/^lion$/, 'ljən', false],       // -llion: million, billion, stallion (guard: syllableIndex > 0)
   [/^[ct]ial$/, 'ʃəl', false],     // -cial/-tial (commercial, social, potential, partial)
   [/^cient$/, 'ʃənt', false],  [/^scien$/, 'ʃən', false],  // -cient: efficient/ancient; -scien: conscience (guard: idx>0)
   [/^tu$/, 'tʃu', false],           // tu before vowel-initial syllable → /tʃu/ (actual, factual, mutual)
   [/^ture$/, 'tʃɝ', false],        // -ture (future, nature)
   [/^sure$/, 'ʒɝ', false],         // -sure (measure, pleasure)
-  [/^geous$/, 'dʒəs', false],      // -geous (gorgeous, advantageous)
-  [/^[ct]ious$/, 'ʃəs', false],    // -cious/-tious (delicious, precious, ambitious, nutritious)
+  [/^geous$/, 'dʒəs', false],  [/^gious$/, 'dʒəs', false],  // -geous/-gious: gorgeous/contagious
+  [/^[ct]ious$/, 'ʃəs', false],  [/^ceous$/, 'ʃəs', false],  // -cious/-tious/-ceous: delicious/crustaceous
   [/^[ei]ous$/, 'iəs', false],      // -eous/-ious (miscellaneous, various, serious)
   [/^uous$/, 'juəs', false],       // -uous (continuous, ambiguous)
   [/^[ai]ble$/, 'əbəl', false],     // -able/-ible
@@ -407,7 +407,7 @@ export class EnglishG2P implements LanguageProcessor {
     const stressedIdx = this.assignStress(syllables, lowerWord);
     const traceSteps: TraceStep[] = [];
     syllables.forEach((syl, i) => {
-      this.syllableToIPA(syl, i, i === stressedIdx, i === syllables.length - 1, i < syllables.length - 1 ? syllables[i + 1] : undefined, traceSteps);
+      this.syllableToIPA(syl, i, i === stressedIdx, i === syllables.length - 1, i < syllables.length - 1 ? syllables[i + 1] : undefined, traceSteps, i > 0 ? syllables[i - 1] : undefined);
     });
 
     return { word, ipa, path: 'rules', syllables, steps: traceSteps };
@@ -501,7 +501,7 @@ export class EnglishG2P implements LanguageProcessor {
     const syllableIPA = syllables.map((s, i) => {
       const isStressed = i === stressedSyllableIndex;
       const isLastSyllable = i === syllables.length - 1;
-      return this.syllableToIPA(s, i, isStressed, isLastSyllable, i < syllables.length - 1 ? syllables[i + 1] : undefined);
+      return this.syllableToIPA(s, i, isStressed, isLastSyllable, i < syllables.length - 1 ? syllables[i + 1] : undefined, undefined, i > 0 ? syllables[i - 1] : undefined);
     });
 
     if (syllableIPA.length > 0) {
@@ -973,7 +973,7 @@ export class EnglishG2P implements LanguageProcessor {
   }
 
   // Enhanced syllable to IPA conversion with stress-sensitive vowel reduction
-  private syllableToIPA(syllable: string, syllableIndex: number, isStressed: boolean, isLastSyllable: boolean, nextSyllable?: string, steps?: TraceStep[]): string {
+  private syllableToIPA(syllable: string, syllableIndex: number, isStressed: boolean, isLastSyllable: boolean, nextSyllable?: string, steps?: TraceStep[], prevSyllable?: string): string {
     const stepsStart = steps?.length ?? 0;
     let phonemes: string[] = [];
     let remaining = syllable;
@@ -1023,6 +1023,8 @@ export class EnglishG2P implements LanguageProcessor {
 
     const nextIsCle = !!nextSyllable?.match(/^[bdfgkmnprstvz]le$/);
     const nextIsMagicE = isStressed && !!nextSyllable?.match(/^[^aeiou]e$/);
+    // Doubled-gg: either cross-syllable split (bigger/trigger) or within one syllable (baggy/foggy) → hard g
+    const gFromDoubling = (prevSyllable?.endsWith('g') ?? false) || /gg[eiy]/i.test(syllable);
     // Apply phoneme rules
     while(remaining.length > 0) {
         let matchFound = false;
@@ -1030,6 +1032,8 @@ export class EnglishG2P implements LanguageProcessor {
             // ^al$ is for the -all rime (all/ball/call); skip it when the
             // original syllable had no doubled-l (e.g. "cal" in "calculator").
             if (!hadDoubledL && pattern.source === '^al$') continue;
+            // g from doubled-gg (bigger/trigger/baggy/nugget) stays hard; skip soft-g rule.
+            if (gFromDoubling && pattern.source === '^g(?=[eiy])') continue;
             // ^y$ → /i/ only when the syllable already has a prior vowel
             // (city/happy/novelty); skip for monosyllables like by/fly/try.
             if (!hasVowelBeforeTerminalY && pattern.source === '^y$') continue;
