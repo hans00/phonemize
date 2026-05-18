@@ -980,7 +980,7 @@ export class EnglishG2P implements LanguageProcessor {
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
       // ^le$ and ^al$ are word-ending patterns; skip on non-final syllables
       // where they are prefix/initial chunks (legionnaire, album, algebra).
-      if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$') && !isLastSyllable) continue;
+      if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
       if (remaining.match(pattern)) {
         steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
         return ipa;
