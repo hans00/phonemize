@@ -69,6 +69,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ce$/, 's', false],            // -ce: face, race, dance, force, sentence
   [/^se$/, 'z', false],            // -se: rise, wise, please, these, those, close
   [/^que$/, 'k', false],           // -que: antique, boutique, baroque, physique
+  [/^sten$/, 'sən', false],         // -sten: listen, fasten, hasten, glisten, moisten (silent t)
   [/^stion$/, 'stʃən', false],     // -stion: question, digestion, combustion
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
   [/^sion$/, 'ʒən', false],        // -sion is always unstressed
@@ -984,7 +985,7 @@ export class EnglishG2P implements LanguageProcessor {
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
       // ^le$ and ^al$ are word-ending patterns; skip on non-final syllables
       // where they are prefix/initial chunks (legionnaire, album, algebra).
-      if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$') && !isLastSyllable) continue;
+      if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$') && !isLastSyllable) continue;
       if (remaining.match(pattern)) {
         steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
         return ipa;
