@@ -182,6 +182,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ook/, 'ʊk'],                 // book, cook, look, hook, took (oo before k → /ʊ/)
   [/^oo/, 'u'],                   // boot, moon, cool, moose (long u; dict uses /u/ not /uː/)
   [/^ous$/, 'əs'],                 // -ous suffix: famous/nervous/dangerous (guarded: last+unstressed in loop)
+  [/^oup/, 'up'],                  // group, soup, coup, croup (ou+p → /u/)
   [/^ou/, 'aʊ'],                  // house, about, cloud
   [/^ow(?=[snmk])/, 'aʊ'],        // cow, down, brown (before consonants)
   [/^ow/, 'oʊ'],                  // show, blow, know (at word end typically)
