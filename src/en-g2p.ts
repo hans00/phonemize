@@ -689,7 +689,7 @@ export class EnglishG2P implements LanguageProcessor {
       const base = this.wellKnown(lowerWord.slice(0, -7), undefined, true);
       if (base) return base.replace(/ˈ/g, 'ˌ') + 'əˌzeɪʃən';
     }
-    for (const [sfx, ipa] of [['tual','tʃuəl'],['tuous','tʃuəs']] as [string,string][]) {
+    for (const [sfx, ipa] of [['tual','tʃuəl'],['tuous','tʃuəs'],['ulate','jəleɪt'],['ular','jəlɝ']] as [string,string][]) {
       if (lowerWord.endsWith(sfx) && lowerWord.length > sfx.length + 2) {
         const base = lowerWord.slice(0, -sfx.length);
         const p = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
