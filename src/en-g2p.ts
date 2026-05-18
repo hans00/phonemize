@@ -1100,8 +1100,13 @@ export class EnglishG2P implements LanguageProcessor {
 
     if (!isStressed && isLastSyllable && syllableIndex > 0) {
       applyReduction({
-        'ɑɹ': 'ɝ', 'ɔɹ': 'ɝ', 'æ': 'ə', 'ɛ': 'ɪ', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
+        'ɑɹ': 'ɑɹ', 'ɔɹ': 'ɔɹ',
+        'æ': 'ə', 'ɛ': 'ɪ', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
       });
+      const lastIdx = phonemes.length - 1;
+      if (lastIdx >= 0 && (phonemes[lastIdx] === 'ɔɹ' || phonemes[lastIdx] === 'ɑɹ')) {
+        phonemes[lastIdx] = 'ɝ';
+      }
     }
     
     // Magic 'e' rule for stressed syllables
