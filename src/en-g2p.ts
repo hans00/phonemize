@@ -119,8 +119,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^pn/, 'n'],                   // pneumonia, pneumatic
   [/^ps/, 's'],                   // psychology, psalm
   [/^pt/, 't'],                   // pterodactyl, ptomaine
-  [/^kn/, 'n'],                   // knee, knife, know
-  [/^gn/, 'n'],                   // gnome, gnat, gnu
+  [/^[kg]n/, 'n'],                // knee/know (kn) and gnome/gnu (gn)
   [/^m[bn]$/, 'm'],               // thumb/lamb/comb (^mb$) and column/autumn/condemn (^mn$): word-final silent stop/nasal
   [/^mn/, 'n'],                   // mnemonic, mnesic (silent initial m)
   [/^wr/, 'ɹ'],                   // write, wrong, wrist
@@ -580,152 +579,108 @@ export class EnglishG2P implements LanguageProcessor {
 
   private tryMorphologicalAnalysis(word: string): string | undefined {
     const lowerWord = word.toLowerCase();
-    
-    // Try plural forms (-s, -es)
+    const sPlural = (p: string): string => {
+      const last = p.slice(-1);
+      return ['s','z','ʃ','ʒ'].includes(last) ? p + 'ɪz'
+           : ['p','t','k','f','θ'].includes(last) ? p + 's'
+           : p + 'z';
+    };
+    const edPast = (p: string): string => {
+      const last = p.slice(-1);
+      return ['t','d'].includes(last) ? p + 'ɪd'
+           : ['p','k','s','ʃ','f','θ'].includes(last) ? p + 't'
+           : p + 'd';
+    };
+
     if (lowerWord.endsWith('s') && !lowerWord.endsWith('ss') && lowerWord.length > 2) {
-      const singular = lowerWord.slice(0, -1);
-      const basePron = this.wellKnown(singular);
-      if (basePron) {
-        const lastSound = basePron.slice(-1);
-        if (["s", "z", "ʃ", "ʒ", "tʃ", "dʒ"].includes(lastSound)) {
-          return basePron + 'ɪz';
-        }
-        if (["p", "t", "k", "f", "θ"].includes(lastSound)) {
-          return basePron + 's';
-        }
-        return basePron + 'z';
-      }
+      const basePron = this.wellKnown(lowerWord.slice(0, -1));
+      if (basePron) return sPlural(basePron);
     }
-    
-    // Try possessive forms ('s) — accept ASCII or curly apostrophe.
-    if (/[''‘’]s$/.test(lowerWord) && lowerWord.length > 3) {
-      const base = lowerWord.slice(0, -2);
-      const basePron = this.wellKnown(base);
-      if (basePron) {
-        const lastSound = basePron.slice(-1);
-        if (["s", "z", "ʃ", "ʒ", "tʃ", "dʒ"].includes(lastSound)) {
-          return basePron + 'ɪz';
-        }
-        if (["p", "t", "k", "f", "θ"].includes(lastSound)) {
-          return basePron + 's';
-        }
-        return basePron + 'z';
-      }
+    if (/['''']s$/.test(lowerWord) && lowerWord.length > 3) {
+      const basePron = this.wellKnown(lowerWord.slice(0, -2));
+      if (basePron) return sPlural(basePron);
     }
-    
-    // Try -es plural
     if (lowerWord.endsWith('es') && lowerWord.length > 3) {
-      const singular = lowerWord.slice(0, -2);
-      const basePron = this.wellKnown(singular);
-      if (basePron) {
-        return basePron + 'ɪz';
-      }
-      // Magic-e recovery: "abuses" → "abuse", "drives" → "drive"
-      const magicBasePron = this.wellKnown(singular + 'e');
-      if (magicBasePron) {
-        const last = magicBasePron.slice(-1);
-        if (['s','z','ʃ','ʒ'].includes(last)) return magicBasePron + 'ɪz';
-        return magicBasePron + 'z';
-      }
+      const basePron = this.wellKnown(lowerWord.slice(0, -2));
+      if (basePron) return basePron + 'ɪz';
     }
 
-    // Try agentive/comparative -er: "driver" → "drive", "nicer" → "nice"
+    // y→ied/ies/ier inflection: "testified" → "testify", "multiplies" → "multiply"
+    if (lowerWord.endsWith('ied') && lowerWord.length > 4) {
+      const basePron = this.wellKnown(lowerWord.slice(0, -3) + 'y');
+      if (basePron) return edPast(basePron);
+    }
+    if (lowerWord.endsWith('ies') && lowerWord.length > 4) {
+      const basePron = this.wellKnown(lowerWord.slice(0, -3) + 'y');
+      if (basePron) return sPlural(basePron);
+    }
+    if (lowerWord.endsWith('ier') && lowerWord.length > 4) {
+      const basePron = this.wellKnown(lowerWord.slice(0, -3) + 'y');
+      if (basePron) return basePron + 'ɝ';
+    }
+
+    // magic-e agentive/comparative: "driver" → "drive", "nicer" → "nice"
     if (lowerWord.endsWith('er') && lowerWord.length > 3) {
-      const base = lowerWord.slice(0, -2);
-      const magicBasePron = this.wellKnown(base + 'e');
-      if (magicBasePron) return magicBasePron + 'ɝ';
+      const basePron = this.wellKnown(lowerWord.slice(0, -2) + 'e');
+      if (basePron) return basePron + 'ɝ';
     }
 
-    // Try past tense (-ed)
     if (lowerWord.endsWith('ed') && lowerWord.length > 3) {
-      const edPast = (basePron: string) => {
-        const lastSound = basePron.slice(-1);
-        if (['t', 'd'].includes(lastSound)) return basePron + 'ɪd';
-        if (['p', 'k', 's', 'ʃ', 'tʃ', 'f', 'θ'].includes(lastSound)) return basePron + 't';
-        return basePron + 'd';
-      };
       const base = lowerWord.slice(0, -2);
       const basePron = this.wellKnown(base);
       if (basePron) return edPast(basePron);
-
-      // Doubled-consonant base: "strutted" → "strut", "stopped" → "stop".
-      // Mirrors the -ing fallback below.
+      // Doubled-consonant base: "strutted" → "strut"
       const baseShort = lowerWord.slice(0, -3);
       if (lowerWord.length > 4 && lowerWord.slice(-4, -3) === baseShort.slice(-1)) {
-        const basePronShort = this.wellKnown(baseShort);
-        if (basePronShort) return edPast(basePronShort);
+        const p = this.wellKnown(baseShort);
+        if (p) return edPast(p);
       }
-      // Magic-e recovery: "advised" → "advise", "declined" → "decline"
-      const magicBasePron = this.wellKnown(base + 'e');
-      if (magicBasePron) return edPast(magicBasePron);
+      // Magic-e: "advised" → "advise"
+      const magicPron = this.wellKnown(base + 'e');
+      if (magicPron) return edPast(magicPron);
     }
-    
-    // Try present participle (-ing)
+
     if (lowerWord.endsWith('ing') && lowerWord.length > 4) {
       const base = lowerWord.slice(0, -3);
       const basePron = this.wellKnown(base);
-      if (basePron) {
-        return basePron + 'ɪŋ';
-      }
-      // Handle cases like "running" -> "run"
+      if (basePron) return basePron + 'ɪŋ';
+      // Doubled-consonant base: "running" → "run"
       const baseShort = lowerWord.slice(0, -4);
       if (lowerWord.length > 4 && lowerWord.slice(-4, -3) === baseShort.slice(-1)) {
-        const basePronShort = this.wellKnown(baseShort);
-        if (basePronShort) {
-            return basePronShort + 'ɪŋ';
-        }
+        const p = this.wellKnown(baseShort);
+        if (p) return p + 'ɪŋ';
       }
-      // Magic-e recovery: "advising" → "advise", "driving" → "drive"
-      const magicBasePron = this.wellKnown(base + 'e');
-      if (magicBasePron) return magicBasePron + 'ɪŋ';
+      // Magic-e: "advising" → "advise"
+      const magicPron = this.wellKnown(base + 'e');
+      if (magicPron) return magicPron + 'ɪŋ';
     }
-    
-    // Try -ally / -ly adverbs
+
     if (lowerWord.endsWith('ally') && lowerWord.length > 4) {
-      // e.g., globally -> global
-      const base = lowerWord.slice(0, -2);
-      // Try to get pronunciation of the base word, either from dictionary or by recursive prediction.
-      const basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-      if (basePron) {
-        // basePron for global is ˈɡloʊbəl. Just add 'i'
-        return basePron.replace(/ə$/, '') + 'əli';
-      }
+      const basePron = this.wellKnown(lowerWord.slice(0, -2), undefined, true) || this.predictInternal(lowerWord.slice(0, -2), undefined, false);
+      if (basePron) return basePron.replace(/ə$/, '') + 'əli';
     }
     if (lowerWord.endsWith('ly') && !lowerWord.endsWith('ally') && lowerWord.length > 2) {
-      // e.g., "quickly" -> "quick"; require base ≥ 3 chars to avoid
-      // treating "fly" (base "f") or "rely" (base "re") as -ly derivatives.
       const base = lowerWord.slice(0, -2);
       if (base.length >= 3) {
         const basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-        if (basePron) {
-          return basePron + 'li';
-        }
+        if (basePron) return basePron + 'li';
       }
     }
-    
-    // Try -able suffix (base must be ≥ 3 chars, so word ≥ 7 chars)
+
     if (lowerWord.endsWith('able') && lowerWord.length > 6) {
       let base = lowerWord.slice(0, -4);
       let basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-      if (basePron) {
-        return basePron.replace(/ə$/, '') + 'əbəl';
-      }
+      if (basePron) return basePron.replace(/ə$/, '') + 'əbəl';
       base = lowerWord.slice(0, -3);
       basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-      if (basePron) {
-        return basePron + 'əbəl';
-      }
+      if (basePron) return basePron + 'əbəl';
     }
-    
-    // Try -logy suffix
+
     if (lowerWord.endsWith('logy') && lowerWord.length > 4) {
-      const base = lowerWord.slice(0, -4);
-      const basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-      if (basePron) {
-        return basePron.replace(/ə$/, '') + 'lədʒi';
-      }
+      const basePron = this.wellKnown(lowerWord.slice(0, -4), undefined, true) || this.predictInternal(lowerWord.slice(0, -4), undefined, false);
+      if (basePron) return basePron.replace(/ə$/, '') + 'lədʒi';
     }
-    
+
     return undefined;
   }
 
