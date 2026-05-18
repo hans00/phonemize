@@ -250,6 +250,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^pl(?!e$)/, 'pl'],             // place, play, please (not -ple syllable)
   [/^pr/, 'pɹ'],                  // problem, provide, pretty
   [/^sl/, 'sl'],                  // slow, sleep, slide
+  [/^sm$/, 'zm'],                  // -ism/-asm coda: organism, prism, spasm (post-vocalic sm → /zm/)
   [/^sm/, 'sm'],                  // small, smile, smell
   [/^sn/, 'sn'],                  // snow, snake, snack
   [/^sp/, 'sp'],                  // speak, space, sport
