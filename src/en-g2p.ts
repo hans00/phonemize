@@ -83,6 +83,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^uous$/, 'juəs', false],       // -uous (continuous, ambiguous)
   [/^[ai]ble$/, 'əbəl', false],     // -able/-ible
   [/^[ae]nce$/, 'əns', false],      // -ance/-ence (dominance, presence)
+  [/^kness$/, 'knəs', false],      // -kness: darkness, frankness, weakness (k is pronounced, not silent)
   [/^ness$/, 'nəs', false],        // -ness
   [/^ment$/, 'mənt', false],       // -ment
   [/^less$/, 'ləs', false],        // -less
