@@ -690,7 +690,7 @@ export class EnglishG2P implements LanguageProcessor {
       const base = this.wellKnown(lowerWord.slice(0, -7), undefined, true);
       if (base) return base.replace(/ˈ/g, 'ˌ') + 'əˌzeɪʃən';
     }
-    for (const [sfx, ipa] of [['tual','tʃuəl'],['tuous','tʃuəs'],['ulate','jəleɪt'],['ular','jəlɝ'],['ment','mənt'],['ness','nɪs'],['less','ləs'],['ful','fəl'],['ize','aɪz'],['ist','ɪst'],['ism','ɪzm'],['al','əl']] as [string,string][]) {
+    for (const [sfx, ipa] of [['tual','tʃuəl'],['tuous','tʃuəs'],['ulation','jəleɪʃən'],['ulator','jəleɪtɝ'],['ulate','jəleɪt'],['ular','jəlɝ'],['ment','mənt'],['ness','nɪs'],['less','ləs'],['ful','fəl'],['ize','aɪz'],['ist','ɪst'],['ism','ɪzm'],['al','əl']] as [string,string][]) {
       if (lowerWord.endsWith(sfx) && lowerWord.length > sfx.length + 2) {
         const base = lowerWord.slice(0, -sfx.length);
         const p = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
