@@ -620,8 +620,22 @@ export class EnglishG2P implements LanguageProcessor {
       if (basePron) {
         return basePron + 'ɪz';
       }
+      // Magic-e recovery: "abuses" → "abuse", "drives" → "drive"
+      const magicBasePron = this.wellKnown(singular + 'e');
+      if (magicBasePron) {
+        const last = magicBasePron.slice(-1);
+        if (['s','z','ʃ','ʒ'].includes(last)) return magicBasePron + 'ɪz';
+        return magicBasePron + 'z';
+      }
     }
-    
+
+    // Try agentive/comparative -er: "driver" → "drive", "nicer" → "nice"
+    if (lowerWord.endsWith('er') && lowerWord.length > 3) {
+      const base = lowerWord.slice(0, -2);
+      const magicBasePron = this.wellKnown(base + 'e');
+      if (magicBasePron) return magicBasePron + 'ɝ';
+    }
+
     // Try past tense (-ed)
     if (lowerWord.endsWith('ed') && lowerWord.length > 3) {
       const edPast = (basePron: string) => {
@@ -641,6 +655,9 @@ export class EnglishG2P implements LanguageProcessor {
         const basePronShort = this.wellKnown(baseShort);
         if (basePronShort) return edPast(basePronShort);
       }
+      // Magic-e recovery: "advised" → "advise", "declined" → "decline"
+      const magicBasePron = this.wellKnown(base + 'e');
+      if (magicBasePron) return edPast(magicBasePron);
     }
     
     // Try present participle (-ing)
@@ -658,6 +675,9 @@ export class EnglishG2P implements LanguageProcessor {
             return basePronShort + 'ɪŋ';
         }
       }
+      // Magic-e recovery: "advising" → "advise", "driving" → "drive"
+      const magicBasePron = this.wellKnown(base + 'e');
+      if (magicBasePron) return magicBasePron + 'ɪŋ';
     }
     
     // Try -ally / -ly adverbs

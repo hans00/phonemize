@@ -75,7 +75,7 @@ describe('G2P rule fixes', () => {
   });
 
   it('chl → /kl/ (chlorinated)', () => {
-    expect(g2p.predict('chlorinated', 'en')).toMatch(/kl/);
+    expect(g2p.predict('chlorinated', 'en')).toMatch(/k[lɫ]/);
   });
 
   it('oor → /ɔɹ/ (door, floor)', () => {
