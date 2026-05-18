@@ -634,13 +634,11 @@ export class EnglishG2P implements LanguageProcessor {
       const base = lowerWord.slice(0, -2);
       const basePron = this.wellKnown(base);
       if (basePron) return edPast(basePron);
-      // Doubled-consonant base: "strutted" → "strut"
       const baseShort = lowerWord.slice(0, -3);
       if (lowerWord.length > 4 && lowerWord.slice(-4, -3) === baseShort.slice(-1)) {
         const p = this.wellKnown(baseShort);
         if (p) return edPast(p);
       }
-      // Magic-e: "advised" → "advise"
       const magicPron = this.wellKnown(base + 'e');
       if (magicPron) return edPast(magicPron);
     }
@@ -649,13 +647,11 @@ export class EnglishG2P implements LanguageProcessor {
       const base = lowerWord.slice(0, -3);
       const basePron = this.wellKnown(base);
       if (basePron) return basePron + 'ɪŋ';
-      // Doubled-consonant base: "running" → "run"
       const baseShort = lowerWord.slice(0, -4);
       if (lowerWord.length > 4 && lowerWord.slice(-4, -3) === baseShort.slice(-1)) {
         const p = this.wellKnown(baseShort);
         if (p) return p + 'ɪŋ';
       }
-      // Magic-e: "advising" → "advise"
       const magicPron = this.wellKnown(base + 'e');
       if (magicPron) return magicPron + 'ɪŋ';
     }
@@ -684,6 +680,16 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.endsWith('logy') && lowerWord.length > 4) {
       const basePron = this.wellKnown(lowerWord.slice(0, -4), undefined, true) || this.predictInternal(lowerWord.slice(0, -4), undefined, false);
       if (basePron) return basePron.replace(/ə$/, '') + 'lədʒi';
+    }
+
+    // y→iness/iest: "clumsiness" → "clumsy", "happiest" → "happy"
+    if (lowerWord.endsWith('iness') && lowerWord.length > 6) {
+      const p = this.wellKnown(lowerWord.slice(0, -5) + 'y');
+      if (p) return p + 'nɪs';
+    }
+    if (lowerWord.endsWith('iest') && lowerWord.length > 5) {
+      const p = this.wellKnown(lowerWord.slice(0, -4) + 'y');
+      if (p) return p + 'ɪst';
     }
 
     if (lowerWord.endsWith('ness') && lowerWord.length > 6) {
