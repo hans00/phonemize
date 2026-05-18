@@ -687,20 +687,20 @@ export class EnglishG2P implements LanguageProcessor {
       if (p) return p + 'əˌfaɪ';
     }
     if (lowerWord.endsWith('ization') && lowerWord.length > 9) {
-      const base = this.wellKnown(lowerWord.slice(0, -7), undefined, true);
-      if (base) return base.replace(/ˈ/g, 'ˌ') + 'əˌzeɪʃən';
+      const b = this.wellKnown(lowerWord.slice(0, -7), undefined, true); if (b) return b.replace(/ˈ/g, 'ˌ') + 'əˌzeɪʃən';
     }
     if (lowerWord.endsWith('ation') && lowerWord.length > 7) {
-      const b = lowerWord.slice(0, -5), ate = this.wellKnown(b + 'ate', undefined, true), src = this.wellKnown(b, undefined, true);
-      if (ate) return (ate.endsWith('t') ? ate.slice(0, -1) : ate) + 'ʃən';
-      if (src) return src + 'eɪʃən';
+      const b = lowerWord.slice(0, -5), ate = this.wellKnown(b+'ate', undefined, true), src = this.wellKnown(b, undefined, true);
+      if (ate) return (ate.endsWith('t') ? ate.slice(0,-1) : ate)+'ʃən'; if (src) return src+'eɪʃən';
+    }
+    if ((lowerWord.endsWith('ance') || lowerWord.endsWith('ence')) && lowerWord.length > 7) {
+      const b = lowerWord.slice(0, -4), p = this.wellKnown(b, undefined, true) || (b.endsWith('i') ? this.wellKnown(b.slice(0,-1)+'y', undefined, true) : undefined) || (!b.endsWith('id') ? this.wellKnown(b+'e', undefined, true) : undefined);
+      if (p) return p + 'əns';
     }
     for (const [sfx, ipa] of [['tual','tʃuəl'],['tuous','tʃuəs'],['ulation','jəleɪʃən'],['ulator','jəleɪtɝ'],['ulate','jəleɪt'],['ular','jəlɝ'],['ment','mənt'],['ness','nɪs'],['less','ləs'],['ful','fəl'],['ize','aɪz'],['ist','ɪst'],['ism','ɪzm'],['al','əl']] as [string,string][]) {
-      if (lowerWord.endsWith(sfx) && lowerWord.length > sfx.length + 2) {
-        const base = lowerWord.slice(0, -sfx.length);
-        const p = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-        if (p) return p + ipa;
-      }
+      if (!lowerWord.endsWith(sfx) || lowerWord.length <= sfx.length+2) continue;
+      const b = lowerWord.slice(0, -sfx.length), p = this.wellKnown(b, undefined, true) || this.predictInternal(b, undefined, false);
+      if (p) return p + ipa;
     }
 
     return undefined;
