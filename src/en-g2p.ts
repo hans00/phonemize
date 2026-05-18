@@ -59,7 +59,7 @@ const EN_PREFIXES = new Set([
 ]);
 
 // Valid English onsets (consonant clusters that can start a syllable)
-const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr', 'dw', 'f', 'fl', 'fr', 'g', 'gl', 'gr', 'gu', 'h', 'j', 'k', 'kl', 'kn', 'kr', 'l', 'm', 'n', 'p', 'ph', 'pl', 'pr', 'ps', 'qu', 'r', 'rh', 's', 'sc', 'sch', 'scr', 'sh', 'sk', 'sl', 'sm', 'sn', 'sp', 'sph', 'spl', 'spr', 'st', 'str', 'sv', 'sw', 't', 'th', 'thr', 'tr', 'ts', 'tw', 'v', 'w', 'wh', 'wr', 'x', 'y', 'z']);
+const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr', 'dw', 'f', 'fl', 'fr', 'g', 'gl', 'gr', 'gu', 'h', 'j', 'k', 'kl', 'kn', 'kr', 'l', 'm', 'n', 'p', 'ph', 'pl', 'pr', 'ps', 'q', 'qu', 'r', 'rh', 's', 'sc', 'sch', 'scr', 'sh', 'sk', 'sl', 'sm', 'sn', 'sp', 'sph', 'spl', 'spr', 'st', 'str', 'sv', 'sw', 't', 'th', 'thr', 'tr', 'ts', 'tw', 'v', 'w', 'wh', 'wr', 'x', 'y', 'z']);
 
 // --- Phoneme Rules ---
 
@@ -231,7 +231,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // Context-dependent consonants
   [/^c(?=[eiy])/, 's'],           // soft c: cent, city, cycle
   [/^g(?=[eiy])/, 'dʒ'],          // soft g: gem, gin, gym (but not all cases)
-  [/^s(?=[eiy])/, 's'],           // s before front vowels usually stays /s/
   
   // Improved consonant clusters
   [/^spr/, 'spɹ'],                // spring, spray, spread
@@ -282,6 +281,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^t/, 't'],
   [/^v/, 'v'],
   [/^w/, 'w'],
+  [/^x(?=[aeiouy])/, 'z'],         // word-initial x: xylophone, xerox, xenon (guard: syllableIndex === 0)
   [/^x/, 'ks'],                   // tax, fix, mix
   [/^ym(?![aeiou])/, 'ɪm'],       // gym, symbol, symptom (Greek short y before m)
   [/^yn(?![aeiou])/, 'ɪn'],       // syntax, synchronize (Greek short y before n)
@@ -1052,6 +1052,8 @@ export class EnglishG2P implements LanguageProcessor {
             // A non-final "le" syllable (legal/legend/legible) should give /l/+vowel.
             if (!isLastSyllable && pattern.source === '^le$') continue;
             if (isStressed && pattern.source === '^ey$') continue;
+            // ^x(?=[aeiouy]) → /z/ only word-initially (xylophone, xerox, xenon).
+            if (syllableIndex > 0 && pattern.source === '^x(?=[aeiouy])') continue;
             const match = remaining.match(pattern);
             if (match) {
                 phonemes.push(ipa);
