@@ -527,6 +527,9 @@ export class EnglishG2P implements LanguageProcessor {
       // (balloon/collision/pollution: doubled spelling = single phoneme).
       result = result.replace(/([pbtdkɡfvszʃʒθðmnŋlɹhjw])\1/g, '$1');
       result = result.replace(/sʒ/g, 'ʃ');
+      // Fuse schwa + rhotic across syllable boundaries → rhotacized vowel
+      // (federal/general/history/boisterous: unstressed "er" → /ɝ/ not /əɹ/).
+      result = result.replace(/əɹ/g, 'ɝ');
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
