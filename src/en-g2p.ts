@@ -689,21 +689,16 @@ export class EnglishG2P implements LanguageProcessor {
       const p = this.wellKnown(lowerWord.slice(0, -4) + 'y');
       if (p) return p + 'ɪst';
     }
-    if (lowerWord.endsWith('ment') && lowerWord.length > 6) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -4), undefined, true) || this.predictInternal(lowerWord.slice(0, -4), undefined, false);
-      if (basePron) return basePron + 'mənt';
+    if (lowerWord.endsWith('ization') && lowerWord.length > 9) {
+      const base = this.wellKnown(lowerWord.slice(0, -7), undefined, true);
+      if (base) return base.replace(/ˈ/g, 'ˌ') + 'əˌzeɪʃən';
     }
-    if (lowerWord.endsWith('ness') && lowerWord.length > 6) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -4), undefined, true) || this.predictInternal(lowerWord.slice(0, -4), undefined, false);
-      if (basePron) return basePron + 'nɪs';
-    }
-    if (lowerWord.endsWith('less') && lowerWord.length > 6) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -4), undefined, true) || this.predictInternal(lowerWord.slice(0, -4), undefined, false);
-      if (basePron) return basePron + 'ləs';
-    }
-    if (lowerWord.endsWith('ful') && lowerWord.length > 5) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -3), undefined, true) || this.predictInternal(lowerWord.slice(0, -3), undefined, false);
-      if (basePron) return basePron + 'fəl';
+    for (const [sfx, ipa] of [['ment','mənt'],['ness','nɪs'],['less','ləs'],['ful','fəl'],['ize','aɪz']] as [string,string][]) {
+      if (lowerWord.endsWith(sfx) && lowerWord.length > sfx.length + 2) {
+        const base = lowerWord.slice(0, -sfx.length);
+        const p = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
+        if (p) return p + ipa;
+      }
     }
 
     return undefined;
