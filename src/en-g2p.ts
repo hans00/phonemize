@@ -1092,19 +1092,14 @@ export class EnglishG2P implements LanguageProcessor {
 
     if (!isStressed && !isLastSyllable) {
       applyReduction({
+        'ɑɹ': 'ɑɹ',
         'æ': 'ə', 'ɛ': 'ə', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
-        // Keep ɪ — it's a common unstressed surface form in English.
-        // Diphthongs preserved: they resist reduction in fast speech less
-        // than short vowels (Treiman, Kessler — vowel weight).
       });
     }
 
-    // Final unstressed syllables: same idea but ɛ keeps a slightly higher
-    // realization /ɪ/ (e.g. "pocket" /ˈpɑkɪt/, "rocket" /ˈɹɑkɪt/) which
-    // is the standard GA pattern for -et/-it/-id endings.
     if (!isStressed && isLastSyllable && syllableIndex > 0) {
       applyReduction({
-        'ɔɹ': 'ɝ', 'æ': 'ə', 'ɛ': 'ɪ', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
+        'ɑɹ': 'ɝ', 'ɔɹ': 'ɝ', 'æ': 'ə', 'ɛ': 'ɪ', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
       });
     }
     
