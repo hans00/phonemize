@@ -212,6 +212,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   
   // Context-dependent consonants
   [/^c(?=[eiy])/, 's'],           // soft c: cent, city, cycle
+  [/^giv/, 'gɪv'], [/^gif/, 'gɪf'], [/^gir/, 'gɝ'],  // hard-g exceptions: give, gift, girl
   [/^g(?=[eiy])/, 'dʒ'],          // soft g: gem, gin, gym (but not all cases)
   
   // Improved consonant clusters
@@ -665,14 +666,8 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     if (lowerWord.endsWith('logy') && lowerWord.length > 6) {
-      const base = lowerWord.slice(0, -4);
-      const basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-      if (basePron) {
-        if (base.endsWith('o')) {
-          return basePron.replace(/ˈ/g, 'ˌ').replace(/oʊ$/, '').replace(/[ˈˌ]$/, '') + 'ˈɑlədʒi';
-        }
-        return basePron.replace(/ə$/, '') + 'lədʒi';
-      }
+      const bp = this.wellKnown(lowerWord.slice(0,-4),undefined,true)||this.predictInternal(lowerWord.slice(0,-4),undefined,false);
+      if (bp) return lowerWord.slice(-5,-4)==='o' ? bp.replace(/ˈ/g,'ˌ').replace(/oʊ$/,'').replace(/[ˈˌ]$/,'')+'ˈɑlədʒi' : bp.replace(/ə$/,'')+'lədʒi';
     }
     if (lowerWord.endsWith('iness') && lowerWord.length > 6) {
       const p = this.wellKnown(lowerWord.slice(0, -5) + 'y'); if (p) return p + 'nɪs';
