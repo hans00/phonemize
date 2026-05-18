@@ -592,6 +592,11 @@ export class EnglishG2P implements LanguageProcessor {
            : p + 'd';
     };
 
+    // Trailing-apostrophe possessive: "executives'" → "executives"
+    if (/['''']$/.test(lowerWord) && lowerWord.length > 2 && !/['''']s$/.test(lowerWord)) {
+      const basePron = this.wellKnown(lowerWord.replace(/['''']$/, ''));
+      if (basePron) return basePron;
+    }
     if (lowerWord.endsWith('s') && !lowerWord.endsWith('ss') && lowerWord.length > 2) {
       const basePron = this.wellKnown(lowerWord.slice(0, -1));
       if (basePron) return sPlural(basePron);
