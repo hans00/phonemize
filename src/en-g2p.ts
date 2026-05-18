@@ -407,7 +407,7 @@ export class EnglishG2P implements LanguageProcessor {
     const stressedIdx = this.assignStress(syllables, lowerWord);
     const traceSteps: TraceStep[] = [];
     syllables.forEach((syl, i) => {
-      this.syllableToIPA(syl, i, i === stressedIdx, i === syllables.length - 1, i < syllables.length - 1 ? syllables[i + 1] : undefined, traceSteps, i > 0 ? syllables[i - 1] : undefined);
+      this.syllableToIPA(syl, i, i === stressedIdx, i === syllables.length - 1, i < syllables.length - 1 ? syllables[i + 1] : undefined, traceSteps, i > 0 ? syllables[i - 1] : undefined, i === syllables.length - 2);
     });
 
     return { word, ipa, path: 'rules', syllables, steps: traceSteps };
@@ -501,7 +501,7 @@ export class EnglishG2P implements LanguageProcessor {
     const syllableIPA = syllables.map((s, i) => {
       const isStressed = i === stressedSyllableIndex;
       const isLastSyllable = i === syllables.length - 1;
-      return this.syllableToIPA(s, i, isStressed, isLastSyllable, i < syllables.length - 1 ? syllables[i + 1] : undefined, undefined, i > 0 ? syllables[i - 1] : undefined);
+      return this.syllableToIPA(s, i, isStressed, isLastSyllable, i < syllables.length - 1 ? syllables[i + 1] : undefined, undefined, i > 0 ? syllables[i - 1] : undefined, i === syllables.length - 2);
     });
 
     if (syllableIPA.length > 0) {
@@ -973,7 +973,7 @@ export class EnglishG2P implements LanguageProcessor {
   }
 
   // Enhanced syllable to IPA conversion with stress-sensitive vowel reduction
-  private syllableToIPA(syllable: string, syllableIndex: number, isStressed: boolean, isLastSyllable: boolean, nextSyllable?: string, steps?: TraceStep[], prevSyllable?: string): string {
+  private syllableToIPA(syllable: string, syllableIndex: number, isStressed: boolean, isLastSyllable: boolean, nextSyllable?: string, steps?: TraceStep[], prevSyllable?: string, isNextLastSyllable = false): string {
     const stepsStart = steps?.length ?? 0;
     let phonemes: string[] = [];
     let remaining = syllable;
@@ -1022,7 +1022,7 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     const nextIsCle = !!nextSyllable?.match(/^[bdfgkmnprstvz]le$/);
-    const nextIsMagicE = isStressed && !!nextSyllable?.match(/^[^aeiou]e$/);
+    const nextIsMagicE = (isStressed || isNextLastSyllable) && !!nextSyllable?.match(/^[^aeiou]e$/);
     // Doubled-gg: either cross-syllable split (bigger/trigger) or within one syllable (baggy/foggy) → hard g
     const gFromDoubling = (prevSyllable?.endsWith('g') ?? false) || /gg[eiy]/i.test(syllable);
     // Apply phoneme rules
