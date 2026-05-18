@@ -681,8 +681,6 @@ export class EnglishG2P implements LanguageProcessor {
       const basePron = this.wellKnown(lowerWord.slice(0, -4), undefined, true) || this.predictInternal(lowerWord.slice(0, -4), undefined, false);
       if (basePron) return basePron.replace(/ə$/, '') + 'lədʒi';
     }
-
-    // y→iness/iest: "clumsiness" → "clumsy", "happiest" → "happy"
     if (lowerWord.endsWith('iness') && lowerWord.length > 6) {
       const p = this.wellKnown(lowerWord.slice(0, -5) + 'y');
       if (p) return p + 'nɪs';
@@ -691,7 +689,10 @@ export class EnglishG2P implements LanguageProcessor {
       const p = this.wellKnown(lowerWord.slice(0, -4) + 'y');
       if (p) return p + 'ɪst';
     }
-
+    if (lowerWord.endsWith('ment') && lowerWord.length > 6) {
+      const basePron = this.wellKnown(lowerWord.slice(0, -4), undefined, true) || this.predictInternal(lowerWord.slice(0, -4), undefined, false);
+      if (basePron) return basePron + 'mənt';
+    }
     if (lowerWord.endsWith('ness') && lowerWord.length > 6) {
       const basePron = this.wellKnown(lowerWord.slice(0, -4), undefined, true) || this.predictInternal(lowerWord.slice(0, -4), undefined, false);
       if (basePron) return basePron + 'nɪs';
