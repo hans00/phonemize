@@ -170,6 +170,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^th(?=[aeiou])/, 'ð'],        // voiced before vowels: this, that, they
   [/^th/, 'θ'],                   // voiceless (default): path, math
   [/^tch/, 'tʃ'],                 // watch, match, catch
+  [/^wor(?!e)/, 'wɝ'],             // word, work, world, worry, worse, worst, worm (not wore)
   [/^wh/, 'w'],                   // what, where, when
   [/^qu/, 'kw'],                  // queen, quick, quote
   [/^ng/, 'ŋ'],                   // sing, ring, king
