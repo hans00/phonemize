@@ -40,18 +40,9 @@ export interface TraceResult {
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
 const CONSONANTS = new Set("bcdfghjklmnpqrstvwxyz".split(""));
 
-/**
- * Productive English prefixes that shift primary stress onto the
- * following stem when they lead a decomposed form. Limited to the
- * inseparable Latin/Anglo-Saxon prefixes that linguists generally treat
- * as bound morphemes — these almost always carry secondary (not primary)
- * stress.
- *
- * NOT in this list: super-, hyper-, ultra-, mega-, mini-, post-, mid-,
- * inter-, multi-, etc. — these behave as noun-compound heads in English
- * and keep primary stress on the leading element (ˈSUPERcar, ˈHYPERloop,
- * ˈULTRAviolet). Putting them here would mis-stress those words.
- */
+// Inseparable Latin/Anglo-Saxon prefixes: carry secondary stress, not primary.
+// Excludes compound-head prefixes (super-, hyper-, ultra-, inter-, multi-, etc.)
+// which keep primary stress on the leading element (ˈSUPERcar, ˈHYPERloop).
 const EN_PREFIXES = new Set([
   "a", "ab", "ad", "anti", "be", "com", "con", "contra", "counter", "de",
   "dis", "em", "en", "ex", "il", "im", "in", "ir", "mis", "non", "pre",
@@ -131,19 +122,13 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^gh/, 'ɡ'],                   // ghost, ghetto (at start)
   [/^lm/, 'm'],                   // palm, calm, psalm
 
-  // Rime-conditioned vowel patterns. English research (Hanna 1966,
-  // Treiman, Sublexical Toolkit) consistently finds the rime (vowel +
-  // coda) is the most predictive sub-syllable unit, more so than the
-  // vowel alone. These full-rime rules match BEFORE generic onset-only
-  // vowel rules and resolve the otherwise-irregular cases.
+  // Rime-conditioned patterns (rime is more predictive than onset-only; must precede generic vowel rules).
   [/^ought/, 'ɔt'],               // thought, bought, fought, sought, ought, nought
   [/^aught/, 'ɔt'],               // caught, taught, daughter, naughty, fraught
   [/^ough$/, 'ʌf'],               // rough, tough, enough (default; misses though/cough/through/bough)
   [/^alm$/, 'ɑm'],                // calm, palm, psalm (silent l + a→ɑ)
   [/^alk$/, 'ɔk'],                // walk, talk, chalk, stalk
-  // Doubled consonants collapse before PHONEME_RULES iteration, so the
-  // post-dedupe form for all/ball/call/… is "al" — anchor on that.
-  [/^al$/, 'ɔl'],                 // all, ball, call, fall, hall, mall, tall, wall, small
+  [/^al$/, 'ɔl'],                 // all, ball, call (doubled-l dedupes to "al" before this)
   [/^ind$/, 'aɪnd'],              // kind, mind, find, bind, blind, behind, rewind
   [/^ild$/, 'aɪld'],              // mild, wild, child
   [/^old$/, 'oʊld'],              // old, cold, gold, fold, hold, mold, sold, told
@@ -209,12 +194,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^uil/, 'ɪl'],                  // build, built, guild, guilt, guile (ɪ not u before l)
   [/^ui/, 'u'],                   // fruit, suit, cruise
   
-  // R-controlled magic-e rimes — anchored at end of syllable. These run
-  // BEFORE the generic ^ir/^ar/^or/^ur rules so the silent-e + r combo
-  // produces the long-vowel + rhotic reading (care=kɛɹ, fire=faɪɹ,
-  // more=mɔɹ, cure=kjʊɹ, here=hɪɹ) instead of collapsing the vowel.
-  // The silent-e detection above keeps the trailing 'e' on these
-  // syllables so the rules see the full -Vre pattern.
+  // R-controlled magic-e rimes: must precede generic ^ar/^ir/^or/^ur rules.
   [/^are$/, 'ɛɹ'],                // care, bare, share, prepare
   [/^ire$/, 'aɪɹ'],               // fire, hire, wire, tire
   [/^ore$/, 'ɔɹ'],                // more, sore, store, before
@@ -527,9 +507,7 @@ export class EnglishG2P implements LanguageProcessor {
       // (balloon/collision/pollution: doubled spelling = single phoneme).
       result = result.replace(/([pbtdkɡfvszʃʒθðmnŋlɹhjw])\1/g, '$1');
       result = result.replace(/sʒ/g, 'ʃ');
-      // Fuse schwa + rhotic across syllable boundaries → rhotacized vowel
-      // (federal/general/history/boisterous: unstressed "er" → /ɝ/ not /əɹ/).
-      result = result.replace(/əɹ/g, 'ɝ');
+      result = result.replace(/əɹ/g, 'ɝ');   // unstressed "er" across syllable boundary → /ɝ/
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
