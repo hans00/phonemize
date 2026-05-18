@@ -65,6 +65,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
   [/^sion$/, 'ʒən', false],        // -sion is always unstressed
   [/^cian$/, 'ʃən', false],        // -cian (technician, electrician, musician)
+  [/^lion$/, 'ljən', false],       // -llion: million, billion, stallion (guard: syllableIndex > 0)
   [/^[ct]ial$/, 'ʃəl', false],     // -cial/-tial (commercial, social, potential, partial)
   [/^tu$/, 'tʃu', false],           // tu before vowel-initial syllable → /tʃu/ (actual, factual, mutual)
   [/^ture$/, 'tʃɝ', false],        // -ture (future, nature)
@@ -689,14 +690,7 @@ export class EnglishG2P implements LanguageProcessor {
       const base = this.wellKnown(lowerWord.slice(0, -7), undefined, true);
       if (base) return base.replace(/ˈ/g, 'ˌ') + 'əˌzeɪʃən';
     }
-    for (const [sfx, ipa] of [['tual','tʃuəl'],['tuous','tʃuəs'],['ulate','jəleɪt'],['ular','jəlɝ']] as [string,string][]) {
-      if (lowerWord.endsWith(sfx) && lowerWord.length > sfx.length + 2) {
-        const base = lowerWord.slice(0, -sfx.length);
-        const p = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-        if (p) return p + ipa;
-      }
-    }
-    for (const [sfx, ipa] of [['ment','mənt'],['ness','nɪs'],['less','ləs'],['ful','fəl'],['ize','aɪz'],['ist','ɪst'],['ism','ɪzm'],['al','əl']] as [string,string][]) {
+    for (const [sfx, ipa] of [['tual','tʃuəl'],['tuous','tʃuəs'],['ulate','jəleɪt'],['ular','jəlɝ'],['ment','mənt'],['ness','nɪs'],['less','ləs'],['ful','fəl'],['ize','aɪz'],['ist','ɪst'],['ism','ɪzm'],['al','əl']] as [string,string][]) {
       if (lowerWord.endsWith(sfx) && lowerWord.length > sfx.length + 2) {
         const base = lowerWord.slice(0, -sfx.length);
         const p = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
@@ -990,6 +984,7 @@ export class EnglishG2P implements LanguageProcessor {
       // where they are prefix/initial chunks (legionnaire, album, algebra).
       if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
       if (pattern.source === '^tu$' && (isStressed || !nextSyllable?.match(/^[aeiou]/i))) continue;
+      if (pattern.source === '^lion$' && syllableIndex === 0) continue;
       if (remaining.match(pattern)) {
         steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
         return ipa;
