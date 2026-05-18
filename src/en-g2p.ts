@@ -67,6 +67,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^cian$/, 'ʃən', false],        // -cian (technician, electrician, musician)
   [/^lion$/, 'ljən', false],       // -llion: million, billion, stallion (guard: syllableIndex > 0)
   [/^[ct]ial$/, 'ʃəl', false],     // -cial/-tial (commercial, social, potential, partial)
+  [/^cient$/, 'ʃənt', false],  [/^scien$/, 'ʃən', false],  // -cient: efficient/ancient; -scien: conscience (guard: idx>0)
   [/^tu$/, 'tʃu', false],           // tu before vowel-initial syllable → /tʃu/ (actual, factual, mutual)
   [/^ture$/, 'tʃɝ', false],        // -ture (future, nature)
   [/^sure$/, 'ʒɝ', false],         // -sure (measure, pleasure)
@@ -674,12 +675,10 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
     if (lowerWord.endsWith('iness') && lowerWord.length > 6) {
-      const p = this.wellKnown(lowerWord.slice(0, -5) + 'y');
-      if (p) return p + 'nɪs';
+      const p = this.wellKnown(lowerWord.slice(0, -5) + 'y'); if (p) return p + 'nɪs';
     }
     if (lowerWord.endsWith('iest') && lowerWord.length > 5) {
-      const p = this.wellKnown(lowerWord.slice(0, -4) + 'y');
-      if (p) return p + 'ɪst';
+      const p = this.wellKnown(lowerWord.slice(0, -4) + 'y'); if (p) return p + 'ɪst';
     }
     if (lowerWord.endsWith('ify') && lowerWord.length > 5) {
       const p=this.wellKnown(lowerWord.slice(0,-3),undefined,true)||this.predictInternal(lowerWord.slice(0,-3),undefined,false); if (p) return p + 'əˌfaɪ';
@@ -991,6 +990,7 @@ export class EnglishG2P implements LanguageProcessor {
       if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
       if (pattern.source === '^tu$' && (isStressed || !nextSyllable?.match(/^[aeiou]/i))) continue;
       if (pattern.source === '^lion$' && syllableIndex === 0) continue;
+      if (pattern.source === '^scien$' && syllableIndex === 0) continue;
       if (remaining.match(pattern)) {
         steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
         return ipa;
