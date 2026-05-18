@@ -992,6 +992,8 @@ export class EnglishG2P implements LanguageProcessor {
     // Word-final y → /i/ when the syllable has a prior non-y vowel (city, happy)
     // but stays /aɪ/ when y is the only vowel (by, fly) — guard checked in loop.
     const hasVowelBeforeTerminalY = /[aeiou]/i.test(syllable.replace(/y$/i, ''));
+    // Doubled consonant before terminal y signals short vowel (happy/abby/addy vs baby/lazy)
+    const hasDoubledConsonantBeforeY = /([b-df-hj-np-tv-z])\1y$/i.test(syllable);
     remaining = remaining.replace(/([b-df-hj-np-tv-z])\1/g, '$1');
 
     // Silent 'e' detection (but exclude common function words like "the").
@@ -1032,7 +1034,7 @@ export class EnglishG2P implements LanguageProcessor {
             if (!isLastSyllable && !isStressed && pattern.source === '^o$') continue;
             // ^a$ fires only before tion/sion (nation), consonant-le (table), or magic-e (same/late).
             if ((!isLastSyllable || isStressed) && pattern.source === '^ous$') continue;
-            if (!isStressed && pattern.source === '^a(?=[^aeioun]y$)') continue;
+            if ((!isStressed || hasDoubledConsonantBeforeY) && pattern.source === '^a(?=[^aeioun]y$)') continue;
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsCle && !nextIsMagicE && pattern.source === '^a$') continue;
             // ^u$ → /u/ for open-syllable u before tion/sion (solution) or magic-e (cute/tube/rude).
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsMagicE && pattern.source === '^u$') continue;
