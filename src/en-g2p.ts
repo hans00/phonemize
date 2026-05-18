@@ -166,7 +166,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^sh/, 'ʃ'],                   // shoe, fish, wash
   [/^thr/, 'θɹ'],                 // th + r cluster is always voiceless: through, three
   [/^th(?=ink|ing$|ick|orn)/, 'θ'], // voiceless: think/thing/thick/thorn (exceptions to voiced-before-vowel)
-  [/^the/, 'ðə'],                 // the (definite article)
+  [/^the$/, 'ðə'],                // the (definite article — anchored so it doesn't eat them/then/their)
   [/^th(?=[aeiou])/, 'ð'],        // voiced before vowels: this, that, they
   [/^th/, 'θ'],                   // voiceless (default): path, math
   [/^tch/, 'tʃ'],                 // watch, match, catch
