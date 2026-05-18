@@ -690,6 +690,11 @@ export class EnglishG2P implements LanguageProcessor {
       const base = this.wellKnown(lowerWord.slice(0, -7), undefined, true);
       if (base) return base.replace(/ˈ/g, 'ˌ') + 'əˌzeɪʃən';
     }
+    if (lowerWord.endsWith('ation') && lowerWord.length > 7) {
+      const b = lowerWord.slice(0, -5), ate = this.wellKnown(b + 'ate', undefined, true), src = this.wellKnown(b, undefined, true);
+      if (ate) return (ate.endsWith('t') ? ate.slice(0, -1) : ate) + 'ʃən';
+      if (src) return src + 'eɪʃən';
+    }
     for (const [sfx, ipa] of [['tual','tʃuəl'],['tuous','tʃuəs'],['ulation','jəleɪʃən'],['ulator','jəleɪtɝ'],['ulate','jəleɪt'],['ular','jəlɝ'],['ment','mənt'],['ness','nɪs'],['less','ləs'],['ful','fəl'],['ize','aɪz'],['ist','ɪst'],['ism','ɪzm'],['al','əl']] as [string,string][]) {
       if (lowerWord.endsWith(sfx) && lowerWord.length > sfx.length + 2) {
         const base = lowerWord.slice(0, -sfx.length);
