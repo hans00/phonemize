@@ -135,7 +135,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ind$/, 'aɪnd'],              // kind, mind, find, bind, blind, behind, rewind
   [/^ild$/, 'aɪld'],              // mild, wild, child
   [/^old$/, 'oʊld'],              // old, cold, gold, fold, hold, mold, sold, told
-  [/^olt$/, 'oʊlt'],              // bolt, colt, jolt, volt
+  [/^olt$/, 'oʊlt'],  [/^olk$/, 'oʊk'],  // bolt/colt/jolt + folk/yolk (silent l)
   [/^ost$/, 'oʊst'],              // most, post, host (loses cost/lost; majority pattern wins)
   [/^ould$/, 'ʊd'],               // would, could, should (silent l, lax u — closed function-word family)
   
