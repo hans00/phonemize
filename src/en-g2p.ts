@@ -957,6 +957,8 @@ export class EnglishG2P implements LanguageProcessor {
       /\w{3,}side$/,    // outside, inside
       /\w{3,}where$/,   // somewhere, anywhere
       /^over[a-z]{2,}/, // overboard, overlay, overbuilt (over- prefix compounds)
+      /\w{3,}berg$/,    // goldberg, sandberg, gutenberg (Germanic -berg compounds)
+      /\w{3,}burg$/,    // hamburg, salzburg, gettysburg (Germanic -burg compounds)
     ];
     
     return compoundPatterns.some(pattern => pattern.test(word));
