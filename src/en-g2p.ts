@@ -81,28 +81,22 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ness$/, 'nəs', false],        // -ness
   [/^ment$/, 'mənt', false],  [/^less$/, 'ləs', false],  // -ment / -less
   [/^ful$/, 'fəl', false],   [/^ly$/, 'li', false],    // -ful / -ly
-  [/^er$/, 'ɝ', false],            // -er (comparative, agentive)
-  [/^ers$/, 'ɝz', false],          // -ers (plural of -er)
-  [/^est$/, 'əst', false],         // -est (superlative)
-  [/^ing$/, 'ɪŋ', false],          // -ing
-  [/^ed$/, 'd', false],            // -ed (past tense base)
+  [/^er$/, 'ɝ', false],  [/^ers$/, 'ɝz', false],  [/^est$/, 'əst', false],
+  [/^ing$/, 'ɪŋ', false],  [/^ed$/, 'd', false],
   [/^e?s$/, 'z', false],           // -es/-s (plural/3rd person)
   [/^age$/, 'ɪdʒ', false],  [/^ive$/, 'ɪv', false],   // -age/-ive (package/active)
   [/^ism$/, 'ɪzəm', false], [/^ist$/, 'ɪst', false],  // -ism/-ist
   [/^ity$/, 'əti', false],         // -ity
   [/^al$/, 'əl', false],           // -al (normal, final)
   [/^ic$/, 'ɪk', true],  [/^ics$/, 'ɪks', true],  // -ic/-ics attract stress (economic/mathematics)
-  [/^lity$/, 'ləti', false],       // -lity (quality, reality)  
-  [/^ty$/, 'ti', false],           // -ty (empty, sixty)
-  [/^[ae]ry$/, 'ɛri', false],       // -ary/-ery (library, bakery)
-  [/^ory$/, 'ɔri', false],         // -ory (history, category)
-  [/^ry$/, 'ri', false],           // -ry (hungry, angry)
-  [/^y$/, 'i', false],             // -y
+  [/^lity$/, 'ləti', false],  [/^ty$/, 'ti', false],
+  [/^[ae]ry$/, 'ɛri', false],  [/^ory$/, 'ɔri', false],
+  [/^ry$/, 'ri', false],  [/^y$/, 'i', false],
   [/^stein$/, 'staɪn', false],     // German -stein: arnstein/bernstein/einstein → /staɪn/
-  [/^ford$/, 'fɝd', false],        // compound -ford: ashford/stanford/oxford → /fɝd/ (guard: idx>0)
-  [/^ward$/, 'wɝd', false],        // compound -ward: backward/awkward → /wɝd/ (guard: idx>0)
-  [/^more$/, 'mɔɹ', false],        // compound -more: ardmore/ashmore → /mɔɹ/ (bypasses ɔɹ→ɝ)
-  [/^b(?:erry|ury)$/, 'bɛɹi', false], // -berry/-bury: strawberry/blueberry/ashbury → /bɛɹi/
+  [/^ford$/, 'fɝd', false],  [/^ward$/, 'wɝd', false],
+  [/^more$/, 'mɔɹ', false],  [/^b(?:erry|ury)$/, 'bɛɹi', false],
+  [/^well$/, 'wɛl', false],  [/^back$/, 'bæk', false],
+  [/^beck$/, 'bɛk', false],  [/^star$/, 'stɑɹ', false],
   [/^le$/, 'əl', false],           // syllabic-l: battle/simple/table (guard in loop for ll-split)
 ];
 
