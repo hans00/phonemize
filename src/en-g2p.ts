@@ -493,10 +493,9 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/əɹ/g, 'ɝ');   // unstressed "er" across syllable boundary → /ɝ/
       result = result.replace(/n([kɡ])/g, 'ŋ$1'); // n→ŋ before velar stops (cross-syllable assimilation)
       result = result.replace(/^mk/, 'mək'); // Mc- prefix (McAdams, McDonald, etc.)
-      result = result.replace(/ɹɪtʃ$/, 'ɹɪk');  // Germanic -rich final suffix (Dietrich, Andrich, etc.)
-      result = result.replace(/ɡdʒ$/, 'ɡ');    // -gge endings: bagge/egge/figge → hard-g only (cross-syllable g+ge)
+      result = result.replace(/ɹɪtʃ$/, 'ɹɪk');  result = result.replace(/ɡdʒ$/, 'ɡ');  // Germanic -rich / -gge endings
       result = result.replace(/oʊɹ/g, 'ɔɹ');  // o-open-syllable before r: lora/oral/oracle/story/glory
-      result = result.replace(/ɡɑl(?=d)/g, 'ɡoʊɫ');  // gold-: ^old→oʊld skipped when d is in next syllable (golden/goldie)
+      result = result.replace(/ɡɑl(?=d)/g, 'ɡoʊɫ');  result = result.replace(/^kɑlt/, 'koʊlt');  // gold- / colt- compounds
       result = result.replace(/əhl/g, 'ɑl');   // Scandinavian -ahl: dahl/lindahl/nordahl → /ɑl/ (h silent, a not reduced)
 
       // Add stress marker
