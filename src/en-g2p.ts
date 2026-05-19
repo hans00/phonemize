@@ -169,7 +169,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ealth/, 'ɛlθ'],              // health, wealth, stealth (ea+lth → /ɛ/)
   [/^ea/, 'i'],                   // read, seat, beat (default long)
   [/^ee/, 'i'],                   // see, tree, free
-  [/^ier$/, 'iɝ'],                // bobier/abshier: word-final -ier → /iɝ/ (guard: isLastSyllable)
+  [/^iew/, 'ju'],  [/^ier$/, 'iɝ'],  // -iew (view/review) → ju; -ier word-final → iɝ (guard: isLastSyllable)
   [/^ie/, 'i'],                   // piece, field, believe
   [/^cei/, 'si'],                  // receive, ceiling, conceive (i before e after c)
   [/^ei/, 'eɪ'],                  // vein, weight, eight
