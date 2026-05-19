@@ -496,6 +496,7 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/ɹɪtʃ$/, 'ɹɪk');  result = result.replace(/ɡdʒ$/, 'ɡ');  // Germanic -rich / -gge endings
       result = result.replace(/oʊɹ/g, 'ɔɹ');  // o-open-syllable before r: lora/oral/oracle/story/glory
       result = result.replace(/ɑl([dt])/g, 'oʊl$1');  // ol+d/t across syllable: beholden/bolton/bolster
+      if (syllables.length >= 3) result = result.replace(/eɪdʒ$/, 'ɪdʒ');  // -age unstressed penultimate: passage/baggage/garbage
       result = result.replace(/əhl/g, 'ɑl');  result = result.replace(/([pbtdkɡfvszʃθmnlhjwɫ])ɹoʊst/g, '$1ɹɑst');  result = result.replace(/bɹoʊd/g, 'bɹɔd');  result = result.replace(/^ʌnɪ/, 'junɪ');  // Scandinavian -ahl; German -rost; broad→ɔ; uni-→ju
       result = result.replace(/([kɡdbptfvszʃʒmnlɹwj])əəs$/g, '$1uəs');  result = result.replace(/ksɪəs/g, 'kʃəs');  result = result.replace(/stjʊɹ/g, 'stʃɝ');  result = result.replace(/([tsn])aɪv$/g, '$1ɪv');  result = result.replace(/ɡuʃ/g, 'ɡwɪʃ');  // -uous/-xious/-sture/-tive/-sive/-guish
 
