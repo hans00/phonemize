@@ -89,13 +89,13 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^lity$/, 'ləti', false],  [/^ty$/, 'ti', false],
   [/^[ae]ry$/, 'ɛri', false],  [/^ory$/, 'ɔri', false],
   [/^ry$/, 'ri', false],  [/^y$/, 'i', false],
-  [/^stein$/, 'staɪn', false],     // German -stein: arnstein/bernstein/einstein → /staɪn/
-  [/^ford$/, 'fɝd', false],  [/^ward$/, 'wɝd', false],
+  [/^stein$/, 'staɪn', false],  [/^ford$/, 'fɝd', false],  [/^ward$/, 'wɝd', false],
   [/^more$/, 'mɔɹ', false],  [/^b(?:erry|ury)$/, 'bɛɹi', false],
   [/^well$/, 'wɛl', false],  [/^back$/, 'bæk', false],
   [/^beck$/, 'bɛk', false],  [/^star$/, 'stɑɹ', false],
   [/^tel[l]?$/, 'tɛl', false],  [/^te[ck]$/, 'tɛk', false],  [/^cor[e]?$/, 'kɔɹ', false],
   [/^sto$/, 'stoʊ', false],  [/^dale$/, 'deɪl', false],
+  [/^cle$/, 'kəɫ', false],        // syllabic -cle ending: circle/barnacle/miracle/uncle
   [/^le$/, 'əl', false],           // syllabic-l: battle/simple/table (guard in loop for ll-split)
 ];
 
@@ -131,6 +131,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // Improved digraph handling
   [/^tsch/, 'tʃ'],                // German loanwords
   [/^sch(?=[^aeiou])/, 'ʃ'],     // schmaltz, schnapps (German sch before consonant)
+  [/^sch$/, 'ʃ'],                 // syllable-final sch in German surnames: frisch/bisch/hanisch
   [/^sch/, 'sk'],                 // schema, schematic (not German)
   [/^she$/, 'ʃi'],                // she (pronoun; anchored so it doesn't eat shed/shell)
   [/^he$/, 'hi'],                 // he  (pronoun; anchored so it doesn't eat here/hen)
@@ -169,6 +170,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ay/, 'eɪ'],                  // day, say, way
   [/^air/, 'ɛɹ'],                 // hair, fair, chair, stair (must precede ^ai)
   [/^ai/, 'eɪ'],                  // rain, main, paid
+  [/^eaux/, 'oʊ'],                // beaux/bordeaux/tableaux: French -eaux → /oʊ/ (silent x)
   [/^eau/, 'oʊ'],                 // plateau, beau, bureau, chateau (French -eau → /oʊ/)
   [/^ealth/, 'ɛlθ'],              // health, wealth, stealth (ea+lth → /ɛ/)
   [/^ea/, 'i'],                   // read, seat, beat (default long)
@@ -979,7 +981,7 @@ export class EnglishG2P implements LanguageProcessor {
     if (remaining === 'se' && isLastSyllable && prevSyllable?.match(/[ieo]$/i)) return 'z';
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
       // Word-final-only suffixes: skip on non-final syllables (legionnaire/album/algebra).
-      if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
+      if ((pattern.source === '^le$' || pattern.source === '^cle$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
       if (pattern.source === '^tu$' && (isStressed || !nextSyllable?.match(/^[aeiou]/i))) continue;
       if (pattern.source === '^sto$' && nextSyllable !== 'ne') continue;
       if ((pattern.source === '^lion$' || pattern.source === '^scien$' || pattern.source === '^ford$' || pattern.source === '^ward$' || pattern.source === '^the$') && syllableIndex === 0) continue;
