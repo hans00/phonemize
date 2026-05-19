@@ -87,10 +87,8 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ing$/, 'ɪŋ', false],          // -ing
   [/^ed$/, 'd', false],            // -ed (past tense base)
   [/^e?s$/, 'z', false],           // -es/-s (plural/3rd person)
-  [/^age$/, 'ɪdʒ', false],         // -age (package, marriage)
-  [/^ive$/, 'ɪv', false],          // -ive (active, passive)
-  [/^ism$/, 'ɪzəm', false],        // -ism
-  [/^ist$/, 'ɪst', false],         // -ist  
+  [/^age$/, 'ɪdʒ', false],  [/^ive$/, 'ɪv', false],   // -age/-ive (package/active)
+  [/^ism$/, 'ɪzəm', false], [/^ist$/, 'ɪst', false],  // -ism/-ist
   [/^ity$/, 'əti', false],         // -ity
   [/^al$/, 'əl', false],           // -al (normal, final)
   [/^ic$/, 'ɪk', true],  [/^ics$/, 'ɪks', true],  // -ic/-ics attract stress (economic/mathematics)
@@ -979,6 +977,8 @@ export class EnglishG2P implements LanguageProcessor {
     // Check for suffix rules first
     // belle→bel|le double-l split: /l/ so post-dedup collapses to bɛl.
     if (remaining === 'le' && isLastSyllable && prevSyllable?.endsWith('l')) return 'l';
+    // -se after vowel-i/e/o syllable → /z/ (advise/cheese/close); magic-e 'a' → /s/ via ^se$ rule.
+    if (remaining === 'se' && isLastSyllable && prevSyllable?.match(/[ieo]$/i)) return 'z';
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
       // Word-final-only suffixes: skip on non-final syllables (legionnaire/album/algebra).
       if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
