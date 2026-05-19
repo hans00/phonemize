@@ -94,7 +94,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^well$/, 'wɛl', false],  [/^back$/, 'bæk', false],
   [/^beck$/, 'bɛk', false],  [/^star$/, 'stɑɹ', false],
   [/^tel[l]?$/, 'tɛl', false],  [/^te[ck]$/, 'tɛk', false],  [/^cor[e]?$/, 'kɔɹ', false],
-  [/^sto$/, 'stoʊ', false],  [/^dale$/, 'deɪl', false],
+  [/^sto$/, 'stoʊ', false],  [/^dale$/, 'deɪl', false],  [/^twood$/, 'twʊd', false],
   [/^cle$/, 'kəɫ', false],        // syllabic -cle ending: circle/barnacle/miracle/uncle
   [/^le$/, 'əl', false],           // syllabic-l: battle/simple/table (guard in loop for ll-split)
 ];
@@ -130,8 +130,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ould$/, 'ʊd'],               // would, could, should (silent l, lax u — closed function-word family)
   // Improved digraph handling
   [/^tsch/, 'tʃ'],                // German loanwords
-  [/^sch(?=[^aeiou])/, 'ʃ'],     // schmaltz, schnapps (German sch before consonant)
-  [/^sch$/, 'ʃ'],                 // syllable-final sch in German surnames: frisch/bisch/hanisch
+  [/^sch(?![aeiou])/, 'ʃ'],       // schmaltz/schnapps + frisch/hanisch (sch not before vowel → /ʃ/)
   [/^sch/, 'sk'],                 // schema, schematic (not German)
   [/^she$/, 'ʃi'],                // she (pronoun; anchored so it doesn't eat shed/shell)
   [/^he$/, 'hi'],                 // he  (pronoun; anchored so it doesn't eat here/hen)
@@ -170,8 +169,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ay/, 'eɪ'],                  // day, say, way
   [/^air/, 'ɛɹ'],                 // hair, fair, chair, stair (must precede ^ai)
   [/^ai/, 'eɪ'],                  // rain, main, paid
-  [/^eaux/, 'oʊ'],                // beaux/bordeaux/tableaux: French -eaux → /oʊ/ (silent x)
-  [/^eau/, 'oʊ'],                 // plateau, beau, bureau, chateau (French -eau → /oʊ/)
+  [/^eau[x]?/, 'oʊ'],             // plateau/beau + beaux/bordeaux: French eau(x) → /oʊ/ (x silent)
   [/^ealth/, 'ɛlθ'],              // health, wealth, stealth (ea+lth → /ɛ/)
   [/^ea/, 'i'],                   // read, seat, beat (default long)
   [/^ee/, 'i'],                   // see, tree, free
@@ -500,6 +498,7 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/n([kɡ])/g, 'ŋ$1'); // n→ŋ before velar stops (cross-syllable assimilation)
       result = result.replace(/^mk/, 'mək'); // Mc- prefix (McAdams, McDonald, etc.)
       result = result.replace(/ɹɪtʃ$/, 'ɹɪk'); // Germanic -rich final suffix (Dietrich, Andrich, etc.)
+      result = result.replace(/oʊɹ/g, 'ɔɹ');  // o-open-syllable before r: lora/oral/oracle/story/glory
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
@@ -981,7 +980,7 @@ export class EnglishG2P implements LanguageProcessor {
     if (remaining === 'se' && isLastSyllable && prevSyllable?.match(/[ieo]$/i)) return 'z';
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
       // Word-final-only suffixes: skip on non-final syllables (legionnaire/album/algebra).
-      if ((pattern.source === '^le$' || pattern.source === '^cle$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
+      if ((pattern.source === '^le$' || pattern.source === '^cle$' || pattern.source === '^twood$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
       if (pattern.source === '^tu$' && (isStressed || !nextSyllable?.match(/^[aeiou]/i))) continue;
       if (pattern.source === '^sto$' && nextSyllable !== 'ne') continue;
       if ((pattern.source === '^lion$' || pattern.source === '^scien$' || pattern.source === '^ford$' || pattern.source === '^ward$' || pattern.source === '^the$') && syllableIndex === 0) continue;
