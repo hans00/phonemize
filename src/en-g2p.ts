@@ -265,8 +265,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^yn(?![aeiou])/, 'ɪn'],       // syntax, synchronize (Greek short y before n)
   [/^y$/, 'i'],                   // city, happy, country — final y after prior vowel (guard in loop)
   [/^y(?=[aeiou])/, 'j'],         // yes, you, year (consonantal before vowels)
-  [/^y/, 'aɪ'],                   // by, my, try (vowel in other positions)
-  [/^z/, 'z'],
+  [/^y/, 'aɪ'],  [/^z/, 'z'],      // by/my/try | z
   // Default vowels (short/lax in closed syllables)
   [/^a(?=[^aeioun]y$)/, 'eɪ'],   // baby, lazy, navy, gravy, shady — aCy → long a
   [/^a$/, 'eɪ'],                  // nation/station/abrasion — open-syllable a before -tion/-sion (guard in loop)
@@ -888,7 +887,7 @@ export class EnglishG2P implements LanguageProcessor {
     }
     
     // Common prefixes that don't usually take stress
-    const unstressedPrefixes = ['un', 're', 'pre', 'dis', 'mis', 'over', 'under', 'out'];
+    const unstressedPrefixes = ['un', 're', 'pre', 'dis', 'mis', 'under', 'out'];
     for (const prefix of unstressedPrefixes) {
       if (lowerWord.startsWith(prefix) && syllables.length > 2) {
         return 1; // Stress usually falls on the root, not the prefix
@@ -958,7 +957,7 @@ export class EnglishG2P implements LanguageProcessor {
     
     // Common compound patterns
     const compoundPatterns = [
-      /\w{4,}wide$/,    // worldwide, nationwide  
+      /\w{4,}wide$/,    // worldwide, nationwide
       /\w{3,}land$/,    // homeland, woodland
       /\w{3,}work$/,    // homework, network
       /\w{3,}time$/,    // sometime, longtime
@@ -967,6 +966,7 @@ export class EnglishG2P implements LanguageProcessor {
       /hundred/,        // hundred (often in compounds)
       /\w{3,}side$/,    // outside, inside
       /\w{3,}where$/,   // somewhere, anywhere
+      /^over[a-z]{2,}/, // overboard, overlay, overbuilt (over- prefix compounds)
     ];
     
     return compoundPatterns.some(pattern => pattern.test(word));
