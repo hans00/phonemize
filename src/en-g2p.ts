@@ -104,6 +104,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ory$/, 'ɔri', false],         // -ory (history, category)
   [/^ry$/, 'ri', false],           // -ry (hungry, angry)
   [/^y$/, 'i', false],             // -y
+  [/^stein$/, 'staɪn', false],     // German -stein: arnstein/bernstein/einstein → /staɪn/
   [/^le$/, 'əl', false],           // syllabic-l: battle/simple/table (guard in loop for ll-split)
 ];
 
@@ -259,8 +260,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^r/, 'ɹ'],                    // American English rhotic r
   [/^s/, 's'],  [/^t/, 't'],  [/^v/, 'v'],  [/^w/, 'w'],
   [/^x(?=[aeiouy])/, 'z'],  [/^x/, 'ks'],   // word-initial x→z (xylophone) | x→ks (tax)
-  [/^ym(?![aeiou])/, 'ɪm'],       // gym, symbol, symptom (Greek short y before m)
-  [/^yn(?![aeiou])/, 'ɪn'],       // syntax, synchronize (Greek short y before n)
+  [/^ym(?![aeiou])/, 'ɪm'],  [/^yn(?![aeiou])/, 'ɪn'],   // gym/symbol | syntax/synchronize
   [/^y$/, 'i'],                   // city, happy, country — final y after prior vowel (guard in loop)
   [/^y(?=[aeiou])/, 'j'],         // yes, you, year (consonantal before vowels)
   [/^y/, 'aɪ'],  [/^z/, 'z'],      // by/my/try | z
