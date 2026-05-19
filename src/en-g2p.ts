@@ -692,7 +692,7 @@ export class EnglishG2P implements LanguageProcessor {
       const b = lowerWord.slice(0, -4), p = this.wellKnown(b, undefined, true) || (b.endsWith('i') ? this.wellKnown(b.slice(0,-1)+'y', undefined, true) : undefined) || (!b.endsWith('id') ? this.wellKnown(b+'e', undefined, true) : undefined);
       if (p) return p + 'əns';
     }
-    for (const [sfx, ipa] of [['tual','tʃuəl'],['tuous','tʃuəs'],['ulation','jəleɪʃən'],['ulator','jəleɪtɝ'],['ulate','jəleɪt'],['ular','jəlɝ'],['ment','mənt'],['ness','nɪs'],['less','ləs'],['ful','fəl'],['ize','aɪz'],['ist','ɪst'],['ism','ɪzəm'],['al','əl']] as [string,string][]) {
+    for (const [sfx, ipa] of [['tual','tʃuəl'],['tuous','tʃuəs'],['ulation','jəleɪʃən'],['ulator','jəleɪtɝ'],['ulate','jəleɪt'],['ular','jəlɝ'],['ment','mənt'],['ness','nəs'],['less','ləs'],['ful','fəl'],['ize','aɪz'],['ist','ɪst'],['ism','ɪzəm'],['al','əl']] as [string,string][]) {
       if (!lowerWord.endsWith(sfx) || lowerWord.length <= sfx.length+2) continue;
       const b = lowerWord.slice(0, -sfx.length), p = this.wellKnown(b, undefined, true) || this.predictInternal(b, undefined, false);
       if (p) return p + ipa;
