@@ -1038,10 +1038,10 @@ export class EnglishG2P implements LanguageProcessor {
             // ^y$ → /i/ only when the syllable already has a prior vowel
             // (city/happy/novelty); skip for monosyllables like by/fly/try.
             if (!hasVowelBeforeTerminalY && pattern.source === '^y$') continue;
-            // ^o$ → /oʊ/ for the last syllable (piano/hero/zero) AND for stressed
-            // open syllables (notion/motion/social/vocal) — skip only when non-final
-            // AND unstressed (tobacco/tomato: unstressed 'to' → /ɑ/ → reduction → /ə/).
-            if (!isLastSyllable && !isStressed && pattern.source === '^o$') continue;
+            // ^o$ → /oʊ/ for the last syllable (piano/hero/zero), stressed open syllables
+            // (notion/vocal), and unstressed open syllables before magic-e (backbone/jawbone/alone).
+            // Skip only when non-final, unstressed, AND not before magic-e.
+            if (!isLastSyllable && !isStressed && !nextIsMagicE && pattern.source === '^o$') continue;
             // ^a$ fires only before tion/sion (nation), consonant-le (table), or magic-e (same/late).
             if ((!isLastSyllable || isStressed) && pattern.source === '^ous$') continue;
             if ((!isStressed || hasDoubledConsonantBeforeY) && pattern.source === '^a(?=[^aeioun]y$)') continue;
