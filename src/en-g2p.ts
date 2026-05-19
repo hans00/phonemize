@@ -102,6 +102,8 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ry$/, 'ri', false],           // -ry (hungry, angry)
   [/^y$/, 'i', false],             // -y
   [/^stein$/, 'staɪn', false],     // German -stein: arnstein/bernstein/einstein → /staɪn/
+  [/^ford$/, 'fɝd', false],        // compound -ford: ashford/stanford/oxford → /fɝd/ (guard: idx>0)
+  [/^more$/, 'mɔɹ', false],        // compound -more: ardmore/ashmore → /mɔɹ/ (bypasses ɔɹ→ɝ)
   [/^b(?:erry|ury)$/, 'bɛɹi', false], // -berry/-bury: strawberry/blueberry/ashbury → /bɛɹi/
   [/^le$/, 'əl', false],           // syllabic-l: battle/simple/table (guard in loop for ll-split)
 ];
@@ -978,12 +980,10 @@ export class EnglishG2P implements LanguageProcessor {
     // belle→bel|le double-l split: /l/ so post-dedup collapses to bɛl.
     if (remaining === 'le' && isLastSyllable && prevSyllable?.endsWith('l')) return 'l';
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
-      // ^le$ and ^al$ are word-ending patterns; skip on non-final syllables
-      // where they are prefix/initial chunks (legionnaire, album, algebra).
+      // Word-final-only suffixes: skip on non-final syllables (legionnaire/album/algebra).
       if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
       if (pattern.source === '^tu$' && (isStressed || !nextSyllable?.match(/^[aeiou]/i))) continue;
-      if (pattern.source === '^lion$' && syllableIndex === 0) continue;
-      if (pattern.source === '^scien$' && syllableIndex === 0) continue;
+      if ((pattern.source === '^lion$' || pattern.source === '^scien$' || pattern.source === '^ford$') && syllableIndex === 0) continue;
       if (remaining.match(pattern)) {
         steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
         return ipa;
