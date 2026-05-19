@@ -93,8 +93,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ist$/, 'ɪst', false],         // -ist  
   [/^ity$/, 'əti', false],         // -ity
   [/^al$/, 'əl', false],           // -al (normal, final)
-  [/^ic$/, 'ɪk', true],            // -ic attracts stress (economic, systemic)
-  [/^ics$/, 'ɪks', true],          // -ics attracts stress (mathematics, politics)
+  [/^ic$/, 'ɪk', true],  [/^ics$/, 'ɪks', true],  // -ic/-ics attract stress (economic/mathematics)
   [/^lity$/, 'ləti', false],       // -lity (quality, reality)  
   [/^ty$/, 'ti', false],           // -ty (empty, sixty)
   [/^[ae]ry$/, 'ɛri', false],       // -ary/-ery (library, bakery)
@@ -103,6 +102,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^y$/, 'i', false],             // -y
   [/^stein$/, 'staɪn', false],     // German -stein: arnstein/bernstein/einstein → /staɪn/
   [/^ford$/, 'fɝd', false],        // compound -ford: ashford/stanford/oxford → /fɝd/ (guard: idx>0)
+  [/^ward$/, 'wɝd', false],        // compound -ward: backward/awkward → /wɝd/ (guard: idx>0)
   [/^more$/, 'mɔɹ', false],        // compound -more: ardmore/ashmore → /mɔɹ/ (bypasses ɔɹ→ɝ)
   [/^b(?:erry|ury)$/, 'bɛɹi', false], // -berry/-bury: strawberry/blueberry/ashbury → /bɛɹi/
   [/^le$/, 'əl', false],           // syllabic-l: battle/simple/table (guard in loop for ll-split)
@@ -983,7 +983,7 @@ export class EnglishG2P implements LanguageProcessor {
       // Word-final-only suffixes: skip on non-final syllables (legionnaire/album/algebra).
       if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
       if (pattern.source === '^tu$' && (isStressed || !nextSyllable?.match(/^[aeiou]/i))) continue;
-      if ((pattern.source === '^lion$' || pattern.source === '^scien$' || pattern.source === '^ford$') && syllableIndex === 0) continue;
+      if ((pattern.source === '^lion$' || pattern.source === '^scien$' || pattern.source === '^ford$' || pattern.source === '^ward$') && syllableIndex === 0) continue;
       if (remaining.match(pattern)) {
         steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
         return ipa;
@@ -1027,6 +1027,8 @@ export class EnglishG2P implements LanguageProcessor {
     while(remaining.length > 0) {
         if (remaining === 's' && isLastSyllable && phonemes[phonemes.length - 1] === 'ɝ')
             { phonemes.push('z'); steps?.push({ grapheme: 's', phoneme: 'z', rule: 'phoneme:^s' }); break; }
+        if (remaining === 'le' && phonemes.length > 0 && /[iɪuʊɛæɑɔʌəɝ]$/.test(phonemes[phonemes.length - 1]))
+            { phonemes.push('l'); steps?.push({ grapheme: 'le', phoneme: 'l', rule: 'phoneme:le' }); break; }
         let matchFound = false;
         for (const [pattern, ipa] of PHONEME_RULES) {
             // ^al$ is for the -all rime (all/ball/call); skip it when the
@@ -1049,9 +1051,7 @@ export class EnglishG2P implements LanguageProcessor {
             if (nextSyllable !== 'tion' && nextSyllable !== 'sion' && !nextIsMagicE && pattern.source === '^u$') continue;
             // ^i$ → /aɪ/ in magic-e context or stressed before syllabic-l (bible/idle/rifle/title).
             if (!nextIsMagicE && !endsWithSilentE && (!nextIsCle || !isStressed) && pattern.source === '^i$') continue;
-            // ^le$ → /əl/ only in the final syllable (table→/bəl/, simple→/pəl/).
-            // A non-final "le" syllable (legal/legend/legible) should give /l/+vowel.
-            if (!isLastSyllable && pattern.source === '^le$') continue;
+            if (!isLastSyllable && pattern.source === '^le$') continue; // ^le$: final only (legal/legend)
             if (isStressed && pattern.source === '^ey$') continue;
             if (!isLastSyllable && pattern.source === '^ier$') continue;
             // Word-initial-only rules (xylophone, gild vs agile).
