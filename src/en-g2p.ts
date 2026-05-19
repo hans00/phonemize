@@ -181,7 +181,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ealth/, 'ɛlθ'],              // health, wealth, stealth (ea+lth → /ɛ/)
   [/^ea/, 'i'],                   // read, seat, beat (default long)
   [/^ee/, 'i'],                   // see, tree, free
-  [/^ie/, 'i'],                   // piece, field, believe  
+  [/^ier$/, 'iɝ'],                // bobier/abshier: word-final -ier → /iɝ/ (guard: isLastSyllable)
+  [/^ie/, 'i'],                   // piece, field, believe
   [/^cei/, 'si'],                  // receive, ceiling, conceive (i before e after c)
   [/^ei/, 'eɪ'],                  // vein, weight, eight
   [/^ey$/, 'i'],                   // honey, abbey, valley, turkey (unstressed final -ey; guard skips when stressed)
@@ -209,12 +210,10 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^er(?=[aeiouwy])/, 'ɛɹ'],    // berry/cherry/merry: er before vowel → /ɛɹ/ not /ɝ/
   [/^[eiu]r/, 'ɝ'],               // her/bird/fur (er/ir/ur → /ɝ/)
   [/^or/, 'ɔɹ'],                  // for, port, storm
-  
   // Context-dependent consonants
   [/^c(?=[eiy])/, 's'],           // soft c: cent, city, cycle
   [/^giv/, 'gɪv'], [/^gif/, 'gɪf'], [/^gir/, 'gɝ'],  // hard-g exceptions: give, gift, girl
   [/^g(?=[eiy])/, 'dʒ'],          // soft g: gem, gin, gym (but not all cases)
-  
   // Improved consonant clusters
   [/^spr/, 'spɹ'],                // spring, spray, spread
   [/^str/, 'stɹ'],                // string, street, strong  
@@ -1054,6 +1053,7 @@ export class EnglishG2P implements LanguageProcessor {
             // A non-final "le" syllable (legal/legend/legible) should give /l/+vowel.
             if (!isLastSyllable && pattern.source === '^le$') continue;
             if (isStressed && pattern.source === '^ey$') continue;
+            if (!isLastSyllable && pattern.source === '^ier$') continue;
             // ^x(?=[aeiouy]) → /z/ only word-initially (xylophone, xerox, xenon).
             if (syllableIndex > 0 && pattern.source === '^x(?=[aeiouy])') continue;
             const match = remaining.match(pattern);
@@ -1091,7 +1091,7 @@ export class EnglishG2P implements LanguageProcessor {
       });
     }
 
-    if (!isStressed && isLastSyllable && syllableIndex > 0) {
+    if (!isStressed && isLastSyllable && syllableIndex > 0 && !hadDoubledL) {
       applyReduction({
         'ɑɹ': 'ɑɹ', 'ɔɹ': 'ɔɹ', 'ɔɪ': 'ɔɪ',
         'æ': 'ə', 'ɛ': 'ə', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
