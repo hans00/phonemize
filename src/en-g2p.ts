@@ -97,6 +97,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^more$/, 'mɔɹ', false],  [/^b(?:erry|ury)$/, 'bɛɹi', false],
   [/^well$/, 'wɛl', false],  [/^back$/, 'bæk', false],
   [/^beck$/, 'bɛk', false],  [/^star$/, 'stɑɹ', false],
+  [/^tel[l]?$/, 'tɛl', false],  [/^te[ck]$/, 'tɛk', false],  [/^cor[e]?$/, 'kɔɹ', false],
   [/^le$/, 'əl', false],           // syllabic-l: battle/simple/table (guard in loop for ll-split)
 ];
 
