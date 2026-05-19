@@ -490,7 +490,7 @@ export class EnglishG2P implements LanguageProcessor {
       // (balloon/collision/pollution: doubled spelling = single phoneme).
       result = result.replace(/([pbtdkɡfvszʃʒθðmnŋlɹhjwɫ])\1/g, '$1');
       result = result.replace(/sʒ/g, 'ʃ');
-      result = result.replace(/əɹ/g, 'ɝ');   // unstressed "er" across syllable boundary → /ɝ/
+      result = result.replace(/əɹ/g, 'ɝ');  result = result.replace(/(?<=[^aeiouæɛɪɑɔʌʊ])ɪɹɝ$/, 'ɝɝ');  // -er across boundary; C+ɪɹɝ → ɝɝ (batterer/caterer/wanderer)
       result = result.replace(/n([kɡ])/g, 'ŋ$1'); // n→ŋ before velar stops (cross-syllable assimilation)
       result = result.replace(/^mk/, 'mək'); // Mc- prefix (McAdams, McDonald, etc.)
       result = result.replace(/ɹɪtʃ$/, 'ɹɪk');  result = result.replace(/ɡdʒ$/, 'ɡ');  // Germanic -rich / -gge endings
