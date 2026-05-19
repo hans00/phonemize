@@ -104,7 +104,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ory$/, 'ɔri', false],         // -ory (history, category)
   [/^ry$/, 'ri', false],           // -ry (hungry, angry)
   [/^y$/, 'i', false],             // -y
-  [/^le$/, 'l', false],            // split le from ll-dedup (belle→bel+le→dedup→bɛl)
+  [/^le$/, 'əl', false],           // syllabic-l: battle/simple/table (guard in loop for ll-split)
 ];
 
 // Context-sensitive phoneme rules with improved accuracy
@@ -196,7 +196,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ue/, 'u'],                   // true, blue, glue (at end)
   [/^uil/, 'ɪl'],                  // build, built, guild, guilt, guile (ɪ not u before l)
   [/^ui/, 'u'],                   // fruit, suit, cruise
-  
   // R-controlled magic-e rimes: must precede generic ^ar/^ir/^or/^ur rules.
   [/^are$/, 'ɛɹ'],                // care, bare, share, prepare
   [/^ire$/, 'aɪɹ'],               // fire, hire, wire, tire
@@ -253,14 +252,13 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^h/, 'h'],
   [/^j/, 'dʒ'],
   [/^k/, 'k'],
-  [/^le$/, 'əl'],                  // syllabic-l after ll-dedup: belle/jello/well → bɛl
+  [/^le$/, 'əl'],                  // syllabic-l in -ble/-dle/-tle (table→bəl, battle→tle→t+əl)
   [/^l/, 'l'],  [/^m/, 'm'],
   [/^nk/, 'ŋk'],  [/^ns$/, 'nz'], // bank/think | word-final ns→/nz/ (lens/adkins)
   [/^n/, 'n'],  [/^p/, 'p'],
   [/^r/, 'ɹ'],                    // American English rhotic r
   [/^s/, 's'],  [/^t/, 't'],  [/^v/, 'v'],  [/^w/, 'w'],
-  [/^x(?=[aeiouy])/, 'z'],         // word-initial x: xylophone, xerox, xenon (guard: syllableIndex === 0)
-  [/^x/, 'ks'],                   // tax, fix, mix
+  [/^x(?=[aeiouy])/, 'z'],  [/^x/, 'ks'],   // word-initial x→z (xylophone) | x→ks (tax)
   [/^ym(?![aeiou])/, 'ɪm'],       // gym, symbol, symptom (Greek short y before m)
   [/^yn(?![aeiou])/, 'ɪn'],       // syntax, synchronize (Greek short y before n)
   [/^y$/, 'i'],                   // city, happy, country — final y after prior vowel (guard in loop)
@@ -979,6 +977,8 @@ export class EnglishG2P implements LanguageProcessor {
     let remaining = syllable;
 
     // Check for suffix rules first
+    // belle→bel|le double-l split: /l/ so post-dedup collapses to bɛl.
+    if (remaining === 'le' && isLastSyllable && prevSyllable?.endsWith('l')) return 'l';
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
       // ^le$ and ^al$ are word-ending patterns; skip on non-final syllables
       // where they are prefix/initial chunks (legionnaire, album, algebra).
