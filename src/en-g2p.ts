@@ -95,6 +95,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^well$/, 'wɛl', false],  [/^back$/, 'bæk', false],
   [/^beck$/, 'bɛk', false],  [/^star$/, 'stɑɹ', false],
   [/^tel[l]?$/, 'tɛl', false],  [/^te[ck]$/, 'tɛk', false],  [/^cor[e]?$/, 'kɔɹ', false],
+  [/^sto$/, 'stoʊ', false],  [/^dale$/, 'deɪl', false],
   [/^le$/, 'əl', false],           // syllabic-l: battle/simple/table (guard in loop for ll-split)
 ];
 
@@ -496,6 +497,7 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/əɹ/g, 'ɝ');   // unstressed "er" across syllable boundary → /ɝ/
       result = result.replace(/n([kɡ])/g, 'ŋ$1'); // n→ŋ before velar stops (cross-syllable assimilation)
       result = result.replace(/^mk/, 'mək'); // Mc- prefix (McAdams, McDonald, etc.)
+      result = result.replace(/ɹɪtʃ$/, 'ɹɪk'); // Germanic -rich final suffix (Dietrich, Andrich, etc.)
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
@@ -974,11 +976,12 @@ export class EnglishG2P implements LanguageProcessor {
     // belle→bel|le double-l split: /l/ so post-dedup collapses to bɛl.
     if (remaining === 'le' && isLastSyllable && prevSyllable?.endsWith('l')) return 'l';
     // -se after vowel-i/e/o syllable → /z/ (advise/cheese/close); magic-e 'a' → /s/ via ^se$ rule.
-    if (remaining === 'se' && isLastSyllable && prevSyllable?.match(/[ieoa]$/i)) return 'z';
+    if (remaining === 'se' && isLastSyllable && prevSyllable?.match(/[ieo]$/i)) return 'z';
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
       // Word-final-only suffixes: skip on non-final syllables (legionnaire/album/algebra).
       if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
       if (pattern.source === '^tu$' && (isStressed || !nextSyllable?.match(/^[aeiou]/i))) continue;
+      if (pattern.source === '^sto$' && nextSyllable !== 'ne') continue;
       if ((pattern.source === '^lion$' || pattern.source === '^scien$' || pattern.source === '^ford$' || pattern.source === '^ward$' || pattern.source === '^the$') && syllableIndex === 0) continue;
       if (remaining.match(pattern)) {
         steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
