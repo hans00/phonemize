@@ -499,6 +499,7 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/əɹ/g, 'ɝ');   // unstressed "er" across syllable boundary → /ɝ/
       result = result.replace(/nk/g, 'ŋk'); // n→ŋ before velar stops (cross-syllable assimilation)
       result = result.replace(/nɡ/g, 'ŋɡ');
+      result = result.replace(/^mk/, 'mək'); // Mc- prefix (McAdams, McDonald, etc.)
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
