@@ -493,7 +493,7 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/əɹ/g, 'ɝ');  result = result.replace(/(?<=[^aeiouæɛɪɑɔʌʊ])ɪɹɝ$/, 'ɝɝ');  // -er across boundary; C+ɪɹɝ → ɝɝ (batterer/caterer/wanderer)
       result = result.replace(/n([kɡ])/g, 'ŋ$1'); // n→ŋ before velar stops (cross-syllable assimilation)
       result = result.replace(/^mk/, 'mək'); // Mc- prefix (McAdams, McDonald, etc.)
-      result = result.replace(/ɹɪtʃ$/, 'ɹɪk');  result = result.replace(/ɡdʒ$/, 'ɡ');  // Germanic -rich / -gge endings
+      result = result.replace(/ɹɪtʃ$/, 'ɹɪk');  result = result.replace(/ɡdʒ$/, 'ɡ');  result = result.replace(/(?<=[aɑɔɛɪouəɝ])dʒɝ$/, 'ɡɝ');  // Germanic -rich/-gge; vowel+ger → hard g (eager/tiger/meager)
       result = result.replace(/oʊɹ/g, 'ɔɹ');  result = result.replace(/[ɑə][ɛə]$/, 'oʊ');  // o-open-syllable before r; -oe (foe/aloe/backhoe)
       result = result.replace(/ɑl([dt])/g, 'oʊl$1');  // ol+d/t across syllable: beholden/bolton/bolster
       if (syllables.length >= 3) result = result.replace(/eɪdʒ$/, 'ɪdʒ');  // -age unstressed penultimate: passage/baggage/garbage
