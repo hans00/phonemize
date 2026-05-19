@@ -255,7 +255,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^k/, 'k'],
   [/^le$/, 'əl'],                  // syllabic-l after ll-dedup: belle/jello/well → bɛl
   [/^l/, 'l'],  [/^m/, 'm'],
-  [/^nk/, 'ŋk'],                  // bank, think, drink, sink, link, chunk
+  [/^nk/, 'ŋk'],  [/^ns$/, 'nz'], // bank/think | word-final ns→/nz/ (lens/adkins)
   [/^n/, 'n'],  [/^p/, 'p'],
   [/^r/, 'ɹ'],                    // American English rhotic r
   [/^s/, 's'],  [/^t/, 't'],  [/^v/, 'v'],  [/^w/, 'w'],
