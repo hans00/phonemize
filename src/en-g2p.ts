@@ -64,32 +64,29 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^stion$/, 'stʃən', false],     // -stion: question, digestion, combustion
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
   [/^sion$/, 'ʒən', false],        // -sion is always unstressed
-  [/^cian$/, 'ʃən', false],  [/^cean$/, 'ʃən', false],  // -cian/-cean: technician/ocean
+  [/^c[ei]an$/, 'ʃən', false],                           // -cian/-cean: technician/ocean
   [/^lion$/, 'ljən', false],       // -llion: million, billion, stallion (guard: syllableIndex > 0)
   [/^[ct]ial$/, 'ʃəl', false],     // -cial/-tial (commercial, social, potential, partial)
   [/^cient$/, 'ʃənt', false],  [/^scien$/, 'ʃən', false],  // -cient: efficient/ancient; -scien: conscience (guard: idx>0)
   [/^tu$/, 'tʃu', false],           // tu before vowel-initial syllable → /tʃu/ (actual, factual, mutual)
   [/^ture$/, 'tʃɝ', false],        // -ture (future, nature)
   [/^sure$/, 'ʒɝ', false],         // -sure (measure, pleasure)
-  [/^geous$/, 'dʒəs', false],  [/^gious$/, 'dʒəs', false],  // -geous/-gious: gorgeous/contagious
-  [/^[ct]ious$/, 'ʃəs', false],  [/^ceous$/, 'ʃəs', false],  // -cious/-tious/-ceous: delicious/crustaceous
+  [/^g[ei]ous$/, 'dʒəs', false],                             // -geous/-gious: gorgeous/contagious
+  [/^[ct]ious$|^ceous$/, 'ʃəs', false],                     // -cious/-tious/-ceous: delicious/crustaceous
   [/^[ei]ous$/, 'iəs', false],      // -eous/-ious (miscellaneous, various, serious)
   [/^uous$/, 'juəs', false],       // -uous (continuous, ambiguous)
   [/^[ai]ble$/, 'əbəl', false],     // -able/-ible
   [/^[ae]nce$/, 'əns', false],      // -ance/-ence (dominance, presence)
   [/^kness$/, 'knəs', false],      // -kness: darkness, frankness, weakness (k is pronounced, not silent)
   [/^ness$/, 'nəs', false],        // -ness
-  [/^ment$/, 'mənt', false],       // -ment
-  [/^less$/, 'ləs', false],        // -less
-  [/^ful$/, 'fəl', false],         // -ful
-  [/^ly$/, 'li', false],           // -ly
+  [/^ment$/, 'mənt', false],  [/^less$/, 'ləs', false],  // -ment / -less
+  [/^ful$/, 'fəl', false],   [/^ly$/, 'li', false],    // -ful / -ly
   [/^er$/, 'ɝ', false],            // -er (comparative, agentive)
   [/^ers$/, 'ɝz', false],          // -ers (plural of -er)
   [/^est$/, 'əst', false],         // -est (superlative)
   [/^ing$/, 'ɪŋ', false],          // -ing
   [/^ed$/, 'd', false],            // -ed (past tense base)
-  [/^es$/, 'z', false],            // -es (plural/3rd person)
-  [/^s$/, 'z', false],             // -s (plural/3rd person)
+  [/^e?s$/, 'z', false],           // -es/-s (plural/3rd person)
   [/^age$/, 'ɪdʒ', false],         // -age (package, marriage)
   [/^ive$/, 'ɪv', false],          // -ive (active, passive)
   [/^ism$/, 'ɪzəm', false],        // -ism
@@ -105,6 +102,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ry$/, 'ri', false],           // -ry (hungry, angry)
   [/^y$/, 'i', false],             // -y
   [/^stein$/, 'staɪn', false],     // German -stein: arnstein/bernstein/einstein → /staɪn/
+  [/^b(?:erry|ury)$/, 'bɛɹi', false], // -berry/-bury: strawberry/blueberry/ashbury → /bɛɹi/
   [/^le$/, 'əl', false],           // syllabic-l: battle/simple/table (guard in loop for ll-split)
 ];
 
@@ -1027,6 +1025,8 @@ export class EnglishG2P implements LanguageProcessor {
     const gFromDoubling = (prevSyllable?.endsWith('g') ?? false) || /gg[eiy]/i.test(syllable);
     // Apply phoneme rules
     while(remaining.length > 0) {
+        if (remaining === 's' && isLastSyllable && phonemes[phonemes.length - 1] === 'ɝ')
+            { phonemes.push('z'); steps?.push({ grapheme: 's', phoneme: 'z', rule: 'phoneme:^s' }); break; }
         let matchFound = false;
         for (const [pattern, ipa] of PHONEME_RULES) {
             // ^al$ is for the -all rime (all/ball/call); skip it when the
