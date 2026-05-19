@@ -1098,7 +1098,7 @@ export class EnglishG2P implements LanguageProcessor {
     if (!isStressed && isLastSyllable && syllableIndex > 0) {
       applyReduction({
         'ɑɹ': 'ɑɹ', 'ɔɹ': 'ɔɹ', 'ɔɪ': 'ɔɪ',
-        'æ': 'ə', 'ɛ': 'ɪ', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
+        'æ': 'ə', 'ɛ': 'ə', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
       });
       const lastIdx = phonemes.length - 1;
       if (lastIdx >= 0 && (phonemes[lastIdx] === 'ɔɹ' || phonemes[lastIdx] === 'ɑɹ')) {
