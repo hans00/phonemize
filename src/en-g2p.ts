@@ -747,6 +747,11 @@ export class EnglishG2P implements LanguageProcessor {
             nucleus += chars[i];
             i++;
         }
+        // Absorb trailing 'w' into nucleus when it precedes a vowel (ew digraph: brewer → brew.er)
+        if (nucleus.length > 0 && i < chars.length && chars[i] === 'w' && i + 1 < chars.length && VOWELS.has(chars[i + 1])) {
+            nucleus += chars[i];
+            i++;
+        }
 
         // Find the following consonant cluster (coda + next onset)
         let consonants = '';
