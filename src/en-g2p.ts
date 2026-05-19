@@ -601,6 +601,7 @@ export class EnglishG2P implements LanguageProcessor {
 
     if (lowerWord.endsWith('ed') && lowerWord.length > 3) {
       const base = lowerWord.slice(0, -2);
+      if (!/[aeiou]$/.test(base)) { const m = this.wellKnown(base + 'e'); if (m) return edPast(m); }  // magic-e: coded→code
       const basePron = this.wellKnown(base);
       if (basePron) return edPast(basePron);
       const baseShort = lowerWord.slice(0, -3);
@@ -608,12 +609,12 @@ export class EnglishG2P implements LanguageProcessor {
         const p = this.wellKnown(baseShort);
         if (p) return edPast(p);
       }
-      const magicPron = this.wellKnown(base + 'e');
-      if (magicPron) return edPast(magicPron);
+      const magicPron = this.wellKnown(base + 'e'); if (magicPron) return edPast(magicPron);
     }
 
     if (lowerWord.endsWith('ing') && lowerWord.length > 4) {
       const base = lowerWord.slice(0, -3);
+      if (!/[aeiou]$/.test(base)) { const m = this.wellKnown(base + 'e'); if (m) return m + 'ɪŋ'; }  // magic-e: baking→bake
       const basePron = this.wellKnown(base);
       if (basePron) return basePron + 'ɪŋ';
       const baseShort = lowerWord.slice(0, -4);
@@ -621,8 +622,7 @@ export class EnglishG2P implements LanguageProcessor {
         const p = this.wellKnown(baseShort);
         if (p) return p + 'ɪŋ';
       }
-      const magicPron = this.wellKnown(base + 'e');
-      if (magicPron) return magicPron + 'ɪŋ';
+      const magicPron = this.wellKnown(base + 'e'); if (magicPron) return magicPron + 'ɪŋ';
     }
 
     if (lowerWord.endsWith('ally') && lowerWord.length > 6) {
