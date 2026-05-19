@@ -56,13 +56,8 @@ const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr',
 
 // Improved stress-sensitive suffix rules
 const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
-  [/^ge$/, 'dʒ', false],           // -ge: cage, stage, village, manage, message
-  [/^ce$/, 's', false],            // -ce: face, race, dance, force, sentence
-  [/^se$/, 's', false],            // -se: base, case, chase, house, close (voiceless default)
-  [/^que$/, 'k', false],           // -que: antique, boutique, baroque, physique
-  [/^the$/, 'ð', false],           // -the: loathe/breathe/soothe/bathe (silent e; guard skips first syllable)
-  [/^sten$/, 'sən', false],         // -sten: listen, fasten, hasten, glisten, moisten (silent t)
-  [/^stion$/, 'stʃən', false],     // -stion: question, digestion, combustion
+  [/^ge$/, 'dʒ', false],  [/^ce$/, 's', false],  [/^se$/, 's', false],  [/^que$/, 'k', false],  [/^the$/, 'ð', false],
+  [/^sten$/, 'sən', false],  [/^stion$/, 'stʃən', false],
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
   [/^sion$/, 'ʒən', false],        // -sion is always unstressed
   [/^c[ei]an$/, 'ʃən', false],                           // -cian/-cean: technician/ocean
