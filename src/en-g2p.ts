@@ -104,7 +104,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ory$/, 'ɔri', false],         // -ory (history, category)
   [/^ry$/, 'ri', false],           // -ry (hungry, angry)
   [/^y$/, 'i', false],             // -y
-  [/^le$/, 'əl', false],           // -le (simple, table)
+  [/^le$/, 'l', false],            // split le from ll-dedup (belle→bel+le→dedup→bɛl)
 ];
 
 // Context-sensitive phoneme rules with improved accuracy
