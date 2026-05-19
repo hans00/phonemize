@@ -83,8 +83,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^e?s$/, 'z', false],           // -es/-s (plural/3rd person)
   [/^age$/, 'ɪdʒ', false],  [/^ive$/, 'ɪv', false],   // -age/-ive (package/active)
   [/^ism$/, 'ɪzəm', false], [/^ist$/, 'ɪst', false],  // -ism/-ist
-  [/^ity$/, 'əti', false],         // -ity
-  [/^al$/, 'əl', false],           // -al (normal, final)
+  [/^ity$/, 'əti', false],  [/^al$/, 'əl', false],  // -ity / -al
   [/^ic$/, 'ɪk', true],  [/^ics$/, 'ɪks', true],  // -ic/-ics attract stress (economic/mathematics)
   [/^lity$/, 'ləti', false],  [/^ty$/, 'ti', false],
   [/^[ae]ry$/, 'ɛri', false],  [/^ory$/, 'ɔri', false],
@@ -151,7 +150,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^wh/, 'hw'],                  // what, where, when, which, white
   [/^qu/, 'kw'],                  // queen, quick, quote
   [/^ng/, 'ŋ'],                   // sing, ring, king
-  
   // Improved vowel teams with better quality distinctions
   [/^o[ao]r/, 'ɔɹ'],              // door/floor (oor) and board/soar/roar (oar) → /ɔɹ/
   [/^ook/, 'ʊk'],                 // book, cook, look, hook, took (oo before k → /ʊ/)
@@ -495,9 +493,11 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/əɹ/g, 'ɝ');   // unstressed "er" across syllable boundary → /ɝ/
       result = result.replace(/n([kɡ])/g, 'ŋ$1'); // n→ŋ before velar stops (cross-syllable assimilation)
       result = result.replace(/^mk/, 'mək'); // Mc- prefix (McAdams, McDonald, etc.)
-      result = result.replace(/ɹɪtʃ$/, 'ɹɪk'); // Germanic -rich final suffix (Dietrich, Andrich, etc.)
+      result = result.replace(/ɹɪtʃ$/, 'ɹɪk');  // Germanic -rich final suffix (Dietrich, Andrich, etc.)
+      result = result.replace(/ɡdʒ$/, 'ɡ');    // -gge endings: bagge/egge/figge → hard-g only (cross-syllable g+ge)
       result = result.replace(/oʊɹ/g, 'ɔɹ');  // o-open-syllable before r: lora/oral/oracle/story/glory
       result = result.replace(/ɡɑl(?=d)/g, 'ɡoʊɫ');  // gold-: ^old→oʊld skipped when d is in next syllable (golden/goldie)
+      result = result.replace(/əhl/g, 'ɑl');   // Scandinavian -ahl: dahl/lindahl/nordahl → /ɑl/ (h silent, a not reduced)
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
