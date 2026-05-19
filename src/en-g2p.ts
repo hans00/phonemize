@@ -89,10 +89,8 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^lity$/, 'ləti', false],  [/^ty$/, 'ti', false],
   [/^[ae]ry$/, 'ɛri', false],  [/^ory$/, 'ɔri', false],
   [/^ry$/, 'ri', false],  [/^y$/, 'i', false],
-  [/^stein$/, 'staɪn', false],  [/^ford$/, 'fɝd', false],  [/^ward$/, 'wɝd', false],
-  [/^more$/, 'mɔɹ', false],  [/^b(?:erry|ury)$/, 'bɛɹi', false],
-  [/^well$/, 'wɛl', false],  [/^back$/, 'bæk', false],
-  [/^beck$/, 'bɛk', false],  [/^star$/, 'stɑɹ', false],
+  [/^stein$/, 'staɪn', false],  [/^ford$/, 'fɝd', false],  [/^ward$/, 'wɝd', false],  [/^more$/, 'mɔɹ', false],  [/^b(?:erry|ury)$/, 'bɛɹi', false],
+  [/^well$/, 'wɛl', false],  [/^back$/, 'bæk', false],  [/^beck$/, 'bɛk', false],  [/^star$/, 'stɑɹ', false],
   [/^tel[l]?$/, 'tɛl', false],  [/^te[ck]$/, 'tɛk', false],  [/^cor[e]?$/, 'kɔɹ', false],
   [/^sto$/, 'stoʊ', false],  [/^dale$/, 'deɪl', false],  [/^twood$/, 'twʊd', false],
   [/^cle$/, 'kəɫ', false],        // syllabic -cle ending: circle/barnacle/miracle/uncle
@@ -499,6 +497,7 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/^mk/, 'mək'); // Mc- prefix (McAdams, McDonald, etc.)
       result = result.replace(/ɹɪtʃ$/, 'ɹɪk'); // Germanic -rich final suffix (Dietrich, Andrich, etc.)
       result = result.replace(/oʊɹ/g, 'ɔɹ');  // o-open-syllable before r: lora/oral/oracle/story/glory
+      result = result.replace(/ɡɑl(?=d)/g, 'ɡoʊɫ');  // gold-: ^old→oʊld skipped when d is in next syllable (golden/goldie)
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
