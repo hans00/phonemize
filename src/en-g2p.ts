@@ -157,13 +157,15 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^th/, 'θ'],                   // voiceless (default): path, math
   [/^tch/, 'tʃ'],                 // watch, match, catch
   [/^wor(?!e)/, 'wɝ'],             // word, work, world, worry, worse, worst, worm (not wore)
-  [/^wh/, 'w'],                   // what, where, when
+  [/^wh(?=o)/, 'h'],              // who, whole, whom, whose (silent w before o)
+  [/^wh/, 'hw'],                  // what, where, when, which, white
   [/^qu/, 'kw'],                  // queen, quick, quote
   [/^ng/, 'ŋ'],                   // sing, ring, king
   
   // Improved vowel teams with better quality distinctions
   [/^o[ao]r/, 'ɔɹ'],              // door/floor (oor) and board/soar/roar (oar) → /ɔɹ/
   [/^ook/, 'ʊk'],                 // book, cook, look, hook, took (oo before k → /ʊ/)
+  [/^ood/, 'ʊd'],                 // wood, hood, good, stood (oo before d → /ʊ/)
   [/^oo/, 'u'],                   // boot, moon, cool, moose (long u; dict uses /u/ not /uː/)
   [/^ous$/, 'əs'],                 // -ous suffix: famous/nervous/dangerous (guarded: last+unstressed in loop)
   [/^oup/, 'up'],                  // group, soup, coup, croup (ou+p → /u/)
@@ -204,6 +206,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // R-controlled vowels (rhotic)
   [/^arr/, 'æɹ'],                 // carry, marry, arrow
   [/^ar/, 'ɑɹ'],                  // car, far, start
+  [/^er(?=[aeiouwy])/, 'ɛɹ'],    // berry/cherry/merry: er before vowel → /ɛɹ/ not /ɝ/
   [/^[eiu]r/, 'ɝ'],               // her/bird/fur (er/ir/ur → /ɝ/)
   [/^or/, 'ɔɹ'],                  // for, port, storm
   
@@ -240,7 +243,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^two/, 'tu'],                 // two (special case)
   [/^tr/, 'tɹ'],                  // tree, try, travel
   [/^tw/, 'tw'],                  // twelve, twenty
-  
+  [/^tz/, 'ts'],                  // waltz, pretzel (tz cluster → /ts/)
+
   // Basic consonants
   [/^b/, 'b'],
   [/^c/, 'k'],                    // hard c (default)
@@ -253,13 +257,9 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^le$/, 'əl'],                  // syllabic-l after ll-dedup: belle/jello/well → bɛl
   [/^l/, 'l'],  [/^m/, 'm'],
   [/^nk/, 'ŋk'],                  // bank, think, drink, sink, link, chunk
-  [/^n/, 'n'],
-  [/^p/, 'p'],
+  [/^n/, 'n'],  [/^p/, 'p'],
   [/^r/, 'ɹ'],                    // American English rhotic r
-  [/^s/, 's'],
-  [/^t/, 't'],
-  [/^v/, 'v'],
-  [/^w/, 'w'],
+  [/^s/, 's'],  [/^t/, 't'],  [/^v/, 'v'],  [/^w/, 'w'],
   [/^x(?=[aeiouy])/, 'z'],         // word-initial x: xylophone, xerox, xenon (guard: syllableIndex === 0)
   [/^x/, 'ks'],                   // tax, fix, mix
   [/^ym(?![aeiou])/, 'ɪm'],       // gym, symbol, symptom (Greek short y before m)
@@ -267,7 +267,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^y$/, 'i'],                   // city, happy, country — final y after prior vowel (guard in loop)
   [/^y(?=[aeiou])/, 'j'],         // yes, you, year (consonantal before vowels)
   [/^y/, 'aɪ'],                   // by, my, try (vowel in other positions)
-  [/^tz/, 'ts'],  [/^z/, 'z'],     // tz → /ts/ (waltz, pretzel, German names); z → /z/
+  [/^z/, 'z'],
   // Default vowels (short/lax in closed syllables)
   [/^a(?=[^aeioun]y$)/, 'eɪ'],   // baby, lazy, navy, gravy, shady — aCy → long a
   [/^a$/, 'eɪ'],                  // nation/station/abrasion — open-syllable a before -tion/-sion (guard in loop)
@@ -649,7 +649,7 @@ export class EnglishG2P implements LanguageProcessor {
     }
     if (lowerWord.endsWith('ly') && !lowerWord.endsWith('ally') && lowerWord.length > 4) {
       const basePron = this.wellKnown(lowerWord.slice(0, -2), undefined, true) || this.predictInternal(lowerWord.slice(0, -2), undefined, false);
-      if (basePron) return basePron + 'li';
+      if (basePron) return /[lɫ]$/.test(basePron) ? basePron + 'i' : basePron + 'li';
     }
 
     if (lowerWord.endsWith('able') && lowerWord.length > 6) {
