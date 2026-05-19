@@ -68,7 +68,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ture$/, 'tʃɝ', false],        // -ture (future, nature)
   [/^sure$/, 'ʒɝ', false],         // -sure (measure, pleasure)
   [/^g[ei]ous$/, 'dʒəs', false],                             // -geous/-gious: gorgeous/contagious
-  [/^[ct]ious$|^ceous$/, 'ʃəs', false],                     // -cious/-tious/-ceous: delicious/crustaceous
+  [/^[ct]ious$|^scious$|^ceous$/, 'ʃəs', false],             // -cious/-tious/-scious/-ceous: delicious/conscious/crustaceous
   [/^[ei]ous$/, 'iəs', false],      // -eous/-ious (miscellaneous, various, serious)
   [/^uous$/, 'juəs', false],       // -uous (continuous, ambiguous)
   [/^[ai]ble$/, 'əbəl', false],     // -able/-ible
