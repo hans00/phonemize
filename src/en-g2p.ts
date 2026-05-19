@@ -644,11 +644,10 @@ export class EnglishG2P implements LanguageProcessor {
 
     if (lowerWord.endsWith('able') && lowerWord.length > 6) {
       let base = lowerWord.slice(0, -4);
+      if (!/[aeiour]$/.test(base) && !this.wellKnown(base, undefined, true)) { const m = this.wellKnown(base + 'e', undefined, true); if (m) return m.replace(/ə$/, '') + 'əbəl'; }  // magic-e: advisable→advise
       let basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
       if (basePron) return basePron.replace(/ə$/, '') + 'əbəl';
-      base = lowerWord.slice(0, -3);
-      basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false);
-      if (basePron) return basePron + 'əbəl';
+      base = lowerWord.slice(0, -3); basePron = this.wellKnown(base, undefined, true) || this.predictInternal(base, undefined, false); if (basePron) return basePron + 'əbəl';
     }
 
     if (lowerWord.endsWith('logy') && lowerWord.length > 6) {
