@@ -497,7 +497,8 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/([pbtdkɡfvszʃʒθðmnŋlɹhjwɫ])\1/g, '$1');
       result = result.replace(/sʒ/g, 'ʃ');
       result = result.replace(/əɹ/g, 'ɝ');   // unstressed "er" across syllable boundary → /ɝ/
-      result = result.replace(/nk/g, 'ŋk'); // n→ŋ before k (cross-syllable assimilation)
+      result = result.replace(/nk/g, 'ŋk'); // n→ŋ before velar stops (cross-syllable assimilation)
+      result = result.replace(/nɡ/g, 'ŋɡ');
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
