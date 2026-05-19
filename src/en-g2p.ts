@@ -978,7 +978,7 @@ export class EnglishG2P implements LanguageProcessor {
     // belle→bel|le double-l split: /l/ so post-dedup collapses to bɛl.
     if (remaining === 'le' && isLastSyllable && prevSyllable?.endsWith('l')) return 'l';
     // -se after vowel-i/e/o syllable → /z/ (advise/cheese/close); magic-e 'a' → /s/ via ^se$ rule.
-    if (remaining === 'se' && isLastSyllable && prevSyllable?.match(/[ieo]$/i)) return 'z';
+    if (remaining === 'se' && isLastSyllable && prevSyllable?.match(/[ieoa]$/i)) return 'z';
     for (const [pattern, ipa, ] of SUFFIX_RULES) {
       // Word-final-only suffixes: skip on non-final syllables (legionnaire/album/algebra).
       if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
@@ -1025,7 +1025,7 @@ export class EnglishG2P implements LanguageProcessor {
     const gFromDoubling = (prevSyllable?.endsWith('g') ?? false) || /gg[eiy]/i.test(syllable);
     // Apply phoneme rules
     while(remaining.length > 0) {
-        if (remaining === 's' && isLastSyllable && phonemes[phonemes.length - 1] === 'ɝ')
+        if (remaining === 's' && isLastSyllable && /[iɝ]$/.test(phonemes[phonemes.length - 1]))
             { phonemes.push('z'); steps?.push({ grapheme: 's', phoneme: 'z', rule: 'phoneme:^s' }); break; }
         if (remaining === 'le' && phonemes.length > 0 && /[iɪuʊɛæɑɔʌəɝ]$/.test(phonemes[phonemes.length - 1]))
             { phonemes.push('l'); steps?.push({ grapheme: 'le', phoneme: 'l', rule: 'phoneme:le' }); break; }
