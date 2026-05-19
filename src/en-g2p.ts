@@ -58,7 +58,7 @@ const VALID_ONSETS = new Set(['b', 'bl', 'br', 'c', 'ch', 'cl', 'cr', 'd', 'dr',
 const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ge$/, 'dʒ', false],           // -ge: cage, stage, village, manage, message
   [/^ce$/, 's', false],            // -ce: face, race, dance, force, sentence
-  [/^se$/, 'z', false],            // -se: rise, wise, please, these, those, close
+  [/^se$/, 's', false],            // -se: base, case, chase, house, close (voiceless default)
   [/^que$/, 'k', false],           // -que: antique, boutique, baroque, physique
   [/^sten$/, 'sən', false],         // -sten: listen, fasten, hasten, glisten, moisten (silent t)
   [/^stion$/, 'stʃən', false],     // -stion: question, digestion, combustion
