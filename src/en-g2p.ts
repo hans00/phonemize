@@ -498,7 +498,7 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/ɑl([dt])/g, 'oʊl$1');  // ol+d/t across syllable: beholden/bolton/bolster
       if (syllables.length >= 3) result = result.replace(/eɪdʒ$/, 'ɪdʒ');  // -age unstressed penultimate: passage/baggage/garbage
       result = result.replace(/əhl/g, 'ɑl');  result = result.replace(/([pbtdkɡfvszʃθmnlhjwɫ])ɹoʊst/g, '$1ɹɑst');  result = result.replace(/bɹoʊd/g, 'bɹɔd');  result = result.replace(/^ʌnɪ/, 'junɪ');  // Scandinavian -ahl; German -rost; broad→ɔ; uni-→ju
-      result = result.replace(/([kɡdbptfvszʃʒmnlɹwj])əəs$/g, '$1uəs');  result = result.replace(/ksɪəs/g, 'kʃəs');  result = result.replace(/stjʊɹ/g, 'stʃɝ');  result = result.replace(/([tsn])aɪv$/g, '$1ɪv');  result = result.replace(/ɡuʃ/g, 'ɡwɪʃ');  // -uous/-xious/-sture/-tive/-sive/-guish
+      result = result.replace(/([kɡdbptfvszʃʒmnlɹwj])əəs$/g, '$1uəs');  result = result.replace(/ksɪəs/g, 'kʃəs');  result = result.replace(/stjʊɹ/g, 'stʃɝ');  result = result.replace(/([tsn])aɪv$/g, '$1ɪv');  result = result.replace(/ɡuʃ/g, 'ɡwɪʃ');  result = result.replace(/məkɝ$/, 'meɪkɝ');  // -uous/-xious/-sture/-tive/-sive/-guish; -maker compounds (matchmaker/automaker)
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
