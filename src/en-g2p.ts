@@ -212,7 +212,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^or/, 'ɔɹ'],                  // for, port, storm
   // Context-dependent consonants
   [/^c(?=[eiy])/, 's'],           // soft c: cent, city, cycle
-  [/^giv/, 'gɪv'], [/^gif/, 'gɪf'], [/^gir/, 'gɝ'],  // hard-g exceptions: give, gift, girl
+  [/^giv/, 'gɪv'], [/^gif/, 'gɪf'], [/^gir/, 'gɝ'], [/^gil/, 'ɡɪl'],  // hard-g: give/gift/girl/gild (guard: skip non-first syllable in loop)
   [/^g(?=[eiy])/, 'dʒ'],          // soft g: gem, gin, gym (but not all cases)
   // Improved consonant clusters
   [/^spr/, 'spɹ'],                // spring, spray, spread
@@ -1054,8 +1054,8 @@ export class EnglishG2P implements LanguageProcessor {
             if (!isLastSyllable && pattern.source === '^le$') continue;
             if (isStressed && pattern.source === '^ey$') continue;
             if (!isLastSyllable && pattern.source === '^ier$') continue;
-            // ^x(?=[aeiouy]) → /z/ only word-initially (xylophone, xerox, xenon).
-            if (syllableIndex > 0 && pattern.source === '^x(?=[aeiouy])') continue;
+            // Word-initial-only rules (xylophone, gild vs agile).
+            if (syllableIndex > 0 && (pattern.source === '^x(?=[aeiouy])' || pattern.source === '^gil')) continue;
             const match = remaining.match(pattern);
             if (match) {
                 phonemes.push(ipa);
