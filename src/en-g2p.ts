@@ -60,6 +60,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ce$/, 's', false],            // -ce: face, race, dance, force, sentence
   [/^se$/, 's', false],            // -se: base, case, chase, house, close (voiceless default)
   [/^que$/, 'k', false],           // -que: antique, boutique, baroque, physique
+  [/^the$/, 'ð', false],           // -the: loathe/breathe/soothe/bathe (silent e; guard skips first syllable)
   [/^sten$/, 'sən', false],         // -sten: listen, fasten, hasten, glisten, moisten (silent t)
   [/^stion$/, 'stʃən', false],     // -stion: question, digestion, combustion
   [/^tion$/, 'ʃən', false],        // -tion is always unstressed
@@ -981,7 +982,7 @@ export class EnglishG2P implements LanguageProcessor {
       // Word-final-only suffixes: skip on non-final syllables (legionnaire/album/algebra).
       if ((pattern.source === '^le$' || pattern.source === '^al$' || pattern.source === '^que$' || pattern.source === '^sten$' || pattern.source === '^ce$' || pattern.source === '^se$' || pattern.source === '^ge$') && !isLastSyllable) continue;
       if (pattern.source === '^tu$' && (isStressed || !nextSyllable?.match(/^[aeiou]/i))) continue;
-      if ((pattern.source === '^lion$' || pattern.source === '^scien$' || pattern.source === '^ford$' || pattern.source === '^ward$') && syllableIndex === 0) continue;
+      if ((pattern.source === '^lion$' || pattern.source === '^scien$' || pattern.source === '^ford$' || pattern.source === '^ward$' || pattern.source === '^the$') && syllableIndex === 0) continue;
       if (remaining.match(pattern)) {
         steps?.push({ grapheme: remaining, phoneme: ipa, rule: `suffix:${pattern.source}` });
         return ipa;
@@ -1027,6 +1028,7 @@ export class EnglishG2P implements LanguageProcessor {
             { phonemes.push('z'); steps?.push({ grapheme: 's', phoneme: 'z', rule: 'phoneme:^s' }); break; }
         if (remaining === 'le' && phonemes.length > 0 && /[iɪuʊɛæɑɔʌəɝ]$/.test(phonemes[phonemes.length - 1]))
             { phonemes.push('l'); steps?.push({ grapheme: 'le', phoneme: 'l', rule: 'phoneme:le' }); break; }
+        if (remaining === 'the' && phonemes.length > 0) { phonemes.push('ð'); steps?.push({ grapheme: 'the', phoneme: 'ð', rule: 'phoneme:the-final' }); break; }
         let matchFound = false;
         for (const [pattern, ipa] of PHONEME_RULES) {
             // ^al$ is for the -all rime (all/ball/call); skip it when the
