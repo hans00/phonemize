@@ -110,9 +110,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
 // Context-sensitive phoneme rules with improved accuracy
 const PHONEME_RULES: Array<[RegExp, string]> = [
   // Silent letter combinations
-  [/^pn/, 'n'],                   // pneumonia, pneumatic
-  [/^ps/, 's'],                   // psychology, psalm
-  [/^pt/, 't'],                   // pterodactyl, ptomaine
+  [/^pn/, 'n'],  [/^ps/, 's'],  [/^pt/, 't'],  // Greek-origin silent initial consonant: pneumonia/psalm/pterodactyl
   [/^[kg]n/, 'n'],                // knee/know (kn) and gnome/gnu (gn)
   [/^m[bn]$/, 'm'],               // thumb/lamb/comb (^mb$) and column/autumn/condemn (^mn$): word-final silent stop/nasal
   [/^mn/, 'n'],                   // mnemonic, mnesic (silent initial m)
@@ -138,7 +136,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^olt$/, 'oʊlt'],  [/^olk$/, 'oʊk'],  // bolt/colt/jolt + folk/yolk (silent l)
   [/^ost$/, 'oʊst'],              // most, post, host (loses cost/lost; majority pattern wins)
   [/^ould$/, 'ʊd'],               // would, could, should (silent l, lax u — closed function-word family)
-  
   // Improved digraph handling
   [/^tsch/, 'tʃ'],                // German loanwords
   [/^sch(?=[^aeiou])/, 'ʃ'],     // schmaltz, schnapps (German sch before consonant)
@@ -253,9 +250,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^h/, 'h'],
   [/^j/, 'dʒ'],
   [/^k/, 'k'],
-  [/^le$/, 'əl'],                  // syllabic-l ending (-ble/-ple/-tle/-dle/-gle)
-  [/^l/, 'l'],
-  [/^m/, 'm'],
+  [/^le$/, 'əl'],                  // syllabic-l after ll-dedup: belle/jello/well → bɛl
+  [/^l/, 'l'],  [/^m/, 'm'],
   [/^nk/, 'ŋk'],                  // bank, think, drink, sink, link, chunk
   [/^n/, 'n'],
   [/^p/, 'p'],
@@ -271,7 +267,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^y$/, 'i'],                   // city, happy, country — final y after prior vowel (guard in loop)
   [/^y(?=[aeiou])/, 'j'],         // yes, you, year (consonantal before vowels)
   [/^y/, 'aɪ'],                   // by, my, try (vowel in other positions)
-  [/^z/, 'z'],
+  [/^tz/, 'ts'],  [/^z/, 'z'],     // tz → /ts/ (waltz, pretzel, German names); z → /z/
   // Default vowels (short/lax in closed syllables)
   [/^a(?=[^aeioun]y$)/, 'eɪ'],   // baby, lazy, navy, gravy, shady — aCy → long a
   [/^a$/, 'eɪ'],                  // nation/station/abrasion — open-syllable a before -tion/-sion (guard in loop)
@@ -509,7 +505,7 @@ export class EnglishG2P implements LanguageProcessor {
 
       // Deduplicate consecutive identical consonants across syllable boundaries
       // (balloon/collision/pollution: doubled spelling = single phoneme).
-      result = result.replace(/([pbtdkɡfvszʃʒθðmnŋlɹhjw])\1/g, '$1');
+      result = result.replace(/([pbtdkɡfvszʃʒθðmnŋlɹhjwɫ])\1/g, '$1');
       result = result.replace(/sʒ/g, 'ʃ');
       result = result.replace(/əɹ/g, 'ɝ');   // unstressed "er" across syllable boundary → /ɝ/
 
@@ -670,10 +666,10 @@ export class EnglishG2P implements LanguageProcessor {
       if (bp) return lowerWord.slice(-5,-4)==='o' ? bp.replace(/ˈ/g,'ˌ').replace(/oʊ$/,'').replace(/[ˈˌ]$/,'')+'ˈɑlədʒi' : bp.replace(/ə$/,'')+'lədʒi';
     }
     if (lowerWord.endsWith('iness') && lowerWord.length > 6) {
-      const p = this.wellKnown(lowerWord.slice(0, -5) + 'y'); if (p) return p + 'nɪs';
+      const p = this.wellKnown(lowerWord.slice(0, -5) + 'y'); if (p) return p + 'nəs';
     }
     if (lowerWord.endsWith('iest') && lowerWord.length > 5) {
-      const p = this.wellKnown(lowerWord.slice(0, -4) + 'y'); if (p) return p + 'ɪst';
+      const p = this.wellKnown(lowerWord.slice(0, -4) + 'y'); if (p) return p + 'əst';
     }
     if (lowerWord.endsWith('ify') && lowerWord.length > 5) {
       const p=this.wellKnown(lowerWord.slice(0,-3),undefined,true)||this.predictInternal(lowerWord.slice(0,-3),undefined,false); if (p) return p + 'əˌfaɪ';
