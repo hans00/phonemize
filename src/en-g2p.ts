@@ -493,7 +493,7 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/əɹ/g, 'ɝ');  result = result.replace(/(?<=[^aeiouæɛɪɑɔʌʊ])ɪɹɝ$/, 'ɝɝ');  // -er across boundary; C+ɪɹɝ → ɝɝ (batterer/caterer/wanderer)
       result = result.replace(/n([kɡ])/g, 'ŋ$1'); // n→ŋ before velar stops (cross-syllable assimilation)
       result = result.replace(/^mk/, 'mək'); // Mc- prefix (McAdams, McDonald, etc.)
-      result = result.replace(/ɹɪtʃ$/, 'ɹɪk');  result = result.replace(/ɡdʒ$/, 'ɡ');  result = result.replace(/(?<=[aɑɔɛɪouəɝ])dʒɝ$/, 'ɡɝ');  result = result.replace(/ətʃ$/, 'ək');  result = result.replace(/([bdfɡhklmnpɹstzv])ə(ʃ|dʒ)əs$/, '$1eɪ$2əs');  // Germanic -rich/-gge; vowel+ger; -ach → k; -acious/-agious/-atious (capacious/contagious/flirtatious)
+      result = result.replace(/ɹɪtʃ$/, 'ɹɪk');  result = result.replace(/ɡdʒ$/, 'ɡ');  result = result.replace(/(?<=[aɑɔɛɪouəɝ])dʒɝ$/, 'ɡɝ');  result = result.replace(/ətʃ$/, 'ək');  result = result.replace(/([bdfɡhklmnpɹstzv])ə(ʃ|dʒ)əs$/, '$1eɪ$2əs');  result = result.replace(/([^w])əʃən$/, '$1eɪʃən');  // Germanic -rich/-gge; vowel+ger; -ach → k; -acious; -ation (corporation/consideration)
       result = result.replace(/oʊɹ/g, 'ɔɹ');  result = result.replace(/[ɑə][ɛə]$/, 'oʊ');  // o-open-syllable before r; -oe (foe/aloe/backhoe)
       result = result.replace(/ɑl([dt])/g, 'oʊl$1');  // ol+d/t across syllable: beholden/bolton/bolster
       if (syllables.length >= 3) result = result.replace(/eɪdʒ$/, 'ɪdʒ');  // -age unstressed penultimate: passage/baggage/garbage
@@ -672,7 +672,7 @@ export class EnglishG2P implements LanguageProcessor {
     }
     if (lowerWord.endsWith('ation') && lowerWord.length > 7) {
       const b = lowerWord.slice(0, -5), ate = this.wellKnown(b+'ate', undefined, true), src = this.wellKnown(b, undefined, true);
-      if (ate) return (ate.endsWith('t') ? ate.slice(0,-1) : ate)+'ʃən'; if (src) return src+'eɪʃən';
+      if (ate) return (ate.match(/eɪt$/) ? ate.slice(0,-1) : ate.replace(/[ɪə]t$/, 'eɪ'))+'ʃən'; if (src) return src+'eɪʃən';
     }
     if ((lowerWord.endsWith('ance') || lowerWord.endsWith('ence')) && lowerWord.length > 7) {
       const b = lowerWord.slice(0, -4), p = this.wellKnown(b, undefined, true) || (b.endsWith('i') ? this.wellKnown(b.slice(0,-1)+'y', undefined, true) : undefined) || (!b.endsWith('id') ? this.wellKnown(b+'e', undefined, true) : undefined);
