@@ -1097,9 +1097,8 @@ export class EnglishG2P implements LanguageProcessor {
         'æ': 'ə', 'ɛ': 'ə', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
       });
       const lastIdx = phonemes.length - 1;
-      if (lastIdx >= 0 && (phonemes[lastIdx] === 'ɔɹ' || phonemes[lastIdx] === 'ɑɹ')) {
-        phonemes[lastIdx] = 'ɝ';
-      }
+      if (lastIdx >= 0 && (phonemes[lastIdx] === 'ɔɹ' || phonemes[lastIdx] === 'ɑɹ')) phonemes[lastIdx] = 'ɝ';
+      if (lastIdx >= 0 && phonemes[lastIdx] === 'əɹ' && syllable.endsWith('are')) phonemes[lastIdx] = 'ɛɹ';  // -are$ stays ɛɹ (compare/airfare)
       // -ent final syllable: /ɪ/ before "nt" → /ə/ (different, innocent, permanent)
       const len = phonemes.length;
       if (len >= 3 && phonemes[len-1] === 't' && phonemes[len-2] === 'n' && phonemes[len-3] === 'ɪ') {
