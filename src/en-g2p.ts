@@ -83,6 +83,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ful$/, 'fəl', false],   [/^ly$/, 'li', false],    // -ful / -ly
   [/^er$/, 'ɝ', false],  [/^ers$/, 'ɝz', false],  [/^est$/, 'əst', false],
   [/^ing$/, 'ɪŋ', false],  [/^ed$/, 'd', false],
+  [/^ves$/, 'vz', false],           // -ves plural (loaves/calves/wolves/selves)
   [/^e?s$/, 'z', false],           // -es/-s (plural/3rd person)
   [/^age$/, 'ɪdʒ', false],  [/^ive$/, 'ɪv', false],   // -age/-ive (package/active)
   [/^ism$/, 'ɪzəm', false], [/^ist$/, 'ɪst', false],  // -ism/-ist
