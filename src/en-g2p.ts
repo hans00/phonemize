@@ -497,7 +497,7 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/oʊɹ/g, 'ɔɹ');  // o-open-syllable before r: lora/oral/oracle/story/glory
       result = result.replace(/ɡɑl(?=d)/g, 'ɡoʊɫ');  result = result.replace(/^kɑlt/, 'koʊlt');  // gold- / colt- compounds
       result = result.replace(/əhl/g, 'ɑl');   // Scandinavian -ahl: dahl/lindahl/nordahl → /ɑl/ (h silent, a not reduced)
-      result = result.replace(/([pbtdkɡfvszʃθmnlhjwɫ])ɹoʊst/g, '$1ɹɑst');  // German -rost: frost/brost/drost → ɑ not oʊ
+      result = result.replace(/([pbtdkɡfvszʃθmnlhjwɫ])ɹoʊst/g, '$1ɹɑst');  result = result.replace(/bɹoʊd/g, 'bɹɔd');  result = result.replace(/^ʌnɪ/, 'junɪ');  // German -rost, broad/abroad → ɔ, uni- → ju
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
