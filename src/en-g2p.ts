@@ -117,7 +117,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^aught/, 'ɔt'],               // caught, taught, daughter, naughty, fraught
   [/^ough$/, 'ʌf'],               // rough, tough, enough (default; misses though/cough/through/bough)
   [/^alm$/, 'ɑm'],                // calm, palm, psalm (silent l + a→ɑ)
-  [/^alk$/, 'ɔk'],                // walk, talk, chalk, stalk
+  [/^alk(?=[^aeiou]|$)/, 'ɔk'],   // walk, talk, chalk, stalk, balky, chalker
   [/^al$/, 'ɔl'],                 // all, ball, call (doubled-l dedupes to "al" before this)
   [/^ind$/, 'aɪnd'],              // kind, mind, find, bind, blind, behind, rewind
   [/^ild$/, 'aɪld'],              // mild, wild, child
