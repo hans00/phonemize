@@ -1091,7 +1091,7 @@ export class EnglishG2P implements LanguageProcessor {
       });
     }
 
-    if (!isStressed && isLastSyllable && syllableIndex > 0 && !hadDoubledL) {
+    if (!isStressed && isLastSyllable && syllableIndex > 0 && !/all$/i.test(syllable)) {
       applyReduction({
         'ɑɹ': 'ɑɹ', 'ɔɹ': 'ɔɹ', 'ɔɪ': 'ɔɪ',
         'æ': 'ə', 'ɛ': 'ə', 'ɑ': 'ə', 'ʌ': 'ə', 'ɔ': 'ə',
