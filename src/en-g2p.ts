@@ -456,6 +456,9 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/æ{2,}/g, "ɑ"], // double-a → ɑ (baalbek, baasch, baatz)
   [/ɪæ$/, "iə"], // word-final -ia: sɪnðɪæ→sɪnðiə (cynthia/sylvia)
   [/zjʊɹ$/, "ʒɝ"], // -zure: seizure/azure → ʒɝ
+  [/nð$/, "nθ"], // word-final -nth: absinthe/labyrinth → nθ
+  [/lð/g, "lθ"], // -lth- cluster: altherr/waltham → lθ
+  [/ɹð/g, "ɹθ"], // -rth- cluster: carthage/barthelemy → ɹθ
 ];
 
 // --- EnglishG2P Class ---
@@ -771,6 +774,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/^eɪ/, "aɪ");
       if (/(?:berg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein)$/.test(lowerWord) && lowerWord.includes("ei"))
         result = result.replace(/eɪ/g, "aɪ");
+      if (/(?:thet|theis|thesis|thesia|thentic|theon)/.test(lowerWord) && result.includes("ð"))
+        result = result.replace(/ð/g, "θ");
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
@@ -1452,10 +1457,11 @@ export class EnglishG2P implements LanguageProcessor {
         (pattern.source === "^lion$" ||
           pattern.source === "^scien$" ||
           pattern.source === "^ford$" ||
-          pattern.source === "^ward$" ||
-          pattern.source === "^the$") &&
+          pattern.source === "^ward$") &&
         syllableIndex === 0
       )
+        continue;
+      if (pattern.source === "^the$" && (syllableIndex === 0 || !isLastSyllable))
         continue;
       if (remaining.match(pattern)) {
         steps?.push({
