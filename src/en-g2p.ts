@@ -858,6 +858,10 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/dʒ([ɛəɪ])n$/, "ɡ$1n");
       if (/(?:gerd|gert)$/.test(lowerWord))
         result = result.replace(/dʒɝ([dt])$/, "ɡɝ$1");
+      if (lowerWord.startsWith("kh"))
+        result = result.replace(/^kh/, "k");
+      if (lowerWord.startsWith("dh"))
+        result = result.replace(/^dh/, "d");
       if (lowerWord.startsWith("orch"))
         result = result.replace(/^ɔɹtʃ/, "ɔɹk");
       if (lowerWord.includes("chord"))
