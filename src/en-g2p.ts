@@ -1086,7 +1086,7 @@ export class EnglishG2P implements LanguageProcessor {
       for (let j = 0; j < i; j++) {
         // Prioritize longer chunks
         const chunk = word.substring(j, i);
-        if (dp[j] !== undefined && this.dictionary[chunk]) {
+        if (dp[j] !== undefined && chunk.length >= 3 && this.dictionary[chunk]) {
           const newDecomposition = [...dp[j]!, chunk];
           // Prefer decompositions with fewer (longer) words.
           if (!dp[i] || newDecomposition.length < dp[i]!.length) {
