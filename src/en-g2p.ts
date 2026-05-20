@@ -780,6 +780,12 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/tʃ([ɛəɪ])/, "k$1");
       if (/^g[ei]/.test(lowerWord) && /(?:berg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein)$/.test(lowerWord))
         result = result.replace(/^dʒ/, "ɡ");
+      if (lowerWord.endsWith("worth"))
+        result = result.replace(/ɔɹθ$/, "ɝθ");
+      if (lowerWord.endsWith("world"))
+        result = result.replace(/ɔɹld$/, "ɝld");
+      if (lowerWord.endsWith("works") || lowerWord.endsWith("work"))
+        result = result.replace(/ɔɹk(s?)$/, "ɝk$1");
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
