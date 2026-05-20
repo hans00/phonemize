@@ -185,8 +185,7 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ist$/, "ɪst", false], // -ism/-ist
   [/^ity$/, "əti", false],
   [/^al$/, "əl", false], // -ity / -al
-  [/^ic$/, "ɪk", true],
-  [/^ics$/, "ɪks", true], // -ic/-ics attract stress (economic/mathematics)
+  [/^ic(s?)$/, "ɪk$1", true], // -ic/-ics attract stress (economic/mathematics)
   [/^lity$/, "ləti", false],
   [/^ty$/, "ti", false],
   [/^[ae]ry$/, "ɛri", false],
@@ -422,9 +421,8 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/oʊdʒɪk$/, "ɑdʒɪk"],
   [/ənoʊ/g, "ɑnoʊ"],
   [/ætɪv$/, "ətɪv"],
-  [/nɑɹi$/, "nɛɹi"],
   [/ɑɹi$/, "ɛɹi"],
-  [/æbli$/, "əbli"],
+  [/[æɪ]bli$/, "əbli"],
   [/ɑl([dtskp])/g, "oʊl$1"],
   [/əhl/g, "ɑl"],
   [/([pbtdkɡfvszʃθmnlhjwɫ])ɹoʊst/g, "$1ɹɑst"],
@@ -436,8 +434,7 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/([tsn])aɪv$/g, "$1ɪv"],
   [/([^aeiouæɑɔɛɪuoəɝʌ])ɪtɪv$/g, "$1ətɪv"],
   [/ɡuʃ/g, "ɡwɪʃ"],
-  [/məkɝ$/, "meɪkɝ"],
-  [/məkɪŋ$/, "meɪkɪŋ"],
+  [/mək(ɝ|ɪŋ)$/, "meɪk$1"],
   [/məstɝ$/, "mæstɝ"],
   [/ɪ([nlkfvmt])eɪʃən$/, "ə$1eɪʃən"],
   [/ɪ([nk])eɪt$/, "ə$1eɪt"],
@@ -449,7 +446,6 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/ɝɹeɪʃən$/, "ɝeɪʃən"],
   [/ɪnɪti$/, "ɪnəti"],
   [/ɛntɛɹi$/, "əntɛɹi"],
-  [/ɪbli$/, "əbli"],
   [/ɪtud$/, "ətud"],
   [/oʊleɪt$/, "ɑleɪt"],
   [/aʊɹ(?=[^aeiouæɛɪɑɔʌʊ])/g, "uɹ"], // French -our- before consonant (belcourt/bournonville)
@@ -457,8 +453,7 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/ɪæ$/, "iə"], // word-final -ia: sɪnðɪæ→sɪnðiə (cynthia/sylvia)
   [/zjʊɹ$/, "ʒɝ"], // -zure: seizure/azure → ʒɝ
   [/nð$/, "nθ"], // word-final -nth: absinthe/labyrinth → nθ
-  [/lð/g, "lθ"], // -lth- cluster: altherr/waltham → lθ
-  [/ɹð/g, "ɹθ"], // -rth- cluster: carthage/barthelemy → ɹθ
+  [/([lɹ])ð/g, "$1θ"], // -lth-/-rth- cluster: altherr/waltham/carthage → lθ/ɹθ
 ];
 
 // --- EnglishG2P Class ---
@@ -785,7 +780,9 @@ export class EnglishG2P implements LanguageProcessor {
       if (/(?:berg|burg)$/.test(lowerWord) && (lowerWord.includes("ge") || lowerWord.includes("gi")) &&
           !lowerWord.includes("nge") && !lowerWord.includes("ngi"))
         result = result.replace(/dʒ/g, "ɡ");
-      if (lowerWord.endsWith("ger") && lowerWord.length >= 7 && /[bcdfghjklmnpqrstvwxyz]{2}ger$/.test(lowerWord))
+      if (lowerWord.endsWith("ger") && (
+          (lowerWord.length >= 7 && /[bcdfghjklmnpqrstvwxyz]{2}ger$/.test(lowerWord)) ||
+          (lowerWord.length >= 8 && !/(?:anger|inger|onger|enger|ager)$/.test(lowerWord))))
         result = result.replace(/dʒɝ$/, "ɡɝ");
       if (lowerWord.endsWith("gers") && lowerWord.length >= 7 && !/(?:[ao]ngers|agers|ingers|ungers)$/.test(lowerWord))
         result = result.replace(/dʒɝz$/, "ɡɝz");
@@ -793,12 +790,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/dʒɛn$/, "ɡɛn").replace(/dʒən$/, "ɡən");
       if (lowerWord.endsWith("ford") && lowerWord.length > 4)
         result = result.replace(/ɔɹd$/, "ɝd");
-      if (lowerWord.endsWith("worth"))
-        result = result.replace(/ɔɹθ$/, "ɝθ");
-      if (lowerWord.endsWith("world"))
-        result = result.replace(/ɔɹld$/, "ɝld");
-      if (lowerWord.endsWith("works") || lowerWord.endsWith("work"))
-        result = result.replace(/ɔɹk(s?)$/, "ɝk$1");
+      if (/(?:worth|world|works?)$/.test(lowerWord))
+        result = result.replace(/ɔɹ(θ|ld|ks?)$/, "ɝ$1");
       if (lowerWord.endsWith("oir"))
         result = result.replace(/ɔɪɹ$/, "wɑɹ");
       if (lowerWord.endsWith("ingham") && lowerWord.length >= 9)
@@ -813,8 +806,6 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/tʃt$/, "kt");
       if (lowerWord.endsWith("hagen"))
         result = result.replace(/dʒ([ɛəɪ])n$/, "ɡ$1n");
-      if (lowerWord.endsWith("ger") && lowerWord.length >= 8 && !/(?:anger|inger|onger|enger|ager)$/.test(lowerWord))
-        result = result.replace(/dʒɝ$/, "ɡɝ");
       if (/(?:gerd|gert)$/.test(lowerWord))
         result = result.replace(/dʒɝ([dt])$/, "ɡɝ$1");
 
