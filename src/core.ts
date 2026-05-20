@@ -57,7 +57,10 @@ export function phonemize(text: string, returnArray: true): PhonemeToken[];
  * to bias dispatch toward processors matching that tag.
  */
 export function phonemize(text: string, language: string): string;
-export function phonemize(text: string, arg: PhonemizeArg = {}): string | PhonemeToken[] {
+export function phonemize(
+  text: string,
+  arg: PhonemizeArg = {},
+): string | PhonemeToken[] {
   const options = normalizeArg(arg);
   const tokenizer = new Tokenizer(options);
   return options.returnArray
@@ -80,7 +83,7 @@ export function toIPA(
   options?: Omit<TokenizerOptions, "format"> | string,
 ): string {
   const opts =
-    typeof options === "string" ? { language: options } : options ?? {};
+    typeof options === "string" ? { language: options } : (options ?? {});
   const ipaOptions: TokenizerOptions = { ...opts, format: "ipa" };
   return new Tokenizer(ipaOptions).tokenizeToString(text);
 }
@@ -93,7 +96,7 @@ export function toARPABET(
   options?: Omit<TokenizerOptions, "format"> | string,
 ): string {
   const opts =
-    typeof options === "string" ? { language: options } : options ?? {};
+    typeof options === "string" ? { language: options } : (options ?? {});
   const arpabetOptions: TokenizerOptions = { ...opts, format: "arpabet" };
   return new Tokenizer(arpabetOptions).tokenizeToString(text);
 }
@@ -108,7 +111,7 @@ export function toZhuyin(
   options?: Omit<TokenizerOptions, "format"> | string,
 ): string {
   const opts =
-    typeof options === "string" ? { language: options } : options ?? {};
+    typeof options === "string" ? { language: options } : (options ?? {});
   const zhuyinOptions: TokenizerOptions = { ...opts, format: "zhuyin" };
   return new Tokenizer(zhuyinOptions).tokenizeToString(text);
 }
@@ -224,8 +227,12 @@ export class Phonemizer {
       : tokenizer.tokenizeToString(text);
   }
 
-  toIPA(text: string, options?: Omit<TokenizerOptions, "format"> | string): string {
-    const opts = typeof options === "string" ? { language: options } : options ?? {};
+  toIPA(
+    text: string,
+    options?: Omit<TokenizerOptions, "format"> | string,
+  ): string {
+    const opts =
+      typeof options === "string" ? { language: options } : (options ?? {});
     return new Tokenizer({
       ...opts,
       format: "ipa",
@@ -234,8 +241,12 @@ export class Phonemizer {
     }).tokenizeToString(text);
   }
 
-  toARPABET(text: string, options?: Omit<TokenizerOptions, "format"> | string): string {
-    const opts = typeof options === "string" ? { language: options } : options ?? {};
+  toARPABET(
+    text: string,
+    options?: Omit<TokenizerOptions, "format"> | string,
+  ): string {
+    const opts =
+      typeof options === "string" ? { language: options } : (options ?? {});
     return new Tokenizer({
       ...opts,
       format: "arpabet",
@@ -244,8 +255,12 @@ export class Phonemizer {
     }).tokenizeToString(text);
   }
 
-  toZhuyin(text: string, options?: Omit<TokenizerOptions, "format"> | string): string {
-    const opts = typeof options === "string" ? { language: options } : options ?? {};
+  toZhuyin(
+    text: string,
+    options?: Omit<TokenizerOptions, "format"> | string,
+  ): string {
+    const opts =
+      typeof options === "string" ? { language: options } : (options ?? {});
     return new Tokenizer({
       ...opts,
       format: "zhuyin",
@@ -254,7 +269,11 @@ export class Phonemizer {
     }).tokenizeToString(text);
   }
 
-  addPronunciation(word: string, pronunciation: string, language?: string): void {
+  addPronunciation(
+    word: string,
+    pronunciation: string,
+    language?: string,
+  ): void {
     if (!word?.trim() || !pronunciation?.trim()) {
       throw new Error("Both word and pronunciation must be non-empty strings");
     }

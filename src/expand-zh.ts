@@ -96,7 +96,10 @@ function readCurrency(amount: string, unit: string): string {
     return numberToWords(parseInt(amount, 10)) + unit;
   }
   const whole = parseInt(amount.slice(0, dot), 10);
-  const fractional = amount.slice(dot + 1).padEnd(2, "0").slice(0, 2);
+  const fractional = amount
+    .slice(dot + 1)
+    .padEnd(2, "0")
+    .slice(0, 2);
   const jiao = parseInt(fractional[0], 10);
   const fen = parseInt(fractional[1], 10);
   let result = numberToWords(whole) + unit;
@@ -110,8 +113,12 @@ export function expandChineseText(text: string): string {
   text = text.replace(/(\d{4})年/g, (_, year) => digitByDigit(year) + "年");
 
   // Currency: ¥/￥ -> 元, $ -> 美元.
-  text = text.replace(/[¥￥]\s*(\d+(?:\.\d+)?)/g, (_, amt) => readCurrency(amt, "元"));
-  text = text.replace(/\$\s*(\d+(?:\.\d+)?)/g, (_, amt) => readCurrency(amt, "美元"));
+  text = text.replace(/[¥￥]\s*(\d+(?:\.\d+)?)/g, (_, amt) =>
+    readCurrency(amt, "元"),
+  );
+  text = text.replace(/\$\s*(\d+(?:\.\d+)?)/g, (_, amt) =>
+    readCurrency(amt, "美元"),
+  );
 
   // Time HH:MM (24-hour or 12-hour, no AM/PM handling).
   text = text.replace(/\b(\d{1,2}):(\d{2})\b/g, (_, h, m) => {
@@ -123,7 +130,10 @@ export function expandChineseText(text: string): string {
   });
 
   // Ordinal 第N → 第 + cardinal reading.
-  text = text.replace(/第(\d+)/g, (_, n) => "第" + numberToWords(parseInt(n, 10)));
+  text = text.replace(
+    /第(\d+)/g,
+    (_, n) => "第" + numberToWords(parseInt(n, 10)),
+  );
 
   // Percent: pulled before generic decimal so the % suffix is consumed.
   text = text.replace(/(\d+(?:\.\d+)?)%/g, (_, n) => {

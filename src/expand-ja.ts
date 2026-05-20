@@ -10,7 +10,16 @@
  */
 
 const JA_DIGITS = [
-  "ぜろ", "いち", "に", "さん", "よん", "ご", "ろく", "なな", "はち", "きゅう",
+  "ぜろ",
+  "いち",
+  "に",
+  "さん",
+  "よん",
+  "ご",
+  "ろく",
+  "なな",
+  "はち",
+  "きゅう",
 ];
 const JA_TEN = "じゅう";
 const JA_HUNDRED = "ひゃく";
@@ -65,7 +74,10 @@ function digitByDigit(s: string): string {
 export function expandJapaneseText(text: string): string {
   // Year + 年 → full positional reading (にせんにじゅうよねん). Japanese
   // TTS typically reads years compositionally, not digit-by-digit.
-  text = text.replace(/(\d{4})年/g, (_, year) => numberToWords(parseInt(year, 10)) + "ねん");
+  text = text.replace(
+    /(\d{4})年/g,
+    (_, year) => numberToWords(parseInt(year, 10)) + "ねん",
+  );
 
   // Currency: ¥/￥ → えん, $ → どる.
   text = text.replace(/[¥￥]\s*(\d+(?:\.\d+)?)/g, (_, n) => {
@@ -83,13 +95,18 @@ export function expandJapaneseText(text: string): string {
   text = text.replace(/(\d+(?:\.\d+)?)%/g, (_, n) => {
     const dot = n.indexOf(".");
     if (dot === -1) return numberToWords(parseInt(n, 10)) + "ぱーせんと";
-    return numberToWords(parseInt(n.slice(0, dot), 10)) + "てん" +
-      digitByDigit(n.slice(dot + 1)) + "ぱーせんと";
+    return (
+      numberToWords(parseInt(n.slice(0, dot), 10)) +
+      "てん" +
+      digitByDigit(n.slice(dot + 1)) +
+      "ぱーせんと"
+    );
   });
 
   // Decimal.
-  text = text.replace(/(\d+)\.(\d+)/g, (_, w, d) =>
-    numberToWords(parseInt(w, 10)) + "てん" + digitByDigit(d),
+  text = text.replace(
+    /(\d+)\.(\d+)/g,
+    (_, w, d) => numberToWords(parseInt(w, 10)) + "てん" + digitByDigit(d),
   );
 
   // Remaining integers.

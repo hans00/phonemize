@@ -27,9 +27,8 @@ import * as lexicalData from "../src-data/en-gb/lexical.json";
  * from AmE in ways no general phonological rule predicts. Edit the JSON
  * to add or correct entries; keep this file rule-only.
  */
-const RP_LEXICAL: Record<string, string> = resolveJson<Record<string, string>>(
-  lexicalData,
-);
+const RP_LEXICAL: Record<string, string> =
+  resolveJson<Record<string, string>>(lexicalData);
 
 /**
  * Pure rule-based AmE → RP transformation. Order matters: rhotic-vowel

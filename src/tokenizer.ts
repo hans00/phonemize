@@ -20,7 +20,8 @@ import type ChineseG2P from "./zh-g2p";
 // curly quotes (often produced by smart-quote substitution in source text),
 // so that `knight's`, `it's`, and `o'clock` survive as single word tokens
 // regardless of which apostrophe variant the input uses.
-const TOKEN_REGEX = /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+[''\u2018\u2019]?\w*|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
+const TOKEN_REGEX =
+  /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+[''\u2018\u2019]?\w*|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
 
 /**
  * Configuration options for tokenizer behavior
@@ -97,7 +98,9 @@ interface PreprocessResult {
  * Main tokenizer class for phoneme processing
  */
 export class Tokenizer {
-  protected readonly options: Required<Omit<TokenizerOptions, "language" | "registry">> & {
+  protected readonly options: Required<
+    Omit<TokenizerOptions, "language" | "registry">
+  > & {
     language: string | undefined;
   };
   protected readonly registry: LanguageRegistry;
@@ -139,8 +142,15 @@ export class Tokenizer {
     const hanIsJa =
       analysis.hanIsJa ||
       (this.options.language?.toLowerCase().startsWith("ja") ?? false);
-    const expanded = preProcessByScript(text, this.registry, this.options.language);
-    const { words, languageMap, segments } = this._detectLanguagesAndSegment(expanded, hanIsJa);
+    const expanded = preProcessByScript(
+      text,
+      this.registry,
+      this.options.language,
+    );
+    const { words, languageMap, segments } = this._detectLanguagesAndSegment(
+      expanded,
+      hanIsJa,
+    );
 
     if (!this.options.anyAscii) {
       return {
@@ -170,31 +180,34 @@ export class Tokenizer {
    * per-character segment language and the per-word `languageMap` agree
    * with whichever G2P will actually be dispatched to.
    */
-  private _detectLanguagesAndSegment(text: string, hanIsJa: boolean = false): {
-    words: string[],
-    languageMap: Record<string, string>,
-    segments: LanguageSegment[]
+  private _detectLanguagesAndSegment(
+    text: string,
+    hanIsJa: boolean = false,
+  ): {
+    words: string[];
+    languageMap: Record<string, string>;
+    segments: LanguageSegment[];
   } {
     const words = text.split(/(\s+)/);
     const languageMap: Record<string, string> = {};
     const segments: LanguageSegment[] = [];
-    
-    let currentSegment = '';
-    let currentLanguage = '';
+
+    let currentSegment = "";
+    let currentLanguage = "";
     let segmentStartIndex = 0;
-    
+
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
       let charLang = this._detectCharLanguage(char);
-      if (hanIsJa && charLang === 'zh') charLang = 'ja';
+      if (hanIsJa && charLang === "zh") charLang = "ja";
 
       if (charLang !== currentLanguage) {
         // Language changed - save current segment if not empty
         if (currentSegment.trim()) {
           segments.push({
             text: currentSegment,
-            language: currentLanguage || 'en',
-            startIndex: segmentStartIndex
+            language: currentLanguage || "en",
+            startIndex: segmentStartIndex,
           });
         }
         // Start new segment
@@ -210,8 +223,8 @@ export class Tokenizer {
     if (currentSegment.trim()) {
       segments.push({
         text: currentSegment,
-        language: currentLanguage || 'en',
-        startIndex: segmentStartIndex
+        language: currentLanguage || "en",
+        startIndex: segmentStartIndex,
       });
     }
 
@@ -220,7 +233,7 @@ export class Tokenizer {
       const trimmed = word.trim();
       if (trimmed && !PUNCTUATION.includes(trimmed)) {
         let detectedLang = detectLanguage(trimmed);
-        if (hanIsJa && detectedLang === 'zh') detectedLang = 'ja';
+        if (hanIsJa && detectedLang === "zh") detectedLang = "ja";
         if (detectedLang) {
           languageMap[trimmed.toLowerCase()] = detectedLang;
         }
@@ -233,14 +246,17 @@ export class Tokenizer {
   /**
    * Apply anyAscii conversion while preserving Chinese text
    */
-  private _applyAnyAscii(words: string[], languageMap: Record<string, string>): string {
-    let processedText = '';
+  private _applyAnyAscii(
+    words: string[],
+    languageMap: Record<string, string>,
+  ): string {
+    let processedText = "";
 
     for (const word of words) {
       const trimmed = word.trim();
       if (trimmed && !PUNCTUATION.includes(trimmed)) {
         const detectedLang = languageMap[trimmed.toLowerCase()];
-        if (detectedLang === 'zh') {
+        if (detectedLang === "zh") {
           // Preserve Chinese text for G2P processing
           processedText += word;
         } else {
@@ -259,54 +275,64 @@ export class Tokenizer {
     return processedText;
   }
 
-
-
   /**
    * Fast character-level language detection
    */
   private _detectCharLanguage(char: string): string {
     const code = char.charCodeAt(0);
-    
+
     // Chinese (CJK) - most common ranges first
-    if ((code >= 0x4e00 && code <= 0x9fff) ||     // CJK Unified Ideographs
-        (code >= 0x3400 && code <= 0x4dbf) ||     // CJK Extension A
-        (code >= 0x20000 && code <= 0x2a6df)) {   // CJK Extension B
-      return 'zh';
+    if (
+      (code >= 0x4e00 && code <= 0x9fff) || // CJK Unified Ideographs
+      (code >= 0x3400 && code <= 0x4dbf) || // CJK Extension A
+      (code >= 0x20000 && code <= 0x2a6df)
+    ) {
+      // CJK Extension B
+      return "zh";
     }
-    
+
     // Japanese
-    if ((code >= 0x3040 && code <= 0x309f) ||     // Hiragana
-        (code >= 0x30a0 && code <= 0x30ff)) {     // Katakana
-      return 'ja';
+    if (
+      (code >= 0x3040 && code <= 0x309f) || // Hiragana
+      (code >= 0x30a0 && code <= 0x30ff)
+    ) {
+      // Katakana
+      return "ja";
     }
-    
+
     // Korean
-    if ((code >= 0xac00 && code <= 0xd7af) ||     // Hangul Syllables
-        (code >= 0x1100 && code <= 0x11ff) ||     // Hangul Jamo
-        (code >= 0x3130 && code <= 0x318f)) {     // Hangul Compatibility Jamo
-      return 'ko';
+    if (
+      (code >= 0xac00 && code <= 0xd7af) || // Hangul Syllables
+      (code >= 0x1100 && code <= 0x11ff) || // Hangul Jamo
+      (code >= 0x3130 && code <= 0x318f)
+    ) {
+      // Hangul Compatibility Jamo
+      return "ko";
     }
-    
+
     // Thai
     if (code >= 0x0e00 && code <= 0x0e7f) {
-      return 'th';
+      return "th";
     }
-    
+
     // Arabic
-    if ((code >= 0x0600 && code <= 0x06ff) ||     // Arabic
-        (code >= 0x0750 && code <= 0x077f) ||     // Arabic Supplement
-        (code >= 0xfb50 && code <= 0xfdff) ||     // Arabic Presentation Forms-A
-        (code >= 0xfe70 && code <= 0xfeff)) {     // Arabic Presentation Forms-B
-      return 'ar';
+    if (
+      (code >= 0x0600 && code <= 0x06ff) || // Arabic
+      (code >= 0x0750 && code <= 0x077f) || // Arabic Supplement
+      (code >= 0xfb50 && code <= 0xfdff) || // Arabic Presentation Forms-A
+      (code >= 0xfe70 && code <= 0xfeff)
+    ) {
+      // Arabic Presentation Forms-B
+      return "ar";
     }
-    
+
     // Cyrillic (Russian, etc.)
     if (code >= 0x0400 && code <= 0x04ff) {
-      return 'ru';
+      return "ru";
     }
-    
+
     // Default to English/Latin
-    return 'en';
+    return "en";
   }
 
   /**
@@ -316,7 +342,7 @@ export class Tokenizer {
     if (this.options.format === "arpabet") {
       // Convert to ARPABET format
       phonemes = ipaToArpabet(phonemes);
-      
+
       // Remove ARPABET stress markers if requested
       if (this.options.stripStress) {
         phonemes = phonemes.replace(/[012]/g, "");
@@ -328,13 +354,13 @@ export class Tokenizer {
       return phonemes;
     } else {
       // IPA format processing
-      
+
       // Convert Chinese tone format if requested
       if (this.options.toneFormat === "arrow") {
         phonemes = convertChineseTonesToArrows(phonemes);
       }
-      
-      // Remove IPA stress markers if requested  
+
+      // Remove IPA stress markers if requested
       if (this.options.stripStress) {
         phonemes = phonemes.replace(/[ˈˌ]/g, "");
       }
@@ -351,10 +377,18 @@ export class Tokenizer {
   /**
    * Core token processing method that handles both simple and detailed tokenization
    */
-  private _processTokens(text: string, includePositions = false): (PhonemeToken | { phoneme: string })[] {
+  private _processTokens(
+    text: string,
+    includePositions = false,
+  ): (PhonemeToken | { phoneme: string })[] {
     if (!text?.trim()) return [];
 
-    const { text: processedText, languageMap, primary, hanIsJa } = this._preprocess(text);
+    const {
+      text: processedText,
+      languageMap,
+      primary,
+      hanIsJa,
+    } = this._preprocess(text);
 
     // Get tokens with or without positions
     const tokenMatches: { token: string; position?: number }[] = [];
@@ -375,16 +409,16 @@ export class Tokenizer {
         if (token.trim()) {
           tokenMatches.push({
             token: token.trim(),
-            position: match.index
+            position: match.index,
           });
         }
       }
     } else {
       // Use simple tokenization
       const tokens = this._smartTokenize(processedText);
-      tokenMatches.push(...tokens.map(token => ({ token })));
+      tokenMatches.push(...tokens.map((token) => ({ token })));
     }
-    
+
     // For each clean (non-punctuation) token, resolve its language and ask
     // the matching language processor to POS-tag it. POS dispatch is now
     // per-language so non-English processors can supply their own tagger
@@ -398,13 +432,15 @@ export class Tokenizer {
     //   4. primary                           — document-level dominant lang
     // Then Han chars get the hanIsJa flip (analyzeText already factored in
     // the user-supplied ja* override at _preprocess time).
-    const cleanWords = tokenMatches.filter(({ token }) => !PUNCTUATION.includes(token));
+    const cleanWords = tokenMatches.filter(
+      ({ token }) => !PUNCTUATION.includes(token),
+    );
     const resolveLang = (token: string): string | undefined => {
       let lang =
-        languageMap[token.toLowerCase()]
-        ?? detectLanguage(token)
-        ?? this.options.language
-        ?? primary;
+        languageMap[token.toLowerCase()] ??
+        detectLanguage(token) ??
+        this.options.language ??
+        primary;
       if (hanIsJa && lang === "zh") lang = "ja";
       return lang;
     };
@@ -412,7 +448,8 @@ export class Tokenizer {
       const lang = resolveLang(entry.token);
       const proc = this.registry.findBestProcessor(entry.token, lang);
       const prev = i > 0 ? cleanWords[i - 1].token : undefined;
-      const next = i + 1 < cleanWords.length ? cleanWords[i + 1].token : undefined;
+      const next =
+        i + 1 < cleanWords.length ? cleanWords[i + 1].token : undefined;
       const posRes = proc?.tagWord?.(entry.token, { prev, next });
       return { lang, pos: posRes?.pos };
     });
@@ -425,9 +462,10 @@ export class Tokenizer {
 
       // Handle punctuation - preserve it
       if (PUNCTUATION.includes(cleanToken)) {
-        const result = includePositions && position !== undefined
-          ? { phoneme: cleanToken, word: cleanToken, position }
-          : { phoneme: cleanToken };
+        const result =
+          includePositions && position !== undefined
+            ? { phoneme: cleanToken, word: cleanToken, position }
+            : { phoneme: cleanToken };
         results.push(result);
         continue;
       }
@@ -445,20 +483,23 @@ export class Tokenizer {
           cleanToken,
           detectedLanguage,
         ) as ChineseG2P | null;
-        phoneme = g2p?.textToZhuyin?.(cleanToken) ?? this._predict(cleanToken, detectedLanguage, pos);
+        phoneme =
+          g2p?.textToZhuyin?.(cleanToken) ??
+          this._predict(cleanToken, detectedLanguage, pos);
       } else {
         // Regular IPA/ARPABET processing
         phoneme = this._predict(cleanToken, detectedLanguage, pos);
       }
-      
+
       // Apply custom separator to individual phonemes if needed
       if (this.options.separator !== " ") {
-        phoneme = phoneme.split(' ').join(this.options.separator);
+        phoneme = phoneme.split(" ").join(this.options.separator);
       }
 
-      const result = includePositions && position !== undefined 
-        ? { phoneme, word: cleanToken, position }
-        : { phoneme };
+      const result =
+        includePositions && position !== undefined
+          ? { phoneme, word: cleanToken, position }
+          : { phoneme };
       results.push(result);
     }
 
@@ -470,7 +511,7 @@ export class Tokenizer {
    */
   public tokenize(text: string): string[] {
     const tokens = this._processTokens(text, false);
-    return tokens.map(token => token.phoneme);
+    return tokens.map((token) => token.phoneme);
   }
 
   /**
@@ -479,27 +520,27 @@ export class Tokenizer {
   private _smartTokenize(text: string): string[] {
     const tokens: string[] = [];
     let match;
-    
+
     while ((match = TOKEN_REGEX.exec(text)) !== null) {
       const token = match[1];
-      
+
       // Skip pure whitespace tokens
       if (/^\s+$/.test(token)) {
         continue;
       }
-      
+
       // Handle punctuation - only add if it's in our known punctuation list
       if (token.length === 1 && PUNCTUATION.includes(token)) {
         tokens.push(token);
         continue;
       }
-      
+
       // Add word tokens (Chinese, English, numbers, contractions, etc.)
       if (token.trim()) {
         tokens.push(token.trim());
       }
     }
-    
+
     return tokens;
   }
 
@@ -508,13 +549,13 @@ export class Tokenizer {
    */
   public tokenizeToString(text: string): string {
     const phonemes = this.tokenize(text);
-    
+
     // Join phonemes, handling punctuation attachment properly
     const result: string[] = [];
-    
+
     for (let i = 0; i < phonemes.length; i++) {
       const phoneme = phonemes[i];
-      
+
       if (PUNCTUATION.includes(phoneme)) {
         // Attach punctuation to previous phoneme without space
         if (result.length > 0) {
@@ -527,7 +568,7 @@ export class Tokenizer {
         result.push(phoneme);
       }
     }
-    
+
     return result.join(this.options.separator);
   }
 
@@ -536,6 +577,6 @@ export class Tokenizer {
    */
   public tokenizeToTokens(text: string): PhonemeToken[] {
     const tokens = this._processTokens(text, true);
-    return tokens.filter((token): token is PhonemeToken => 'word' in token);
+    return tokens.filter((token): token is PhonemeToken => "word" in token);
   }
 }

@@ -64,7 +64,8 @@
     "build-dict": "tsx scripts/build-dict.ts",
     "prebuild": "yarn build-dict",
     "dev": "tsx src/index.ts",
-    "release": "release-it"
+    "release": "release-it",
+    "pretty": "prettier -w src"
   },
   "files": [
     "dist/"
@@ -104,6 +105,7 @@
     "json5": "^2.2.3",
     "nyc": "^17.1.0",
     "openai": "^5.7.0",
+    "prettier": "^3.8.3",
     "release-it": "^19.0.3",
     "rollup": "^4.46.3",
     "rollup-plugin-cleanup": "^3.2.1",

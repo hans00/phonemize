@@ -14,19 +14,49 @@
  */
 
 const RU_ONES = [
-  "ноль", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять",
-  "десять", "одиннадцать", "двенадцать", "тринадцать", "четырнадцать", "пятнадцать",
-  "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать",
+  "ноль",
+  "один",
+  "два",
+  "три",
+  "четыре",
+  "пять",
+  "шесть",
+  "семь",
+  "восемь",
+  "девять",
+  "десять",
+  "одиннадцать",
+  "двенадцать",
+  "тринадцать",
+  "четырнадцать",
+  "пятнадцать",
+  "шестнадцать",
+  "семнадцать",
+  "восемнадцать",
+  "девятнадцать",
 ];
 
 const RU_TENS: Record<number, string> = {
-  20: "двадцать", 30: "тридцать", 40: "сорок", 50: "пятьдесят",
-  60: "шестьдесят", 70: "семьдесят", 80: "восемьдесят", 90: "девяносто",
+  20: "двадцать",
+  30: "тридцать",
+  40: "сорок",
+  50: "пятьдесят",
+  60: "шестьдесят",
+  70: "семьдесят",
+  80: "восемьдесят",
+  90: "девяносто",
 };
 
 const RU_HUNDREDS: Record<number, string> = {
-  100: "сто", 200: "двести", 300: "триста", 400: "четыреста",
-  500: "пятьсот", 600: "шестьсот", 700: "семьсот", 800: "восемьсот", 900: "девятьсот",
+  100: "сто",
+  200: "двести",
+  300: "триста",
+  400: "четыреста",
+  500: "пятьсот",
+  600: "шестьсот",
+  700: "семьсот",
+  800: "восемьсот",
+  900: "девятьсот",
 };
 
 type PluralForms = [one: string, few: string, many: string];
@@ -87,9 +117,15 @@ function numberToWords(n: number): string {
   const base = n % 1000;
 
   const parts: string[] = [];
-  if (billions > 0) parts.push(readUnder1000(billions), pluralForm(billions, BILLION_FORMS));
-  if (millions > 0) parts.push(readUnder1000(millions), pluralForm(millions, MILLION_FORMS));
-  if (thousands > 0) parts.push(readThousandsGroup(thousands), pluralForm(thousands, THOUSAND_FORMS));
+  if (billions > 0)
+    parts.push(readUnder1000(billions), pluralForm(billions, BILLION_FORMS));
+  if (millions > 0)
+    parts.push(readUnder1000(millions), pluralForm(millions, MILLION_FORMS));
+  if (thousands > 0)
+    parts.push(
+      readThousandsGroup(thousands),
+      pluralForm(thousands, THOUSAND_FORMS),
+    );
   if (base > 0) parts.push(readUnder1000(base));
   return parts.join(" ");
 }
@@ -102,7 +138,9 @@ function readWithUnit(numStr: string, forms: PluralForms): string {
 export function expandRussianText(text: string): string {
   // Currency: ₽ / руб. → рублей, $ → долларов. Require the abbreviation
   // dot to avoid eating "руб" from a full word like "рублей".
-  text = text.replace(/(\d+)\s*(?:₽|руб\.)/g, (_, n) => readWithUnit(n, RUBLE_FORMS));
+  text = text.replace(/(\d+)\s*(?:₽|руб\.)/g, (_, n) =>
+    readWithUnit(n, RUBLE_FORMS),
+  );
   text = text.replace(/\$\s*(\d+)/g, (_, n) => readWithUnit(n, DOLLAR_FORMS));
 
   // Percent.
@@ -113,7 +151,10 @@ export function expandRussianText(text: string): string {
   // and avoids case-ridden fraction names.
   text = text.replace(/(\d+)[.,](\d+)/g, (_, w, d) => {
     const whole = numberToWords(parseInt(w, 10));
-    const frac = d.split("").map((c: string) => RU_ONES[parseInt(c, 10)] ?? c).join(" ");
+    const frac = d
+      .split("")
+      .map((c: string) => RU_ONES[parseInt(c, 10)] ?? c)
+      .join(" ");
     return whole + " точка " + frac;
   });
 

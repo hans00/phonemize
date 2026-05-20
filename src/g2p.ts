@@ -60,7 +60,10 @@ export interface LanguageProcessor {
    * Implementations that don't model POS should leave this undefined;
    * `predict` will then receive `undefined` for the `pos` argument.
    */
-  tagWord?(word: string, context?: { prev?: string; next?: string }): { pos: string; confidence: number } | null;
+  tagWord?(
+    word: string,
+    context?: { prev?: string; next?: string },
+  ): { pos: string; confidence: number } | null;
 
   /**
    * Predict phonemes for a given word
@@ -160,7 +163,11 @@ export class LanguageRegistry {
     // for a request `en-US-x-foo` a processor declaring `en-US` must
     // outrank one declaring bare `en`. We track each parent's best
     // matching prefix length and stable-sort by it descending.
-    const parentEntries: { proc: LanguageProcessor; matchLen: number; order: number }[] = [];
+    const parentEntries: {
+      proc: LanguageProcessor;
+      matchLen: number;
+      order: number;
+    }[] = [];
     let idx = 0;
     for (const p of this.order) {
       let isExact = false;
@@ -181,9 +188,7 @@ export class LanguageRegistry {
       }
       idx++;
     }
-    parentEntries.sort((a, b) =>
-      b.matchLen - a.matchLen || a.order - b.order,
-    );
+    parentEntries.sort((a, b) => b.matchLen - a.matchLen || a.order - b.order);
     // Prefer exact dialect match (en-GB) over parent (en) match.
     return exact.concat(parentEntries.map((e) => e.proc));
   }
@@ -198,7 +203,10 @@ export class LanguageRegistry {
    * then parent-tag processors. With no language we fall back to the
    * first registered processor.
    */
-  findBestProcessor(_word: string, language?: string): LanguageProcessor | null {
+  findBestProcessor(
+    _word: string,
+    language?: string,
+  ): LanguageProcessor | null {
     if (language) {
       const matches = this.getProcessorsForLanguage(language);
       if (matches.length > 0) return matches[0];
@@ -287,12 +295,11 @@ function classifyChar(code: number, hanLang: string = "zh"): string {
     (code >= 0x4e00 && code <= 0x9fff) ||
     (code >= 0x3400 && code <= 0x4dbf) ||
     (code >= 0xf900 && code <= 0xfaff)
-  ) return hanLang;
+  )
+    return hanLang;
   // Hiragana + Katakana
-  if (
-    (code >= 0x3040 && code <= 0x309f) ||
-    (code >= 0x30a0 && code <= 0x30ff)
-  ) return "ja";
+  if ((code >= 0x3040 && code <= 0x309f) || (code >= 0x30a0 && code <= 0x30ff))
+    return "ja";
   // Hangul Syllables
   if (code >= 0xac00 && code <= 0xd7af) return "ko";
   // Cyrillic
@@ -303,11 +310,18 @@ function classifyChar(code: number, hanLang: string = "zh"): string {
   if (code >= 0x0e00 && code <= 0x0e7f) return "th";
   // German-specific Latin diacritics — matches `detectLanguage`'s GERMAN_CHARS
   if (
-    code === 0xe4 || code === 0xf6 || code === 0xfc ||
-    code === 0xc4 || code === 0xd6 || code === 0xdc || code === 0xdf
-  ) return "de";
+    code === 0xe4 ||
+    code === 0xf6 ||
+    code === 0xfc ||
+    code === 0xc4 ||
+    code === 0xd6 ||
+    code === 0xdc ||
+    code === 0xdf
+  )
+    return "de";
   // ASCII letters
-  if ((code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)) return "en";
+  if ((code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a))
+    return "en";
   // Latin-1 supplement + Latin extended (Spanish, French, Vietnamese, …)
   if (code >= 0xc0 && code <= 0x024f) return "en";
   return "";
@@ -367,8 +381,15 @@ export interface TextAnalysis {
 }
 
 export function analyzeText(text: string): TextAnalysis {
-  let kana = 0, han = 0, hangul = 0, cyrillic = 0, arabic = 0, thai = 0, latin = 0;
-  let inHira = false, hiraClusters = 0;
+  let kana = 0,
+    han = 0,
+    hangul = 0,
+    cyrillic = 0,
+    arabic = 0,
+    thai = 0,
+    latin = 0;
+  let inHira = false,
+    hiraClusters = 0;
   for (let i = 0; i < text.length; i++) {
     const code = text.charCodeAt(i);
     const isHira = code >= 0x3040 && code <= 0x309f;
@@ -387,7 +408,8 @@ export function analyzeText(text: string): TextAnalysis {
       (code >= 0x4e00 && code <= 0x9fff) ||
       (code >= 0x3400 && code <= 0x4dbf) ||
       (code >= 0xf900 && code <= 0xfaff)
-    ) han++;
+    )
+      han++;
     else if (code >= 0xac00 && code <= 0xd7af) hangul++;
     else if (code >= 0x0400 && code <= 0x04ff) cyrillic++;
     else if (code >= 0x0600 && code <= 0x06ff) arabic++;
@@ -396,7 +418,8 @@ export function analyzeText(text: string): TextAnalysis {
       (code >= 0x41 && code <= 0x5a) ||
       (code >= 0x61 && code <= 0x7a) ||
       (code >= 0xc0 && code <= 0x024f)
-    ) latin++;
+    )
+      latin++;
   }
 
   const hanIsJa = hiraClusters >= 2;
@@ -480,7 +503,8 @@ export function preProcessByScript(
   // for short Japanese fragments like `待っている` (single hiragana cluster)
   // analyzeText conservatively keeps Han on the zh path, but a caller
   // who has already declared the language wants Han to follow that lead.
-  const hanIsJa = analysis.hanIsJa || (defaultLang?.toLowerCase().startsWith("ja") ?? false);
+  const hanIsJa =
+    analysis.hanIsJa || (defaultLang?.toLowerCase().startsWith("ja") ?? false);
   const fallback = defaultLang ?? analysis.primary;
   const runs = splitByScript(text, { hanIsJa });
   let out = "";
@@ -522,7 +546,9 @@ export function getRegisteredProcessorIds(): string[] {
   return languageRegistry.getAllProcessors().map((p) => p.id);
 }
 
-export function getProcessorsForLanguage(language: string): LanguageProcessor[] {
+export function getProcessorsForLanguage(
+  language: string,
+): LanguageProcessor[] {
   return languageRegistry.getProcessorsForLanguage(language);
 }
 

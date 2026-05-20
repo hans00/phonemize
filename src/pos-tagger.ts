@@ -123,19 +123,48 @@ const PREPOSITIONS = [
 
 // Common nouns that don't follow typical patterns
 const COMMON_NOUNS = [
-  'way', 'book', 'books', 'paper', 'time', 'people', 'world', 'life', 'hand', 
-  'part', 'child', 'eye', 'woman', 'place', 'work', 'week', 'case', 'point', 
-  'company', 'number', 'group', 'problem', 'fact'
+  "way",
+  "book",
+  "books",
+  "paper",
+  "time",
+  "people",
+  "world",
+  "life",
+  "hand",
+  "part",
+  "child",
+  "eye",
+  "woman",
+  "place",
+  "work",
+  "week",
+  "case",
+  "point",
+  "company",
+  "number",
+  "group",
+  "problem",
+  "fact",
 ];
 
 // Imperative indicators
-const IMPERATIVE_INDICATORS = ['please', "don't", 'do', "doesn't", 'never'];
+const IMPERATIVE_INDICATORS = ["please", "don't", "do", "doesn't", "never"];
 
 // Modal verbs that indicate following word is likely a verb
-const MODAL_VERBS = ['can', 'will', 'would', 'should', 'could', 'may', 'might', 'must'];
+const MODAL_VERBS = [
+  "can",
+  "will",
+  "would",
+  "should",
+  "could",
+  "may",
+  "might",
+  "must",
+];
 
 // Subject pronouns that indicate following word is likely a verb
-const SUBJECT_PRONOUNS = ['i', 'you', 'he', 'she', 'it', 'we', 'they'];
+const SUBJECT_PRONOUNS = ["i", "you", "he", "she", "it", "we", "they"];
 
 // --- Interface ---
 
@@ -153,14 +182,14 @@ export class SimplePOSTagger {
    */
   private isLikelyNoun(word: string): boolean {
     const lowerWord = word.toLowerCase();
-    
+
     // Check common noun endings
     for (const ending of NOUN_ENDINGS) {
       if (lowerWord.endsWith(ending)) {
         return true;
       }
     }
-    
+
     // Check common nouns that don't follow patterns
     return COMMON_NOUNS.includes(lowerWord);
   }
@@ -179,10 +208,11 @@ export class SimplePOSTagger {
     // Check context clues first (higher confidence)
     if (context && context.length >= 1) {
       const prevWord = context[0]?.toLowerCase(); // First element is previous word
-      const nextWord = context.length >= 2 ? context[1]?.toLowerCase() : undefined; // Second element is next word
+      const nextWord =
+        context.length >= 2 ? context[1]?.toLowerCase() : undefined; // Second element is next word
 
       // Enhanced detection patterns - highest priority first
-      
+
       // Previous word is determiner -> likely noun (HIGHEST priority for structural patterns)
       if (prevWord && DETERMINERS.includes(prevWord)) {
         return { word, pos: "!V", confidence: 0.95 };

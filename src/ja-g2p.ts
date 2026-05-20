@@ -4,42 +4,93 @@ import { resolveJson } from "./utils";
 import { LanguageProcessor } from "./g2p";
 import { expandJapaneseText } from "./expand-ja";
 
-interface KanjiReading { o?: string; k?: string }
+interface KanjiReading {
+  o?: string;
+  k?: string;
+}
 const KANJI_READINGS = resolveJson<Record<string, KanjiReading>>(kanjiDict);
 const KANJI_WORDS = resolveJson<Record<string, string>>(kanjiWords);
 
 // Longest-first compound key list — used in preProcess so e.g. 今日 wins
 // over 今 / 日 individual lookups during scanning.
-const KANJI_WORD_KEYS = Object.keys(KANJI_WORDS).sort((a, b) => b.length - a.length);
+const KANJI_WORD_KEYS = Object.keys(KANJI_WORDS).sort(
+  (a, b) => b.length - a.length,
+);
 const KANJI_RE = /[一-龥㐀-䶿豈-﫿]/;
 const HIRA_RE = /[ぁ-ゟ]/;
 
 // Bigram kana → Hepburn romaji. Covers palatalized digraphs
 // (consonant + small ゃ/ゅ/ょ) for both hiragana and katakana.
 const KANA_DIGRAPH: Record<string, string> = {
-  'きゃ': 'kya', 'きゅ': 'kyu', 'きょ': 'kyo',
-  'ぎゃ': 'gya', 'ぎゅ': 'gyu', 'ぎょ': 'gyo',
-  'しゃ': 'sha', 'しゅ': 'shu', 'しょ': 'sho',
-  'じゃ': 'ja',  'じゅ': 'ju',  'じょ': 'jo',
-  'ちゃ': 'cha', 'ちゅ': 'chu', 'ちょ': 'cho',
-  'ぢゃ': 'ja',  'ぢゅ': 'ju',  'ぢょ': 'jo',
-  'にゃ': 'nya', 'にゅ': 'nyu', 'にょ': 'nyo',
-  'ひゃ': 'hya', 'ひゅ': 'hyu', 'ひょ': 'hyo',
-  'びゃ': 'bya', 'びゅ': 'byu', 'びょ': 'byo',
-  'ぴゃ': 'pya', 'ぴゅ': 'pyu', 'ぴょ': 'pyo',
-  'みゃ': 'mya', 'みゅ': 'myu', 'みょ': 'myo',
-  'りゃ': 'rya', 'りゅ': 'ryu', 'りょ': 'ryo',
-  'キャ': 'kya', 'キュ': 'kyu', 'キョ': 'kyo',
-  'ギャ': 'gya', 'ギュ': 'gyu', 'ギョ': 'gyo',
-  'シャ': 'sha', 'シュ': 'shu', 'ショ': 'sho',
-  'ジャ': 'ja',  'ジュ': 'ju',  'ジョ': 'jo',
-  'チャ': 'cha', 'チュ': 'chu', 'チョ': 'cho',
-  'ニャ': 'nya', 'ニュ': 'nyu', 'ニョ': 'nyo',
-  'ヒャ': 'hya', 'ヒュ': 'hyu', 'ヒョ': 'hyo',
-  'ビャ': 'bya', 'ビュ': 'byu', 'ビョ': 'byo',
-  'ピャ': 'pya', 'ピュ': 'pyu', 'ピョ': 'pyo',
-  'ミャ': 'mya', 'ミュ': 'myu', 'ミョ': 'myo',
-  'リャ': 'rya', 'リュ': 'ryu', 'リョ': 'ryo',
+  きゃ: "kya",
+  きゅ: "kyu",
+  きょ: "kyo",
+  ぎゃ: "gya",
+  ぎゅ: "gyu",
+  ぎょ: "gyo",
+  しゃ: "sha",
+  しゅ: "shu",
+  しょ: "sho",
+  じゃ: "ja",
+  じゅ: "ju",
+  じょ: "jo",
+  ちゃ: "cha",
+  ちゅ: "chu",
+  ちょ: "cho",
+  ぢゃ: "ja",
+  ぢゅ: "ju",
+  ぢょ: "jo",
+  にゃ: "nya",
+  にゅ: "nyu",
+  にょ: "nyo",
+  ひゃ: "hya",
+  ひゅ: "hyu",
+  ひょ: "hyo",
+  びゃ: "bya",
+  びゅ: "byu",
+  びょ: "byo",
+  ぴゃ: "pya",
+  ぴゅ: "pyu",
+  ぴょ: "pyo",
+  みゃ: "mya",
+  みゅ: "myu",
+  みょ: "myo",
+  りゃ: "rya",
+  りゅ: "ryu",
+  りょ: "ryo",
+  キャ: "kya",
+  キュ: "kyu",
+  キョ: "kyo",
+  ギャ: "gya",
+  ギュ: "gyu",
+  ギョ: "gyo",
+  シャ: "sha",
+  シュ: "shu",
+  ショ: "sho",
+  ジャ: "ja",
+  ジュ: "ju",
+  ジョ: "jo",
+  チャ: "cha",
+  チュ: "chu",
+  チョ: "cho",
+  ニャ: "nya",
+  ニュ: "nyu",
+  ニョ: "nyo",
+  ヒャ: "hya",
+  ヒュ: "hyu",
+  ヒョ: "hyo",
+  ビャ: "bya",
+  ビュ: "byu",
+  ビョ: "byo",
+  ピャ: "pya",
+  ピュ: "pyu",
+  ピョ: "pyo",
+  ミャ: "mya",
+  ミュ: "myu",
+  ミョ: "myo",
+  リャ: "rya",
+  リュ: "ryu",
+  リョ: "ryo",
 };
 
 // Single-char kana → Hepburn romaji. Both hiragana (U+3040..U+309F) and
@@ -49,53 +100,180 @@ const KANA_DIGRAPH: Record<string, string> = {
 // so we replace its job for Japanese entirely.
 const KANA_SINGLE: Record<string, string> = {
   // basic vowels
-  'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
-  'ア': 'a', 'イ': 'i', 'ウ': 'u', 'エ': 'e', 'オ': 'o',
+  あ: "a",
+  い: "i",
+  う: "u",
+  え: "e",
+  お: "o",
+  ア: "a",
+  イ: "i",
+  ウ: "u",
+  エ: "e",
+  オ: "o",
   // k / g
-  'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
-  'カ': 'ka', 'キ': 'ki', 'ク': 'ku', 'ケ': 'ke', 'コ': 'ko',
-  'が': 'ga', 'ぎ': 'gi', 'ぐ': 'gu', 'げ': 'ge', 'ご': 'go',
-  'ガ': 'ga', 'ギ': 'gi', 'グ': 'gu', 'ゲ': 'ge', 'ゴ': 'go',
+  か: "ka",
+  き: "ki",
+  く: "ku",
+  け: "ke",
+  こ: "ko",
+  カ: "ka",
+  キ: "ki",
+  ク: "ku",
+  ケ: "ke",
+  コ: "ko",
+  が: "ga",
+  ぎ: "gi",
+  ぐ: "gu",
+  げ: "ge",
+  ご: "go",
+  ガ: "ga",
+  ギ: "gi",
+  グ: "gu",
+  ゲ: "ge",
+  ゴ: "go",
   // s / z
-  'さ': 'sa', 'し': 'shi', 'す': 'su', 'せ': 'se', 'そ': 'so',
-  'サ': 'sa', 'シ': 'shi', 'ス': 'su', 'セ': 'se', 'ソ': 'so',
-  'ざ': 'za', 'じ': 'ji', 'ず': 'zu', 'ぜ': 'ze', 'ぞ': 'zo',
-  'ザ': 'za', 'ジ': 'ji', 'ズ': 'zu', 'ゼ': 'ze', 'ゾ': 'zo',
+  さ: "sa",
+  し: "shi",
+  す: "su",
+  せ: "se",
+  そ: "so",
+  サ: "sa",
+  シ: "shi",
+  ス: "su",
+  セ: "se",
+  ソ: "so",
+  ざ: "za",
+  じ: "ji",
+  ず: "zu",
+  ぜ: "ze",
+  ぞ: "zo",
+  ザ: "za",
+  ジ: "ji",
+  ズ: "zu",
+  ゼ: "ze",
+  ゾ: "zo",
   // t / d
-  'た': 'ta', 'ち': 'chi', 'つ': 'tsu', 'て': 'te', 'と': 'to',
-  'タ': 'ta', 'チ': 'chi', 'ツ': 'tsu', 'テ': 'te', 'ト': 'to',
-  'だ': 'da', 'ぢ': 'ji', 'づ': 'zu', 'で': 'de', 'ど': 'do',
-  'ダ': 'da', 'ヂ': 'ji', 'ヅ': 'zu', 'デ': 'de', 'ド': 'do',
+  た: "ta",
+  ち: "chi",
+  つ: "tsu",
+  て: "te",
+  と: "to",
+  タ: "ta",
+  チ: "chi",
+  ツ: "tsu",
+  テ: "te",
+  ト: "to",
+  だ: "da",
+  ぢ: "ji",
+  づ: "zu",
+  で: "de",
+  ど: "do",
+  ダ: "da",
+  ヂ: "ji",
+  ヅ: "zu",
+  デ: "de",
+  ド: "do",
   // n
-  'な': 'na', 'に': 'ni', 'ぬ': 'nu', 'ね': 'ne', 'の': 'no',
-  'ナ': 'na', 'ニ': 'ni', 'ヌ': 'nu', 'ネ': 'ne', 'ノ': 'no',
+  な: "na",
+  に: "ni",
+  ぬ: "nu",
+  ね: "ne",
+  の: "no",
+  ナ: "na",
+  ニ: "ni",
+  ヌ: "nu",
+  ネ: "ne",
+  ノ: "no",
   // h / b / p
-  'は': 'ha', 'ひ': 'hi', 'ふ': 'fu', 'へ': 'he', 'ほ': 'ho',
-  'ハ': 'ha', 'ヒ': 'hi', 'フ': 'fu', 'ヘ': 'he', 'ホ': 'ho',
-  'ば': 'ba', 'び': 'bi', 'ぶ': 'bu', 'べ': 'be', 'ぼ': 'bo',
-  'バ': 'ba', 'ビ': 'bi', 'ブ': 'bu', 'ベ': 'be', 'ボ': 'bo',
-  'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po',
-  'パ': 'pa', 'ピ': 'pi', 'プ': 'pu', 'ペ': 'pe', 'ポ': 'po',
+  は: "ha",
+  ひ: "hi",
+  ふ: "fu",
+  へ: "he",
+  ほ: "ho",
+  ハ: "ha",
+  ヒ: "hi",
+  フ: "fu",
+  ヘ: "he",
+  ホ: "ho",
+  ば: "ba",
+  び: "bi",
+  ぶ: "bu",
+  べ: "be",
+  ぼ: "bo",
+  バ: "ba",
+  ビ: "bi",
+  ブ: "bu",
+  ベ: "be",
+  ボ: "bo",
+  ぱ: "pa",
+  ぴ: "pi",
+  ぷ: "pu",
+  ぺ: "pe",
+  ぽ: "po",
+  パ: "pa",
+  ピ: "pi",
+  プ: "pu",
+  ペ: "pe",
+  ポ: "po",
   // m
-  'ま': 'ma', 'み': 'mi', 'む': 'mu', 'め': 'me', 'も': 'mo',
-  'マ': 'ma', 'ミ': 'mi', 'ム': 'mu', 'メ': 'me', 'モ': 'mo',
+  ま: "ma",
+  み: "mi",
+  む: "mu",
+  め: "me",
+  も: "mo",
+  マ: "ma",
+  ミ: "mi",
+  ム: "mu",
+  メ: "me",
+  モ: "mo",
   // y
-  'や': 'ya', 'ゆ': 'yu', 'よ': 'yo',
-  'ヤ': 'ya', 'ユ': 'yu', 'ヨ': 'yo',
+  や: "ya",
+  ゆ: "yu",
+  よ: "yo",
+  ヤ: "ya",
+  ユ: "yu",
+  ヨ: "yo",
   // r
-  'ら': 'ra', 'り': 'ri', 'る': 'ru', 'れ': 're', 'ろ': 'ro',
-  'ラ': 'ra', 'リ': 'ri', 'ル': 'ru', 'レ': 're', 'ロ': 'ro',
+  ら: "ra",
+  り: "ri",
+  る: "ru",
+  れ: "re",
+  ろ: "ro",
+  ラ: "ra",
+  リ: "ri",
+  ル: "ru",
+  レ: "re",
+  ロ: "ro",
   // w (を → 'o' as particle; ヲ same)
-  'わ': 'wa', 'ゐ': 'wi', 'ゑ': 'we', 'を': 'o',
-  'ワ': 'wa', 'ヰ': 'wi', 'ヱ': 'we', 'ヲ': 'o',
+  わ: "wa",
+  ゐ: "wi",
+  ゑ: "we",
+  を: "o",
+  ワ: "wa",
+  ヰ: "wi",
+  ヱ: "we",
+  ヲ: "o",
   // moraic ん
-  'ん': 'n', 'ン': 'n',
+  ん: "n",
+  ン: "n",
   // small vowels (independent, sans preceding consonant)
-  'ぁ': 'a', 'ぃ': 'i', 'ぅ': 'u', 'ぇ': 'e', 'ぉ': 'o',
-  'ァ': 'a', 'ィ': 'i', 'ゥ': 'u', 'ェ': 'e', 'ォ': 'o',
+  ぁ: "a",
+  ぃ: "i",
+  ぅ: "u",
+  ぇ: "e",
+  ぉ: "o",
+  ァ: "a",
+  ィ: "i",
+  ゥ: "u",
+  ェ: "e",
+  ォ: "o",
   // small ゃゅょ alone (shouldn't normally occur — digraph table catches them)
-  'ゃ': 'ya', 'ゅ': 'yu', 'ょ': 'yo',
-  'ャ': 'ya', 'ュ': 'yu', 'ョ': 'yo',
+  ゃ: "ya",
+  ゅ: "yu",
+  ょ: "yo",
+  ャ: "ya",
+  ュ: "yu",
+  ョ: "yo",
 };
 
 /**
@@ -150,33 +328,109 @@ function kanaToRomaji(text: string): string {
 
 const JAPANESE_SYLLABLE_MAP: { [key: string]: string } = {
   // Basic syllables
-  'a': 'a', 'i': 'i', 'u': 'ɯ', 'e': 'e', 'o': 'o',
-  'ka': 'ka', 'ki': 'ki', 'ku': 'kɯ', 'ke': 'ke', 'ko': 'ko',
-  'ga': 'ɡa', 'gi': 'ɡi', 'gu': 'ɡɯ', 'ge': 'ɡe', 'go': 'ɡo',
-  'sa': 'sa', 'shi': 'ɕi', 'su': 'sɯ', 'se': 'se', 'so': 'so',
-  'za': 'za', 'ji': 'dʑi', 'zu': 'zɯ', 'ze': 'ze', 'zo': 'zo',
-  'ta': 'ta', 'chi': 'tɕi', 'tsu': 'tsɯ', 'te': 'te', 'to': 'to',
-  'da': 'da', 'de': 'de', 'do': 'do', 'na': 'na', 'ni': 'ni',
-  'nu': 'nɯ', 'ne': 'nɛ', 'no': 'no', 'ha': 'ha', 'hi': 'çi',
-  'fu': 'ɸɯ', 'he': 'hɛ', 'ho': 'ho', 'ba': 'ba', 'bi': 'bi',
-  'bu': 'bɯ', 'be': 'be', 'bo': 'bo', 'pa': 'pa', 'pi': 'pi',
-  'pu': 'pɯ', 'pe': 'pe', 'po': 'po', 'ma': 'ma', 'mi': 'mi',
-  'mu': 'mɯ', 'me': 'mɛ', 'mo': 'mo', 'ya': 'ja', 'yu': 'jɯ',
-  'yo': 'jo', 'ra': 'ɾa', 'ri': 'ɾi', 'ru': 'ɾɯ', 'wa': 'wa',
-  'wo': 'o', 'n': 'n', 'kya': 'kja', 'kyu': 'kjɯ', 'kyo': 'kjo',
-  'gya': 'ɡja', 'gyu': 'ɡjɯ', 'gyo': 'ɡjo', 'sha': 'ɕa', 'shu': 'ɕɯ',
-  'sho': 'ɕo', 'ja': 'dʑa', 'ju': 'dʑɯ', 'jo': 'dʑo', 'cha': 'tɕa',
-  'chu': 'tɕɯ', 'cho': 'tɕo', 'nya': 'ɲa', 'nyu': 'ɲɯ', 'nyo': 'ɲo',
-  'hya': 'ça', 'hyu': 'çɯ', 'hyo': 'ço',
-  'rya': 'ɾʲa', 'ryu': 'ɾʲɯ', 'ryo': 'ɾʲo'
+  a: "a",
+  i: "i",
+  u: "ɯ",
+  e: "e",
+  o: "o",
+  ka: "ka",
+  ki: "ki",
+  ku: "kɯ",
+  ke: "ke",
+  ko: "ko",
+  ga: "ɡa",
+  gi: "ɡi",
+  gu: "ɡɯ",
+  ge: "ɡe",
+  go: "ɡo",
+  sa: "sa",
+  shi: "ɕi",
+  su: "sɯ",
+  se: "se",
+  so: "so",
+  za: "za",
+  ji: "dʑi",
+  zu: "zɯ",
+  ze: "ze",
+  zo: "zo",
+  ta: "ta",
+  chi: "tɕi",
+  tsu: "tsɯ",
+  te: "te",
+  to: "to",
+  da: "da",
+  de: "de",
+  do: "do",
+  na: "na",
+  ni: "ni",
+  nu: "nɯ",
+  ne: "nɛ",
+  no: "no",
+  ha: "ha",
+  hi: "çi",
+  fu: "ɸɯ",
+  he: "hɛ",
+  ho: "ho",
+  ba: "ba",
+  bi: "bi",
+  bu: "bɯ",
+  be: "be",
+  bo: "bo",
+  pa: "pa",
+  pi: "pi",
+  pu: "pɯ",
+  pe: "pe",
+  po: "po",
+  ma: "ma",
+  mi: "mi",
+  mu: "mɯ",
+  me: "mɛ",
+  mo: "mo",
+  ya: "ja",
+  yu: "jɯ",
+  yo: "jo",
+  ra: "ɾa",
+  ri: "ɾi",
+  ru: "ɾɯ",
+  wa: "wa",
+  wo: "o",
+  n: "n",
+  kya: "kja",
+  kyu: "kjɯ",
+  kyo: "kjo",
+  gya: "ɡja",
+  gyu: "ɡjɯ",
+  gyo: "ɡjo",
+  sha: "ɕa",
+  shu: "ɕɯ",
+  sho: "ɕo",
+  ja: "dʑa",
+  ju: "dʑɯ",
+  jo: "dʑo",
+  cha: "tɕa",
+  chu: "tɕɯ",
+  cho: "tɕo",
+  nya: "ɲa",
+  nyu: "ɲɯ",
+  nyo: "ɲo",
+  hya: "ça",
+  hyu: "çɯ",
+  hyo: "ço",
+  rya: "ɾʲa",
+  ryu: "ɾʲɯ",
+  ryo: "ɾʲo",
 };
 
-const JAPANESE_LONG_VOWEL_RULES: { [key:string]: string } = {
-  'aa': 'aː', 'ii': 'iː', 'uu': 'uː', 'ee': 'eː', 'oo': 'oː',
+const JAPANESE_LONG_VOWEL_RULES: { [key: string]: string } = {
+  aa: "aː",
+  ii: "iː",
+  uu: "uː",
+  ee: "eː",
+  oo: "oː",
   // お段+う almost always realizes as long ō in kango compounds
   // (とうきょう = tōkyō, がっこう = gakkō). Over-lengthens a few native
   // verb forms (思う omou → omoː) but those are a tiny minority.
-  'ou': 'oː',
+  ou: "oː",
   // え段+い is NOT added: while it's right for kango (英語 → ēgo), it
   // wrongly fuses the te-form/i-renyōkei pair across morpheme boundary
   // (待って+いる → mateːru instead of matte-iru), and the verb pattern
@@ -207,10 +461,7 @@ class JapaneseG2P implements LanguageProcessor {
     // hiragana particles that frequently precede は (には, では, とは, やは,
     // もは). Word-internal は (はじめる, はやい, あはは, …) sits after a
     // generic hiragana char that isn't in this set, so it stays as /ha/.
-    text = text.replace(
-      /([一-龥ァ-ヶa-zA-Z0-9にでとやも])は/g,
-      "$1わ",
-    );
+    text = text.replace(/([一-龥ァ-ヶa-zA-Z0-9にでとやも])は/g, "$1わ");
     // Same idea for を: as object particle it's always /o/, never /wo/.
     // The single-char mapping below already handles this; kept as a
     // note to future maintainers.
@@ -269,18 +520,18 @@ class JapaneseG2P implements LanguageProcessor {
 
     // Particle Rules: Handle specific cases for particles 'ha', 'he', 'wo'
     // which are pronounced differently from their romanization.
-    if (text === 'ha') {
-      text = 'wa';
-    } else if (text === 'he') {
-      text = 'e';
-    } else if (text === 'wo') {
-      text = 'o';
-    } else if (text === 'konnichiha') {
-      text = 'konnichiwa';
-    } else if (text === 'konbanha') {
-      text = 'konbanwa';
+    if (text === "ha") {
+      text = "wa";
+    } else if (text === "he") {
+      text = "e";
+    } else if (text === "wo") {
+      text = "o";
+    } else if (text === "konnichiha") {
+      text = "konnichiwa";
+    } else if (text === "konbanha") {
+      text = "konbanwa";
     }
-    
+
     // Sokuon (geminated consonants), excluding 'n'
     text = text.replace(/([bcdfghjklmpqrstvwxyz])\1/g, "っ$1");
 
@@ -289,36 +540,36 @@ class JapaneseG2P implements LanguageProcessor {
 
     // Long vowels
     for (const [key, value] of Object.entries(JAPANESE_LONG_VOWEL_RULES)) {
-      text = text.replace(new RegExp(key, 'g'), value);
+      text = text.replace(new RegExp(key, "g"), value);
     }
 
     // Syllable mapping using the single unified map
     let result = "";
     let i = 0;
-    while(i < text.length) {
+    while (i < text.length) {
       let matched = false;
       // Greedily match longest possible syllable
-      for(let j = 3; j > 0; j--) {
-          if (i + j <= text.length) {
-              const sub = text.substring(i, i+j);
-              if(JAPANESE_SYLLABLE_MAP[sub]) {
-                  result += JAPANESE_SYLLABLE_MAP[sub];
-                  i += j;
-                  matched = true;
-                  break;
-              }
+      for (let j = 3; j > 0; j--) {
+        if (i + j <= text.length) {
+          const sub = text.substring(i, i + j);
+          if (JAPANESE_SYLLABLE_MAP[sub]) {
+            result += JAPANESE_SYLLABLE_MAP[sub];
+            i += j;
+            matched = true;
+            break;
           }
+        }
       }
-      if(!matched) {
-          // Handle special characters like 'っ' and 'ん'
-          if (text[i] === 'っ') {
-              result += 'っ';
-          } else if (text[i] === 'ん') {
-              result += 'n';
-          } else {
-              result += text[i];
-          }
-          i++;
+      if (!matched) {
+        // Handle special characters like 'っ' and 'ん'
+        if (text[i] === "っ") {
+          result += "っ";
+        } else if (text[i] === "ん") {
+          result += "n";
+        } else {
+          result += text[i];
+        }
+        i++;
       }
     }
 
@@ -332,4 +583,4 @@ class JapaneseG2P implements LanguageProcessor {
 }
 
 // Default export for the Japanese G2P Model
-export default JapaneseG2P; 
+export default JapaneseG2P;

@@ -12,35 +12,57 @@ import { expandRussianText } from "./expand-ru";
  */
 const RUSSIAN_TO_PHONEME: { [key: string]: string } = {
   // Vowels (after anyAscii) — a, e, i, o, u, y
-  'a': 'a', 'e': 'e', 'i': 'i', 'o': 'o', 'u': 'u', 'y': 'ɨ',
+  a: "a",
+  e: "e",
+  i: "i",
+  o: "o",
+  u: "u",
+  y: "ɨ",
   // Consonants
-  'b': 'b', 'v': 'v', 'g': 'ɡ', 'd': 'd', 'z': 'z',
-  'j': 'j', 'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'p': 'p',
-  'r': 'r', 's': 's', 't': 't', 'f': 'f',
+  b: "b",
+  v: "v",
+  g: "ɡ",
+  d: "d",
+  z: "z",
+  j: "j",
+  k: "k",
+  l: "l",
+  m: "m",
+  n: "n",
+  p: "p",
+  r: "r",
+  s: "s",
+  t: "t",
+  f: "f",
   // Special characters from anyAscii passthrough
-  "'": 'ʲ', // Soft sign Ь
-  '"': '',  // Hard sign Ъ — silent, but blocks palatalization spread
+  "'": "ʲ", // Soft sign Ь
+  '"': "", // Hard sign Ъ — silent, but blocks palatalization spread
 };
 
 const DIGRAPHS: Array<[string, string]> = [
   // Longest first so "shch" wins over "sh".
-  ['shch', 'ɕː'],
-  ['zh',   'ʐ'],
-  ['kh',   'x'],
-  ['ts',   't͡s'],
-  ['ch',   't͡ɕ'],
-  ['sh',   'ʂ'],
+  ["shch", "ɕː"],
+  ["zh", "ʐ"],
+  ["kh", "x"],
+  ["ts", "t͡s"],
+  ["ch", "t͡ɕ"],
+  ["sh", "ʂ"],
 ];
 
 /** Consonant phonemes that do not palatalize (already palatal or affricate). */
-const NON_PALATALIZING = new Set(['j', 'ʃ', 'ʒ', 't͡s', 'ts', 'ɕː', 'ʂ']);
+const NON_PALATALIZING = new Set(["j", "ʃ", "ʒ", "t͡s", "ts", "ɕː", "ʂ"]);
 
 /** Voiced obstruents → their voiceless counterparts (for final devoicing). */
 const DEVOICE: Record<string, string> = {
-  'b': 'p', 'd': 't', 'ɡ': 'k', 'z': 's', 'v': 'f', 'ʐ': 'ʂ',
+  b: "p",
+  d: "t",
+  ɡ: "k",
+  z: "s",
+  v: "f",
+  ʐ: "ʂ",
 };
 
-const VOWELS_LATIN = new Set(['a', 'e', 'i', 'o', 'u', 'y']);
+const VOWELS_LATIN = new Set(["a", "e", "i", "o", "u", "y"]);
 
 class RussianG2P implements LanguageProcessor {
   readonly id = "ru-g2p";
@@ -94,14 +116,23 @@ class RussianG2P implements LanguageProcessor {
       // Iotated vowels: y + {a,o,u} after a consonant palatalizes the
       // preceding consonant and emits just the bare vowel; elsewhere we
       // surface the /j/ glide.
-      if (text[i] === 'y' && i + 1 < text.length && 'aou'.includes(text[i + 1])) {
+      if (
+        text[i] === "y" &&
+        i + 1 < text.length &&
+        "aou".includes(text[i + 1])
+      ) {
         const vowel = text[i + 1];
         const prev = tokens[tokens.length - 1];
-        if (prev && !VOWELS_LATIN.has(prev[0]) && !NON_PALATALIZING.has(prev) && prev !== 'j') {
-          tokens[tokens.length - 1] = prev + 'ʲ';
+        if (
+          prev &&
+          !VOWELS_LATIN.has(prev[0]) &&
+          !NON_PALATALIZING.has(prev) &&
+          prev !== "j"
+        ) {
+          tokens[tokens.length - 1] = prev + "ʲ";
           tokens.push(vowel);
         } else {
-          tokens.push('j', vowel);
+          tokens.push("j", vowel);
         }
         i += 2;
         continue;
@@ -113,10 +144,16 @@ class RussianG2P implements LanguageProcessor {
       // Palatalization before "e"/"i" attaches to the preceding consonant.
       // The map already emitted the consonant in the previous iteration,
       // so patch it in-place rather than queuing on the vowel.
-      if (ch === 'e' || ch === 'i') {
+      if (ch === "e" || ch === "i") {
         const prev = tokens[tokens.length - 1];
-        if (prev && !VOWELS_LATIN.has(prev[0]) && !NON_PALATALIZING.has(prev) && prev !== 'j' && !prev.endsWith('ʲ')) {
-          tokens[tokens.length - 1] = prev + 'ʲ';
+        if (
+          prev &&
+          !VOWELS_LATIN.has(prev[0]) &&
+          !NON_PALATALIZING.has(prev) &&
+          prev !== "j" &&
+          !prev.endsWith("ʲ")
+        ) {
+          tokens[tokens.length - 1] = prev + "ʲ";
         }
       }
 
@@ -133,12 +170,12 @@ class RussianG2P implements LanguageProcessor {
         break;
       }
       // Skip trailing palatalization mark / soft sign attached to a stop.
-      if (t === 'ʲ') continue;
+      if (t === "ʲ") continue;
       // Stop at the first non-obstruent (vowel or sonorant).
-      if (VOWELS_LATIN.has(t) || ['m', 'n', 'l', 'r', 'j'].includes(t)) break;
+      if (VOWELS_LATIN.has(t) || ["m", "n", "l", "r", "j"].includes(t)) break;
     }
 
-    return tokens.join('');
+    return tokens.join("");
   }
 
   public addPronunciation(word: string, pronunciation: string): void {
@@ -148,4 +185,4 @@ class RussianG2P implements LanguageProcessor {
 }
 
 // Default export for the Russian G2P Model
-export default RussianG2P; 
+export default RussianG2P;

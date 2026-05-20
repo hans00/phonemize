@@ -8,9 +8,7 @@
  * and is left for a later pass.
  */
 
-const KO_DIGITS = [
-  "영", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구",
-];
+const KO_DIGITS = ["영", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구"];
 const KO_TEN = "십";
 const KO_HUNDRED = "백";
 const KO_THOUSAND = "천";
@@ -64,10 +62,16 @@ function digitByDigit(s: string): string {
 export function expandKoreanText(text: string): string {
   // Year + 년 → digit-by-digit reading is uncommon; full Sino reading is
   // standard (이천이십사년 for 2024년).
-  text = text.replace(/(\d{4})년/g, (_, year) => numberToWords(parseInt(year, 10)) + "년");
+  text = text.replace(
+    /(\d{4})년/g,
+    (_, year) => numberToWords(parseInt(year, 10)) + "년",
+  );
 
   // Currency: ₩ or 원 suffix → 원.
-  text = text.replace(/₩\s*(\d+)/g, (_, n) => numberToWords(parseInt(n, 10)) + "원");
+  text = text.replace(
+    /₩\s*(\d+)/g,
+    (_, n) => numberToWords(parseInt(n, 10)) + "원",
+  );
   text = text.replace(/\$\s*(\d+(?:\.\d+)?)/g, (_, n) => {
     const num = parseFloat(n);
     return numberToWords(Math.floor(num)) + "달러";
@@ -77,13 +81,18 @@ export function expandKoreanText(text: string): string {
   text = text.replace(/(\d+(?:\.\d+)?)%/g, (_, n) => {
     const dot = n.indexOf(".");
     if (dot === -1) return numberToWords(parseInt(n, 10)) + "퍼센트";
-    return numberToWords(parseInt(n.slice(0, dot), 10)) + "점" +
-      digitByDigit(n.slice(dot + 1)) + "퍼센트";
+    return (
+      numberToWords(parseInt(n.slice(0, dot), 10)) +
+      "점" +
+      digitByDigit(n.slice(dot + 1)) +
+      "퍼센트"
+    );
   });
 
   // Decimal.
-  text = text.replace(/(\d+)\.(\d+)/g, (_, w, d) =>
-    numberToWords(parseInt(w, 10)) + "점" + digitByDigit(d),
+  text = text.replace(
+    /(\d+)\.(\d+)/g,
+    (_, w, d) => numberToWords(parseInt(w, 10)) + "점" + digitByDigit(d),
   );
 
   // Remaining integers.
