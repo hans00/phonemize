@@ -767,10 +767,11 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/tʃ/, "k");
       if (lowerWord.startsWith("ei") && !/^ei(ght|ther)/.test(lowerWord))
         result = result.replace(/^eɪ/, "aɪ");
-      if (/(?:berg|burg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein|hoff|muth|dorf|tal|ler|ner|sen|born|mark|meier|eier|meister|eister|hardt|ardt|lein|heit|heid|meyer|eyer|weiser|eiser|ecker|decker|elman|eman|hein|eitel|itel|einl|eindl|indl|berger|egger|eiter|iter|wenger|enger|enson|itas|linger|fried|zig|eis|eiden|eider|hold|gold|zel)$/.test(lowerWord) && lowerWord.includes("ei") && !lowerWord.includes("eight"))
+      if (/(?:berg|burg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein|hoff|muth|dorf|tal|ler|ner|sen|born|mark|meier|eier|meister|eister|hardt|ardt|lein|heit|heid|meyer|eyer|weiser|eiser|ecker|decker|elman|eman|hein|eitel|itel|einl|eindl|indl|berger|egger|eiter|iter|wenger|enger|enson|itas|linger|fried|zig|eis|eiden|eider|hold|gold|zel|eineke|eincke|eineck|einke)$/.test(lowerWord) && lowerWord.includes("ei") && !lowerWord.includes("eight"))
         result = result.replace(/eɪ/g, "aɪ");
       if (lowerWord.includes("ei") &&
           (lowerWord.startsWith("klein") || lowerWord.startsWith("drei") || lowerWord.startsWith("breit") ||
+           lowerWord.startsWith("mein") || lowerWord.startsWith("meio") ||
            (lowerWord.startsWith("hei") && !/^hei(?:nous|fer|r$|res|ress)/.test(lowerWord)) ||
            (lowerWord.startsWith("lei") && lowerWord.length >= 6 && !/^lei(?:sure|s$)/.test(lowerWord)) ||
            (lowerWord.startsWith("pf") && lowerWord.includes("ei"))))
@@ -826,6 +827,12 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/ɔɹ(θ|ld|ks?)$/, "ɝ$1");
       if (lowerWord.endsWith("oir"))
         result = result.replace(/ɔɪɹ$/, "wɑɹ");
+      if (lowerWord.endsWith("oux"))
+        result = result.replace(/aʊks?$/, "u");
+      if (lowerWord.endsWith("oupe"))
+        result = result.replace(/aʊp$/, "up");
+      if (lowerWord.endsWith("eau") && lowerWord.includes("ou"))
+        result = result.replace(/aʊ/g, "u");
       if (lowerWord.endsWith("ingham") && lowerWord.length >= 9)
         result = result.replace(/həm$/, "hæm");
       if (lowerWord.endsWith("tron"))
