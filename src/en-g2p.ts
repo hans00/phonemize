@@ -767,7 +767,7 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/tʃ/, "k");
       if (lowerWord.startsWith("ei") && !/^ei(ght|ther)/.test(lowerWord))
         result = result.replace(/^eɪ/, "aɪ");
-      if (/(?:berg|burg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein|hoff|muth|dorf|tal|ler|ner|sen|born|mark)$/.test(lowerWord) && lowerWord.includes("ei") && !lowerWord.includes("eight"))
+      if (/(?:berg|burg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein|hoff|muth|dorf|tal|ler|ner|sen|born|mark|meier|eier|meister|eister|hardt|ardt|lein|heit|heid|meyer|eyer|weiser|eiser|ecker|decker|elman|eman)$/.test(lowerWord) && lowerWord.includes("ei") && !lowerWord.includes("eight"))
         result = result.replace(/eɪ/g, "aɪ");
       if (/(?:thet|theis|thesis|thesia|thentic|theon)/.test(lowerWord) && result.includes("ð"))
         result = result.replace(/ð/g, "θ");
