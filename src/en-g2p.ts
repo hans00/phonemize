@@ -799,6 +799,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/ɔɹld$/, "ɝld");
       if (lowerWord.endsWith("works") || lowerWord.endsWith("work"))
         result = result.replace(/ɔɹk(s?)$/, "ɝk$1");
+      if (lowerWord.endsWith("oir"))
+        result = result.replace(/ɔɪɹ$/, "wɑɹ");
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
