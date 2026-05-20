@@ -785,6 +785,15 @@ export class EnglishG2P implements LanguageProcessor {
       if (/(?:berg|burg)$/.test(lowerWord) && (lowerWord.includes("ge") || lowerWord.includes("gi")) &&
           !lowerWord.includes("nge") && !lowerWord.includes("ngi"))
         result = result.replace(/dʒ/g, "ɡ");
+      if (lowerWord.startsWith("berg") && lowerWord.length >= 6 && !/(?:ey|y)$/.test(lowerWord))
+        result = result.replace(/dʒ/g, "ɡ");
+      if (lowerWord.startsWith("mcg") && lowerWord.length >= 5 && !/orge$/.test(lowerWord))
+        result = result.replace(/dʒ/g, "ɡ");
+      if (lowerWord.startsWith("beg") && lowerWord.length >= 5)
+        result = result.replace(/^bɪdʒ/, "bɪɡ");
+      if (lowerWord.endsWith("gel") && lowerWord.length >= 5 &&
+          !/(?:cudgel|gudgel|kegel|nigel|rigel|bagel|angel|evangel|rangel|dgel)$/.test(lowerWord))
+        result = result.replace(/dʒ([əɛɪ][lɫ]?)$/, "ɡ$1");
       if (lowerWord.endsWith("ger") && (
           (lowerWord.length >= 7 && /[bcdfghjklmnpqrstvwxyz]{2}ger$/.test(lowerWord)) ||
           (lowerWord.length >= 8 && !/(?:anger|inger|onger|enger|ager)$/.test(lowerWord))))
