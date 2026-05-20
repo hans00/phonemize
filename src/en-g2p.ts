@@ -485,11 +485,7 @@ export class EnglishG2P implements LanguageProcessor {
 
     if (syllableIPA.length > 0) {
       let result = syllableIPA.join('');
-
-      // Deduplicate consecutive identical consonants across syllable boundaries
-      // (balloon/collision/pollution: doubled spelling = single phoneme).
-      result = result.replace(/([pbtdkɡfvszʃʒθðmnŋlɹhjwɫ])\1/g, '$1');
-      result = result.replace(/sʒ/g, 'ʃ');
+      result = result.replace(/([pbtdkɡfvszʃʒθðmnŋlɹhjwɫ])\1/g, '$1');  result = result.replace(/sʒ/g, 'ʃ');  // dedup consonants (balloon/collision); sʒ→ʃ
       result = result.replace(/əɹ/g, 'ɝ');  result = result.replace(/(?<=[^aeiouæɛɪɑɔʌʊ])ɪɹɝ$/, 'ɝɝ');  // -er across boundary; C+ɪɹɝ → ɝɝ (batterer/caterer/wanderer)
       result = result.replace(/n([kɡ])/g, 'ŋ$1'); // n→ŋ before velar stops (cross-syllable assimilation)
       result = result.replace(/^mk/, 'mək');  if (lowerWord.startsWith('aa')) result = result.replace(/^æ+/, 'ɑ');  // Mc- prefix; Scandinavian/Dutch aa-initial → ɑ (aachen/aalborg)
