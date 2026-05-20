@@ -455,6 +455,7 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/aʊɹ(?=[^aeiouæɛɪɑɔʌʊ])/g, "uɹ"], // French -our- before consonant (belcourt/bournonville)
   [/æ{2,}/g, "ɑ"], // double-a → ɑ (baalbek, baasch, baatz)
   [/ɪæ$/, "iə"], // word-final -ia: sɪnðɪæ→sɪnðiə (cynthia/sylvia)
+  [/zjʊɹ$/, "ʒɝ"], // -zure: seizure/azure → ʒɝ
 ];
 
 // --- EnglishG2P Class ---
@@ -768,7 +769,7 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/tʃ/, "k");
       if (lowerWord.startsWith("ei") && !/^ei(ght|ther)/.test(lowerWord))
         result = result.replace(/^eɪ/, "aɪ");
-      if (/(?:berg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann)$/.test(lowerWord) && lowerWord.includes("ei"))
+      if (/(?:berg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein)$/.test(lowerWord) && lowerWord.includes("ei"))
         result = result.replace(/eɪ/g, "aɪ");
 
       // Add stress marker
