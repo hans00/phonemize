@@ -798,6 +798,15 @@ export class EnglishG2P implements LanguageProcessor {
       if (lowerWord.length >= 5 &&
           (lowerWord.startsWith("gei") || /^gel[dbns]/.test(lowerWord) || lowerWord.startsWith("get")))
         result = result.replace(/^dʒ/, "ɡ");
+      if (/^gi[dvm]/.test(lowerWord))
+        result = result.replace(/^dʒ/, "ɡ");
+      if (lowerWord.startsWith("gig") && lowerWord.length >= 4 && !/^gig(?:i$|lio|lia|lo|ot|ol)/.test(lowerWord))
+        result = result.replace(/^dʒ/, "ɡ");
+      if (lowerWord.startsWith("ges") && lowerWord.length >= 5 &&
+          !/^gest(?:ure|iculat|ation|ural|at|alt|urin|al)/.test(lowerWord) && lowerWord !== "geske")
+        result = result.replace(/^dʒ/, "ɡ");
+      if (lowerWord.startsWith("geh") && lowerWord.length >= 5 && !/^geh(?:le|res|rke)$/.test(lowerWord))
+        result = result.replace(/^dʒ/, "ɡ");
       if (/(?:ingen|angen)$/.test(lowerWord) && lowerWord.length >= 7)
         result = result.replace(/dʒ([əɛɪ]n)$/, "ɡ$1");
       if (lowerWord.endsWith("gel") && lowerWord.length >= 5 &&
