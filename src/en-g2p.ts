@@ -901,6 +901,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/ktʃ/g, "kk").replace(/tʃ/g, "k");
       if (/chet(?:ti|ta|to|te)$/.test(lowerWord) && lowerWord.length >= 6)
         result = result.replace(/tʃ/g, "k");
+      if (lowerWord.endsWith("cci"))
+        result = result.replace(/ks([ɪi]?)$/, "tʃ$1");
       if (lowerWord.includes("eich") && lowerWord.length >= 5) {
         result = result.replace(/eɪ/g, "aɪ");
         result = result.replace(/aɪtʃ/g, "aɪk");
