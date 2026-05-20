@@ -453,6 +453,8 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/ɪtud$/, "ətud"],
   [/oʊleɪt$/, "ɑleɪt"],
   [/aʊɹ(?=[^aeiouæɛɪɑɔʌʊ])/g, "uɹ"], // French -our- before consonant (belcourt/bournonville)
+  [/æ{2,}/g, "ɑ"], // double-a → ɑ (baalbek, baasch, baatz)
+  [/ɪæ$/, "iə"], // word-final -ia: sɪnðɪæ→sɪnðiə (cynthia/sylvia)
 ];
 
 // --- EnglishG2P Class ---
@@ -764,6 +766,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/ɛɹ/g, "ɝ");
       if (lowerWord.startsWith("mechan"))
         result = result.replace(/tʃ/, "k");
+      if (lowerWord.startsWith("ei") && !/^ei(ght|ther)/.test(lowerWord))
+        result = result.replace(/^eɪ/, "aɪ");
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
