@@ -810,6 +810,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/^dʒ/, "ɡ");
       if (/(?:ingen|angen)$/.test(lowerWord) && lowerWord.length >= 7)
         result = result.replace(/dʒ([əɛɪ]n)$/, "ɡ$1");
+      if (lowerWord.includes("eigen"))
+        result = result.replace(/dʒ([əɛɪ])/g, "ɡ$1");
       if (lowerWord.endsWith("gel") && lowerWord.length >= 5 &&
           !/(?:cudgel|gudgel|kegel|nigel|rigel|bagel|angel|evangel|rangel|dgel)$/.test(lowerWord))
         result = result.replace(/dʒ([əɛɪ][lɫ]?)$/, "ɡ$1");
@@ -884,6 +886,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/[ʌʊ]tʃ(?=[nblrm])/, (m) => m[0] + "k");
       if (lowerWord.includes("cchi"))
         result = result.replace(/ktʃ/g, "kk").replace(/tʃ/g, "k");
+      if (/chet(?:ti|ta|to|te)$/.test(lowerWord) && lowerWord.length >= 6)
+        result = result.replace(/tʃ/g, "k");
       if (lowerWord.includes("eich") && lowerWord.length >= 5) {
         result = result.replace(/eɪ/g, "aɪ");
         result = result.replace(/aɪtʃ/g, "aɪk");
