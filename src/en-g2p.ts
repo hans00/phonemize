@@ -780,6 +780,10 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/tʃ([ɛəɪ])/, "k$1");
       if (/^g[ei]/.test(lowerWord) && /(?:berg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein)$/.test(lowerWord))
         result = result.replace(/^dʒ/, "ɡ");
+      if (lowerWord.endsWith("gel") && lowerWord.length >= 6 && !lowerWord.endsWith("dgel"))
+        result = result.replace(/dʒ([ɛɪə])l$/, "ɡ$1l");
+      if (lowerWord.endsWith("ford") && lowerWord.length > 4)
+        result = result.replace(/ɔɹd$/, "ɝd");
       if (lowerWord.endsWith("worth"))
         result = result.replace(/ɔɹθ$/, "ɝθ");
       if (lowerWord.endsWith("world"))
