@@ -769,7 +769,7 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/^eɪ/, "aɪ");
       if (/(?:berg|burg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein|hoff|muth|dorf|tal|ler|ner|sen|born|mark|meier|eier|meister|eister|hardt|ardt|lein|heit|heid|meyer|eyer|weiser|eiser|ecker|decker|elman|eman|hein|eitel|itel|einl|eindl|indl|berger|egger|eiter|iter|wenger|enger|enson|itas|linger|fried|zig|eis|eiden|eider)$/.test(lowerWord) && lowerWord.includes("ei") && !lowerWord.includes("eight"))
         result = result.replace(/eɪ/g, "aɪ");
-      if (lowerWord.includes("ei") && !lowerWord.includes("eight") &&
+      if (lowerWord.includes("ei") &&
           (lowerWord.startsWith("klein") || lowerWord.startsWith("drei") || lowerWord.startsWith("breit") ||
            (lowerWord.startsWith("hei") && !/^hei(?:nous|fer|r$|res|ress)/.test(lowerWord)) ||
            (lowerWord.startsWith("lei") && lowerWord.length >= 6 && !/^lei(?:sure|s$)/.test(lowerWord))))
