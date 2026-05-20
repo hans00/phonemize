@@ -780,25 +780,19 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/tʃ([ɛəɪ])/, "k$1");
       if (/^g[ei]/.test(lowerWord) && /(?:berg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein)$/.test(lowerWord))
         result = result.replace(/^dʒ/, "ɡ");
-      if (lowerWord.endsWith("gel") && lowerWord.length >= 6 && !lowerWord.endsWith("dgel"))
-        result = result.replace(/dʒ([ɛɪə])l$/, "ɡ$1l");
       if (/(?:berg|burg)$/.test(lowerWord) && (lowerWord.includes("ge") || lowerWord.includes("gi")) &&
           !lowerWord.includes("nge") && !lowerWord.includes("ngi"))
         result = result.replace(/dʒ/g, "ɡ");
-      if (lowerWord.startsWith("berg") && lowerWord.length >= 6 && !/(?:ey|y)$/.test(lowerWord))
-        result = result.replace(/dʒ/g, "ɡ");
-      if (lowerWord.startsWith("mcg") && lowerWord.length >= 5 && !/orge$/.test(lowerWord))
+      if ((lowerWord.startsWith("berg") && lowerWord.length >= 6 && !/(?:ey|y)$/.test(lowerWord)) ||
+          (lowerWord.startsWith("mcg") && lowerWord.length >= 5 && !/orge$/.test(lowerWord)))
         result = result.replace(/dʒ/g, "ɡ");
       if (lowerWord.startsWith("beg") && lowerWord.length >= 5)
         result = result.replace(/^bɪdʒ/, "bɪɡ");
-      if (lowerWord.startsWith("gei") && lowerWord.length >= 5)
-        result = result.replace(/^dʒ/, "ɡ");
-      if (/^gel[dbns]/.test(lowerWord) && lowerWord.length >= 5)
+      if (lowerWord.length >= 5 &&
+          (lowerWord.startsWith("gei") || /^gel[dbns]/.test(lowerWord) || lowerWord.startsWith("get")))
         result = result.replace(/^dʒ/, "ɡ");
       if (/(?:ingen|angen)$/.test(lowerWord) && lowerWord.length >= 7)
         result = result.replace(/dʒ([əɛɪ]n)$/, "ɡ$1");
-      if (lowerWord.startsWith("get") && lowerWord.length >= 5)
-        result = result.replace(/^dʒ/, "ɡ");
       if (lowerWord.endsWith("gel") && lowerWord.length >= 5 &&
           !/(?:cudgel|gudgel|kegel|nigel|rigel|bagel|angel|evangel|rangel|dgel)$/.test(lowerWord))
         result = result.replace(/dʒ([əɛɪ][lɫ]?)$/, "ɡ$1");
