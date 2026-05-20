@@ -842,6 +842,10 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/dʒɝ([dt])$/, "ɡɝ$1");
       if (lowerWord.startsWith("orch"))
         result = result.replace(/^ɔɹtʃ/, "ɔɹk");
+      if (lowerWord.includes("chord"))
+        result = result.replace(/tʃ([ɔɑɝ])/, "k$1");
+      if (lowerWord.includes("anchor"))
+        result = result.replace(/tʃ/, "k");
       if (lowerWord.includes("och") && !lowerWord.endsWith("och") && !lowerWord.endsWith("oche") && !/och[cfpt]/.test(lowerWord))
         result = result.replace(/[ɑɔ]tʃ/g, (m) => m[0] + "k");
       if (lowerWord.endsWith("och") && !lowerWord.endsWith("oach") && !lowerWord.endsWith("eoch"))
@@ -871,6 +875,10 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/[æɑ]tʃ(?=[nblrm])/, (m) => m[0] + "k");
       if (lowerWord.includes("uch") && /uch[nblrm]/.test(lowerWord) && !/^(?:much|such|touch|vouch|pouch|couch|ouch|crouch|grouch|slouch)/.test(lowerWord) && !/^(?:bou|gou|lou|tou|vou)ch/.test(lowerWord) && !/uch[aeiou]$/.test(lowerWord))
         result = result.replace(/[ʌʊ]tʃ(?=[nblrm])/, (m) => m[0] + "k");
+      if (lowerWord.includes("cchi"))
+        result = result.replace(/ktʃ/g, "kk").replace(/tʃ/g, "k");
+      if (lowerWord.endsWith("eich") && lowerWord.length >= 5)
+        result = result.replace(/eɪtʃ$/, "aɪk");
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
