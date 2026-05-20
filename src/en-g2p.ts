@@ -808,6 +808,12 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/dʒ([ɛəɪ])n$/, "ɡ$1n");
       if (/(?:gerd|gert)$/.test(lowerWord))
         result = result.replace(/dʒɝ([dt])$/, "ɡɝ$1");
+      if (lowerWord.startsWith("orch"))
+        result = result.replace(/^ɔɹtʃ/, "ɔɹk");
+      if (lowerWord.includes("och") && !lowerWord.endsWith("och") && !lowerWord.endsWith("oche") && !/och[cfpt]/.test(lowerWord))
+        result = result.replace(/[ɑɔ]tʃ/g, (m) => m[0] + "k");
+      if (lowerWord.endsWith("och") && !lowerWord.endsWith("oach") && !lowerWord.endsWith("eoch"))
+        result = result.replace(/[ɑɔ]tʃ$/, (m) => m[0] + "k");
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
