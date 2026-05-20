@@ -494,7 +494,7 @@ export class EnglishG2P implements LanguageProcessor {
       result = result.replace(/n([kɡ])/g, 'ŋ$1'); // n→ŋ before velar stops (cross-syllable assimilation)
       result = result.replace(/^mk/, 'mək'); // Mc- prefix (McAdams, McDonald, etc.)
       result = result.replace(/ɹɪtʃ$/, 'ɹɪk');  result = result.replace(/ɡdʒ$/, 'ɡ');  result = result.replace(/(?<=[aɑɔɛɪouəɝ])dʒɝ$/, 'ɡɝ');  result = result.replace(/ətʃ$/, 'ək');  result = result.replace(/([bdfɡhklmnpɹstzv])ə(ʃ|dʒ)əs$/, '$1eɪ$2əs');  result = result.replace(/([^w])əʃən$/, '$1eɪʃən');  // Germanic -rich/-gge; vowel+ger; -ach → k; -acious; -ation
-      result = result.replace(/oʊɹ/g, 'ɔɹ');  result = result.replace(/[ɑə][ɛə]$/, 'oʊ');  // o-open-syllable before r; -oe (foe/aloe/backhoe)
+      result = result.replace(/oʊɹ/g, 'ɔɹ');  result = result.replace(/[ɑə][ɛə]$/, 'oʊ');  result = result.replace(/oʊ([ntplm])ɪk/g, 'ɑ$1ɪk');  result = result.replace(/oʊnəm/g, 'ɑnəm');  // o-open-syllable before r; -oe; -onic/-opic/-olic/-omic/-otic; -onomy (chronic/asymptotic/astronomer)
       result = result.replace(/ɑl([dtskp])/g, 'oʊl$1');  // ol+consonant cluster: beholden/bolton/bolster/colson/holcomb/volpe
       if (syllables.length >= 3) result = result.replace(/eɪdʒ$/, 'ɪdʒ');  // -age unstressed penultimate: passage/baggage/garbage
       result = result.replace(/əhl/g, 'ɑl');  result = result.replace(/([pbtdkɡfvszʃθmnlhjwɫ])ɹoʊst/g, '$1ɹɑst');  result = result.replace(/bɹoʊd/g, 'bɹɔd');  result = result.replace(/^ʌnɪ/, 'junɪ');  // Scandinavian -ahl; German -rost; broad→ɔ; uni-→ju
