@@ -815,6 +815,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/dʒ([ɛəɪ])n$/, "ɡ$1n");
       if (lowerWord.endsWith("ger") && lowerWord.length >= 8 && !/(?:anger|inger|onger|enger|ager)$/.test(lowerWord))
         result = result.replace(/dʒɝ$/, "ɡɝ");
+      if (/(?:gerd|gert)$/.test(lowerWord))
+        result = result.replace(/dʒɝ([dt])$/, "ɡɝ$1");
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
