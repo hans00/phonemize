@@ -250,6 +250,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^she$/, "ʃi"], // she (pronoun; anchored so it doesn't eat shed/shell)
   [/^he$/, "hi"], // he  (pronoun; anchored so it doesn't eat here/hen)
   [/^sz/, "ʃ"], // Polish/Hungarian sz (szabo, szymanowski)
+  [/^dz/, "dʒ"], // Polish dz (dziedzic, dzierzinski)
   [/^cz/, "tʃ"], // czech, czechoslovak, czar (Polish/Czech cz)
   [/^chr/, "kɹ"], // chrome, chronic, Christ (Greek ch before r)
   [/^chl/, "kl"], // chlorine, chlorinated (Greek ch before l)
@@ -451,6 +452,7 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/ɪbli$/, "əbli"],
   [/ɪtud$/, "ətud"],
   [/oʊleɪt$/, "ɑleɪt"],
+  [/aʊɹ(?=[^aeiouæɛɪɑɔʌʊ])/g, "uɹ"], // French -our- before consonant (belcourt/bournonville)
 ];
 
 // --- EnglishG2P Class ---
