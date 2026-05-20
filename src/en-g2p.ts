@@ -827,6 +827,12 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/^ɑɹtʃ/, "ɑɹk");
       if (lowerWord.endsWith("chter") && lowerWord.length >= 6)
         result = result.replace(/tʃtɝ$/, "ktɝ");
+      if (lowerWord.endsWith("chner") && lowerWord.length >= 6 && !/tch(?:ner)$/.test(lowerWord))
+        result = result.replace(/tʃ(?=[nɝ])/, "k");
+      if (lowerWord.length >= 7 && /[bcdfghjklmnpqrstvwxyz](?:acher|icher)$/.test(lowerWord) &&
+          !/(?:eacher|oocher|picher|spicher)$/.test(lowerWord) &&
+          !/^(?:teacher|preacher|bleacher|reacher|poacher|beacher|beecher|breacher)/.test(lowerWord))
+        result = result.replace(/tʃ(ɝ)$/, "k$1");
       if (lowerWord.includes("echt") && !/(?:echt|icht)$/.test(lowerWord) && !/echtl|echta/.test(lowerWord))
         result = result.replace(/ɛtʃt/g, "ɛkt");
       if (lowerWord.includes("ach") && !lowerWord.endsWith("ach") && !lowerWord.endsWith("ache") && !/ach[aeiou]/.test(lowerWord) && /ach[nblrm]/.test(lowerWord) && !lowerWord.includes("tach"))
