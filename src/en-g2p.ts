@@ -771,7 +771,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/eɪ/g, "aɪ");
       if (lowerWord.includes("ei") &&
           (lowerWord.startsWith("klein") || lowerWord.startsWith("drei") || lowerWord.startsWith("breit") ||
-           lowerWord.startsWith("mein") || lowerWord.startsWith("meio") ||
+           lowerWord.startsWith("mein") || lowerWord.startsWith("meio") || lowerWord.startsWith("wei") ||
+           (lowerWord.startsWith("feig") && !lowerWord.startsWith("feigh")) ||
            (lowerWord.startsWith("hei") && !/^hei(?:nous|fer|r$|res|ress)/.test(lowerWord)) ||
            (lowerWord.startsWith("lei") && lowerWord.length >= 6 && !/^lei(?:sure|s$)/.test(lowerWord)) ||
            (lowerWord.startsWith("pf") && lowerWord.includes("ei"))))
@@ -810,7 +811,7 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/^dʒ/, "ɡ");
       if (/(?:ingen|angen)$/.test(lowerWord) && lowerWord.length >= 7)
         result = result.replace(/dʒ([əɛɪ]n)$/, "ɡ$1");
-      if (lowerWord.includes("eigen"))
+      if (lowerWord.includes("eigen") || (lowerWord.includes("eig") && (lowerWord.startsWith("wei") || (lowerWord.startsWith("feig") && !lowerWord.startsWith("feigh")))))
         result = result.replace(/dʒ([əɛɪ])/g, "ɡ$1");
       if (lowerWord.endsWith("gel") && lowerWord.length >= 5 &&
           !/(?:cudgel|gudgel|kegel|nigel|rigel|bagel|angel|evangel|rangel|dgel)$/.test(lowerWord))
