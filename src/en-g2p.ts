@@ -246,8 +246,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ould$/, "ʊd"], // would, could, should (silent l, lax u — closed function-word family)
   // Improved digraph handling
   [/^tsch/, "tʃ"], // German loanwords
-  [/^sch(?![aeiou])/, "ʃ"], // schmaltz/schnapps + frisch/hanisch (sch not before vowel → /ʃ/)
-  [/^sch/, "sk"], // schema, schematic (not German)
+  [/^sch/, "ʃ"], // schmaltz/schnapps/Schmidt (German); English words like school/schema in dict
   [/^she$/, "ʃi"], // she (pronoun; anchored so it doesn't eat shed/shell)
   [/^he$/, "hi"], // he  (pronoun; anchored so it doesn't eat here/hen)
   [/^cz/, "tʃ"], // czech, czechoslovak, czar (Polish/Czech cz)
@@ -760,10 +759,11 @@ export class EnglishG2P implements LanguageProcessor {
       if (lowerWord.endsWith("ancy")) result = result.replace(/ænsi$/, "ənsi");
       if (lowerWord.endsWith("erage") || lowerWord.endsWith("erature"))
         result = result.replace(/ɛɹ/g, "ɝ");
+      if (lowerWord.startsWith("mechan"))
+        result = result.replace(/tʃ/, "k");
 
       // Add stress marker
       if (syllables.length > 1 && stressedSyllableIndex >= 0) {
-        // Insert primary stress marker before the stressed syllable
         let charIndex = 0;
         for (let i = 0; i < stressedSyllableIndex; i++) {
           charIndex += syllableIPA[i].length;

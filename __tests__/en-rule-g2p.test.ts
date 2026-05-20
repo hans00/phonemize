@@ -40,12 +40,9 @@ describe('G2P rule fixes', () => {
     expect(g2p.predict('syntax', 'en')).toMatch(/ɪn/);
   });
 
-  it('sch before consonant → /ʃ/ (schmaltz)', () => {
+  it('sch → /ʃ/ (German default; English sch words like schema/school are in dict)', () => {
     expect(g2p.predict('schmaltz', 'en')).toMatch(/^ʃ/);
-  });
-
-  it('sch before vowel → /sk/ (schema)', () => {
-    expect(g2p.predict('schema', 'en')).toMatch(/sk/);
+    expect(g2p.predict('schmidt', 'en')).toMatch(/^ʃ/);
   });
 
   it('^al$ only fires for doubled-l syllables (calculator has no /ɔl/)', () => {
