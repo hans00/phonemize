@@ -657,6 +657,9 @@ export class EnglishG2P implements LanguageProcessor {
     // all have short-e /ɛ/ when used as the first morpheme of a compound
     if (/^(head|dead|bread|thread|dread|stead|tread|spread)./.test(lowerWord))
       postBase = postBase.replace(/^([^aeiouæɛɪɑɔʌuəɝ]*)id/, "$1ɛd");
+    // uy digraph: ʌ[ji]→aɪ (buy/buyer/buyout/guy/guyer/guyett/stuyvesant)
+    if (lowerWord.includes("uy"))
+      postBase = postBase.replace(/ʌ[ji]/g, "aɪ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
