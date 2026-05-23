@@ -1051,6 +1051,10 @@ export class EnglishG2P implements LanguageProcessor {
         lowerWord.startsWith("admire") || lowerWord.startsWith("adopt"))
       postBase = postBase.replace(/^([ˈˌ]?)æ/, "$1ə");
 
+    // -brough/-rough place names: ɹəf → ɹoʊ (fambrough, scarbrough, burrough)
+    if (lowerWord.endsWith("ough"))
+      postBase = postBase.replace(/ɹəf$/, "ɹoʊ");
+
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
   }
