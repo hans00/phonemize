@@ -783,6 +783,15 @@ export class EnglishG2P implements LanguageProcessor {
     // -ocious: consonant+eɪ→oʊ before ʃəs (atrocious, ferocious)
     if (lowerWord.endsWith("ocious"))
       postBase = postBase.replace(/([ɹk])eɪ(ʃəs)$/, "$1oʊ$2");
+    // astro- compound: reduce unstressed oʊ (astrology, astrological)
+    if (lowerWord.startsWith("astro"))
+      postBase = postBase.replace(/æstɹoʊ/, "æstɹə");
+    // eco- compound: reduce unstressed oʊ (ecology, ecological)
+    if (lowerWord.startsWith("eco"))
+      postBase = postBase.replace(/ɛkoʊ/, "ɛkə");
+    // cosm- words: koʊsm→kɑzm (cosmetology, cosmonaut)
+    if (lowerWord.startsWith("cosm"))
+      postBase = postBase.replace(/koʊsm/, "kɑzm");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
