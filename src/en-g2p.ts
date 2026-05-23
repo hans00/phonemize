@@ -1807,6 +1807,13 @@ export class EnglishG2P implements LanguageProcessor {
           (pattern.source === "^x(?=[aeiouy])" || pattern.source === "^gil")
         )
           continue;
+        // Greek-origin silent-p rules (psalm/pterodactyl/pneumonia) must fire at the very
+        // start of the word only — not mid-syllable (lapse/accept/adept/script).
+        if (
+          (syllableIndex > 0 || phonemes.length > 0) &&
+          (pattern.source === "^pt" || pattern.source === "^ps" || pattern.source === "^pn")
+        )
+          continue;
         const match = remaining.match(pattern);
         if (match) {
           phonemes.push(ipa);
