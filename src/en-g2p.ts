@@ -1056,6 +1056,10 @@ export class EnglishG2P implements LanguageProcessor {
     // product-: pɹoʊd → pɹɑd (product, products, productive)
     if (lowerWord.startsWith("product"))
       postBase = postBase.replace(/^([ˈˌ]?)pɹoʊ([ˈˌ]?)d/, "$1pɹɑ$2d");
+    // arriv-/aris-/aros-/arrang-: initial (æ|ɑ)ɹ → ɝ (arrive, arise, arose, arrange)
+    if (lowerWord.startsWith("arriv") || lowerWord.startsWith("aris") ||
+        lowerWord.startsWith("aros") || lowerWord.startsWith("arrang"))
+      postBase = postBase.replace(/^([ˈˌ]?)[æɑ]([ˈˌ]?)ɹ/, "$1ɝ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
