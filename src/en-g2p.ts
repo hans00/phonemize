@@ -670,6 +670,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -nuation: nʌeɪʃ→njueɪʃ (continuation, discontinuation)
     if (lowerWord.endsWith("nuation"))
       postBase = postBase.replace(/nʌeɪʃ/, "njueɪʃ");
+    // gui+C: u is silent in gu- digraph — guide/guidance/guise/guido give ɡu but need ɡaɪ
+    if (lowerWord.startsWith("gui") && /^ɡu/.test(postBase))
+      postBase = postBase.replace(/^ɡu/, "ɡaɪ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
