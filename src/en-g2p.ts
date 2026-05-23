@@ -627,6 +627,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -ification: vowel before -f- reduces to ə (amplification/classification/magnification)
     if (lowerWord.endsWith("ification"))
       postBase = postBase.replace(/ɪf/, "əf");
+    // -ative: ætɪv→ətɪv in unstressed suffix (contemplative/narrative/negative/relative)
+    if (lowerWord.endsWith("ative"))
+      postBase = postBase.replace(/ætɪv$/, "ətɪv");
     // -ience suffix: iəns not ins (experience/resilience/ambience)
     if (lowerWord.endsWith("ience"))
       postBase = postBase.replace(/ins$/, "iəns");
