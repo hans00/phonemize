@@ -635,11 +635,9 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.endsWith("ative"))
       postBase = postBase.replace(/ætɪv$/, "ətɪv");
     // -ience suffix: iəns not ins (experience/resilience/ambience)
-    if (lowerWord.endsWith("ience"))
-      postBase = postBase.replace(/ins$/, "iəns");
-    // -uence suffix: uəns not uns (influence/affluence/confluence)
-    if (lowerWord.endsWith("uence"))
-      postBase = postBase.replace(/uns$/, "uəns");
+    // -ience/-uence: [iu]ns→[iu]əns (experience/influence/resilience/affluence)
+    if (lowerWord.endsWith("ience") || lowerWord.endsWith("uence"))
+      postBase = postBase.replace(/([iu])ns$/, "$1əns");
     // e[bdghps]- prefix: ɪ→ɛ initial vowel (epidemic/educate/estimate/embark etc.)
     if (/^e[bdghps]/.test(lowerWord))
       postBase = postBase.replace(/^ɪ/, "ɛ");
@@ -679,9 +677,6 @@ export class EnglishG2P implements LanguageProcessor {
     // aero- prefix: əɪɹ→ɛɹ (aerobic, aerospace, aerobatic)
     if (lowerWord.startsWith("aero"))
       postBase = postBase.replace(/^(ˈ?)əɪ(ˈ?)ɹ/, "$1ɛ$2ɹ");
-    // micro- prefix: mɪkɹ→maɪkɹ (microfilm, micrometer, micron)
-    if (lowerWord.startsWith("micro"))
-      postBase = postBase.replace(/^mɪkɹ/, "maɪkɹ");
     // -osis: əsɪs→oʊsɪs (prognosis, stenosis, thrombosis, tuberculosis)
     if (lowerWord.endsWith("osis"))
       postBase = postBase.replace(/əsɪs$/, "oʊsɪs");
@@ -715,11 +710,9 @@ export class EnglishG2P implements LanguageProcessor {
     // tur* words: tɝ before vowel → tʃɝ (naturalistic, adventurous, architectural, picturesque)
     if (/tur/.test(lowerWord))
       postBase = postBase.replace(/tɝ(?=[aeiouæɛɑɔɪəɝʊ])/g, "tʃɝ");
-    // -atch/-etch words: reverse ətʃ→ək misfire (dispatch, baywatch, outstretch)
-    if (lowerWord.endsWith("atch"))
-      postBase = postBase.replace(/ək$/, "ætʃ");
-    if (lowerWord.endsWith("etch"))
-      postBase = postBase.replace(/ək$/, "ɛtʃ");
+    // -atch/-etch: reverse ək misfire → ætʃ/ɛtʃ (dispatch, baywatch, outstretch)
+    if (lowerWord.endsWith("atch") || lowerWord.endsWith("etch"))
+      postBase = postBase.replace(/ək$/, lowerWord.endsWith("atch") ? "ætʃ" : "ɛtʃ");
     // -ore/-oor/-oar words: unstressed-final ɔɹ→ɝ fires incorrectly; restore ɔɹ (adore, ashore, bookstore, outdoor, uproar)
     if (lowerWord.endsWith("ore") || lowerWord.endsWith("oor") || lowerWord.endsWith("oar"))
       postBase = postBase.replace(/ɝ$/, "ɔɹ");
