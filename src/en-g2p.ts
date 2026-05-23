@@ -678,12 +678,11 @@ export class EnglishG2P implements LanguageProcessor {
     // aero- prefix: əɪɹ→ɛɹ (aerobic, aerospace, aerobatic)
     if (lowerWord.startsWith("aero"))
       postBase = postBase.replace(/^(ˈ?)əɪ(ˈ?)ɹ/, "$1ɛ$2ɹ");
-    // -osis: əsɪs→oʊsɪs (prognosis, stenosis, thrombosis, tuberculosis)
-    if (lowerWord.endsWith("osis"))
+    // -osis: əsɪs→oʊsɪs (prognosis/stenosis/thrombosis); ɪs→əs (cirrhosis/fibrosis/hypnosis)
+    if (lowerWord.endsWith("osis")) {
       postBase = postBase.replace(/əsɪs$/, "oʊsɪs");
-    // -osis: final ɪs→əs (cirrhosis, fibrosis, hypnosis, asbestosis)
-    if (lowerWord.endsWith("osis"))
       postBase = postBase.replace(/ɪs$/, "əs");
+    }
     // -graph: final ɡɹəf→ɡɹæf (telegraph, lithograph, reprograph)
     if (lowerWord.endsWith("graph"))
       postBase = postBase.replace(/ɡɹəf$/, "ɡɹæf");
@@ -905,12 +904,11 @@ export class EnglishG2P implements LanguageProcessor {
     // tech-: tɛtʃ→tɛk (technology, technique, technic)
     if (lowerWord.startsWith("tech"))
       postBase = postBase.replace(/^([ˈˌ]?)tɛtʃ/, "$1tɛk");
-    // fore- compound: fɔɹɪ→fɔɹ (forebear, forecast, forehand)
-    if (lowerWord.startsWith("fore"))
+    // fore- compound: fix spurious ɪ or rhotacized vowel in prefix (forebear, forebode, forecast, forensic)
+    if (lowerWord.startsWith("fore")) {
       postBase = postBase.replace(/^([ˈˌ]?)fɔɹɪ/, "$1fɔɹ");
-    // fore- compound: fɝ(ˈ?)ɛ→fɔɹ (forebode, foreclose, forensic)
-    if (lowerWord.startsWith("fore"))
       postBase = postBase.replace(/^([ˈˌ]?)fɝ[ˈˌ]?ɛ/, "$1fɔɹ");
+    }
     // para-: pɝ→pɛɹ (parabolic, paramedic, parametric, parasite); excl parad/parab
     if (lowerWord.startsWith("para") && !lowerWord.startsWith("parad") && !lowerWord.startsWith("parab"))
       postBase = postBase.replace(/^([ˈˌ]?)pɝ/, "$1pɛɹ");
