@@ -642,6 +642,12 @@ export class EnglishG2P implements LanguageProcessor {
     // ep- prefix: ɪ→ɛ initial vowel (epidemic/episode/epistemology/epileptic)
     if (lowerWord.startsWith("ep"))
       postBase = postBase.replace(/^ɪ/, "ɛ");
+    // th- initial ð→θ: content words use voiceless θ; guard voiced-ð function words
+    if (lowerWord.startsWith("th") &&
+        !lowerWord.startsWith("thenc") && !lowerWord.startsWith("thith") &&
+        lowerWord !== "there" && lowerWord !== "these" &&
+        lowerWord !== "theus" && lowerWord !== "themselves")
+      postBase = postBase.replace(/^ð/, "θ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
