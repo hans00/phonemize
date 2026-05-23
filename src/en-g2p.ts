@@ -570,6 +570,25 @@ export class EnglishG2P implements LanguageProcessor {
     // -etion (not -scretion): ɛʃən→iʃən (accretion/completion/deletion/secretion)
     if (lowerWord.endsWith("etion") && !lowerWord.endsWith("scretion"))
       postBase = postBase.replace(/ɛʃən$/, "iʃən");
+    // -nality: nəl(ə/ɪ)ti→næliti (personality/criminality/originality); l→ɫ handled later
+    if (lowerWord.endsWith("nality"))
+      postBase = postBase.replace(/nəl[əɪ]ti$/, "næliti");
+    // -icide: pre-cide ɪ is reduced to ə (homicide/fratricide/infanticide)
+    if (lowerWord.endsWith("icide"))
+      postBase = postBase.replace(/ɪsaɪd$/, "əsaɪd");
+    // -ability: æ before -bility reduces to ə (ability/disability/availability/culpability)
+    if (lowerWord.endsWith("ability"))
+      postBase = postBase.replace(/æbɪlɪti$/, "əbɪlɪti").replace(/æbɪləti$/, "əbɪləti");
+    // micro- prefix: open syllable mi.cro → /maɪkɹoʊ/ not /mɪkɹoʊ/
+    if (lowerWord.startsWith("micro"))
+      postBase = postBase.replace(/^mɪ(ˈ?)kɹoʊ/, "maɪkɹoʊ");
+    // -mental: elided /t/ in many derived forms (elemental/fundamental/departmental)
+    if (lowerWord.endsWith("mental"))
+      postBase = postBase.replace(/məntəl$/, "mɛnəl");
+    // -some compound suffix: /soʊm/→/səm/ (fearsome/cumbersome/handsome/gruesome)
+    // guard: not -osome (chromosome/liposome/ribosome from Greek soma)
+    if (lowerWord.endsWith("some") && !lowerWord.endsWith("osome"))
+      postBase = postBase.replace(/soʊm$/, "səm");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
