@@ -720,6 +720,15 @@ export class EnglishG2P implements LanguageProcessor {
     // -ute magic-e: yod after [bkmp] before word-final ut (acute/commute/compute/tribute/persecute)
     if (lowerWord.endsWith("ute"))
       postBase = postBase.replace(/([bkmp])ut$/, "$1jut");
+    // -fuse/-muse: yod + voicing ([fm]+us → [fm]+juz) (fuse, muse, confuse, amuse, defuse)
+    if (lowerWord.endsWith("fuse") || lowerWord.endsWith("muse"))
+      postBase = postBase.replace(/([fm])us$/, "$1juz");
+    // -mune: yod insertion (immune, commune, autoimmune)
+    if (lowerWord.endsWith("mune"))
+      postBase = postBase.replace(/mun$/, "mjun");
+    // future: f+ʌ→f+ju before tʃ in -ture words (future)
+    if (lowerWord.startsWith("f") && lowerWord.endsWith("ture"))
+      postBase = postBase.replace(/fʌ(tʃ)/, "fju$1");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
