@@ -981,9 +981,11 @@ export class EnglishG2P implements LanguageProcessor {
     // medic-: mɪdə→mɛdɪ (medicate)
     if (lowerWord.startsWith("medic"))
       postBase = postBase.replace(/^([ˈˌ]?)mɪ([ˈˌ]?)də/, "$1mɛ$2dɪ");
-    // tele-: tɛlɪ→tɛlə (telecast, telecom, telegram, telephone); excl. teleol- (teleological)
-    if (lowerWord.startsWith("tele") && !lowerWord.startsWith("teleol"))
+    // tele-: tɛlɪ→tɛlə (telecast, telecom); tɪɫɛ→tɛɫə (telephone, telescope); excl. teleol-
+    if (lowerWord.startsWith("tele") && !lowerWord.startsWith("teleol")) {
       postBase = postBase.replace(/^([ˈˌ]?)tɛlɪ/, "$1tɛlə");
+      postBase = postBase.replace(/^([ˈˌ]?)tɪ([ˈˌ]?)lɛ/, "$1tɛlə");
+    }
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
