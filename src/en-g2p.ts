@@ -1020,6 +1020,9 @@ export class EnglishG2P implements LanguageProcessor {
     // opportun-: əpɔɹt→ɑpɝt (opportune, opportunism, opportunist, opportunistic)
     if (lowerWord.startsWith("opportun"))
       postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)p([ˈˌ]?)ɔɹt/, "$1ɑ$2p$3ɝt");
+    // unc-: undo n→ŋ assimilation at un-C boundary (unclassify, uncollectable, uncomfortable)
+    if (lowerWord.startsWith("unc"))
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)ŋ([ˈˌ]?)k/, "$1ə$2n$3k");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
