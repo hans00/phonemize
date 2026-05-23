@@ -828,6 +828,18 @@ export class EnglishG2P implements LanguageProcessor {
     // -nness: nnəs→nəs (cleanness, thinness — double-n reduced)
     if (lowerWord.endsWith("nness"))
       postBase = postBase.replace(/nn(əs)$/, "n$1");
+    // ubi-/uti- yod: [ʌə][bt]→ju[bt] (ubiquity, ubiquitous, utility, utilize, utica)
+    if (lowerWord.startsWith("ubi") || lowerWord.startsWith("uti"))
+      postBase = postBase.replace(/^([ˈˌ]?)[ʌə]([bt])/, "$1ju$2");
+    // profit: pɹoʊfɪt→pɹɑfɪt (profit, profitable, profiteer, unprofitable)
+    if (lowerWord.includes("profit"))
+      postBase = postBase.replace(/pɹoʊfɪt/, "pɹɑfɪt");
+    // -akable magic-e: æk→eɪk (unshakable)
+    if (lowerWord.endsWith("akable"))
+      postBase = postBase.replace(/æk(əbəɫ)$/, "eɪk$1");
+    // typic-: taɪpɪ→tɪpɪ (typical, typically, atypical)
+    if (lowerWord.includes("typic"))
+      postBase = postBase.replace(/taɪp([ˈˌ]?)ɪ/, "tɪp$1ɪ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
