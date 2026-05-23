@@ -933,6 +933,9 @@ export class EnglishG2P implements LanguageProcessor {
     // trans- s→z before vowel (transaction, transitory, transafrica)
     if (lowerWord.startsWith("trans"))
       postBase = postBase.replace(/^([ˈˌ]?)tɹ[əæ]ns([ˈˌ]?)([æɛɑɪ])/, "$1tɹænz$2$3");
+    // probl-/probab-/proph-/prosp-/proje-: pɹoʊ→pɹɑ (probably, problem, prophet, prospect, project)
+    if (/^pro(?:bl|bab|ph|sp|je)/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)pɹoʊ/, "$1pɹɑ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
