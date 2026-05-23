@@ -582,7 +582,7 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/æbɪlɪti$/, "əbɪlɪti").replace(/æbɪləti$/, "əbɪləti");
     // micro- prefix: open syllable mi.cro → /maɪkɹoʊ/ not /mɪkɹoʊ/
     if (lowerWord.startsWith("micro"))
-      postBase = postBase.replace(/^mɪ(ˈ?)kɹoʊ/, "maɪkɹoʊ");
+      postBase = postBase.replace(/^(ˈ?)mɪkɹ/, "$1maɪkɹ");
     // -mental: elided /t/ in many derived forms (elemental/fundamental/departmental)
     if (lowerWord.endsWith("mental"))
       postBase = postBase.replace(/məntəl$/, "mɛnəl");
@@ -678,7 +678,7 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/ɪn$/, "aɪn");
     // aero- prefix: əɪɹ→ɛɹ (aerobic, aerospace, aerobatic)
     if (lowerWord.startsWith("aero"))
-      postBase = postBase.replace(/^əɪɹ/, "ɛɹ");
+      postBase = postBase.replace(/^(ˈ?)əɪ(ˈ?)ɹ/, "$1ɛ$2ɹ");
     // micro- prefix: mɪkɹ→maɪkɹ (microfilm, micrometer, micron)
     if (lowerWord.startsWith("micro"))
       postBase = postBase.replace(/^mɪkɹ/, "maɪkɹ");
@@ -687,7 +687,14 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/əsɪs$/, "oʊsɪs");
     // di+vowel: dɪV→daɪV (diamond, diaper, dialect, diatribe, dioxide)
     if (/^di[aeiou]/.test(lowerWord))
-      postBase = postBase.replace(/^dɪ([aeiouæɛɑɔɝ])/, "daɪ$1");
+      postBase = postBase.replace(/^(ˈ?)dɪ([aeiouæɛɑɔɝ])/, "$1daɪ$2");
+    // bio- prefix: bɪoʊ→baɪoʊ (biogen, biohazard, biomet, biotech)
+    if (lowerWord.startsWith("bio"))
+      postBase = postBase.replace(/^(ˈ?)bɪoʊ/, "$1baɪoʊ");
+    // dia+consonant: daɪæ→daɪə (diabase, diadem, diagnose, diagnosis, diagram, dialect, diamond)
+    // di+vowel rule already fires first, converting dɪæ→daɪæ; we fix æ→ə here
+    if (/^dia[^aeiou]/.test(lowerWord))
+      postBase = postBase.replace(/^(ˈ?)daɪæ/, "$1daɪə");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
