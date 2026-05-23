@@ -1063,6 +1063,10 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.endsWith("ough"))
       postBase = postBase.replace(/ɹəf$/, "ɹoʊ");
 
+    // non- prefix: nən → nɑn (nonentity, nonbinding, nonferrous, nonacademic)
+    if (lowerWord.startsWith("non"))
+      postBase = postBase.replace(/^([ˈˌ]?)nən/, "$1nɑn");
+
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
   }
