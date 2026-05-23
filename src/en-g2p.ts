@@ -1002,6 +1002,21 @@ export class EnglishG2P implements LanguageProcessor {
     // product-: pɹəd→pɝd + ʌk→ək (production, productive)
     if (lowerWord.startsWith("product"))
       postBase = postBase.replace(/^([ˈˌ]?)pɹə([ˈˌ]?)dʌk/, "$1pɝ$2dək");
+    // relev-: ɹɪlɛv→ɹɛləv (relevant, relevance, relevancy)
+    if (lowerWord.startsWith("relev"))
+      postBase = postBase.replace(/^([ˈˌ]?)ɹɪ([ˈˌ]?)lɛv/, "$1ɹɛlə$2v");
+    // resid-: ɹɪsɪd→ɹɛzɪd (resident, residence, residential)
+    if (lowerWord.startsWith("resid"))
+      postBase = postBase.replace(/^([ˈˌ]?)ɹɪ([ˈˌ]?)sɪd/, "$1ɹɛz$2ɪd");
+    // demonstr-: dɪmɑns→dɛməns (demonstrate, demonstrator, demonstrable)
+    if (lowerWord.startsWith("demonstr"))
+      postBase = postBase.replace(/^([ˈˌ]?)dɪ([ˈˌ]?)mɑns/, "$1dɛ$2məns");
+    // trouble: tɹaʊb→tɹəb (trouble, troubleshoot, troublemaker)
+    if (lowerWord.startsWith("trouble"))
+      postBase = postBase.replace(/^([ˈˌ]?)tɹaʊb/, "$1tɹəb");
+    // extra-: ɪkstɹ→ɛkstɹ (extra, extradite, extravaganza)
+    if (lowerWord.startsWith("extra"))
+      postBase = postBase.replace(/^([ˈˌ]?)ɪks([ˈˌ]?)tɹ/, "$1ɛks$2tɹ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
