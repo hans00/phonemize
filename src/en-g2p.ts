@@ -618,6 +618,12 @@ export class EnglishG2P implements LanguageProcessor {
     // abs- initial: ə→æ (absentee/abstention/abstinence/absolve); not absorb/absurd
     if (lowerWord.startsWith("abs") && !lowerWord.startsWith("absor") && !lowerWord.startsWith("absur"))
       postBase = postBase.replace(/^ə/, "æ");
+    // -ience suffix: iəns not ins (experience/resilience/ambience)
+    if (lowerWord.endsWith("ience"))
+      postBase = postBase.replace(/ins$/, "iəns");
+    // -uence suffix: uəns not uns (influence/affluence/confluence)
+    if (lowerWord.endsWith("uence"))
+      postBase = postBase.replace(/uns$/, "uəns");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
