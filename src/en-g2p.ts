@@ -797,6 +797,11 @@ export class EnglishG2P implements LanguageProcessor {
     // ov- initial: əv→oʊv (ovation, ovary, oviparous, ovulation, overreaction)
     if (lowerWord.startsWith("ov"))
       postBase = postBase.replace(/^([ˈˌ]?)əv/, "$1oʊv");
+    // -over compound suffix: əvɝ→oʊvɝ (crossover, handover, turnover, leftover, andover)
+    // exclude -cover (discover, hardcover) and reduced-vowel cases (lover, glover, etc.)
+    if (lowerWord.endsWith("over") && !lowerWord.includes("cover") &&
+        !["lover", "glover", "clover", "plover", "drover", "shover", "mover"].includes(lowerWord))
+      postBase = postBase.replace(/əvɝ$/, "oʊvɝ");
     // under- compound: ndɛɹ→ndɝ (underarm, underachiever)
     if (lowerWord.startsWith("under"))
       postBase = postBase.replace(/ən([ˈˌ]?)dɛɹ/, "ən$1dɝ");
