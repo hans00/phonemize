@@ -762,6 +762,12 @@ export class EnglishG2P implements LanguageProcessor {
           !/[yh]ard$/.test(lowerWord) && !/card$/.test(lowerWord) &&
           !/(?:(?<!g)gard|guard)$/.test(lowerWord) && !/bard$/.test(lowerWord))
         result = result.replace(/ɑɹd$/, "ɝd");
+      // Latin-stem endings: schwa before final consonant cluster should be /ɛ/ not /ə/
+      // -ect (connect/elect/affect), -ept (accept/concept), -end (amend/offend), -ext (subtext)
+      if (/(?:ect|ept|ext)$/.test(lowerWord))
+        result = result.replace(/ə([kp]t|kst)$/, "ɛ$1");
+      if (lowerWord.endsWith("end") && syllables.length >= 2)
+        result = result.replace(/ənd$/, "ɛnd");
       if (!lowerWord.endsWith("cission"))
         result = result.replace(/sɪʃən$/, "zɪʃən");
       if (lowerWord.length >= 9) result = result.replace(/ɪɹeɪʃən$/, "ɝeɪʃən");
