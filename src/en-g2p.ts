@@ -788,9 +788,11 @@ export class EnglishG2P implements LanguageProcessor {
     // -ological: oʊ→ə before stress+l+ɑdʒ (psychological, theological, sociological)
     if (lowerWord.endsWith("ological"))
       postBase = postBase.replace(/oʊ([ˈˌ]?)[lɫ](ɑdʒ)/, "ə$1l$2");
-    // -ologist: ɡɪst→dʒɪst (criminologist, oncologist, virologist)
-    if (lowerWord.endsWith("ologist"))
+    // -ologist: ɡɪst→dʒɪst then oʊl[ɔɑ]dʒɪst→ɑlədʒɪst (cardiologist, physiologist, immunologist)
+    if (lowerWord.endsWith("ologist")) {
       postBase = postBase.replace(/ɡɪst$/, "dʒɪst");
+      postBase = postBase.replace(/oʊ[ˈˌ]?[lɫ][ɔɑ]dʒɪst$/, "ɑlədʒɪst");
+    }
     // over- compound: vɪɹ→vɝ (overall, overact, overeat)
     if (lowerWord.startsWith("over"))
       postBase = postBase.replace(/oʊv([ˈˌ]?)ɪɹ/, "oʊv$1ɝ");
