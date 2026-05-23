@@ -927,6 +927,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -urity: ɝɪti→jʊɹɪti (impurity, insecurity)
     if (lowerWord.endsWith("urity"))
       postBase = postBase.replace(/ɝɪti$/, "jʊɹɪti");
+    // -graphy: əɡɹəfi→ɑɡɹəfi (cinematography, demography, mammography)
+    if (lowerWord.endsWith("graphy"))
+      postBase = postBase.replace(/əɡɹəfi$/, "ɑɡɹəfi");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
