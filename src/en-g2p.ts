@@ -899,12 +899,21 @@ export class EnglishG2P implements LanguageProcessor {
     // echo-: ɛtʃ→ɛk (echo, echography)
     if (lowerWord.startsWith("echo"))
       postBase = postBase.replace(/^([ˈˌ]?)ɛtʃ/, "$1ɛk");
-    // charact-: tʃɝækt→kɛɹɪkt (character)
+    // charact-: tʃɝ(ˈ?)ækt→kɛɹɪkt (character); stress mark may appear mid-word
     if (lowerWord.startsWith("charact"))
-      postBase = postBase.replace(/^([ˈˌ]?)tʃɝækt/, "$1kɛɹɪkt");
+      postBase = postBase.replace(/^([ˈˌ]?)tʃɝ[ˈˌ]?ækt/, "$1kɛɹɪkt");
     // tech-: tɛtʃ→tɛk (technology, technique, technic)
     if (lowerWord.startsWith("tech"))
       postBase = postBase.replace(/^([ˈˌ]?)tɛtʃ/, "$1tɛk");
+    // fore- compound: fɔɹɪ→fɔɹ (forebear, forecast, forehand)
+    if (lowerWord.startsWith("fore"))
+      postBase = postBase.replace(/^([ˈˌ]?)fɔɹɪ/, "$1fɔɹ");
+    // fore- compound: fɝ(ˈ?)ɛ→fɔɹ (forebode, foreclose, forensic)
+    if (lowerWord.startsWith("fore"))
+      postBase = postBase.replace(/^([ˈˌ]?)fɝ[ˈˌ]?ɛ/, "$1fɔɹ");
+    // para-: pɝ→pɛɹ (parabolic, paramedic, parametric, parasite); excl parad/parab
+    if (lowerWord.startsWith("para") && !lowerWord.startsWith("parad") && !lowerWord.startsWith("parab"))
+      postBase = postBase.replace(/^([ˈˌ]?)pɝ/, "$1pɛɹ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
