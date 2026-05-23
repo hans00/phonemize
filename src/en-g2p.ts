@@ -699,7 +699,7 @@ export class EnglishG2P implements LanguageProcessor {
     postBase = postBase.replace(/nʒən$/, "nʃən");
     // -stle suffix: silent t (epistle, thistle, greencastle)
     if (lowerWord.endsWith("stle"))
-      postBase = postBase.replace(/stəɫ$/, "səɫ");
+      postBase = postBase.replace(/stəl$/, "səl");
     // tur* words: tɝ before vowel → tʃɝ (naturalistic, adventurous, architectural, picturesque)
     if (/tur/.test(lowerWord))
       postBase = postBase.replace(/tɝ(?=[aeiouæɛɑɔɪəɝʊ])/g, "tʃɝ");
@@ -729,6 +729,24 @@ export class EnglishG2P implements LanguageProcessor {
     // future: f+ʌ→f+ju before tʃ in -ture words (future)
     if (lowerWord.startsWith("f") && lowerWord.endsWith("ture"))
       postBase = postBase.replace(/fʌ(tʃ)/, "fju$1");
+    // avi-/ami- words: initial ɑ[mv]→eɪ[mv] (aviation, amiable, avis)
+    if (/^a[mv]i/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)ɑ([ˈˌ]?)([mv])/, "$1eɪ$2$3");
+    // -capable words: kæpəb→keɪpəb (capable, incapable)
+    if (lowerWord.endsWith("capable"))
+      postBase = postBase.replace(/kæpəb/, "keɪpəb");
+    // cadence: kə(dəns)→keɪ(dəns) (cadence, decadence base)
+    if (lowerWord.endsWith("cadence"))
+      postBase = postBase.replace(/kə([ˈˌ]?)(dəns)$/, "keɪ$1$2");
+    // ammunition: əm→æm at start (amm- prefix with short a)
+    if (lowerWord.startsWith("amm"))
+      postBase = postBase.replace(/^əm/, "æm");
+    // -comparative: pɝ→pɛɹ (comparative)
+    if (lowerWord.endsWith("parative"))
+      postBase = postBase.replace(/pɝ([ˈˌ]?)(ətɪv)$/, "pɛɹ$1$2");
+    // all-ation: əl→æl at start (allegation)
+    if (lowerWord.startsWith("all") && lowerWord.endsWith("ation"))
+      postBase = postBase.replace(/^əl/, "æl");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
