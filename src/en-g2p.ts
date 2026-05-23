@@ -1047,6 +1047,15 @@ export class EnglishG2P implements LanguageProcessor {
     // polish-: poʊlɪʃ → pɑlɪʃ (polish, polished, polisher)
     if (lowerWord.startsWith("polish"))
       postBase = postBase.replace(/^([ˈˌ]?)poʊ([ˈˌ]?)l([ˈˌ]?)ɪʃ/, "$1pɑ$2l$3ɪʃ");
+    // oxid-: oʊks/əks → ɑks (oxide, oxidize, oxidation, oxidant)
+    if (lowerWord.startsWith("oxid"))
+      postBase = postBase.replace(/^([ˈˌ]?)[oʊə]+([ˈˌ]?)ks/, "$1ɑ$2ks");
+    // process-: pɹoʊs → pɹɑs (process, processes, processing)
+    if (lowerWord.startsWith("process"))
+      postBase = postBase.replace(/^([ˈˌ]?)pɹoʊ([ˈˌ]?)s/, "$1pɹɑ$2s");
+    // product-: pɹoʊd → pɹɑd (product, products, productive)
+    if (lowerWord.startsWith("product"))
+      postBase = postBase.replace(/^([ˈˌ]?)pɹoʊ([ˈˌ]?)d/, "$1pɹɑ$2d");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
