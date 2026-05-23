@@ -798,6 +798,18 @@ export class EnglishG2P implements LanguageProcessor {
     // -ologist: ɡɪst→dʒɪst (criminologist, oncologist, virologist)
     if (lowerWord.endsWith("ologist"))
       postBase = postBase.replace(/ɡɪst$/, "dʒɪst");
+    // over- compound: vɪɹ→vɝ (overall, overact, overeat)
+    if (lowerWord.startsWith("over"))
+      postBase = postBase.replace(/oʊv([ˈˌ]?)ɪɹ/, "oʊv$1ɝ");
+    // dox- words: doʊks→dɑks (doxology, doxie)
+    if (lowerWord.startsWith("dox"))
+      postBase = postBase.replace(/doʊks/, "dɑks");
+    // toxic- words: toʊksɪk→tɑksɪk (toxic, toxicology)
+    if (lowerWord.startsWith("toxic"))
+      postBase = postBase.replace(/toʊksɪk/, "tɑksɪk");
+    // apol- words: eɪpiɑl→əpɑl (apology, apologetic)
+    if (lowerWord.startsWith("apol"))
+      postBase = postBase.replace(/^([ˈˌ]?)eɪp([ˈˌ]?)iɑ/, "$1əp$2ɑ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
