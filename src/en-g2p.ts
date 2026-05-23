@@ -876,6 +876,15 @@ export class EnglishG2P implements LanguageProcessor {
     // geom-: dʒioʊm→dʒiɑm (geometry, geomorphology)
     if (lowerWord.startsWith("geom"))
       postBase = postBase.replace(/dʒioʊm/, "dʒiɑm");
+    // colon- prefix (colony): koʊl→kɑl (colony, colonize, colonist); len>=6 guards vs 'colon' itself
+    if (lowerWord.startsWith("colon") && lowerWord.length >= 6)
+      postBase = postBase.replace(/^([ˈˌ]?)koʊl/, "$1kɑl");
+    // coer-: kɑɝ→koʊɝ (coerce, coercive)
+    if (lowerWord.startsWith("coer"))
+      postBase = postBase.replace(/^([ˈˌ]?)kɑɝ/, "$1koʊɝ");
+    // vocab-: vəkæb→voʊkæb (vocabulary)
+    if (lowerWord.startsWith("vocab"))
+      postBase = postBase.replace(/vəˈ?kæb/, "voʊkæb");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
