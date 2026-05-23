@@ -945,6 +945,15 @@ export class EnglishG2P implements LanguageProcessor {
     // communis-: mənɪ→mjənɪ (communist, communism)
     if (lowerWord.startsWith("communis"))
       postBase = postBase.replace(/m([ˈˌ]?)[əʌ]nɪ/, "m$1jənɪ");
+    // creat-: kɹit→kɹieɪt (create, creator, creative, creativity); excl. tʃ cluster (creature)
+    if (lowerWord.startsWith("creat"))
+      postBase = postBase.replace(/kɹi([ˈˌ]?)t(?!ʃ)/, "kɹi$1eɪt");
+    // cogn-: kəɡ→kɑɡ (cognitive, cognizance)
+    if (lowerWord.startsWith("cogn"))
+      postBase = postBase.replace(/^([ˈˌ]?)kəɡ/, "$1kɑɡ");
+    // decorat-: dɪkɝ→dɛkɹ (decorative, decoration)
+    if (lowerWord.startsWith("decorat"))
+      postBase = postBase.replace(/^([ˈˌ]?)dɪkɝ/, "$1dɛkɹ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
