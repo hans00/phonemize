@@ -1088,6 +1088,10 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("ever") || lowerWord.startsWith("aver"))
       postBase = postBase.replace(/v([ˈˌ]?)ɪ([ˈˌ]?)ɹ/, "v$1ɝ$2");
 
+    // van- prefix: vən → væn (vanderbilt, vandenberg, vanderburg — Dutch/Flemish names)
+    if (lowerWord.startsWith("van"))
+      postBase = postBase.replace(/^([ˈˌ]?)vən/, "$1væn");
+
     // ex- before consonant: ɪks → ɛks (excellence, excavate, extant, exboyfriend)
     // Exclude exp- and exc+consonant (typically unstressed in those)
     if (lowerWord.startsWith("ex") && !/^ex[aeiou]/.test(lowerWord) &&
