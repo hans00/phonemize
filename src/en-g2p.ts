@@ -676,6 +676,18 @@ export class EnglishG2P implements LanguageProcessor {
     // -ign (not -eign): ɪn→aɪn for design/align/sign/benign (excludes reign/foreign/ensign)
     if (/[^e]ign$/.test(lowerWord) && lowerWord !== "ensign")
       postBase = postBase.replace(/ɪn$/, "aɪn");
+    // aero- prefix: əɪɹ→ɛɹ (aerobic, aerospace, aerobatic)
+    if (lowerWord.startsWith("aero"))
+      postBase = postBase.replace(/^əɪɹ/, "ɛɹ");
+    // micro- prefix: mɪkɹ→maɪkɹ (microfilm, micrometer, micron)
+    if (lowerWord.startsWith("micro"))
+      postBase = postBase.replace(/^mɪkɹ/, "maɪkɹ");
+    // -osis: əsɪs→oʊsɪs (prognosis, stenosis, thrombosis, tuberculosis)
+    if (lowerWord.endsWith("osis"))
+      postBase = postBase.replace(/əsɪs$/, "oʊsɪs");
+    // di+vowel: dɪV→daɪV (diamond, diaper, dialect, diatribe, dioxide)
+    if (/^di[aeiou]/.test(lowerWord))
+      postBase = postBase.replace(/^dɪ([aeiouæɛɑɔɝ])/, "daɪ$1");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
