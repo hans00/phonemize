@@ -914,6 +914,15 @@ export class EnglishG2P implements LanguageProcessor {
     // para-: pɝ→pɛɹ (parabolic, paramedic, parametric, parasite); excl parad/parab
     if (lowerWord.startsWith("para") && !lowerWord.startsWith("parad") && !lowerWord.startsWith("parab"))
       postBase = postBase.replace(/^([ˈˌ]?)pɝ/, "$1pɛɹ");
+    // -acial/-acious: [æɑ]ʃ→eɪʃ (facial, racial, gracious, spacious, glacial)
+    if (/acious$|acial$/.test(lowerWord))
+      postBase = postBase.replace(/([æɑ])(ʃ(?:əɫ|əs))$/, "eɪ$2");
+    // athe-: æðɪ→eɪθi (atheism, atheist)
+    if (lowerWord.startsWith("athe"))
+      postBase = postBase.replace(/^([ˈˌ]?)æðɪ/, "$1eɪθi");
+    // anarch-: ɑɹtʃ→ɑɹk (anarchic, anarchism)
+    if (lowerWord.startsWith("anarch"))
+      postBase = postBase.replace(/ɑɹtʃ/, "ɑɹk");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
