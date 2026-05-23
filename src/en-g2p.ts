@@ -685,6 +685,18 @@ export class EnglishG2P implements LanguageProcessor {
     // -osis: əsɪs→oʊsɪs (prognosis, stenosis, thrombosis, tuberculosis)
     if (lowerWord.endsWith("osis"))
       postBase = postBase.replace(/əsɪs$/, "oʊsɪs");
+    // -osis: final ɪs→əs (cirrhosis, fibrosis, hypnosis, asbestosis)
+    if (lowerWord.endsWith("osis"))
+      postBase = postBase.replace(/ɪs$/, "əs");
+    // -graph: final ɡɹəf→ɡɹæf (telegraph, lithograph, reprograph)
+    if (lowerWord.endsWith("graph"))
+      postBase = postBase.replace(/ɡɹəf$/, "ɡɹæf");
+    // -onomy: initial [æɛ]→ə (astronomy, agronomy)
+    if (lowerWord.endsWith("onomy"))
+      postBase = postBase.replace(/^([ˈˌ]?)([æɛ])/, "$1ə");
+    // chron-ology: kɹoʊn→kɹɑn (chronology, chronological)
+    if (lowerWord.includes("chron") && lowerWord.endsWith("ology"))
+      postBase = postBase.replace(/kɹoʊn/, "kɹɑn");
     // di+vowel: dɪV→daɪV (diamond, diaper, dialect, diatribe, dioxide)
     if (/^di[aeiou]/.test(lowerWord))
       postBase = postBase.replace(/^(ˈ?)dɪ([aeiouæɛɑɔɝ])/, "$1daɪ$2");
