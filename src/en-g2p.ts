@@ -938,6 +938,13 @@ export class EnglishG2P implements LanguageProcessor {
     // probl-/probab-/proph-/prosp-/proje-: pɹoʊ→pɹɑ (probably, problem, prophet, prospect, project)
     if (/^pro(?:bl|bab|ph|sp|je)/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)pɹoʊ/, "$1pɹɑ");
+    // commun-: kɑm/kəm + [ʌəɑ]n → kəmjun (communal, community, communion, communicate, communicable)
+    // excl. communis-/communiz- which keep kɑmjə (communism, communist, communize)
+    if (lowerWord.startsWith("commun") && !lowerWord.startsWith("communis") && !lowerWord.startsWith("communiz"))
+      postBase = postBase.replace(/^([ˈˌ]?)k[ɑə]m([ˈˌ]?)[ʌəɑ]n/, "$1kəmjun");
+    // communis-: mənɪ→mjənɪ (communist, communism)
+    if (lowerWord.startsWith("communis"))
+      postBase = postBase.replace(/m([ˈˌ]?)[əʌ]nɪ/, "m$1jənɪ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
