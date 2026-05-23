@@ -382,6 +382,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^yn(?![aeiou])/, "ɪn"], // gym/symbol | syntax/synchronize
   [/^y$/, "i"], // city, happy, country — final y after prior vowel (guard in loop)
   [/^y(?=[aeiou])/, "j"], // yes, you, year (consonantal before vowels)
+  [/^y(?=[^aeiouy]+$)/, "ɪ"], // y in closed syllable → ɪ (myth, glyph, crypt, physics, system)
   [/^y/, "aɪ"],
   [/^z/, "z"], // by/my/try | z
   // Default vowels (short/lax in closed syllables)
