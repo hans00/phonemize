@@ -714,6 +714,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -worn: wor+n should produce wɔɹn not wɝn (worn, shopworn, careworn)
     if (lowerWord.endsWith("worn"))
       postBase = postBase.replace(/wɝn$/, "wɔɹn");
+    // -buse words: b+u→bju (abuse, abusive, disabuse)
+    if (lowerWord.endsWith("buse") || lowerWord.endsWith("busive") || lowerWord.endsWith("bused"))
+      postBase = postBase.replace(/b([ʌu])s/, "bjus");
+    // -ute magic-e: yod after [bkmp] before word-final ut (acute/commute/compute/tribute/persecute)
+    if (lowerWord.endsWith("ute"))
+      postBase = postBase.replace(/([bkmp])ut$/, "$1jut");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
