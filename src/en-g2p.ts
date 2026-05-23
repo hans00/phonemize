@@ -673,6 +673,9 @@ export class EnglishG2P implements LanguageProcessor {
     // gui+C: u is silent in gu- digraph — guide/guidance/guise/guido give ɡu but need ɡaɪ
     if (lowerWord.startsWith("gui") && /^ɡu/.test(postBase))
       postBase = postBase.replace(/^ɡu/, "ɡaɪ");
+    // -ign (not -eign): ɪn→aɪn for design/align/sign/benign (excludes reign/foreign/ensign)
+    if (/[^e]ign$/.test(lowerWord) && lowerWord !== "ensign")
+      postBase = postBase.replace(/ɪn$/, "aɪn");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
