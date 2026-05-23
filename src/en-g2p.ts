@@ -861,9 +861,15 @@ export class EnglishG2P implements LanguageProcessor {
     // phys-: faɪs→fɪs (physics, physical, physiology, physiologic)
     if (lowerWord.startsWith("phys"))
       postBase = postBase.replace(/faɪs/, "fɪs");
-    // syst-: saɪst→sɪst (system, systematic, systemwide)
-    if (lowerWord.startsWith("syst"))
-      postBase = postBase.replace(/saɪst/, "sɪst");
+    // sy- prefix: saɪ→sɪ (symbol, synonym, syllable, system, sycamore); not syph- (syphon=saɪfən)
+    if (lowerWord.startsWith("sy") && !lowerWord.startsWith("syph"))
+      postBase = postBase.replace(/^([ˈˌ]?)saɪ/, "$1sɪ");
+    // cyl-: saɪl→sɪl (cylinder, cylindrical)
+    else if (lowerWord.startsWith("cyl"))
+      postBase = postBase.replace(/saɪl/, "sɪl");
+    // rhyth-: ɹaɪθ→ɹɪð (rhythmic, rhythmical)
+    if (lowerWord.startsWith("rhyth"))
+      postBase = postBase.replace(/ɹaɪθ/, "ɹɪð");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
