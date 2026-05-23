@@ -885,6 +885,17 @@ export class EnglishG2P implements LanguageProcessor {
     // vocab-: vəkæb→voʊkæb (vocabulary)
     if (lowerWord.startsWith("vocab"))
       postBase = postBase.replace(/vəˈ?kæb/, "voʊkæb");
+    // photo- excl photog-: foʊtə→foʊtoʊ (photocopy, photoshop, photovoltaics)
+    if (lowerWord.startsWith("photo") && !lowerWord.startsWith("photog"))
+      postBase = postBase.replace(/^(foʊt)ə/, "$1oʊ");
+    // typo-: taɪp→tɪp (typography, typology); tyran- excl tyrant: taɪɹ→tɪɹ (tyranny, tyrannical)
+    if (lowerWord.startsWith("typo"))
+      postBase = postBase.replace(/^([ˈˌ]?)taɪp/, "$1tɪp");
+    else if (lowerWord.startsWith("tyran") && !lowerWord.startsWith("tyrant"))
+      postBase = postBase.replace(/^([ˈˌ]?)taɪɹ/, "$1tɪɹ");
+    // chrys-: kɹaɪs→kɹɪs (chrysalis, chrysotile)
+    if (lowerWord.startsWith("chrys"))
+      postBase = postBase.replace(/kɹaɪs/, "kɹɪs");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
