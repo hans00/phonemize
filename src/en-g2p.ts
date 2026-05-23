@@ -855,6 +855,9 @@ export class EnglishG2P implements LanguageProcessor {
     // typic-: taɪpɪ→tɪpɪ (typical, typically, atypical)
     if (lowerWord.includes("typic"))
       postBase = postBase.replace(/taɪp([ˈˌ]?)ɪ/, "tɪp$1ɪ");
+    // myth-: maɪ[θð]→mɪθ (mythic, mythology, mythological)
+    if (lowerWord.startsWith("myth"))
+      postBase = postBase.replace(/maɪ[θð]/, "mɪθ");
     // phys-: faɪs→fɪs (physics, physical, physiology, physiologic)
     if (lowerWord.startsWith("phys"))
       postBase = postBase.replace(/faɪs/, "fɪs");
