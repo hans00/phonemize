@@ -794,9 +794,22 @@ export class EnglishG2P implements LanguageProcessor {
     // over- compound: vɪɹ→vɝ (overall, overact, overeat)
     if (lowerWord.startsWith("over"))
       postBase = postBase.replace(/oʊv([ˈˌ]?)ɪɹ/, "oʊv$1ɝ");
+    // ov- initial: əv→oʊv (ovation, ovary, oviparous, ovulation, overreaction)
+    if (lowerWord.startsWith("ov"))
+      postBase = postBase.replace(/^([ˈˌ]?)əv/, "$1oʊv");
     // under- compound: ndɛɹ→ndɝ (underarm, underachiever)
     if (lowerWord.startsWith("under"))
       postBase = postBase.replace(/ən([ˈˌ]?)dɛɹ/, "ən$1dɝ");
+    // inter- prefix: ɪntɪɹ→ɪntɝ (interest, interaction, intercede, interfere)
+    // not -erior words (interior, exterior) where r is prevocalic
+    if (lowerWord.startsWith("inter") && !lowerWord.includes("erior"))
+      postBase = postBase.replace(/^([ˈˌ]?)ɪnt([ˈˌ]?)ɪɹ/, "$1ɪnt$2ɝ");
+    // retro- prefix: ɹɪtɹ→ɹɛtɹ (retroactive, retrovirus, retrofit, retrospective)
+    if (lowerWord.startsWith("retro"))
+      postBase = postBase.replace(/^([ˈˌ]?)ɹɪtɹ/, "$1ɹɛtɹ");
+    // psycho- prefix: saɪtʃ→saɪk (psychosis, psychotic, psychopath, psychosocial)
+    if (lowerWord.startsWith("psycho"))
+      postBase = postBase.replace(/^([ˈˌ]?)saɪtʃ/, "$1saɪk");
     // -arian: ɝɪən→ɛɹiən (barbarian, contrarian, librarian, sectarian)
     if (lowerWord.endsWith("arian"))
       postBase = postBase.replace(/ɝ([ˈˌ]?)ɪən$/, "ɛɹ$1iən");
