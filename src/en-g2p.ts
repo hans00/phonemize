@@ -1071,6 +1071,10 @@ export class EnglishG2P implements LanguageProcessor {
     if (/^ex[aeiou]/.test(lowerWord) && !lowerWord.startsWith("exer"))
       postBase = postBase.replace(/^ɪ([ˈˌ]?)ks/, "ɪ$1ɡz");
 
+    // rein- compound: ɹeɪn → ɹiɪn (reinforce, reinstall, reinstate, reinterpret)
+    if (lowerWord.startsWith("rein") && lowerWord.length >= 8 && !lowerWord.startsWith("reind"))
+      postBase = postBase.replace(/^([ˈˌ]?)ɹeɪn/, "$1ɹiɪn");
+
     // ex- before consonant: ɪks → ɛks (excellence, excavate, extant, exboyfriend)
     // Exclude exp- and exc+consonant (typically unstressed in those)
     if (lowerWord.startsWith("ex") && !/^ex[aeiou]/.test(lowerWord) &&
