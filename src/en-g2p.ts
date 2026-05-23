@@ -954,6 +954,15 @@ export class EnglishG2P implements LanguageProcessor {
     // decorat-: dɪkɝ→dɛkɹ (decorative, decoration)
     if (lowerWord.startsWith("decorat"))
       postBase = postBase.replace(/^([ˈˌ]?)dɪkɝ/, "$1dɛkɹ");
+    // bene-: bɪnɪ→bɛnə (benediction, benefactor, benedetti)
+    if (lowerWord.startsWith("bene"))
+      postBase = postBase.replace(/^([ˈˌ]?)bɪnɪ/, "$1bɛnə");
+    // derelict-: dɪɹɪ→dɛɹə (dereliction, derelict)
+    if (lowerWord.startsWith("derelict"))
+      postBase = postBase.replace(/^([ˈˌ]?)dɪɹɪ/, "$1dɛɹə");
+    // attribut-: ə→æ at start (attribute, attribution)
+    if (lowerWord.startsWith("attribut"))
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)tɹ/, "$1æ$2tɹ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
