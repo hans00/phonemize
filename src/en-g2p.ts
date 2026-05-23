@@ -830,6 +830,10 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/æɛ/g, "ɛ");
       if (lowerWord.includes("eo") && !lowerWord.includes("ae") && lowerWord.length >= 4)
         result = result.replace(/ɛoʊ/g, "ioʊ");
+      if (lowerWord.endsWith("ois") && !lowerWord.endsWith("quois") && !lowerWord.endsWith("lois") && !lowerWord.endsWith("bois"))
+        result = result.replace(/ɔɪs$/, "wɑ");
+      if (lowerWord.endsWith("ais"))
+        result = result.replace(/eɪs$/, "eɪ");
       if (lowerWord.endsWith("oir"))
         result = result.replace(/ɔɪɹ$/, "wɑɹ");
       if (lowerWord.endsWith("oux"))
@@ -838,6 +842,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/aʊp/g, "up");
       if (lowerWord.includes("oui") || lowerWord.includes("ouill"))
         result = result.replace(/aʊɪ/g, "ui");
+      if (lowerWord.includes("ouv"))
+        result = result.replace(/aʊv/g, "uv");
       if (lowerWord.endsWith("eau") && lowerWord.includes("ou"))
         result = result.replace(/aʊ/g, "u");
       if (lowerWord.endsWith("ou") && lowerWord !== "you" && lowerWord !== "thou")
