@@ -812,7 +812,7 @@ export class EnglishG2P implements LanguageProcessor {
     // inter- prefix: ɪntɪɹ→ɪntɝ (interest, interaction, intercede, interfere)
     // not -erior words (interior, exterior) where r is prevocalic
     if (lowerWord.startsWith("inter") && !lowerWord.includes("erior"))
-      postBase = postBase.replace(/^([ˈˌ]?)ɪnt([ˈˌ]?)ɪɹ/, "$1ɪnt$2ɝ");
+      postBase = postBase.replace(/^([ˈˌ]?)ɪnt([ˈˌ]?)ɪ([ˈˌ]?)ɹ/, "$1ɪnt$2ɝ$3");
     // retro- prefix: ɹɪtɹ→ɹɛtɹ (retroactive, retrovirus, retrofit, retrospective)
     if (lowerWord.startsWith("retro"))
       postBase = postBase.replace(/^([ˈˌ]?)ɹɪtɹ/, "$1ɹɛtɹ");
@@ -822,6 +822,9 @@ export class EnglishG2P implements LanguageProcessor {
     // psycho- prefix: saɪtʃ→saɪk (psychosis, psychotic, psychopath, psychosocial)
     if (lowerWord.startsWith("psycho"))
       postBase = postBase.replace(/^([ˈˌ]?)saɪtʃ/, "$1saɪk");
+    // school- compounds: ʃul→skul; 'sch' rule gives ʃ but English school/school* uses /sk/
+    if (lowerWord.startsWith("school"))
+      postBase = postBase.replace(/^([ˈˌ]?)ʃul/, "$1skul");
     // -arian: ɝɪən→ɛɹiən (barbarian, contrarian, librarian, sectarian)
     if (lowerWord.endsWith("arian"))
       postBase = postBase.replace(/ɝ([ˈˌ]?)ɪən$/, "ɛɹ$1iən");
