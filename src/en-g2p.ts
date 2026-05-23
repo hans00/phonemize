@@ -621,6 +621,9 @@ export class EnglishG2P implements LanguageProcessor {
     // an- initial: ə→æ (anchor/animal/antelope/antagonistic); not Greek an- prefix (without)
     if (lowerWord.startsWith("an") && !/^an(em|aes|es|at|nu)/.test(lowerWord))
       postBase = postBase.replace(/^ə/, "æ");
+    // ag- initial: ə→æ (aggravate/agitate/agamemnon); not aggl-/agou- (Latin/French)
+    if (lowerWord.startsWith("ag") && !/^ag(gl|ou)/.test(lowerWord))
+      postBase = postBase.replace(/^ə/, "æ");
     // -ience suffix: iəns not ins (experience/resilience/ambience)
     if (lowerWord.endsWith("ience"))
       postBase = postBase.replace(/ins$/, "iəns");
