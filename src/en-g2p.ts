@@ -581,9 +581,11 @@ export class EnglishG2P implements LanguageProcessor {
     // -ability: æ before -bility reduces to ə (ability/disability/availability/culpability)
     if (lowerWord.endsWith("ability"))
       postBase = postBase.replace(/æbɪlɪti$/, "əbɪlɪti").replace(/æbɪləti$/, "əbɪləti");
-    // micro- prefix: open syllable mi.cro → /maɪkɹoʊ/ not /mɪkɹoʊ/; handles mɪˈkɹ mid-onset stress
-    if (lowerWord.startsWith("micro"))
+    // micro- prefix: open syllable mi.cro → /maɪkɹoʊ/ not /mɪkɹoʊ/; also restore oʊ when reduced
+    if (lowerWord.startsWith("micro")) {
       postBase = postBase.replace(/^([ˈˌ]?)mɪ([ˈˌ]?)kɹ/, "$1maɪkɹ");
+      postBase = postBase.replace(/maɪkɹ([ˈˌ]?)ə/, "maɪkɹ$1oʊ");
+    }
     // -mental: elided /t/ in many derived forms (elemental/fundamental/departmental)
     if (lowerWord.endsWith("mental"))
       postBase = postBase.replace(/məntəl$/, "mɛnəl");
@@ -932,9 +934,11 @@ export class EnglishG2P implements LanguageProcessor {
     // -graphy: əɡɹəfi→ɑɡɹəfi (cinematography, demography, mammography)
     if (lowerWord.endsWith("graphy"))
       postBase = postBase.replace(/əɡɹəfi$/, "ɑɡɹəfi");
-    // trans- s→z before vowel (transaction, transitory, transafrica)
-    if (lowerWord.startsWith("trans"))
+    // trans-: restore full æ when reduced to ə (stress-split: tɹənˈs → tɹænˈs)
+    if (lowerWord.startsWith("trans")) {
+      postBase = postBase.replace(/^([ˈˌ]?)tɹən([ˈˌ]?)s/, "$1tɹæn$2s");
       postBase = postBase.replace(/^([ˈˌ]?)tɹ[əæ]ns([ˈˌ]?)([æɛɑɪ])/, "$1tɹænz$2$3");
+    }
     // probl-/probab-/proph-/prosp-/proje-: pɹoʊ→pɹɑ (probably, problem, prophet, prospect, project)
     if (/^pro(?:bl|bab|ph|sp|je)/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)pɹoʊ/, "$1pɹɑ");
