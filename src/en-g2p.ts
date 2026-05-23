@@ -834,8 +834,10 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/ɔɪɹ$/, "wɑɹ");
       if (lowerWord.endsWith("oux"))
         result = result.replace(/aʊks?$/, "u");
-      if (lowerWord.endsWith("oupe"))
-        result = result.replace(/aʊp$/, "up");
+      if (lowerWord.includes("oup"))
+        result = result.replace(/aʊp/g, "up");
+      if (lowerWord.includes("oui") || lowerWord.includes("ouill"))
+        result = result.replace(/aʊɪ/g, "ui");
       if (lowerWord.endsWith("eau") && lowerWord.includes("ou"))
         result = result.replace(/aʊ/g, "u");
       if (lowerWord.endsWith("ou") && lowerWord !== "you" && lowerWord !== "thou")
