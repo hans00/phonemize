@@ -1084,6 +1084,10 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("uni") && !/^uni[mns]/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)nɪ/, "$1ju$2nɪ");
 
+    // ever-/aver-: vɪɹ → vɝ (everest, everett, averil — initial "ever" syllabified as e·ve·r)
+    if (lowerWord.startsWith("ever") || lowerWord.startsWith("aver"))
+      postBase = postBase.replace(/v([ˈˌ]?)ɪ([ˈˌ]?)ɹ/, "v$1ɝ$2");
+
     // ex- before consonant: ɪks → ɛks (excellence, excavate, extant, exboyfriend)
     // Exclude exp- and exc+consonant (typically unstressed in those)
     if (lowerWord.startsWith("ex") && !/^ex[aeiou]/.test(lowerWord) &&
