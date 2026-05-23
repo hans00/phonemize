@@ -1062,8 +1062,22 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     if (lowerWord.endsWith("er") && lowerWord.length > 3) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -2) + "e");
-      if (basePron) return basePron + "ɝ";
+      const base = lowerWord.slice(0, -2);
+      const magicPron = this.wellKnown(base + "e");
+      if (magicPron) {
+        const magicClean = magicPron.replace(/[ˈˌ]/g, '');
+        if (magicClean.endsWith('ndʒ')) {
+          const directPron = this.wellKnown(base);
+          if (directPron) {
+            const directClean = directPron.replace(/[ˈˌ]/g, '');
+            const mb = magicClean.replace(/ndʒ$/, '');
+            const db = directClean.replace(/ŋ$/, '');
+            const pc = (s: string) => s.replace(/ɔ/g, 'ɑ').replace(/ʌ/g, 'ə').replace(/ɪ/g, 'i');
+            if (pc(mb) === pc(db)) return directClean + 'ɝ';
+          }
+        }
+        return magicPron + 'ɝ';
+      }
     }
 
     if (lowerWord.endsWith("ed") && lowerWord.length > 3) {
