@@ -758,6 +758,10 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/ndʒɝ$/, "ŋɡɝ");
       if (lowerWord === "ache" || (lowerWord.endsWith("ache") && lowerWord.length >= 7))
         result = result.replace(/[æə]tʃ[əɪ]?$/, "eɪk");
+      if (lowerWord.endsWith("ard") && syllables.length >= 2 &&
+          !/[yh]ard$/.test(lowerWord) && !/card$/.test(lowerWord) &&
+          !/(?:(?<!g)gard|guard)$/.test(lowerWord) && !/bard$/.test(lowerWord))
+        result = result.replace(/ɑɹd$/, "ɝd");
       if (!lowerWord.endsWith("cission"))
         result = result.replace(/sɪʃən$/, "zɪʃən");
       if (lowerWord.length >= 9) result = result.replace(/ɪɹeɪʃən$/, "ɝeɪʃən");
