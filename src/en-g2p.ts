@@ -1017,6 +1017,9 @@ export class EnglishG2P implements LanguageProcessor {
     // extra-: ɪkstɹ→ɛkstɹ (extra, extradite, extravaganza)
     if (lowerWord.startsWith("extra"))
       postBase = postBase.replace(/^([ˈˌ]?)ɪks([ˈˌ]?)tɹ/, "$1ɛks$2tɹ");
+    // opportun-: əpɔɹt→ɑpɝt (opportune, opportunism, opportunist, opportunistic)
+    if (lowerWord.startsWith("opportun"))
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)p([ˈˌ]?)ɔɹt/, "$1ɑ$2p$3ɝt");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
