@@ -1067,6 +1067,16 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("non"))
       postBase = postBase.replace(/^([ˈˌ]?)nən/, "$1nɑn");
 
+    // ex- before vowel: ɪ(ˈ?)ks → ɪɡz (example, exact, examine, exacerbate)
+    if (/^ex[aeiou]/.test(lowerWord) && !lowerWord.startsWith("exer"))
+      postBase = postBase.replace(/^ɪ([ˈˌ]?)ks/, "ɪ$1ɡz");
+
+    // ex- before consonant: ɪks → ɛks (excellence, excavate, extant, exboyfriend)
+    // Exclude exp- and exc+consonant (typically unstressed in those)
+    if (lowerWord.startsWith("ex") && !/^ex[aeiou]/.test(lowerWord) &&
+        !lowerWord.startsWith("exp") && (!lowerWord.startsWith("exc") || /^exc[aeiou]/.test(lowerWord)))
+      postBase = postBase.replace(/^([ˈˌ]?)ɪks/, "$1ɛks");
+
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
   }
