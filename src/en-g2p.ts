@@ -807,6 +807,9 @@ export class EnglishG2P implements LanguageProcessor {
     // retro- prefix: ɹɪtɹ→ɹɛtɹ (retroactive, retrovirus, retrofit, retrospective)
     if (lowerWord.startsWith("retro"))
       postBase = postBase.replace(/^([ˈˌ]?)ɹɪtɹ/, "$1ɹɛtɹ");
+    // tele- prefix: tɪlɪ→tɛlɪ (telegenic, telemarketer, telecharge, telefunken)
+    if (lowerWord.startsWith("tele"))
+      postBase = postBase.replace(/^([ˈˌ]?)tɪl([ˈˌ]?)ɪ/, "$1tɛl$2ɪ");
     // psycho- prefix: saɪtʃ→saɪk (psychosis, psychotic, psychopath, psychosocial)
     if (lowerWord.startsWith("psycho"))
       postBase = postBase.replace(/^([ˈˌ]?)saɪtʃ/, "$1saɪk");
