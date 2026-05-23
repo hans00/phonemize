@@ -1104,6 +1104,18 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("val"))
       postBase = postBase.replace(/^([ˈˌ]?)vəl/, "$1væl");
 
+    // -ohl- Germanic names: ɑhl → oʊl (bohland, kohler, rohland — silent-h "oh" = /oʊ/)
+    if (lowerWord.includes("ohl"))
+      postBase = postBase.replace(/ɑhl/g, "oʊl");
+
+    // -ahl- Germanic names: æhl → ɑl (stahl, dahl, ahlgren — silent-h "ah" = /ɑ/)
+    if (lowerWord.includes("ahl"))
+      postBase = postBase.replace(/æhl/g, "ɑl");
+
+    // ober- names: əbɝ → oʊbɝ (oberbeck, oberlander, obermiller)
+    if (lowerWord.startsWith("ober"))
+      postBase = postBase.replace(/^([ˈˌ]?)əbɝ/, "$1oʊbɝ");
+
     // ex- before consonant: ɪks → ɛks (excellence, excavate, extant, exboyfriend)
     // Exclude exp- and exc+consonant (typically unstressed in those)
     if (lowerWord.startsWith("ex") && !/^ex[aeiou]/.test(lowerWord) &&
