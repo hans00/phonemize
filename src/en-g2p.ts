@@ -777,6 +777,12 @@ export class EnglishG2P implements LanguageProcessor {
     // bur- prefix: bʌɹ→bjʊɹ yod (bureau, buran, buren)
     if (lowerWord.startsWith("bur"))
       postBase = postBase.replace(/bʌɹ/, "bjʊɹ");
+    // -nostic: noʊ→nɑ short o (agnostic, diagnostic)
+    if (lowerWord.endsWith("nostic"))
+      postBase = postBase.replace(/noʊ(stɪk)$/, "nɑ$1");
+    // -ocious: consonant+eɪ→oʊ before ʃəs (atrocious, ferocious)
+    if (lowerWord.endsWith("ocious"))
+      postBase = postBase.replace(/([ɹk])eɪ(ʃəs)$/, "$1oʊ$2");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
