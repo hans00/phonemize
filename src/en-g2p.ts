@@ -553,7 +553,16 @@ export class EnglishG2P implements LanguageProcessor {
     const base = this.predictInternal(word, pos, this.disableDict);
     if (!base) return base;
 
-    const out = dialect === "en-GB" ? transformAmericanToRP(word, base) : base;
+    // Word-level post-processing applied after all paths (syllabification + morphology + decomposition)
+    let postBase = base;
+    if (lowerWord.endsWith("icism"))
+      postBase = postBase.replace(/kɪzəm$/, "sɪzəm");
+    if (lowerWord.endsWith("lateral"))
+      postBase = postBase.replace(/eɪtɝəl$/, "ætɝəl");
+    if (lowerWord.endsWith("s") && /[bdɡvzʒðmdnŋlɹɾ]s$/.test(postBase))
+      postBase = postBase.replace(/s$/, "z");
+
+    const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
   }
 
