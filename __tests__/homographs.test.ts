@@ -17,11 +17,11 @@ describe("Homographs", function() {
     it("should correctly pronounce 'lead' based on context", function() {
       // Verb: "Please lead" - correctly identified as verb, uses verb pronunciation
       const verbResult = toIPA("Please lead the way");
-      expect(verbResult).toContain("ˈlid"); // Correct verb pronunciation /liːd/
-      
+      expect(verbResult).toContain("ˈɫid"); // Correct verb pronunciation /liːd/
+
       // Noun (metal): "The lead pipe" - should be identified as noun
       const nounResult = toIPA("The lead pipe is heavy");
-      expect(nounResult).toContain("ˈlɛd"); // Correct noun pronunciation /lɛd/
+      expect(nounResult).toContain("ˈɫɛd"); // Correct noun pronunciation /lɛd/
     });
 
     it("should correctly pronounce 'tear' based on context", function() {
@@ -87,7 +87,7 @@ describe("Homographs", function() {
       
       // Should contain recognizable phonemes with improved POS detection
       expect(result).toContain("ˈɹid"); // read (correctly identified as verb)
-      expect(result).toContain("ˈlɛd"); // lead (correctly identified as noun after "the")
+      expect(result).toContain("ˈɫɛd"); // lead (correctly identified as noun after "the")
       expect(result).toContain("ˈwɪnd"); // wind (correctly identified as noun after "the")  
       expect(result).toContain("ˈtɛɹ"); // tear (correctly identified as verb after "can")
       expect(result).toContain("ˈboʊ"); // bow (correctly identified as noun after "a")

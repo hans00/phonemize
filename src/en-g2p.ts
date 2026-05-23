@@ -553,7 +553,8 @@ export class EnglishG2P implements LanguageProcessor {
     const base = this.predictInternal(word, pos, this.disableDict);
     if (!base) return base;
 
-    return dialect === "en-GB" ? transformAmericanToRP(word, base) : base;
+    const out = dialect === "en-GB" ? transformAmericanToRP(word, base) : base;
+    return out.replace(/l/g, "ɫ");
   }
 
   public trace(word: string, language?: string, pos?: string): TraceResult {

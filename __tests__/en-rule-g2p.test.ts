@@ -50,7 +50,7 @@ describe('G2P rule fixes', () => {
   });
 
   it('^al$ fires for genuine -all rime (ball)', () => {
-    expect(g2p.predict('ball', 'en')).toMatch(/ɔl/);
+    expect(g2p.predict('ball', 'en')).toMatch(/ɔɫ/);
   });
 
   it('word-final y → /i/ when syllable has prior vowel (city)', () => {
