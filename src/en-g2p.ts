@@ -595,9 +595,9 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/soʊm$/, "səm");
     // wa + consonant: /wæ/→/wɑ/ (water/watch/wash/want) — not in kw cluster (aquatic)
     postBase = postBase.replace(/(?<![kɡ])wæ([tʃn])/g, "wɑ$1");
-    // super- prefix: open syllable su.per → /supɝ/ not /səpɝ/
+    // super- prefix: open syllable su.per → /supɝ/ not /səpɝ|səpɛɹ|səpɪɹ/
     if (lowerWord.startsWith("super"))
-      postBase = postBase.replace(/^sə(ˈ?)pɝ/, "su$1pɝ");
+      postBase = postBase.replace(/^([ˈˌ]?)sə([ˈˌ]?)p([ˈˌ]?)(ɝ|ɛ[ˈˌ]?ɹ|ɪ[ˈˌ]?ɹ)/, "$1su$2p$3ɝ");
     // -ause word-final: ɔs→ɔz (cause/clause/applause/pause/because)
     if (lowerWord.endsWith("ause") || lowerWord.endsWith("auze"))
       postBase = postBase.replace(/ɔs$/, "ɔz");
