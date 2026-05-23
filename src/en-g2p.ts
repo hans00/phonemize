@@ -661,6 +661,9 @@ export class EnglishG2P implements LanguageProcessor {
     // uy digraph: ʌ[ji]→aɪ (buy/buyer/buyout/guy/guyer/guyett/stuyvesant)
     if (lowerWord.includes("uy"))
       postBase = postBase.replace(/ʌ[ji]/g, "aɪ");
+    // -arity/-arison/-aration: æɹ→ɛɹ (clarity, disparity, parity, rarity, comparison)
+    if (/(arity|arison|aration)$/.test(lowerWord))
+      postBase = postBase.replace(/æɹ/g, "ɛɹ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
