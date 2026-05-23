@@ -1092,6 +1092,18 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("van"))
       postBase = postBase.replace(/^([ˈˌ]?)vən/, "$1væn");
 
+    // del- prefix: dɪl → dɛl (delancey, delgadillo, delcampo — Spanish/Romance proper names)
+    if (lowerWord.startsWith("del"))
+      postBase = postBase.replace(/^([ˈˌ]?)dɪl/, "$1dɛl");
+
+    // wal- prefix: wæl → wɑl (walcott, waldeck, waldorf — Germanic proper names)
+    if (lowerWord.startsWith("wal"))
+      postBase = postBase.replace(/^([ˈˌ]?)wæl/, "$1wɑl");
+
+    // val- prefix: vəl → væl (valedictory, valentine, vallarta)
+    if (lowerWord.startsWith("val"))
+      postBase = postBase.replace(/^([ˈˌ]?)vəl/, "$1væl");
+
     // ex- before consonant: ɪks → ɛks (excellence, excavate, extant, exboyfriend)
     // Exclude exp- and exc+consonant (typically unstressed in those)
     if (lowerWord.startsWith("ex") && !/^ex[aeiou]/.test(lowerWord) &&
