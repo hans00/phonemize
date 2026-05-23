@@ -1038,6 +1038,15 @@ export class EnglishG2P implements LanguageProcessor {
     // comed-: koʊm → kɑm (comedy, comedian)
     if (lowerWord.startsWith("comed"))
       postBase = postBase.replace(/^([ˈˌ]?)koʊ([ˈˌ]?)m/, "$1kɑ$2m");
+    // nov-: noʊv → nɑv (novel, novelty, novice)
+    if (/^nov(el|ic|elt)/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)noʊ([ˈˌ]?)v/, "$1nɑ$2v");
+    // hospit-: hoʊspɪt → hɑspɪt (hospital, hospitable)
+    if (lowerWord.startsWith("hospit"))
+      postBase = postBase.replace(/^([ˈˌ]?)hoʊ([ˈˌ]?)spɪt/, "$1hɑ$2spɪt");
+    // polish-: poʊlɪʃ → pɑlɪʃ (polish, polished, polisher)
+    if (lowerWord.startsWith("polish"))
+      postBase = postBase.replace(/^([ˈˌ]?)poʊ([ˈˌ]?)l([ˈˌ]?)ɪʃ/, "$1pɑ$2l$3ɪʃ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
