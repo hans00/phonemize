@@ -708,9 +708,12 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/ək$/, "ætʃ");
     if (lowerWord.endsWith("etch"))
       postBase = postBase.replace(/ək$/, "ɛtʃ");
-    // -ore words: unstressed-final ɔɹ→ɝ fires incorrectly; restore ɔɹ (adore, ashore, bookstore)
-    if (lowerWord.endsWith("ore"))
+    // -ore/-oor/-oar words: unstressed-final ɔɹ→ɝ fires incorrectly; restore ɔɹ (adore, ashore, bookstore, outdoor, uproar)
+    if (lowerWord.endsWith("ore") || lowerWord.endsWith("oor") || lowerWord.endsWith("oar"))
       postBase = postBase.replace(/ɝ$/, "ɔɹ");
+    // -worn: wor+n should produce wɔɹn not wɝn (worn, shopworn, careworn)
+    if (lowerWord.endsWith("worn"))
+      postBase = postBase.replace(/wɝn$/, "wɔɹn");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
