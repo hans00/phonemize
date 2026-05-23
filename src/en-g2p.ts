@@ -816,6 +816,12 @@ export class EnglishG2P implements LanguageProcessor {
     // apol- words: eɪpiɑl→əpɑl (apology, apologetic)
     if (lowerWord.startsWith("apol"))
       postBase = postBase.replace(/^([ˈˌ]?)eɪp([ˈˌ]?)iɑ/, "$1əp$2ɑ");
+    // -bution/-cution yod: [bk]uʃ→[bk]juʃ (attribution, distribution, electrocution, elocution)
+    if (lowerWord.endsWith("bution") || lowerWord.endsWith("cution"))
+      postBase = postBase.replace(/([bk])uʃ(ən)$/, "$1juʃ$2");
+    // -uity: uti→uəti (ambiguity, annuity, continuity, ingenuity)
+    if (lowerWord.endsWith("uity"))
+      postBase = postBase.replace(/uti$/, "uəti");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
