@@ -759,6 +759,21 @@ export class EnglishG2P implements LanguageProcessor {
     // all-ation: əl→æl at start (allegation)
     if (lowerWord.startsWith("all") && lowerWord.endsWith("ation"))
       postBase = postBase.replace(/^əl/, "æl");
+    // con-*-uous: kɑn→kən at start (conspicuous, contemptuous, contiguous, continuous)
+    if (lowerWord.startsWith("con") && lowerWord.endsWith("uous"))
+      postBase = postBase.replace(/^([ˈˌ]?)kɑn/, "$1kən");
+    // -nuous: nuəs→njuəs at end (continuous, ingenuous, disingenuous)
+    if (lowerWord.endsWith("nuous"))
+      postBase = postBase.replace(/nuəs$/, "njuəs");
+    // -duous: duəs→dʒuəs at end (deciduous)
+    if (lowerWord.endsWith("duous"))
+      postBase = postBase.replace(/duəs$/, "dʒuəs");
+    // -ogue: final əɡ→ɑɡ (analogue, epilogue)
+    if (lowerWord.endsWith("ogue"))
+      postBase = postBase.replace(/əɡ$/, "ɑɡ");
+    // -bicle/-ticle: kʌ[bt]→kju[bt] yod (cubicle, cuticle)
+    if (/[bt]icle$/.test(lowerWord))
+      postBase = postBase.replace(/kʌ([bt])/, "kju$1");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
