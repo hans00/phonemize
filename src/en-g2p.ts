@@ -1023,6 +1023,9 @@ export class EnglishG2P implements LanguageProcessor {
     // unc-: undo n→ŋ assimilation at un-C boundary (unclassify, uncollectable, uncomfortable)
     if (lowerWord.startsWith("unc"))
       postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)ŋ([ˈˌ]?)k/, "$1ə$2n$3k");
+    // -alk prefix: extend silent-l rule to vowel-initial suffixes (talker, walker, stalker, etc.)
+    if (lowerWord.startsWith("talk") || lowerWord.startsWith("walk") || lowerWord.startsWith("stalk"))
+      postBase = postBase.replace(/^([ˈˌ]?)(t|w|st)[æɑə]([ˈˌ]?)l([ˈˌ]?)k/, "$1$2ɔ$4k");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
