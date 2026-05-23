@@ -1112,6 +1112,30 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("pal"))
       postBase = postBase.replace(/^([ˈˌ]?)pəl/, "$1pɑl");
 
+    // ben- prefix: bɪn → bɛn (benveniste, benvenuti, benninghoff — Romance/proper names)
+    if (lowerWord.startsWith("ben"))
+      postBase = postBase.replace(/^([ˈˌ]?)bɪn/, "$1bɛn");
+
+    // cam- prefix: kəm → kɑm (cammarano, campanelli, campuzano — Italian names)
+    if (lowerWord.startsWith("cam"))
+      postBase = postBase.replace(/^([ˈˌ]?)kəm/, "$1kɑm");
+
+    // cap- prefix: kəp → kɑp (capetillo, cappelletti, cappuccio — Italian/Spanish names)
+    if (lowerWord.startsWith("cap"))
+      postBase = postBase.replace(/^([ˈˌ]?)kəp/, "$1kɑp");
+
+    // cas- prefix (not cast-): kəs → kɑs (casalino, casassa, casillas — Italian/Spanish names)
+    if (lowerWord.startsWith("cas") && !lowerWord.startsWith("cast"))
+      postBase = postBase.replace(/^([ˈˌ]?)kə([ˈˌ]?)s/, "$1kɑ$2s");
+
+    // can- prefix: kən → kɑn (canterra, canzoneri — Italian/Spanish names)
+    if (lowerWord.startsWith("can"))
+      postBase = postBase.replace(/^([ˈˌ]?)kən/, "$1kɑn");
+
+    // mas- prefix: məs → mɑs (masamilla, massucci — Italian/Japanese names)
+    if (lowerWord.startsWith("mas"))
+      postBase = postBase.replace(/^([ˈˌ]?)məs/, "$1mɑs");
+
     // -ohl- Germanic names: ɑhl → oʊl (bohland, kohler, rohland — silent-h "oh" = /oʊ/)
     if (lowerWord.includes("ohl"))
       postBase = postBase.replace(/ɑhl/g, "oʊl");
