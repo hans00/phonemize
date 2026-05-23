@@ -801,6 +801,9 @@ export class EnglishG2P implements LanguageProcessor {
     // over- compound: vɪɹ→vɝ (overall, overact, overeat)
     if (lowerWord.startsWith("over"))
       postBase = postBase.replace(/oʊv([ˈˌ]?)ɪɹ/, "oʊv$1ɝ");
+    // under- compound: ndɛɹ→ndɝ (underarm, underachiever)
+    if (lowerWord.startsWith("under"))
+      postBase = postBase.replace(/ən([ˈˌ]?)dɛɹ/, "ən$1dɝ");
     // dox- words: doʊks→dɑks (doxology, doxie)
     if (lowerWord.startsWith("dox"))
       postBase = postBase.replace(/doʊks/, "dɑks");
