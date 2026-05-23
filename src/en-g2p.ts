@@ -1075,6 +1075,10 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("rein") && lowerWord.length >= 8 && !lowerWord.startsWith("reind"))
       postBase = postBase.replace(/^([ˈˌ]?)ɹeɪn/, "$1ɹiɪn");
 
+    // news- compound: nus → nuz (newscast, newspaper, newsman — but not newsflash which has /s/ before voiceless cluster)
+    if (lowerWord.startsWith("news") && !lowerWord.startsWith("newsf"))
+      postBase = postBase.replace(/^([ˈˌ]?)nus/, "$1nuz");
+
     // ex- before consonant: ɪks → ɛks (excellence, excavate, extant, exboyfriend)
     // Exclude exp- and exc+consonant (typically unstressed in those)
     if (lowerWord.startsWith("ex") && !/^ex[aeiou]/.test(lowerWord) &&
