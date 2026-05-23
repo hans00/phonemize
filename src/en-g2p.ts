@@ -1104,6 +1104,14 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("val"))
       postBase = postBase.replace(/^([ˈˌ]?)vəl/, "$1væl");
 
+    // bel- prefix: bɪl → bɛl (belafonte, belflower, belgarde — Romance/proper names)
+    if (lowerWord.startsWith("bel"))
+      postBase = postBase.replace(/^([ˈˌ]?)bɪl/, "$1bɛl");
+
+    // pal- prefix: pəl → pɑl (palladino, palmieri, palminteri — Spanish/Italian names)
+    if (lowerWord.startsWith("pal"))
+      postBase = postBase.replace(/^([ˈˌ]?)pəl/, "$1pɑl");
+
     // -ohl- Germanic names: ɑhl → oʊl (bohland, kohler, rohland — silent-h "oh" = /oʊ/)
     if (lowerWord.includes("ohl"))
       postBase = postBase.replace(/ɑhl/g, "oʊl");
