@@ -639,8 +639,8 @@ export class EnglishG2P implements LanguageProcessor {
     // -uence suffix: uəns not uns (influence/affluence/confluence)
     if (lowerWord.endsWith("uence"))
       postBase = postBase.replace(/uns$/, "uəns");
-    // ep- prefix: ɪ→ɛ initial vowel (epidemic/episode/epistemology/epileptic)
-    if (lowerWord.startsWith("ep"))
+    // e[bdghps]- prefix: ɪ→ɛ initial vowel (epidemic/educate/estimate/embark etc.)
+    if (/^e[bdghps]/.test(lowerWord))
       postBase = postBase.replace(/^ɪ/, "ɛ");
     // th- initial ð→θ: content words use voiceless θ; guard voiced-ð function words
     if (lowerWord.startsWith("th") &&
