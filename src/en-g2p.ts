@@ -695,6 +695,19 @@ export class EnglishG2P implements LanguageProcessor {
     // di+vowel rule already fires first, converting dɪæ→daɪæ; we fix æ→ə here
     if (/^dia[^aeiou]/.test(lowerWord))
       postBase = postBase.replace(/^(ˈ?)daɪæ/, "$1daɪə");
+    // -nsion suffix: nʒən→nʃən (apprehension, comprehension, declension)
+    postBase = postBase.replace(/nʒən$/, "nʃən");
+    // -stle suffix: silent t (epistle, thistle, greencastle)
+    if (lowerWord.endsWith("stle"))
+      postBase = postBase.replace(/stəɫ$/, "səɫ");
+    // tur* words: tɝ before vowel → tʃɝ (naturalistic, adventurous, architectural, picturesque)
+    if (/tur/.test(lowerWord))
+      postBase = postBase.replace(/tɝ(?=[aeiouæɛɑɔɪəɝʊ])/g, "tʃɝ");
+    // -atch/-etch words: reverse ətʃ→ək misfire (dispatch, baywatch, outstretch)
+    if (lowerWord.endsWith("atch"))
+      postBase = postBase.replace(/ək$/, "ætʃ");
+    if (lowerWord.endsWith("etch"))
+      postBase = postBase.replace(/ɛk$/, "ɛtʃ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
