@@ -648,6 +648,11 @@ export class EnglishG2P implements LanguageProcessor {
         lowerWord !== "there" && lowerWord !== "these" &&
         lowerWord !== "theus" && lowerWord !== "themselves")
       postBase = postBase.replace(/^ð/, "θ");
+    // -le compound junction: ClɪC→CəlC (battlefield, candlestick, bottleneck)
+    // Guard: le[C] must start at index ≥ 4 to avoid initial Cle- clusters and short stems
+    // Note: postBase still has plain l here; replace(/l/g,"ɫ") darkens it at return
+    if (!lowerWord.endsWith("le") && /^.{4,}le[bcdfghjklmnpqrstvwxyz]/.test(lowerWord))
+      postBase = postBase.replace(/([^aeiouæɛɪɑɔʌəɝ])lɪ([^aeiouæɛɪɑɔʌəɝ])/g, "$1əl$2");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
