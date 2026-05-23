@@ -561,6 +561,15 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/eɪtɝəl$/, "ætɝəl");
     if (lowerWord.endsWith("s") && /[bdɡvzʒðmdnŋlɹɾ]s$/.test(postBase))
       postBase = postBase.replace(/s$/, "z");
+    // air- prefix: /ɪɹ/→/ɛɹ/ (airborne/airforce/airlifter)
+    if (lowerWord.startsWith("air"))
+      postBase = postBase.replace(/^ɪɹ/, "ɛɹ");
+    // nth cluster: nð→nθ (anthem/panther/synthesis/Anthony)
+    if (/nth/.test(lowerWord))
+      postBase = postBase.replace(/nð/g, "nθ");
+    // -etion (not -scretion): ɛʃən→iʃən (accretion/completion/deletion/secretion)
+    if (lowerWord.endsWith("etion") && !lowerWord.endsWith("scretion"))
+      postBase = postBase.replace(/ɛʃən$/, "iʃən");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
