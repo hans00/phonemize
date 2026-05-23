@@ -708,6 +708,9 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/ək$/, "ætʃ");
     if (lowerWord.endsWith("etch"))
       postBase = postBase.replace(/ək$/, "ɛtʃ");
+    // -ore words: unstressed-final ɔɹ→ɝ fires incorrectly; restore ɔɹ (adore, ashore, bookstore)
+    if (lowerWord.endsWith("ore"))
+      postBase = postBase.replace(/ɝ$/, "ɔɹ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
