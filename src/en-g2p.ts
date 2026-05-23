@@ -963,6 +963,24 @@ export class EnglishG2P implements LanguageProcessor {
     // attribut-: ə→æ at start (attribute, attribution)
     if (lowerWord.startsWith("attribut"))
       postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)tɹ/, "$1æ$2tɹ");
+    // navig-: nəvɪ→nævə (navigate, navigator)
+    if (lowerWord.startsWith("navig"))
+      postBase = postBase.replace(/^([ˈˌ]?)nə([ˈˌ]?)vɪ/, "$1næ$2və");
+    // moment-: məmɛ→moʊmɛ (momentum, momentous)
+    if (lowerWord.startsWith("moment"))
+      postBase = postBase.replace(/^([ˈˌ]?)mə([ˈˌ]?)mɛ/, "$1moʊ$2mɛ");
+    // numer-: nəmɛ→numə (numerator)
+    if (lowerWord.startsWith("numer"))
+      postBase = postBase.replace(/^([ˈˌ]?)nə([ˈˌ]?)mɛ/, "$1nu$2mə");
+    // necess-: nɪsɛ→nɛsə (necessary)
+    if (lowerWord.startsWith("necess"))
+      postBase = postBase.replace(/^([ˈˌ]?)nɪ([ˈˌ]?)sɛ/, "$1nɛ$2sə");
+    // manufact-: mənə→mænjə (manufacture)
+    if (lowerWord.startsWith("manufact"))
+      postBase = postBase.replace(/^([ˈˌ]?)mə([ˈˌ]?)nə/, "$1mæ$2njə");
+    // medic-: mɪdə→mɛdɪ (medicate)
+    if (lowerWord.startsWith("medic"))
+      postBase = postBase.replace(/^([ˈˌ]?)mɪ([ˈˌ]?)də/, "$1mɛ$2dɪ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
