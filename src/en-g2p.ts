@@ -653,6 +653,10 @@ export class EnglishG2P implements LanguageProcessor {
     // Note: postBase still has plain l here; replace(/l/g,"ɫ") darkens it at return
     if (!lowerWord.endsWith("le") && /^.{4,}le[bcdfghjklmnpqrstvwxyz]/.test(lowerWord))
       postBase = postBase.replace(/([^aeiouæɛɪɑɔʌəɝ])lɪ([^aeiouæɛɪɑɔʌəɝ])/g, "$1əl$2");
+    // -ead compound prefix: rules give ea→i but head/dead/bread/dread/stead/thread/tread/spread+
+    // all have short-e /ɛ/ when used as the first morpheme of a compound
+    if (/^(head|dead|bread|thread|dread|stead|tread|spread)./.test(lowerWord))
+      postBase = postBase.replace(/^([^aeiouæɛɪɑɔʌuəɝ]*)id/, "$1ɛd");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
