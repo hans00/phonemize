@@ -627,6 +627,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -ification: vowel before -f- reduces to ə (amplification/classification/magnification)
     if (lowerWord.endsWith("ification"))
       postBase = postBase.replace(/ɪf/, "əf");
+    // -ctory suffix: ɔɹi→ɝi (contradictory/directory/trajectory/perfunctory)
+    if (lowerWord.endsWith("ctory"))
+      postBase = postBase.replace(/ɔɹi$/, "ɝi");
     // -ative: ætɪv→ətɪv in unstressed suffix (contemplative/narrative/negative/relative)
     if (lowerWord.endsWith("ative"))
       postBase = postBase.replace(/ætɪv$/, "ətɪv");
@@ -636,6 +639,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -uence suffix: uəns not uns (influence/affluence/confluence)
     if (lowerWord.endsWith("uence"))
       postBase = postBase.replace(/uns$/, "uəns");
+    // ep- prefix: ɪ→ɛ initial vowel (epidemic/episode/epistemology/epileptic)
+    if (lowerWord.startsWith("ep"))
+      postBase = postBase.replace(/^ɪ/, "ɛ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
