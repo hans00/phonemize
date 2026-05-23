@@ -797,17 +797,13 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/dʒ/g, "ɡ");
       if (lowerWord.startsWith("beg") && lowerWord.length >= 5)
         result = result.replace(/^bɪdʒ/, "bɪɡ");
-      if (lowerWord.length >= 5 &&
-          (lowerWord.startsWith("gei") || /^gel[dbns]/.test(lowerWord) || lowerWord.startsWith("get")))
-        result = result.replace(/^dʒ/, "ɡ");
-      if (/^gi[dvm]/.test(lowerWord))
-        result = result.replace(/^dʒ/, "ɡ");
-      if (lowerWord.startsWith("gig") && lowerWord.length >= 4 && !/^gig(?:i$|lio|lia|lo|ot|ol)/.test(lowerWord))
-        result = result.replace(/^dʒ/, "ɡ");
-      if (lowerWord.startsWith("ges") && lowerWord.length >= 5 &&
-          !/^gest(?:ure|iculat|ation|ural|at|alt|urin|al)/.test(lowerWord) && lowerWord !== "geske")
-        result = result.replace(/^dʒ/, "ɡ");
-      if (lowerWord.startsWith("geh") && lowerWord.length >= 5 && !/^geh(?:le|res|rke)$/.test(lowerWord))
+      if (
+        (lowerWord.length >= 5 && (lowerWord.startsWith("gei") || /^gel[dbns]/.test(lowerWord) || lowerWord.startsWith("get"))) ||
+        /^gi[dvm]/.test(lowerWord) ||
+        (lowerWord.startsWith("gig") && lowerWord.length >= 4 && !/^gig(?:i$|lio|lia|lo|ot|ol)/.test(lowerWord)) ||
+        (lowerWord.startsWith("ges") && lowerWord.length >= 5 && !/^gest(?:ure|iculat|ation|ural|at|alt|urin|al)/.test(lowerWord) && lowerWord !== "geske") ||
+        (lowerWord.startsWith("geh") && lowerWord.length >= 5 && !/^geh(?:le|res|rke)$/.test(lowerWord))
+      )
         result = result.replace(/^dʒ/, "ɡ");
       if (/(?:ingen|angen)$/.test(lowerWord) && lowerWord.length >= 7)
         result = result.replace(/dʒ([əɛɪ]n)$/, "ɡ$1");
@@ -824,10 +820,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/dʒɝz$/, "ɡɝz");
       if (lowerWord.endsWith("gen") && lowerWord.length >= 7 && /[bcdfghjklmnpqrstvwxyz]{2}gen$/.test(lowerWord))
         result = result.replace(/dʒɛn$/, "ɡɛn").replace(/dʒən$/, "ɡən");
-      if (lowerWord.endsWith("ford") && lowerWord.length > 4)
-        result = result.replace(/ɔɹd$/, "ɝd");
-      if (/(?:worth|world|works?)$/.test(lowerWord))
-        result = result.replace(/ɔɹ(θ|ld|ks?)$/, "ɝ$1");
+      if ((lowerWord.endsWith("ford") && lowerWord.length > 4) || /(?:worth|world|works?)$/.test(lowerWord))
+        result = result.replace(/ɔɹ(d|θ|ld|ks?)$/, "ɝ$1");
       if (lowerWord.endsWith("oir"))
         result = result.replace(/ɔɪɹ$/, "wɑɹ");
       if (lowerWord.endsWith("oux"))
@@ -838,9 +832,7 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/aʊ/g, "u");
       if (lowerWord.endsWith("ou") && lowerWord !== "you" && lowerWord !== "thou")
         result = result.replace(/aʊ$/, "u");
-      if (/[bm]our$/.test(lowerWord))
-        result = result.replace(/aʊɹ$/, "ɝ");
-      if (/[vdl]our$/.test(lowerWord) && lowerWord !== "devour" && lowerWord !== "flour")
+      if (/[bmdvl]our$/.test(lowerWord) && lowerWord !== "devour" && lowerWord !== "flour")
         result = result.replace(/aʊɹ$/, "ɝ");
       if (lowerWord.endsWith("oussin"))
         result = result.replace(/aʊs/, "us");
