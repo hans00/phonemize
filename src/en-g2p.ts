@@ -664,6 +664,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -arity/-arison/-aration: æɹ→ɛɹ (clarity, disparity, parity, rarity, comparison)
     if (/(arity|arison|aration)$/.test(lowerWord))
       postBase = postBase.replace(/æɹ/g, "ɛɹ");
+    // through/throughput/throughway: θɹ+ough gives ʌf but should give u
+    if (lowerWord.startsWith("through"))
+      postBase = postBase.replace(/θɹʌf/, "θɹu");
+    // -nuation: nʌeɪʃ→njueɪʃ (continuation, discontinuation)
+    if (lowerWord.endsWith("nuation"))
+      postBase = postBase.replace(/nʌeɪʃ/, "njueɪʃ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
