@@ -1051,6 +1051,14 @@ export class EnglishG2P implements LanguageProcessor {
         lowerWord.startsWith("admire") || lowerWord.startsWith("adopt"))
       postBase = postBase.replace(/^([ˈˌ]?)æ/, "$1ə");
 
+    // hetero- prefix: hiˈtɛɹ → hɛtɝ (heterodox, heterodyne, heterosis, heterozygous)
+    if (lowerWord.startsWith("heter"))
+      postBase = postBase.replace(/^([ˈˌ]?)hi([ˈˌ]?)tɛɹ/, "$1hɛ$2tɝ");
+
+    // -entia suffix: nɪtə → nʃə (absentia, clementia, placentia, valentia)
+    if (lowerWord.endsWith("entia"))
+      postBase = postBase.replace(/n([ˈˌ]?)t([ˈˌ]?)ɪ([ˈˌ]?)ə$/, "n$1ʃ$2ə$3");
+
     // -[st]ionate: [st]+ɪoʊneɪt → ʃənɪt (passionate, compassionate, affectionate, proportionate)
     if (lowerWord.endsWith("ionate"))
       postBase = postBase.replace(/[st]([ˈˌ]?)ɪoʊn([ˈˌ]?)eɪt$/, "ʃ$1ən$2ət");
