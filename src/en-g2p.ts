@@ -870,6 +870,12 @@ export class EnglishG2P implements LanguageProcessor {
     // rhyth-: ɹaɪθ→ɹɪð (rhythmic, rhythmical)
     if (lowerWord.startsWith("rhyth"))
       postBase = postBase.replace(/ɹaɪθ/, "ɹɪð");
+    // obl-/obes-: oʊb→əb (oblique, oblong, oblivion, obese, obesity)
+    if (lowerWord.startsWith("obl") || lowerWord.startsWith("obes"))
+      postBase = postBase.replace(/^([ˈˌ]?)oʊb/, "$1əb");
+    // geom-: dʒioʊm→dʒiɑm (geometry, geomorphology)
+    if (lowerWord.startsWith("geom"))
+      postBase = postBase.replace(/dʒioʊm/, "dʒiɑm");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
