@@ -921,6 +921,12 @@ export class EnglishG2P implements LanguageProcessor {
     // anarch-: ɑɹtʃ→ɑɹk (anarchic, anarchism)
     if (lowerWord.startsWith("anarch"))
       postBase = postBase.replace(/ɑɹtʃ/, "ɑɹk");
+    // -vious: ɪaʊs→iəs (devious, previous)
+    if (lowerWord.endsWith("vious"))
+      postBase = postBase.replace(/ɪaʊs$/, "iəs");
+    // -urity: ɝɪti→jʊɹɪti (impurity, insecurity)
+    if (lowerWord.endsWith("urity"))
+      postBase = postBase.replace(/ɝɪti$/, "jʊɹɪti");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
