@@ -768,6 +768,34 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/ə([kp]t|kst)$/, "ɛ$1");
       if (lowerWord.endsWith("end") && syllables.length >= 2)
         result = result.replace(/ənd$/, "ɛnd");
+      if (lowerWord.length >= 4 && lowerWord.endsWith("yl"))
+        result = result.replace(/aɪl$/, "əl");
+      if (lowerWord.endsWith("itis"))
+        result = result.replace(/ɪtɪs$/, "aɪtɪs");
+      // Polysyllabic -tice/-vice: unstressed final syllable should be /ɪs/ not /aɪs/
+      // Guards protect entice(6)/advice(6)/device(6) via length, and service/crevice via -vice≥7
+      if (
+        (lowerWord.length >= 7 && lowerWord.endsWith("tice")) ||
+        (lowerWord.length >= 7 && lowerWord.endsWith("vice"))
+      )
+        result = result.replace(/aɪs$/, "ɪs");
+      // -ange → /eɪndʒ/ (change/range/strange/exchange); guard -lange (flange/phalange stay /æ/)
+      if (lowerWord.endsWith("ange") && !lowerWord.endsWith("lange"))
+        result = result.replace(/ændʒ$/, "eɪndʒ");
+      // -erous/-arous/-orous/-urous: unstressed -er- is /ɝ/ (generous/cancerous/boisterous)
+      if (/(?:erous|arous|orous|urous)$/.test(lowerWord))
+        result = result.replace(/ɪɹəs$/, "ɝəs");
+      // -ious/-eous: unstressed -i- before vowel cluster is /i/ not /ɪ/ (serious/obvious/furious)
+      if (/(?:ious|eous)$/.test(lowerWord))
+        result = result.replace(/ɪəs$/, "iəs");
+      // Open-syllable long-a before sonorant-initial suffix (favor/raven/famous/savor/craven)
+      if (/(?:aven|avor|avour)$/.test(lowerWord))
+        result = result.replace(/æv(ɝ|ən)$/, "eɪv$1");
+      if (lowerWord.endsWith("amous"))
+        result = result.replace(/æm(əs)$/, "eɪm$1");
+      // -ion (non-tion/-sion): unstressed -i- before -ən should be /i/ not /ɪ/ (carrion/clarion/ganglion)
+      if (/ion$/.test(lowerWord) && !/(?:tion|sion)$/.test(lowerWord))
+        result = result.replace(/ɪən$/, "iən");
       if (!lowerWord.endsWith("cission"))
         result = result.replace(/sɪʃən$/, "zɪʃən");
       if (lowerWord.length >= 9) result = result.replace(/ɪɹeɪʃən$/, "ɝeɪʃən");
