@@ -1060,6 +1060,11 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("arriv") || lowerWord.startsWith("aris") ||
         lowerWord.startsWith("aros") || lowerWord.startsWith("arrang"))
       postBase = postBase.replace(/^([ˈˌ]?)[æɑ]([ˈˌ]?)ɹ/, "$1ɝ");
+    // a- unstressed prefix: æ → ə (across, along, aloft, abolish, absorb, ahead, admire, adopt)
+    if (lowerWord.startsWith("across") || lowerWord.startsWith("along") || lowerWord.startsWith("aloft") ||
+        lowerWord.startsWith("abolish") || lowerWord.startsWith("absorb") || lowerWord.startsWith("ahead") ||
+        lowerWord.startsWith("admire") || lowerWord.startsWith("adopt"))
+      postBase = postBase.replace(/^([ˈˌ]?)æ/, "$1ə");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
