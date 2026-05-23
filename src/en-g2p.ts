@@ -822,6 +822,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -uity: uti→uəti (ambiguity, annuity, continuity, ingenuity)
     if (lowerWord.endsWith("uity"))
       postBase = postBase.replace(/uti$/, "uəti");
+    // -avery/-akery/-apery: æ[vkp]ɝi→eɪ[vkp]ɝi (bravery, slavery, bakery, drapery, papery)
+    if (lowerWord.endsWith("avery") || lowerWord.endsWith("akery") || lowerWord.endsWith("apery"))
+      postBase = postBase.replace(/æ([vkp])ɝi$/, "eɪ$1ɝi");
+    // -nness: nnəs→nəs (cleanness, thinness — double-n reduced)
+    if (lowerWord.endsWith("nness"))
+      postBase = postBase.replace(/nn(əs)$/, "n$1");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
