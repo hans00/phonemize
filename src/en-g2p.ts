@@ -1104,6 +1104,10 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("val"))
       postBase = postBase.replace(/^([ˈˌ]?)vəl/, "$1væl");
 
+    // bal- prefix: bæl → bɑl (balboa, baldez, baldwin — but not bala-/ball- words)
+    if (lowerWord.startsWith("bal") && !/^bal[al]/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)bæɫ/, "$1bɑɫ");
+
     // bel- prefix: bɪl → bɛl (belafonte, belflower, belgarde — Romance/proper names)
     if (lowerWord.startsWith("bel"))
       postBase = postBase.replace(/^([ˈˌ]?)bɪl/, "$1bɛl");
