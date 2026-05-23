@@ -1051,6 +1051,10 @@ export class EnglishG2P implements LanguageProcessor {
         lowerWord.startsWith("admire") || lowerWord.startsWith("adopt"))
       postBase = postBase.replace(/^([ˈˌ]?)æ/, "$1ə");
 
+    // -[st]ionate: [st]+ɪoʊneɪt → ʃənɪt (passionate, compassionate, affectionate, proportionate)
+    if (lowerWord.endsWith("ionate"))
+      postBase = postBase.replace(/[st]([ˈˌ]?)ɪoʊn([ˈˌ]?)eɪt$/, "ʃ$1ən$2ət");
+
     // -brough/-rough place names: ɹəf → ɹoʊ (fambrough, scarbrough, burrough)
     if (lowerWord.endsWith("ough"))
       postBase = postBase.replace(/ɹəf$/, "ɹoʊ");
