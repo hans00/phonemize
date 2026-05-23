@@ -804,6 +804,9 @@ export class EnglishG2P implements LanguageProcessor {
     // under- compound: ndɛɹ→ndɝ (underarm, underachiever)
     if (lowerWord.startsWith("under"))
       postBase = postBase.replace(/ən([ˈˌ]?)dɛɹ/, "ən$1dɝ");
+    // -arian: ɝɪən→ɛɹiən (barbarian, contrarian, librarian, sectarian)
+    if (lowerWord.endsWith("arian"))
+      postBase = postBase.replace(/ɝ([ˈˌ]?)ɪən$/, "ɛɹ$1iən");
     // dox- words: doʊks→dɑks (doxology, doxie)
     if (lowerWord.startsWith("dox"))
       postBase = postBase.replace(/doʊks/, "dɑks");
