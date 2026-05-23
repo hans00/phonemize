@@ -1079,6 +1079,11 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("news") && !lowerWord.startsWith("newsf"))
       postBase = postBase.replace(/^([ˈˌ]?)nus/, "$1nuz");
 
+    // uni- unstressed: ənɪ → junɪ (unicorn, universe, unique, uniform)
+    // Exclude uni[mns]- = un-im/un-in/un-is negative compounds
+    if (lowerWord.startsWith("uni") && !/^uni[mns]/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)nɪ/, "$1ju$2nɪ");
+
     // ex- before consonant: ɪks → ɛks (excellence, excavate, extant, exboyfriend)
     // Exclude exp- and exc+consonant (typically unstressed in those)
     if (lowerWord.startsWith("ex") && !/^ex[aeiou]/.test(lowerWord) &&
