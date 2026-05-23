@@ -774,6 +774,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -bicle/-ticle: kʌ[bt]→kju[bt] yod (cubicle, cuticle)
     if (/[bt]icle$/.test(lowerWord))
       postBase = postBase.replace(/kʌ([bt])/, "kju$1");
+    // bur- prefix: bʌɹ→bjʊɹ yod (bureau, buran, buren)
+    if (lowerWord.startsWith("bur"))
+      postBase = postBase.replace(/bʌɹ/, "bjʊɹ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
