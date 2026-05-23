@@ -855,6 +855,12 @@ export class EnglishG2P implements LanguageProcessor {
     // typic-: taɪpɪ→tɪpɪ (typical, typically, atypical)
     if (lowerWord.includes("typic"))
       postBase = postBase.replace(/taɪp([ˈˌ]?)ɪ/, "tɪp$1ɪ");
+    // phys-: faɪs→fɪs (physics, physical, physiology, physiologic)
+    if (lowerWord.startsWith("phys"))
+      postBase = postBase.replace(/faɪs/, "fɪs");
+    // syst-: saɪst→sɪst (system, systematic, systemwide)
+    if (lowerWord.startsWith("syst"))
+      postBase = postBase.replace(/saɪst/, "sɪst");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
