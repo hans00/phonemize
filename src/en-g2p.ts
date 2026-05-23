@@ -896,6 +896,15 @@ export class EnglishG2P implements LanguageProcessor {
     // chrys-: kɹaɪs→kɹɪs (chrysalis, chrysotile)
     if (lowerWord.startsWith("chrys"))
       postBase = postBase.replace(/kɹaɪs/, "kɹɪs");
+    // echo-: ɛtʃ→ɛk (echo, echography)
+    if (lowerWord.startsWith("echo"))
+      postBase = postBase.replace(/^([ˈˌ]?)ɛtʃ/, "$1ɛk");
+    // charact-: tʃɝækt→kɛɹɪkt (character)
+    if (lowerWord.startsWith("charact"))
+      postBase = postBase.replace(/^([ˈˌ]?)tʃɝækt/, "$1kɛɹɪkt");
+    // tech-: tɛtʃ→tɛk (technology, technique, technic)
+    if (lowerWord.startsWith("tech"))
+      postBase = postBase.replace(/^([ˈˌ]?)tɛtʃ/, "$1tɛk");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
