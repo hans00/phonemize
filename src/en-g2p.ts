@@ -1116,6 +1116,10 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("ben"))
       postBase = postBase.replace(/^([ˈˌ]?)bɪn/, "$1bɛn");
 
+    // mc/mac+g names: məkɡ → məɡ (mcgarvey, macgowan, mcgaha — "c" silent before "g")
+    if (/^m(?:c|ac)g/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)məkɡ/, "$1məɡ");
+
     // cam- prefix: kəm → kɑm (cammarano, campanelli, campuzano — Italian names)
     if (lowerWord.startsWith("cam"))
       postBase = postBase.replace(/^([ˈˌ]?)kəm/, "$1kɑm");
