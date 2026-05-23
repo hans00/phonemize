@@ -609,6 +609,15 @@ export class EnglishG2P implements LanguageProcessor {
     // -tuate: t+schwa → tʃu before vowel (actuate/punctuate/situate/infatuate/effectuate)
     if (lowerWord.includes("tuat"))
       postBase = postBase.replace(/tə([eɪʃ])/g, "tʃu$1").replace(/tu([eɪəʃ])/g, "tʃu$1");
+    // -tiate: tɪ/ti → ʃi before vowel (negotiate/initiate/differentiate)
+    if (lowerWord.includes("tiat"))
+      postBase = postBase.replace(/tɪ([eɪ])/g, "ʃi$1").replace(/ti([eɪ])/g, "ʃi$1");
+    // -ciate: sɪ/si → ʃi (appreciate/depreciate/officiate); not [so]ciate or aciate
+    if (lowerWord.includes("ciat") && !/(so|a)ciat/.test(lowerWord))
+      postBase = postBase.replace(/sɪ([eɪ])/g, "ʃi$1").replace(/si([eɪ])/g, "ʃi$1");
+    // abs- initial: ə→æ (absentee/abstention/abstinence/absolve); not absorb/absurd
+    if (lowerWord.startsWith("abs") && !lowerWord.startsWith("absor") && !lowerWord.startsWith("absur"))
+      postBase = postBase.replace(/^ə/, "æ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
