@@ -616,14 +616,10 @@ export class EnglishG2P implements LanguageProcessor {
     // -ciate: sɪ/si → ʃi (appreciate/depreciate/officiate); not [so]ciate or aciate
     if (lowerWord.includes("ciat") && !/(so|a)ciat/.test(lowerWord))
       postBase = postBase.replace(/sɪ([eɪ])/g, "ʃi$1").replace(/si([eɪ])/g, "ʃi$1");
-    // abs- initial: ə→æ (absentee/abstention/abstinence/absolve); not absorb/absurd
-    if (lowerWord.startsWith("abs") && !lowerWord.startsWith("absor") && !lowerWord.startsWith("absur"))
-      postBase = postBase.replace(/^ə/, "æ");
-    // an- initial: ə→æ (anchor/animal/antelope/antagonistic); not Greek an- prefix (without)
-    if (lowerWord.startsWith("an") && !/^an(em|aes|es|at|nu)/.test(lowerWord))
-      postBase = postBase.replace(/^ə/, "æ");
-    // ag- initial: ə→æ (aggravate/agitate/agamemnon); not aggl-/agou- (Latin/French)
-    if (lowerWord.startsWith("ag") && !/^ag(gl|ou)/.test(lowerWord))
+    // abs-/an-/ag- initial: ə→æ
+    if ((lowerWord.startsWith("abs") && !lowerWord.startsWith("absor") && !lowerWord.startsWith("absur")) ||
+        (lowerWord.startsWith("an") && !/^an(em|aes|es|at|nu)/.test(lowerWord)) ||
+        (lowerWord.startsWith("ag") && !/^ag(gl|ou)/.test(lowerWord)))
       postBase = postBase.replace(/^ə/, "æ");
     // -ification: vowel before -f- reduces to ə (amplification/classification/magnification)
     if (lowerWord.endsWith("ification"))
