@@ -822,6 +822,8 @@ export class EnglishG2P implements LanguageProcessor {
         result = result.replace(/dʒɛn$/, "ɡɛn").replace(/dʒən$/, "ɡən");
       if ((lowerWord.endsWith("ford") && lowerWord.length > 4) || /(?:worth|world|works?)$/.test(lowerWord))
         result = result.replace(/ɔɹ(d|θ|ld|ks?)$/, "ɝ$1");
+      if (lowerWord.endsWith("fort") && lowerWord.length > 4)
+        result = result.replace(/fɔɹt$/, "fɝt");
       if (lowerWord.includes("oe") && lowerWord.length >= 4)
         result = result.replace(/ɑɛ/g, "oʊ");
       if (lowerWord.includes("ae") && lowerWord.length >= 4)
