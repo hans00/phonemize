@@ -707,7 +707,7 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.endsWith("atch"))
       postBase = postBase.replace(/ək$/, "ætʃ");
     if (lowerWord.endsWith("etch"))
-      postBase = postBase.replace(/ɛk$/, "ɛtʃ");
+      postBase = postBase.replace(/ək$/, "ɛtʃ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
