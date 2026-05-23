@@ -589,6 +589,26 @@ export class EnglishG2P implements LanguageProcessor {
     // guard: not -osome (chromosome/liposome/ribosome from Greek soma)
     if (lowerWord.endsWith("some") && !lowerWord.endsWith("osome"))
       postBase = postBase.replace(/soʊm$/, "səm");
+    // wa + consonant: /wæ/→/wɑ/ (water/watch/wash/want) — not in kw cluster (aquatic)
+    postBase = postBase.replace(/(?<![kɡ])wæ([tʃn])/g, "wɑ$1");
+    // super- prefix: open syllable su.per → /supɝ/ not /səpɝ/
+    if (lowerWord.startsWith("super"))
+      postBase = postBase.replace(/^sə(ˈ?)pɝ/, "su$1pɝ");
+    // -ause word-final: ɔs→ɔz (cause/clause/applause/pause/because)
+    if (lowerWord.endsWith("ause") || lowerWord.endsWith("auze"))
+      postBase = postBase.replace(/ɔs$/, "ɔz");
+    // -eason: intervocalic s→z (reason/treason/season/midseason)
+    if (lowerWord.endsWith("eason"))
+      postBase = postBase.replace(/isən$/, "izən");
+    // -oison: intervocalic s→z (poison)
+    if (lowerWord.endsWith("oison"))
+      postBase = postBase.replace(/ɔɪsən$/, "ɔɪzən");
+    // omni- prefix: stressed /ɑm/ not /əm/ (omnipotent/omnivorous)
+    if (lowerWord.startsWith("omni"))
+      postBase = postBase.replace(/^əm(ˈ?)n/, "ɑm$1n");
+    // -tuate: t+schwa → tʃu before vowel (actuate/punctuate/situate/infatuate/effectuate)
+    if (lowerWord.includes("tuat"))
+      postBase = postBase.replace(/tə([eɪʃ])/g, "tʃu$1").replace(/tu([eɪəʃ])/g, "tʃu$1");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
