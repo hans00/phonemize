@@ -1026,6 +1026,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -alk prefix: extend silent-l rule to vowel-initial suffixes (talker, walker, stalker, etc.)
     if (lowerWord.startsWith("talk") || lowerWord.startsWith("walk") || lowerWord.startsWith("stalk"))
       postBase = postBase.replace(/^([ˈˌ]?)(t|w|st)[æɑə]([ˈˌ]?)l([ˈˌ]?)k/, "$1$2ɔ$4k");
+    // domin-/nomin-/omin-: oʊmɪn → ɑmɪn (dominant, nominal, ominous)
+    if (lowerWord.startsWith("domin") || lowerWord.startsWith("nomin") || lowerWord.startsWith("omin"))
+      postBase = postBase.replace(/^([ˈˌ]?)(d|n)?([ˈˌ]?)oʊ([ˈˌ]?)m([ˈˌ]?)ɪ([ˈˌ]?)n/, "$1$2$3ɑ$4m$5ɪ$6n");
+    // promin-: pɹ[əoʊ]mɪn → pɹɑmɪn (prominent, prominence)
+    if (lowerWord.startsWith("promin"))
+      postBase = postBase.replace(/^([ˈˌ]?)pɹ[əoʊ]([ˈˌ]?)m([ˈˌ]?)ɪ([ˈˌ]?)n/, "$1pɹɑ$2m$3ɪ$4n");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
