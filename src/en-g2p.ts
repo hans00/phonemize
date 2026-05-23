@@ -296,6 +296,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ey$/, "i"], // honey, abbey, valley, turkey (unstressed final -ey; guard skips when stressed)
   [/^ey/, "eɪ"], // they, grey, obey (stressed -ey)
   [/^ight/, "aɪt"], // night, right, knight (i+ght)
+  [/^igh/, "aɪ"],  // high, sigh, thigh — igh without following t
   [/^oa/, "oʊ"], // boat, coat, road
   [/^oss/, "ɔs"], // cross, loss (short o)
   [/^eur/, "ɝ"], // connoisseur, entrepreneur (French -eur → /ɝ/)
