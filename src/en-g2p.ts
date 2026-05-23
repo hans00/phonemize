@@ -624,6 +624,9 @@ export class EnglishG2P implements LanguageProcessor {
     // ag- initial: ə→æ (aggravate/agitate/agamemnon); not aggl-/agou- (Latin/French)
     if (lowerWord.startsWith("ag") && !/^ag(gl|ou)/.test(lowerWord))
       postBase = postBase.replace(/^ə/, "æ");
+    // -ification: vowel before -f- reduces to ə (amplification/classification/magnification)
+    if (lowerWord.endsWith("ification"))
+      postBase = postBase.replace(/ɪf/, "əf");
     // -ience suffix: iəns not ins (experience/resilience/ambience)
     if (lowerWord.endsWith("ience"))
       postBase = postBase.replace(/ins$/, "iəns");
