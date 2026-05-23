@@ -581,9 +581,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -ability: æ before -bility reduces to ə (ability/disability/availability/culpability)
     if (lowerWord.endsWith("ability"))
       postBase = postBase.replace(/æbɪlɪti$/, "əbɪlɪti").replace(/æbɪləti$/, "əbɪləti");
-    // micro- prefix: open syllable mi.cro → /maɪkɹoʊ/ not /mɪkɹoʊ/
+    // micro- prefix: open syllable mi.cro → /maɪkɹoʊ/ not /mɪkɹoʊ/; handles mɪˈkɹ mid-onset stress
     if (lowerWord.startsWith("micro"))
-      postBase = postBase.replace(/^(ˈ?)mɪkɹ/, "$1maɪkɹ");
+      postBase = postBase.replace(/^([ˈˌ]?)mɪ([ˈˌ]?)kɹ/, "$1maɪkɹ");
     // -mental: elided /t/ in many derived forms (elemental/fundamental/departmental)
     if (lowerWord.endsWith("mental"))
       postBase = postBase.replace(/məntəl$/, "mɛnəl");
