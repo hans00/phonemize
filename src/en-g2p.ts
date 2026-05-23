@@ -601,12 +601,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -ause word-final: ɔs→ɔz (cause/clause/applause/pause/because)
     if (lowerWord.endsWith("ause") || lowerWord.endsWith("auze"))
       postBase = postBase.replace(/ɔs$/, "ɔz");
-    // -eason: intervocalic s→z (reason/treason/season/midseason)
-    if (lowerWord.endsWith("eason"))
-      postBase = postBase.replace(/isən$/, "izən");
-    // -oison: intervocalic s→z (poison)
-    if (lowerWord.endsWith("oison"))
-      postBase = postBase.replace(/ɔɪsən$/, "ɔɪzən");
+    // -eason/-oison: intervocalic s→z (reason/treason/season, poison)
+    if (lowerWord.endsWith("eason")) postBase = postBase.replace(/isən$/, "izən");
+    else if (lowerWord.endsWith("oison")) postBase = postBase.replace(/ɔɪsən$/, "ɔɪzən");
     // omni- prefix: stressed /ɑm/ not /əm/ (omnipotent/omnivorous)
     if (lowerWord.startsWith("omni"))
       postBase = postBase.replace(/^əm(ˈ?)n/, "ɑm$1n");
@@ -828,12 +825,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -arian: ɝɪən→ɛɹiən (barbarian, contrarian, librarian, sectarian)
     if (lowerWord.endsWith("arian"))
       postBase = postBase.replace(/ɝ([ˈˌ]?)ɪən$/, "ɛɹ$1iən");
-    // dox- words: doʊks→dɑks (doxology, doxie)
-    if (lowerWord.startsWith("dox"))
-      postBase = postBase.replace(/doʊks/, "dɑks");
-    // toxic- words: toʊksɪk→tɑksɪk (toxic, toxicology)
-    if (lowerWord.startsWith("toxic"))
-      postBase = postBase.replace(/toʊksɪk/, "tɑksɪk");
+    // dox-/toxic-: oʊks→ɑks (doxology, toxic, toxicology)
+    if (lowerWord.startsWith("dox") || lowerWord.startsWith("toxic"))
+      postBase = postBase.replace(/oʊks/, "ɑks");
     // apol- words: eɪpiɑl→əpɑl (apology, apologetic)
     if (lowerWord.startsWith("apol"))
       postBase = postBase.replace(/^([ˈˌ]?)eɪp([ˈˌ]?)iɑ/, "$1əp$2ɑ");
@@ -1026,15 +1020,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -alk prefix: extend silent-l rule to vowel-initial suffixes (talker, walker, stalker, etc.)
     if (lowerWord.startsWith("talk") || lowerWord.startsWith("walk") || lowerWord.startsWith("stalk"))
       postBase = postBase.replace(/^([ˈˌ]?)(t|w|st)[æɑə]([ˈˌ]?)l([ˈˌ]?)k/, "$1$2ɔ$4k");
-    // domin-/nomin-/omin-: oʊmɪn → ɑmɪn (dominant, nominal, ominous)
-    if (lowerWord.startsWith("domin") || lowerWord.startsWith("nomin") || lowerWord.startsWith("omin"))
-      postBase = postBase.replace(/^([ˈˌ]?)(d|n)?([ˈˌ]?)oʊ([ˈˌ]?)m([ˈˌ]?)ɪ([ˈˌ]?)n/, "$1$2$3ɑ$4m$5ɪ$6n");
-    // promin-: pɹ[əoʊ]mɪn → pɹɑmɪn (prominent, prominence)
-    if (lowerWord.startsWith("promin"))
-      postBase = postBase.replace(/^([ˈˌ]?)pɹ[əoʊ]([ˈˌ]?)m([ˈˌ]?)ɪ([ˈˌ]?)n/, "$1pɹɑ$2m$3ɪ$4n");
-    // coloniz-/colonist: koʊlən → kɑlən (colonist, colonize, colonization)
-    if (lowerWord.startsWith("coloniz") || lowerWord.startsWith("colonist"))
-      postBase = postBase.replace(/^([ˈˌ]?)koʊ([ˈˌ]?)l([ˈˌ]?)ə([ˈˌ]?)n/, "$1kɑ$2l$3ə$4n");
+    // domin-/nomin-/omin-/promin-: [əoʊ]mɪn → ɑmɪn (dominant, nominal, ominous, prominent)
+    if (/^(domin|nomin|omin|promin)/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?(?:pɹ|[dn])?)([ˈˌ]?)[əoʊ]+([ˈˌ]?)mɪn/, "$1$2ɑ$3mɪn");
     // comed-: koʊm → kɑm (comedy, comedian)
     if (lowerWord.startsWith("comed"))
       postBase = postBase.replace(/^([ˈˌ]?)koʊ([ˈˌ]?)m/, "$1kɑ$2m");
@@ -1050,12 +1038,9 @@ export class EnglishG2P implements LanguageProcessor {
     // oxid-: oʊks/əks → ɑks (oxide, oxidize, oxidation, oxidant)
     if (lowerWord.startsWith("oxid"))
       postBase = postBase.replace(/^([ˈˌ]?)[oʊə]+([ˈˌ]?)ks/, "$1ɑ$2ks");
-    // process-: pɹoʊs → pɹɑs (process, processes, processing)
-    if (lowerWord.startsWith("process"))
-      postBase = postBase.replace(/^([ˈˌ]?)pɹoʊ([ˈˌ]?)s/, "$1pɹɑ$2s");
-    // product-: pɹoʊd → pɹɑd (product, products, productive)
-    if (lowerWord.startsWith("product"))
-      postBase = postBase.replace(/^([ˈˌ]?)pɹoʊ([ˈˌ]?)d/, "$1pɹɑ$2d");
+    // process-/product-: pɹoʊ → pɹɑ (process, product, productive)
+    if (lowerWord.startsWith("process") || lowerWord.startsWith("product"))
+      postBase = postBase.replace(/^([ˈˌ]?)pɹoʊ/, "$1pɹɑ");
     // arriv-/aris-/aros-/arrang-: initial (æ|ɑ)ɹ → ɝ (arrive, arise, arose, arrange)
     if (lowerWord.startsWith("arriv") || lowerWord.startsWith("aris") ||
         lowerWord.startsWith("aros") || lowerWord.startsWith("arrang"))
