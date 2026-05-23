@@ -1144,6 +1144,14 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("mas"))
       postBase = postBase.replace(/^([ˈˌ]?)məs/, "$1mɑs");
 
+    // cos- prefix (not cose/cosi): koʊs → kɑs (cosic, cosner, cosper, roscoe — short o)
+    if (lowerWord.startsWith("cos") && !/^cos[ei]/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)koʊs/, "$1kɑs");
+
+    // mon- prefix (not mono/moni, length>=6): moʊn → mɑn (monaco, monahan, monetarism)
+    if (lowerWord.startsWith("mon") && lowerWord.length >= 6 && !lowerWord.startsWith("mono") && !lowerWord.startsWith("moni"))
+      postBase = postBase.replace(/^([ˈˌ]?)moʊn/, "$1mɑn");
+
     // -ohl- Germanic names: ɑhl → oʊl (bohland, kohler, rohland — silent-h "oh" = /oʊ/)
     if (lowerWord.includes("ohl"))
       postBase = postBase.replace(/ɑhl/g, "oʊl");
