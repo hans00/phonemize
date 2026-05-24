@@ -1779,6 +1779,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -pulous: ʌpələs→upjələs (scrupulous, unscrupulous)
     if (lowerWord.endsWith("pulous") && lowerWord.length >= 8)
       postBase = postBase.replace(/([ˈˌ]?)ʌ([ˈˌ]?)p([ˈˌ]?)ə([ˈˌ]?)l([ˈˌ]?)əs$/, "$1u$2p$3j$4ə$5ləs");
+    // therap*: [ðθ]ɝ→θɛɹ (therapy, therapist, therapeutic, hydrotherapy, psychotherapy)
+    if (lowerWord.includes("therap"))
+      postBase = postBase.replace(/([ˈˌ]?)[ðθ]([ˈˌ]?)ɝ/, "$1θ$2ɛɹ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
