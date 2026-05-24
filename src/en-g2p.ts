@@ -1815,6 +1815,21 @@ export class EnglishG2P implements LanguageProcessor {
     // -sual: suəɫ→ʒəwəɫ (casual, visual)
     if (lowerWord.endsWith("sual") && lowerWord.length >= 5)
       postBase = postBase.replace(/([ˈˌ]?)s([ˈˌ]?)u([ˈˌ]?)ə([ˈˌ]?)[lɫ]$/, "$1ʒ$2əwə$3ɫ");
+    // -hibition: hɪbɪʃən→əbɪʃən (exhibition, inhibition)
+    if (lowerWord.endsWith("hibition") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)h([ˈˌ]?)ɪ([ˈˌ]?)b([ˈˌ]?)ɪ([ˈˌ]?)ʃ([ˈˌ]?)ən$/, "$1ə$2b$3ɪ$4ʃ$5ən");
+    // -quisition: kwɪzɪʃən→kwəzɪʃən (acquisition, inquisition, requisition)
+    if (lowerWord.endsWith("quisition") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)k([ˈˌ]?)w([ˈˌ]?)ɪ([ˈˌ]?)z([ˈˌ]?)ɪ([ˈˌ]?)ʃ([ˈˌ]?)ən$/, "$1k$2w$3ə$4z$5ɪ$6ʃ$7ən");
+    // -efinition: ɪfɪnɪʃən→ɛfənɪʃən (definition, redefinition)
+    if (lowerWord.endsWith("efinition") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)f([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)ɪ([ˈˌ]?)ʃ([ˈˌ]?)ən$/, "$1ɛ$2f$3ə$4n$5ɪ$6ʃ$7ən");
+    // -etition: ɪpɪtɪʃən→ɛpətɪʃən (repetition)
+    if (lowerWord.endsWith("etition") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)ɪ([ˈˌ]?)ʃ([ˈˌ]?)ən$/, "$1ɛ$2p$3ə$4t$5ɪ$6ʃ$7ən");
+    // detriment: dɪtɹɪ→dɛtɹə at start (detriment, detrimental)
+    if (lowerWord.startsWith("detri") && lowerWord.endsWith("ment") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)ɹ([ˈˌ]?)ɪ/, "$1d$2ɛ$3t$4ɹ$5ə");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
