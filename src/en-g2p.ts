@@ -1236,6 +1236,10 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.endsWith("era"))
       postBase = postBase.replace(/ɝə$/, "ɛɹə");
 
+    // -ona Italian/Spanish suffix: ənə → oʊnə (barcelona, cremona, bivona — not winona/devona)
+    if (lowerWord.endsWith("ona"))
+      postBase = postBase.replace(/ənə$/, "oʊnə");
+
     // gian- Italian names: dʒɪæn → dʒɑn (gianni, giannini, giancarlo, giancola)
     if (lowerWord.startsWith("gian"))
       postBase = postBase.replace(/^([ˈˌ]?)dʒɪæn/, "$1dʒɑn");
