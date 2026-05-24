@@ -1183,6 +1183,20 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("ral"))
       postBase = postBase.replace(/^([ˈˌ]?)ɹæl/, "$1ɹɑl");
 
+    // -oni* Italian/Latin suffix: ənɪ(ə|ən|oʊ)? → oʊni(ə|ən|oʊ)?
+    // -onian (andonian, estonian): ənɪən → oʊniən
+    if (lowerWord.endsWith("onian"))
+      postBase = postBase.replace(/ənɪən$/, "oʊniən");
+    // -onio (antonio, petronio): ənɪoʊ → oʊnioʊ
+    if (lowerWord.endsWith("onio"))
+      postBase = postBase.replace(/ənɪoʊ$/, "oʊnioʊ");
+    // -onia (antonia, ansonia, estonia): ənɪə → oʊniə
+    if (lowerWord.endsWith("onia"))
+      postBase = postBase.replace(/ənɪə$/, "oʊniə");
+    // -oni (balboni, baroni, bertoni): ənɪ → oʊni
+    if (lowerWord.endsWith("oni"))
+      postBase = postBase.replace(/ənɪ$/, "oʊni");
+
     // gian- Italian names: dʒɪæn → dʒɑn (gianni, giannini, giancarlo, giancola)
     if (lowerWord.startsWith("gian"))
       postBase = postBase.replace(/^([ˈˌ]?)dʒɪæn/, "$1dʒɑn");
