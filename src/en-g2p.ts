@@ -2097,6 +2097,42 @@ export class EnglishG2P implements LanguageProcessor {
     // -irmary: mɛɹi→mɝi at end (infirmary)
     if (lowerWord.endsWith("irmary") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)m([ˈˌ]?)ɛɹ([ˈˌ]?)i$/, "$1m$2ɝ$3i");
+    // -nocence: ɪnoʊsəns→ɪnəsəns (innocence)
+    if (lowerWord.endsWith("nocence") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)oʊ([ˈˌ]?)s/, "$1ɪ$2n$3ə$4s");
+    // -oquence: ɪɫoʊkw→ɛɫəkw (eloquence)
+    if (lowerWord.endsWith("oquence") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)ɪ([ˈˌ]?)[lɫ]([ˈˌ]?)oʊ([ˈˌ]?)k([ˈˌ]?)w/, "$1ɛ$2ɫ$3ə$4k$5w");
+    // -rogance: ɑɹoʊɡ→ɛɹəɡ at start (arrogance)
+    if (lowerWord.endsWith("rogance") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)ɑ([ˈˌ]?)ɹ([ˈˌ]?)oʊ([ˈˌ]?)ɡ/, "$1ɛ$2ɹ$3ə$4ɡ");
+    // -ndurance: ndjʊɹ→ndɝ (endurance)
+    if (lowerWord.endsWith("ndurance") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)n([ˈˌ]?)djʊɹ/, "$1n$2dɝ");
+    // -commence: kɑməns→kəmɛns (commence, commencement)
+    if (lowerWord.startsWith("commenc") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)ɑ([ˈˌ]?)m([ˈˌ]?)ə([ˈˌ]?)ns/, "$1k$2ə$3m$4ɛ$5ns");
+    // -dependence: ɪndɛpɪnd→ɪndɪpɛnd (independence)
+    if (lowerWord.endsWith("dependence") && lowerWord.length >= 10)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)d([ˈˌ]?)ɛ([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)d/, "$1ɪ$2n$3d$4ɪ$5p$6ɛ$7n$8d");
+    // -constance: kənstæns→kɑnstəns (constance)
+    if (lowerWord.startsWith("const") && lowerWord.endsWith("ance") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)ə([ˈˌ]?)n([ˈˌ]?)s([ˈˌ]?)t([ˈˌ]?)æ([ˈˌ]?)ns/, "$1k$2ɑ$3n$4s$5t$6ə$7ns");
+    // -illiance: ɪɫɪæns→ɪɫjəns (brilliance)
+    if (lowerWord.endsWith("illiance") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)[lɫ]([ˈˌ]?)ɪ([ˈˌ]?)æ([ˈˌ]?)ns$/, "$1ɪ$2ɫ$3j$4ə$5ns");
+    // -voyance: ɔɪæns→ɔɪəns (clairvoyance)
+    if (lowerWord.endsWith("voyance") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)ɔ([ˈˌ]?)ɪ([ˈˌ]?)æ([ˈˌ]?)ns$/, "$1ɔ$2ɪ$3ə$4ns");
+    // -berance: bɪɹəns→bɝəns (exuberance, protuberance)
+    if (lowerWord.endsWith("berance") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)bɪɹ([ˈˌ]?)əns$/, "$1bɝ$2əns");
+    // -verence: vɪɹ→vɝ (reverence, irreverence)
+    if (lowerWord.endsWith("verence") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)vɪɹ([ˈˌ]?)əns$/, "$1vɝ$2əns");
+    // -ndifference: fɪɹ→fɝ (indifference)
+    if (lowerWord.includes("ndifference"))
+      postBase = postBase.replace(/([ˈˌ]?)fɪɹ([ˈˌ]?)əns$/, "$1fɝ$2əns");
     // -locomotion: ɫəkoʊ→ɫoʊkoʊ at start (locomotion)
     if (lowerWord.startsWith("loc") && lowerWord.endsWith("otion") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)k/, "$1ɫ$2oʊ$3k");
