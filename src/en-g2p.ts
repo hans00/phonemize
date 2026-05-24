@@ -5,6 +5,7 @@ import { LanguageProcessor } from "./g2p";
 import { expandText } from "./expand-en";
 import { simplePOSTagger } from "./pos-tagger";
 import { transformAmericanToRP } from "./en-gb";
+import { predictPrincipled } from "./en-principled";
 
 export type EnglishDialect = "en-US" | "en-GB";
 
@@ -472,6 +473,14 @@ export class EnglishG2P implements LanguageProcessor {
   private homographs: HomographDict;
   private disableDict: boolean;
   private dialect: EnglishDialect;
+  /**
+   * Opt-in: route through the principled pipeline (en-principled) when it
+   * produces output. Off by default — the existing predictInternal +
+   * postBase path is the well-tested production code. When this flag is
+   * on, the principled pipeline runs FIRST for each word; if it returns
+   * non-null, its output is used (skipping the legacy path entirely).
+   */
+  private enablePrincipled: boolean;
 
   // LanguageProcessor interface implementation
   readonly id = "en-g2p";
@@ -483,10 +492,15 @@ export class EnglishG2P implements LanguageProcessor {
   readonly supportedLanguages = ["en", "en-US", "en-GB"];
 
   constructor(
-    options: { disableDict?: boolean; dialect?: EnglishDialect } = {},
+    options: {
+      disableDict?: boolean;
+      dialect?: EnglishDialect;
+      enablePrincipled?: boolean;
+    } = {},
   ) {
     this.disableDict = options.disableDict || false;
     this.dialect = options.dialect ?? "en-US";
+    this.enablePrincipled = options.enablePrincipled || false;
     this.dictionary = Object.assign(
       Object.create(null),
       resolveJson<EnDict>(dictionary),
@@ -540,6 +554,25 @@ export class EnglishG2P implements LanguageProcessor {
     const lowerWord = word.toLowerCase();
     if (this.customDict[lowerWord]) {
       return this.customDict[lowerWord];
+    }
+
+    // Principled pipeline (opt-in). Decomposes the word into suffix +
+    // base, looks up the base in dict, and rebuilds the IPA via stress
+    // + reduction rules — skipping the postBase if-chain. Only fires
+    // when the base resolves cleanly via DICT — falling back to rule-
+    // based base prediction here would compound errors (the base rules
+    // have their own mistakes, and stacking stress + reduction on a
+    // wrong base produces worse output than the legacy path).
+    //
+    // When `disableDict` is set (e.g., during eval), this branch is a
+    // no-op, since no base ever resolves. Once P3 ships the compiled
+    // letter-cluster table, the lookup will use that instead of the
+    // raw dict and this path becomes useful in eval too.
+    if (this.enablePrincipled && !this.disableDict) {
+      const principled = predictPrincipled(lowerWord, (w: string) => {
+        return this.dictionary[w];
+      });
+      if (principled) return principled.ipa;
     }
 
     // Extract the region subtag from a BCP 47 tag. Skips an optional

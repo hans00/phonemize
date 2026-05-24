@@ -110,7 +110,7 @@ Runtime: no matrices, no probabilities, no training. Just rules + lookup.
   - [x] P2.1: Stress FSM (81% stress-position accuracy with base lookup; 73% without)
   - [x] P2.2: Vowel reduction (78.7% of unstressed nuclei match reduced-vowel rules)
   - [x] P2.3: End-to-end principled pipeline (predictPrincipled, 81.8% lenient match on the 16% of dict that has a recognized suffix + in-dict base)
-  - [ ] P2.4: Default-on, retire postBase
+  - [x] P2.4 (partial): Integrated into EnglishG2P behind `enablePrincipled` flag. Fires only when base resolves via dict (no compounding errors with rule-based base). No eval regression. Full postBase retirement is blocked on P3 since the eval runs with `disableDict: true`.
 - [ ] P3: Letter-cluster context table
 - [ ] P4: Exception mining
 - [ ] P5: Dict elimination
