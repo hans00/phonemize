@@ -1651,6 +1651,12 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)(l|[bcdfgkmnpqrstvwxzɡɹ])([ˈˌ]?)ɛtɪ$/, "$1oʊ$2$3$4ɛti");
     if (/[bcdfgklmnpqrstvwxz]o[bcdfgklmnpqrstvwxz]elli$/.test(lowerWord) && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)(l|[bcdfgkmnpqrstvwxzɡɹ])([ˈˌ]?)ɛlɪ$/, "$1oʊ$2$3$4ɛli");
+    // German -enberger/-enburger: medial ɪn→ən before -bɝɡɝ (brandenberger, eisenberger, frankenberger)
+    if ((lowerWord.endsWith("enberger") || lowerWord.endsWith("enburger")) && lowerWord.length >= 10)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)bɝɡɝ$/, "$1ə$2n$3bɝɡɝ");
+    // German -erich surnames: ɪɹɪk→ɝɪk (berberich, helmerich, emmerich, dieterich)
+    if (lowerWord.endsWith("erich") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ɹɪk$/, "$1ɝ$2ɪk");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
