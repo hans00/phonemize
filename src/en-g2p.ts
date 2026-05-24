@@ -1138,6 +1138,14 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("ros") && lowerWord.length >= 6 && !/^ros[aei]/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)ɹoʊs/, "$1ɹɑs");
 
+    // sok- Slavic names (length>=6): soʊk → sɑk (sokoloff, sokolov, sokolow, sokolin)
+    if (lowerWord.startsWith("sok") && lowerWord.length >= 6)
+      postBase = postBase.replace(/^([ˈˌ]?)soʊk/, "$1sɑk");
+
+    // top- compound words (length>=6, not tope/topi): toʊp → tɑp (topology, topography, topsoil)
+    if (lowerWord.startsWith("top") && lowerWord.length >= 6 && !/^top[ei]/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)toʊp/, "$1tɑp");
+
     // -ohl- Germanic names: ɑhl → oʊl (bohland, kohler, rohland — silent-h "oh" = /oʊ/)
     if (lowerWord.includes("ohl"))
       postBase = postBase.replace(/ɑhl/g, "oʊl");
