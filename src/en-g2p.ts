@@ -1553,11 +1553,18 @@ export class EnglishG2P implements LanguageProcessor {
     // -aney surnames (not mc-): æni→eɪni (baney, blaney, chaney, franey)
     if (lowerWord.endsWith("aney") && lowerWord.length >= 5 && !/^mc/.test(lowerWord))
       postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)ni$/, "$1eɪ$2ni");
-    // German -eger/-rger surnames: soft-dʒ→hard-ɡ (breger, berger, borger, harger)
-    if ((lowerWord.endsWith("eger") || (lowerWord.endsWith("rger")
-        && !/(?:larger|charger|merger|barger|forger|gorger|sparger|urger)$/.test(lowerWord)))
+    // German/surname -eger/-rger/-lger/-uger/-oger: soft-dʒ→hard-ɡ (berger, bulger, auger, boger)
+    if ((lowerWord.endsWith("eger")
+        || (lowerWord.endsWith("rger") && !/(?:larger|charger|merger|barger|forger|gorger|sparger|urger)$/.test(lowerWord))
+        || (lowerWord.endsWith("lger") && !lowerWord.endsWith("alger"))
+        || (lowerWord.endsWith("uger") && !/(?:gauger|gouger)$/.test(lowerWord))
+        || lowerWord.endsWith("oger"))
         && lowerWord.length >= 5)
       postBase = postBase.replace(/([ˈˌ]?)dʒ([ˈˌ]?)ɝ$/, "$1ɡ$2ɝ");
+    // German blech-/brech-/drech-/buch- compounds: ch=/k/ (blecher, brecher, buchwald, buchsbaum)
+    if ((/^(?:blech[^a]|blech$|brech|drech|frech|grech)/.test(lowerWord) && lowerWord.length >= 5)
+        || (/^buch/.test(lowerWord) && lowerWord.length >= 7 && !/^buchanan/.test(lowerWord)))
+      postBase = postBase.replace(/tʃ/g, "k");
     // Polish -inski: dʒ→ɡ before ɪnski (baginski, roginski)
     if (lowerWord.endsWith("inski") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)dʒ([ˈˌ]?)[ɪi]([ˈˌ]?)nsk[iɪ]$/, "$1ɡ$2ɪ$3nskɪ");
