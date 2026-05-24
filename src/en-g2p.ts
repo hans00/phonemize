@@ -1285,6 +1285,11 @@ export class EnglishG2P implements LanguageProcessor {
     // -auer German names: ɔɝ → aʊɝ (bauer, brauer, sauer, dauer, gauer)
     if (lowerWord.endsWith("auer"))
       postBase = postBase.replace(/ɔɝ$/, "aʊɝ");
+    // chia- Italian names: tʃɪ[ɝæəɑ] → kiɑ (chianti, chiarella, chiappetta, chiavetta)
+    // Exclude: chiapas (Spanish), chiasso/chiasson (Swiss/French), chiang (Chinese), chiat
+    if (lowerWord.startsWith("chia") && lowerWord.length >= 5
+        && !/^(chiapas|chiass|chiang|chiat)/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)tʃɪ[ɝæəɑ]/, "$1kiɑ");
     // schia- Italian names: ʃɪæ → skiɑ (schiavo, schiavi, schiappa, schiavone)
     if (lowerWord.startsWith("schia"))
       postBase = postBase.replace(/^([ˈˌ]?)ʃɪæ/, "$1skiɑ");
