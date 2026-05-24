@@ -1326,10 +1326,11 @@ export class EnglishG2P implements LanguageProcessor {
     // Italian/Spanish -aro: ɝ → ɔɹ (alfaro, alvaro, amaro, arcaro — Spanish/Italian ar)
     if (lowerWord.endsWith("aro") && lowerWord.length >= 5)
       postBase = postBase.replace(/ɝ/g, "ɔɹ");
-    // Italian/Spanish -oria/-orio/-orial/-orian/-ario: ɝɪ → ɔɹɪ
-    // (astoria, euphoria, memorial, editorial, historian, mario, rosario)
-    if ((/ori[ao][ln]?$/.test(lowerWord) || lowerWord.endsWith("ario")) && lowerWord.length >= 6)
-      postBase = postBase.replace(/ɝɪ/, "ɔɹɪ");
+    // Italian/Spanish -oria/-orio/-orial/-orian/-ario/-oriander: ɝ([ˈˌ]?)ɪ → ɔɹ$1ɪ
+    // (astoria, euphoria, memorial, editorial, historian, mario, rosario, coriander)
+    if ((/ori[ao][ln]?$/.test(lowerWord) || lowerWord.endsWith("ario")
+        || lowerWord.endsWith("oriander")) && lowerWord.length >= 6)
+      postBase = postBase.replace(/ɝ([ˈˌ]?)ɪ/, "ɔɹ$1ɪ");
     // chia- Italian names: tʃɪ[ɝæəɑ] → kiɑ (chianti, chiarella, chiappetta, chiavetta)
     // Exclude: chiapas (Spanish), chiasso/chiasson (Swiss/French), chiang (Chinese), chiat
     if (lowerWord.startsWith("chia") && lowerWord.length >= 5
@@ -1389,6 +1390,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -thouse compound: ðaʊs → thaʊs (boathouse, lighthouse, outhouse, hothouse, guesthouse)
     if (lowerWord.endsWith("thouse") && lowerWord.length >= 7)
       postBase = postBase.replace(/ðaʊs$/, "thaʊs");
+    // German -enstein: ɛnstaɪn → ənstaɪn (frankenstein, eisenstein, fleckenstein, grabenstein)
+    if (lowerWord.endsWith("enstein") && lowerWord.length >= 8)
+      postBase = postBase.replace(/ɛnstaɪn$/, "ənstaɪn");
     // -worth compound: tuɹθ → twɝθ (networth, wentworth, whitworth, atworth, klintworth)
     if (lowerWord.endsWith("worth") && lowerWord.length >= 6)
       postBase = postBase.replace(/tuɹθ$/, "twɝθ");
