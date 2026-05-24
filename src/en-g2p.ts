@@ -2157,6 +2157,45 @@ export class EnglishG2P implements LanguageProcessor {
     // -generative: dʒɪnɪɹ→dʒɛnɝ (generative, degenerative)
     if (lowerWord.endsWith("generative") && lowerWord.length >= 10)
       postBase = postBase.replace(/([ˈˌ]?)d([ˈˌ]?)ʒ([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)ɪ([ˈˌ]?)ɹ/, "$1d$2ʒ$3ɛ$4n$5ɝ");
+    // -erative: ɪɹ→ɝ (operative, federative, recuperative, remunerative, inoperative)
+    if (lowerWord.endsWith("erative") && lowerWord.length >= 8 && !lowerWord.startsWith("imp"))
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)ə([ˈˌ]?)t([ˈˌ]?)ɪ([ˈˌ]?)v$/, "$1ɝ$2ə$3t$4ɪ$5v");
+    // -ligator: əɫɪɡ→æɫəɡ at start (alligator)
+    if (lowerWord.endsWith("ligator") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)[lɫ]([ˈˌ]?)ɪ([ˈˌ]?)ɡ/, "$1æ$2ɫ$3ə$4ɡ");
+    // -ctivator: əktɪv→æktəv at start (activator)
+    if (lowerWord.endsWith("ctivator") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)k([ˈˌ]?)t([ˈˌ]?)ɪ([ˈˌ]?)v/, "$1æ$2k$3t$4ə$5v");
+    // -locator: əɫoʊk→æɫək at start (allocator)
+    if (lowerWord.endsWith("locator") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)[lɫ]([ˈˌ]?)oʊ([ˈˌ]?)k/, "$1æ$2ɫ$3ə$4k");
+    // -plicator: əpɫɪk→æpɫək at start (applicator)
+    if (lowerWord.endsWith("plicator") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)p([ˈˌ]?)[lɫ]([ˈˌ]?)ɪ([ˈˌ]?)k/, "$1æ$2p$3ɫ$4ə$5k");
+    // -notator: ɑnoʊt→ænət at start (annotator)
+    if (lowerWord.endsWith("notator") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)ɑ([ˈˌ]?)n([ˈˌ]?)oʊ([ˈˌ]?)t/, "$1æ$2n$3ə$4t");
+    // -mentator: kəmɛnt→kɑmənt at start (commentator)
+    if (lowerWord.endsWith("mentator") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)ə([ˈˌ]?)m([ˈˌ]?)ɛ([ˈˌ]?)n([ˈˌ]?)t/, "$1k$2ɑ$3m$4ə$5n$6t");
+    // -detonator: dɪtoʊn→dɛtən at start (detonator)
+    if (lowerWord.endsWith("detonator") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)oʊ([ˈˌ]?)n/, "$1d$2ɛ$3t$4ə$5n");
+    // -decorator: dɪkɔɹ→dɛkɝ at start (decorator)
+    if (lowerWord.endsWith("decorator") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)k([ˈˌ]?)ɔɹ/, "$1d$2ɛ$3k$4ɝ");
+    // -aborator: bɔɹeɪ→bɝeɪ (collaborator)
+    if ((lowerWord.endsWith("oborator") || lowerWord.endsWith("aborator")) && lowerWord.length >= 10)
+      postBase = postBase.replace(/([ˈˌ]?)b([ˈˌ]?)ɔɹ([ˈˌ]?)eɪ/, "$1b$2ɝ$3eɪ");
+    // -spirator: spɪɹeɪt→spɪɹət (conspirator)
+    if (lowerWord.endsWith("spirator") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)s([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)eɪ([ˈˌ]?)t/, "$1s$2p$3ɪ$4ɹ$5ə$6t");
+    // -servator: veɪt→vət (conservator)
+    if (lowerWord.endsWith("servator") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)v([ˈˌ]?)eɪ([ˈˌ]?)t([ˈˌ]?)ɝ$/, "$1v$2ə$3t$4ɝ");
+    // -nominator: dɪnəmɪn→dɪnɑmən (denominator)
+    if (lowerWord.endsWith("nominator") && lowerWord.length >= 10)
+      postBase = postBase.replace(/^([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)ə([ˈˌ]?)m([ˈˌ]?)ɪ([ˈˌ]?)n/, "$1d$2ɪ$3n$4ɑ$5m$6ə$7n");
     // -locomotion: ɫəkoʊ→ɫoʊkoʊ at start (locomotion)
     if (lowerWord.startsWith("loc") && lowerWord.endsWith("otion") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)k/, "$1ɫ$2oʊ$3k");
