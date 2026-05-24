@@ -1830,6 +1830,9 @@ export class EnglishG2P implements LanguageProcessor {
     // detriment: dɪtɹɪ→dɛtɹə at start (detriment, detrimental)
     if (lowerWord.startsWith("detri") && lowerWord.endsWith("ment") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)ɹ([ˈˌ]?)ɪ/, "$1d$2ɛ$3t$4ɹ$5ə");
+    // -erate verbs: ɪɹeɪt→ɝeɪt (recuperate, regenerate, reverberate, remunerate, refrigerate)
+    if (lowerWord.endsWith("erate") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)eɪt$/, "$1ɝ$2eɪt");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
