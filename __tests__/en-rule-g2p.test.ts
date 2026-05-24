@@ -41,8 +41,9 @@ describe('G2P rule fixes', () => {
   });
 
   it('sch → /ʃ/ (German default; English sch words like schema/school are in dict)', () => {
-    expect(g2p.predict('schmaltz', 'en')).toMatch(/^ʃ/);
-    expect(g2p.predict('schmidt', 'en')).toMatch(/^ʃ/);
+    // Rules now emit primary stress on monosyllables, hence the optional ˈ.
+    expect(g2p.predict('schmaltz', 'en')).toMatch(/^ˈ?ʃ/);
+    expect(g2p.predict('schmidt', 'en')).toMatch(/^ˈ?ʃ/);
   });
 
   it('^al$ only fires for doubled-l syllables (calculator has no /ɔl/)', () => {
