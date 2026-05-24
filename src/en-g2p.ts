@@ -1303,6 +1303,9 @@ export class EnglishG2P implements LanguageProcessor {
     // Exclude -hero (superhero) which uses /hɪɹoʊ/ not Spanish /ɛɹoʊ/
     if (lowerWord.endsWith("ero") && lowerWord.length >= 5 && !lowerWord.endsWith("hero"))
       postBase = postBase.replace(/ɪɹoʊ$/, "ɛɹoʊ");
+    // Spanish -ez patronymics: final əz → ɛz (lopez, enriquez, alvidrez, avilez)
+    if (lowerWord.endsWith("ez") && lowerWord.length >= 4)
+      postBase = postBase.replace(/əz$/, "ɛz");
     // -well compound names: uəl/wəl/oʊəl → wɛl (bakewell, bracewell, caldwell, honeywell)
     // Exclude: ho/lo/no/po/cr/mc/mac/ro-well (howell, lowell, nowell, powell, crowell, mcdowell)
     // and n/s/j/e-ewell (newell, sewell, jewell)
