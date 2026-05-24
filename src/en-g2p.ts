@@ -1306,6 +1306,10 @@ export class EnglishG2P implements LanguageProcessor {
     // Spanish -ez patronymics: final əz → ɛz (lopez, enriquez, alvidrez, avilez)
     if (lowerWord.endsWith("ez") && lowerWord.length >= 4)
       postBase = postBase.replace(/əz$/, "ɛz");
+    // -ois French names: ɔɪs → wɑ (brisbois, gadbois, valois, salois)
+    // Exclude -uois (iroquois → /kwɔɪs/ produces double-w artifact)
+    if (lowerWord.endsWith("ois") && lowerWord.length >= 5 && !lowerWord.endsWith("uois"))
+      postBase = postBase.replace(/ɔɪs$/, "wɑ");
     // -eux French names: juks → oʊ (lamoreux, leleux, mayeux, veilleux)
     if (lowerWord.endsWith("eux") && lowerWord.length >= 5)
       postBase = postBase.replace(/juks$/, "oʊ");
