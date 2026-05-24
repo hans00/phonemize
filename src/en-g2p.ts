@@ -1510,8 +1510,15 @@ export class EnglishG2P implements LanguageProcessor {
     // German -wald: wəld→wɔld (edwald, gruenwald)
     if (/wald$/.test(lowerWord) && lowerWord.length >= 6)
       postBase = postBase.replace(/wə([ˈˌ]?)ld$/, "wɔ$1ld");
+    // German -eit- surnames (not reit/feit/reitera/-a endings): eɪt→aɪt (deitch, deitrich, geitz, schweitzer)
+    if (/eit/.test(lowerWord) && !/reit/.test(lowerWord) && !/feit/.test(lowerWord)
+        && !/reitera/.test(lowerWord) && !lowerWord.endsWith("a") && lowerWord.length >= 4)
+      postBase = postBase.replace(/eɪt/, "aɪt");
     // -elman compound surnames: ɛlmən→əlmən (adelman, appelman, bockelman, begelman)
     if (lowerWord.endsWith("elman") && lowerWord.length >= 7)
+      postBase = postBase.replace(/ɛl([ˈˌ]?)mən$/, "əl$1mən");
+    // -elmann compound surnames (German double-n): ɛlmən→əlmən (adelmann, kieselmann)
+    if (lowerWord.endsWith("elmann") && lowerWord.length >= 8)
       postBase = postBase.replace(/ɛl([ˈˌ]?)mən$/, "əl$1mən");
     // -el[std]on/en surnames: ɛl→əl (adelson, hazelton, berthelsen, cannelton)
     if (/el[std](?:on|en)$/.test(lowerWord) && lowerWord.length >= 7)
