@@ -1464,6 +1464,9 @@ export class EnglishG2P implements LanguageProcessor {
     // German -wald: wəld→wɔld (edwald, gruenwald)
     if (/wald$/.test(lowerWord) && lowerWord.length >= 6)
       postBase = postBase.replace(/wə([ˈˌ]?)ld$/, "wɔ$1ld");
+    // -elman compound surnames: ɛlmən→əlmən (adelman, appelman, bockelman, begelman)
+    if (lowerWord.endsWith("elman") && lowerWord.length >= 7)
+      postBase = postBase.replace(/ɛl([ˈˌ]?)mən$/, "əl$1mən");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
