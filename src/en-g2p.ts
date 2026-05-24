@@ -1568,20 +1568,20 @@ export class EnglishG2P implements LanguageProcessor {
       return Math.max(0, syllables.length - 2);
     }
 
-    // Common prefixes that don't usually take stress
+    // Common prefixes that don't usually take stress. For 3+ syllable
+    // words we use the orthographic prefix as a signal but rely on the
+    // doubled-consonant guard to avoid false matches (e.g. "address"
+    // wouldn't fire because "addr" has doubled d).
     const unstressedPrefixes = [
-      "un",
-      "re",
-      "pre",
-      "dis",
-      "mis",
-      "under",
-      "out",
+      "ab", "ad", "con", "com", "de", "dis", "ex", "in", "mis",
+      "ob", "out", "pre", "pro", "re", "sub", "un", "under",
     ];
     for (const prefix of unstressedPrefixes) {
-      if (lowerWord.startsWith(prefix) && syllables.length > 2) {
-        return 1; // Stress usually falls on the root, not the prefix
-      }
+      if (!lowerWord.startsWith(prefix) || syllables.length <= 2) continue;
+      const next = lowerWord[prefix.length];
+      const last = prefix[prefix.length - 1];
+      if (next === last) continue; // doubled boundary → single morpheme
+      return 1; // Stress usually falls on the root, not the prefix
     }
 
     // For 2-syllable words, generally stress the first syllable unless
