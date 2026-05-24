@@ -1676,6 +1676,9 @@ export class EnglishG2P implements LanguageProcessor {
     // Italian -ori surnames: oʊɹi→ɔɹi (sartori, gregori, komori, hattori)
     if (lowerWord.endsWith("ori") && lowerWord.length >= 5)
       postBase = postBase.replace(/([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)ɹ([ˈˌ]?)i$/, "$1ɔ$3ɹ$4i");
+    // Spanish/Italian -era surnames: ɪɹə→ɛɹə (carrera, ranchera, cabrera, herrera)
+    if (lowerWord.endsWith("era") && lowerWord.length >= 5)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)ə$/, "$1ɛ$2ɹ$3ə");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
