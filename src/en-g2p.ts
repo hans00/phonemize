@@ -1584,16 +1584,27 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
 
-    // For 2-syllable words, generally stress the first syllable unless it's a weak prefix.
-    // Check the first SYLLABLE (not the raw word) so that "bet·ter" doesn't
-    // false-match the "be" prefix and stress the wrong syllable.
+    // For 2-syllable words, generally stress the first syllable unless
+    // it's a weak Latin/Anglo-Saxon prefix on a productive root. Two
+    // signals tell us a prefix-looking syllable is actually a prefix:
+    //   1. The first syllable string equals one of the known prefixes
+    //      exactly (not a substring; "be" matches "be·gin" not "bet·ter").
+    //   2. The character right after the prefix in the orthography is
+    //      *not* the prefix's own final consonant — i.e., no doubled
+    //      consonant at the morpheme boundary. Doubled consonants
+    //      (abbey, adder, addict-noun-form, common) signal a single
+    //      morpheme keeping first-syllable stress.
     if (syllables.length === 2) {
       const firstSyl = syllables[0];
-      if (
-        ["be", "de", "re", "un", "in", "ex", "pre"].some(
-          (prefix) => firstSyl === prefix,
-        )
-      ) {
+      const PREFIXES_2SYL = [
+        "ab", "ad", "be", "con", "com", "de", "dis", "ex", "in",
+        "ob", "pre", "pro", "re", "sub", "un",
+      ];
+      for (const prefix of PREFIXES_2SYL) {
+        if (firstSyl !== prefix) continue;
+        const next = lowerWord[prefix.length];
+        const last = prefix[prefix.length - 1];
+        if (next === last) break; // doubled consonant → not a prefix
         return 1;
       }
       return 0;
