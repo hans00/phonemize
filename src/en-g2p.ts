@@ -1710,6 +1710,15 @@ export class EnglishG2P implements LanguageProcessor {
     // -onian: initial ə→æ before m/p (amazonian, apollonian)
     if (lowerWord.endsWith("onian") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)(m|p)/, "$1æ$2$3");
+    // -esian: sɪən→ʒən (artesian, cartesian, indonesian, polynesian, rhodesian)
+    if (lowerWord.endsWith("esian") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)s([ˈˌ]?)ɪ([ˈˌ]?)ən$/, "$1ʒ$2ən");
+    // -atian demonyms: ətɪən→eɪʃən (alsatian, dalmatian, sarmatian)
+    if (lowerWord.endsWith("atian") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)t([ˈˌ]?)ɪ([ˈˌ]?)ən$/, "$1eɪ$2ʃ$3ən");
+    // -sian demonyms: əsɪən→eɪʒən (caucasian)
+    if (lowerWord.endsWith("sian") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)s([ˈˌ]?)ɪ([ˈˌ]?)ən$/, "$1eɪ$2ʒ$3ən");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
