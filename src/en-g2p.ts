@@ -1169,6 +1169,11 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("ober"))
       postBase = postBase.replace(/^([ˈˌ]?)əbɝ/, "$1oʊbɝ");
 
+    // Xar- names: Xæɹ → Xɑɹ for b/f/h/m/n/r/t/v/w (baron, farago, haraway, maran, naron, tarheel, varon, warhurst)
+    // Excludes bare/bari/mare/mari/vare/vari where native English /æɹ/ is correct
+    if (/^[bfhmnrtvw]ar/.test(lowerWord) && !/^[bmv]ar[ei]/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)([bfhmnrtvw])æ([ˈˌ]?)ɹ/, "$1$2ɑ$3ɹ");
+
     // ex- before consonant: ɪks → ɛks (excellence, excavate, extant, exboyfriend)
     // Exclude exp- and exc+consonant (typically unstressed in those)
     if (lowerWord.startsWith("ex") && !/^ex[aeiou]/.test(lowerWord) &&
