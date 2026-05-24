@@ -1399,6 +1399,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -sworth compound: swɝθ → zwɝθ (ellingsworth, hollingsworth, haynesworth, bloodsworth)
     if (lowerWord.endsWith("sworth") && lowerWord.length >= 7)
       postBase = postBase.replace(/swɝθ$/, "zwɝθ");
+    // -enberry compound: ɛnbɛɹi → ənbɛɹi (christenberry, frankenberry, faulkenberry, eikenberry)
+    if (lowerWord.endsWith("enberry") && lowerWord.length >= 8)
+      postBase = postBase.replace(/ɛnbɛɹi$/, "ənbɛɹi");
+    // German -nberg: ɪnbɝɡ → ənbɝɡ (eisenberg, greenberg, katzenberg, gutenberg, ehrenberg)
+    if (lowerWord.endsWith("nberg") && lowerWord.length >= 6)
+      postBase = postBase.replace(/ɪnbɝɡ$/, "ənbɝɡ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
