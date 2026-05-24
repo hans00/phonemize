@@ -109,7 +109,7 @@ Runtime: no matrices, no probabilities, no training. Just rules + lookup.
   - [x] P2.0: Suffix table + decomposer (51% base recovery, 94% IPA tail match)
   - [x] P2.1: Stress FSM (81% stress-position accuracy with base lookup; 73% without)
   - [x] P2.2: Vowel reduction (78.7% of unstressed nuclei match reduced-vowel rules)
-  - [ ] P2.3: Integration behind flag
+  - [x] P2.3: End-to-end principled pipeline (predictPrincipled, 81.8% lenient match on the 16% of dict that has a recognized suffix + in-dict base)
   - [ ] P2.4: Default-on, retire postBase
 - [ ] P3: Letter-cluster context table
 - [ ] P4: Exception mining

@@ -23,7 +23,7 @@
  */
 
 const VOWELS = new Set("aeiouæɛɪɔʊʌəɝ");
-const LONG_VOWEL_STARTS = new Set("eoau"); // start char of eɪ, oʊ, aɪ, aʊ, ɔɪ
+const LONG_VOWEL_STARTS = new Set("eoauɔ"); // start char of eɪ, oʊ, aɪ, aʊ, ɔɪ
 const DIPHTHONG_FOLLOWERS = new Set("ɪʊ"); // second char of eɪ, oʊ, aɪ, aʊ, ɔɪ
 
 /**
