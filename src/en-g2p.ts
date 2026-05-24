@@ -1698,6 +1698,15 @@ export class EnglishG2P implements LanguageProcessor {
     // -stine: reduce taɪn→tin (clandestine, ernestine, philistine, predestine, bridenstine)
     if (lowerWord.endsWith("stine") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)t([ˈˌ]?)aɪn$/, "$1t$2in");
+    // -adian demonyms: ə→eɪ before dɪən$ (arcadian, akkadian, canadian, circadian)
+    if (lowerWord.endsWith("adian") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)ən$/, "$1eɪ$2d$3ɪ$4ən");
+    // -anian demonyms: ə→eɪ before nɪən$ (albanian, romanian, jordanian, tanzanian)
+    if (lowerWord.endsWith("anian") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)n([ˈˌ]?)ɪ([ˈˌ]?)ən$/, "$1eɪ$2n$3ɪ$4ən");
+    // -alian demonyms: əlɪən→eɪlɪən$ (australian, mammalian)
+    if (lowerWord.endsWith("alian") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)l([ˈˌ]?)ɪ([ˈˌ]?)ən$/, "$1eɪ$2l$3ɪ$4ən");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
