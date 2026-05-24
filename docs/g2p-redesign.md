@@ -105,13 +105,16 @@ Runtime: no matrices, no probabilities, no training. Just rules + lookup.
 
 - [x] Architecture agreed
 - [x] **P1**: Aligner (98.14% coverage, 11K contexts, 430 atoms — see results below)
-- [ ] **P2**: Suffix table + stress shift + reduction
+- [x] **P2**: Suffix table + stress shift + reduction
   - [x] P2.0: Suffix table + decomposer (51% base recovery, 94% IPA tail match)
   - [x] P2.1: Stress FSM (81% stress-position accuracy with base lookup; 73% without)
   - [x] P2.2: Vowel reduction (78.7% of unstressed nuclei match reduced-vowel rules)
   - [x] P2.3: End-to-end principled pipeline (predictPrincipled, 81.8% lenient match on the 16% of dict that has a recognized suffix + in-dict base)
-  - [x] P2.4 (partial): Integrated into EnglishG2P behind `enablePrincipled` flag. Fires only when base resolves via dict (no compounding errors with rule-based base). No eval regression. Full postBase retirement is blocked on P3 since the eval runs with `disableDict: true`.
-- [ ] P3: Letter-cluster context table
+  - [x] P2.4 (partial): Integrated into EnglishG2P behind `enablePrincipled` flag. Fires only when base resolves via dict (no compounding errors with rule-based base). No eval regression. Full postBase retirement is blocked on a higher-quality LTS than P3 currently produces.
+- [x] **P3**: Letter-cluster context table
+  - [x] P3.0: Compiler (`scripts/compile-lts.ts`) produces `data/en/lts.json` from alignments — 13K full-context entries + 3 backoff levels, 235KB
+  - [x] P3.1: Runtime lookup (`predictByLTS(word)`) walks longest-match clusters with context backoff
+  - [x] P3.2: Integration measured. **LTS alone: 21.5% exact, 59.7% lenient** — currently *worse* than the legacy rule pipeline (75.4% lenient), so wiring it in as the base provider regresses the eval by -6.6% lenient. Reverted to dict-only base lookup for now; LTS remains an opt-in tool. Improving LTS quality (richer context, joint-sequence model, better atom curation) is the prerequisite for unblocking P2.4 / P5.
 - [ ] P4: Exception mining
 - [ ] P5: Dict elimination
 
