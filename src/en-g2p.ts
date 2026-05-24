@@ -1722,6 +1722,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -urian: ɝɪən→ʊɹiən (arthurian, timurian, venturian)
     if (lowerWord.endsWith("urian") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)ɝ([ˈˌ]?)ɪ([ˈˌ]?)ən$/, "$1ʊɹ$2iən");
+    // -sory: ɔɹi→ɝi (compulsory, extrasensory)
+    if (lowerWord.endsWith("sory") && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)ɔ([ˈˌ]?)ɹi$/, "$1ɝi");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
