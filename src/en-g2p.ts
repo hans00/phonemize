@@ -1833,6 +1833,15 @@ export class EnglishG2P implements LanguageProcessor {
     // -erate verbs: ɪɹeɪt→ɝeɪt (recuperate, regenerate, reverberate, remunerate, refrigerate)
     if (lowerWord.endsWith("erate") && lowerWord.length >= 8)
       postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)eɪt$/, "$1ɝ$2eɪt");
+    // -anger: ændʒɝ→eɪndʒɝ (danger, endanger)
+    if (lowerWord.endsWith("anger") && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)n([ˈˌ]?)dʒ([ˈˌ]?)ɝ$/, "$1eɪ$2n$3dʒ$4ɝ");
+    // -etitious: ɪpɛtɪʃəs→ɛpətɪʃəs (repetitious)
+    if (lowerWord.endsWith("etitious") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)p([ˈˌ]?)ɛ([ˈˌ]?)t([ˈˌ]?)ɪ([ˈˌ]?)ʃ([ˈˌ]?)əs$/, "$1ɛ$2p$3ə$4t$5ɪ$6ʃ$7əs");
+    // -editious: ɪkspɛdɪʃəs→ɛkspədɪʃəs (expeditious)
+    if (lowerWord.endsWith("editious") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ks([ˈˌ]?)p([ˈˌ]?)ɛ([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)ʃ([ˈˌ]?)əs$/, "$1ɛ$2ks$3p$4ə$5d$6ɪ$7ʃ$8əs");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
