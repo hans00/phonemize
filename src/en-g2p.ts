@@ -1183,6 +1183,18 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("ral"))
       postBase = postBase.replace(/^([ˈˌ]?)ɹæl/, "$1ɹɑl");
 
+    // gian- Italian names: dʒɪæn → dʒɑn (gianni, giannini, giancarlo, giancola)
+    if (lowerWord.startsWith("gian"))
+      postBase = postBase.replace(/^([ˈˌ]?)dʒɪæn/, "$1dʒɑn");
+
+    // bost- place names: boʊst → bɑst (boston, bostic, boster, bostrom — not bostick/bostock)
+    if (lowerWord.startsWith("bost"))
+      postBase = postBase.replace(/^([ˈˌ]?)boʊst/, "$1bɑst");
+
+    // -owski Polish names: oʊskɪ → ɔfski (bakowski, bankowski, bobrowski, markowski)
+    if (lowerWord.endsWith("owski"))
+      postBase = postBase.replace(/oʊskɪ$/, "ɔfski");
+
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
   }
