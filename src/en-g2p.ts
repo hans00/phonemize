@@ -1580,7 +1580,19 @@ export class EnglishG2P implements LanguageProcessor {
       // sz→ʃ: Polish digraph 'sz' = /ʃ/; stress mark may split s and z in IPA output
       if (lowerWord.includes("sz"))
         postBase = postBase.replace(/s([ˈˌ]?)z/g, "$1ʃ");
+      // -cinski: Polish 'ci' before '-nski' = /tʃ/ (kocinski, kapuscinski, rucinski)
+      if (lowerWord.endsWith("cinski"))
+        postBase = postBase.replace(/([ˈˌ]?)sɪ([ˈˌ]?)nsk/, "$1stʃɪ$2nsk");
     }
+    // German bau- surnames: initial schwa-reduction corrected (baumeister, bauserman, baucum)
+    if (/^bau/.test(lowerWord) && lowerWord.length >= 6)
+      postBase = postBase.replace(/^([ˈˌ]?)bə/, "$1baʊ");
+    // German au- initial (auk-/aus-/auz-): ə→aʊ in reduced first syllable (aukerman, ausherman)
+    if (/^au[kszb]/.test(lowerWord) && lowerWord.length >= 7)
+      postBase = postBase.replace(/^([ˈˌ]?)ə/, "$1aʊ");
+    // German -linger surnames: schwa before -lɪŋɝ→oʊ (bolinger, dolinger, solinger)
+    if (lowerWord.endsWith("linger") && lowerWord.length >= 7 && !/^ol/.test(lowerWord))
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)lɪŋɝ$/, "$1oʊ$2lɪŋɝ");
     // -stair surnames: stɝ→stɛɹ (alistair, alastair, westair)
     if (lowerWord.endsWith("stair") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)stɝ$/, "$1stɛɹ");
