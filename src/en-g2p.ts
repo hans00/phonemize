@@ -1402,6 +1402,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -enberry compound: ɛnbɛɹi → ənbɛɹi (christenberry, frankenberry, faulkenberry, eikenberry)
     if (lowerWord.endsWith("enberry") && lowerWord.length >= 8)
       postBase = postBase.replace(/ɛnbɛɹi$/, "ənbɛɹi");
+    // German -en- schwa reduction: -enmann/-enfield/-enbach (eisenmann, battenfield, eisenbach)
+    if (/en(?:mann|field|bach)$/.test(lowerWord) && lowerWord.length >= 7)
+      postBase = postBase.replace(/ɛn(mən|fild|bɑk)$/, "ən$1");
     // German -nberg/-enburg: ɪnbɝɡ → ənbɝɡ (eisenberg, greenberg, katzenberg; ellenburg, dillenburg)
     if ((lowerWord.endsWith("nberg") || lowerWord.endsWith("enburg")) && lowerWord.length >= 6)
       postBase = postBase.replace(/ɪnbɝɡ$/, "ənbɝɡ");
