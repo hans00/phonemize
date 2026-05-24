@@ -1944,6 +1944,36 @@ export class EnglishG2P implements LanguageProcessor {
     // -xperiment: ɛkspɪɹɪm→ɪkspɛɹəm (experiment)
     if (lowerWord.endsWith("xperiment") && lowerWord.length >= 10)
       postBase = postBase.replace(/^([ˈˌ]?)ɛ([ˈˌ]?)ks([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)ɪ([ˈˌ]?)m/, "$1ɪ$2ks$3p$4ɛ$5ɹ$6ə$7m");
+    // -emissary: ɪmɪ→ɛmə at start (emissary)
+    if (lowerWord.startsWith("em") && lowerWord.endsWith("ary") && lowerWord.length >= 7)
+      postBase = postBase.replace(/^([ˈˌ]?)ɪ([ˈˌ]?)m([ˈˌ]?)ɪ/, "$1ɛ$2m$3ə");
+    // -ategory: keɪtɪɡ→kætəɡ (category)
+    if (lowerWord.endsWith("egory") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)eɪ([ˈˌ]?)t([ˈˌ]?)ɪ([ˈˌ]?)ɡ/, "$1k$2æ$3t$4ə$5ɡ");
+    // -aboratory: ɫəbɔɹ→ɫæbɹ (laboratory)
+    if (lowerWord.endsWith("boratory") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)b([ˈˌ]?)ɔ([ˈˌ]?)ɹ/, "$1ɫ$2æ$3b$4ɹ");
+    // -apillary: kɑpɪɫ→kæpəɫ (capillary)
+    if (lowerWord.endsWith("pillary") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)ɑ([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)[lɫ]/, "$1k$2æ$3p$4ə$5ɫ");
+    // -ommissary: kəmɪ→kɑmə (commissary)
+    if (lowerWord.endsWith("missary") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)ə([ˈˌ]?)m([ˈˌ]?)ɪ/, "$1k$2ɑ$3m$4ə");
+    // -ometary: koʊmɪt→kɑmət (cometary)
+    if (lowerWord.endsWith("metary") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)m([ˈˌ]?)ɪ([ˈˌ]?)t/, "$1k$2ɑ$3m$4ə$5t");
+    // -isciplinary: dɪsɪpɫɪn→dɪsəpɫən (disciplinary)
+    if (lowerWord.endsWith("sciplinary") && lowerWord.length >= 10)
+      postBase = postBase.replace(/([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)s([ˈˌ]?)ɪ([ˈˌ]?)p([ˈˌ]?)[lɫ]([ˈˌ]?)ɪ([ˈˌ]?)n/, "$1d$2ɪ$3s$4ə$5p$6ɫ$7ə$8n");
+    // -dromedary: dɹoʊmɪd→dɹɑməd (dromedary)
+    if (lowerWord.endsWith("omedary") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)d([ˈˌ]?)ɹ([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)m([ˈˌ]?)ɪ([ˈˌ]?)d/, "$1d$2ɹ$3ɑ$4m$5ə$6d");
+    // -olfactory: əɫfækt→oʊɫfækt (olfactory)
+    if (lowerWord.endsWith("lfactory") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)[lɫ]([ˈˌ]?)f([ˈˌ]?)æ([ˈˌ]?)k([ˈˌ]?)t/, "$1oʊ$2ɫ$3f$4æ$5k$6t");
+    // -derogatory: dɪɹoʊɡ→dɝɑɡ (derogatory)
+    if (lowerWord.endsWith("ogatory") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)ɡ/, "$1d$2ɝ$3ɑ$4ɡ");
     // -locomotion: ɫəkoʊ→ɫoʊkoʊ at start (locomotion)
     if (lowerWord.startsWith("loc") && lowerWord.endsWith("otion") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)k/, "$1ɫ$2oʊ$3k");
