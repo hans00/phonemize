@@ -248,12 +248,51 @@ for (const c of nativeCands.slice(0, 15)) {
   console.log(`  ed=${c.ed.toString().padStart(2)}  ${c.word.padEnd(20)} dict=${c.dictIpa.padEnd(25)} pred=${c.predIpa}`);
 }
 
-// Write at threshold=2 (full coverage)
-const exceptionMap: Record<string, string> = {};
-for (const c of candidates) exceptionMap[c.word] = c.dictIpa;
+// ─── Output files ──────────────────────────────────────────────────────
+//
+// 1. exception-candidates.json — full investigation set (everything ed≥2);
+//    not shipped, used for analysis and downstream curation.
+// 2. exceptions.json — the *canonical* runtime exception table, generated
+//    using the hybrid policy: ship ALL foreign-origin candidates plus
+//    native candidates above NATIVE_THRESHOLD. This honors the
+//    linguistic reality that foreign borrowings can't be derived from
+//    English rules. Threshold is overridable via CLI:
+//
+//      yarn ts-node scripts/mine-exceptions.ts --native-min 4
+const cliMin = (() => {
+  const idx = process.argv.indexOf("--native-min");
+  if (idx >= 0 && idx + 1 < process.argv.length) {
+    const n = parseInt(process.argv[idx + 1], 10);
+    if (!isNaN(n)) return n;
+  }
+  return 2; // default — preserves dict-level lenient accuracy (99.8%)
+            // at ~22% the size of dict.json. ed≥3 (~304 KB) is also
+            // viable for max compression at the cost of ~13pts lenient.
+})();
+
+const candidatesMap: Record<string, string> = {};
+for (const c of candidates) candidatesMap[c.word] = c.dictIpa;
 writeFileSync(
   "./data/en/exception-candidates.json",
-  JSON.stringify(exceptionMap),
+  JSON.stringify(candidatesMap),
   "utf8"
 );
-console.log(`\nWrote data/en/exception-candidates.json (${candidates.length} entries, ${(JSON.stringify(exceptionMap).length / 1024).toFixed(1)} KB)`);
+console.log(`\nWrote data/en/exception-candidates.json (${candidates.length} entries, ${(JSON.stringify(candidatesMap).length / 1024).toFixed(1)} KB)`);
+
+const shippedCands = candidates.filter(
+  (c: Cand) => c.origin !== "native" || c.ed >= cliMin
+);
+const shippedMap: Record<string, string> = {};
+for (const c of shippedCands) shippedMap[c.word] = c.dictIpa;
+const shippedSize = JSON.stringify(shippedMap).length;
+writeFileSync(
+  "./data/en/exceptions.json",
+  JSON.stringify(shippedMap),
+  "utf8"
+);
+console.log(
+  `Wrote data/en/exceptions.json (hybrid policy: all foreign + native ed≥${cliMin}): ${shippedCands.length} entries, ${(shippedSize / 1024).toFixed(1)} KB`
+);
+const shippedForeign = shippedCands.filter((c: Cand) => c.origin !== "native").length;
+const shippedNative = shippedCands.length - shippedForeign;
+console.log(`  breakdown: ${shippedForeign} foreign + ${shippedNative} native`);

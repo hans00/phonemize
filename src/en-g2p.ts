@@ -6,6 +6,7 @@ import { expandText } from "./expand-en";
 import { simplePOSTagger } from "./pos-tagger";
 import { transformAmericanToRP } from "./en-gb";
 import { predictPrincipled } from "./en-principled";
+import { lookupException } from "./en-exceptions";
 
 export type EnglishDialect = "en-US" | "en-GB";
 
@@ -481,6 +482,14 @@ export class EnglishG2P implements LanguageProcessor {
    * non-null, its output is used (skipping the legacy path entirely).
    */
   private enablePrincipled: boolean;
+  /**
+   * Opt-in: consult the compact exceptions table (data/en/exceptions.json,
+   * ~300 KB / 13K entries) for foreign-origin words and native English
+   * irregulars whose rule predictions deviate far from the dict. Intended
+   * as the eventual replacement for the 2.7 MB dict.json. Off by default
+   * during the transition.
+   */
+  private useExceptions: boolean;
 
   // LanguageProcessor interface implementation
   readonly id = "en-g2p";
@@ -496,11 +505,13 @@ export class EnglishG2P implements LanguageProcessor {
       disableDict?: boolean;
       dialect?: EnglishDialect;
       enablePrincipled?: boolean;
+      useExceptions?: boolean;
     } = {},
   ) {
     this.disableDict = options.disableDict || false;
     this.dialect = options.dialect ?? "en-US";
     this.enablePrincipled = options.enablePrincipled || false;
+    this.useExceptions = options.useExceptions || false;
     this.dictionary = Object.assign(
       Object.create(null),
       resolveJson<EnDict>(dictionary),
@@ -554,6 +565,17 @@ export class EnglishG2P implements LanguageProcessor {
     const lowerWord = word.toLowerCase();
     if (this.customDict[lowerWord]) {
       return this.customDict[lowerWord];
+    }
+
+    // Compact exceptions table (opt-in). When enabled and dict is
+    // disabled, this is the shipping-time replacement for dict.json:
+    // foreign-origin words and native irregulars whose rules deviate
+    // from the dict. Tied to !disableDict so eval keeps measuring pure
+    // rule quality. See src/en-exceptions.ts and P5 in
+    // docs/g2p-redesign.md.
+    if (this.useExceptions && !this.disableDict) {
+      const ex = lookupException(lowerWord);
+      if (ex) return ex;
     }
 
     // Principled pipeline (opt-in). Decomposes the word into suffix +

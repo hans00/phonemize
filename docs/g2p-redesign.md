@@ -158,9 +158,37 @@ Runtime: no matrices, no probabilities, no training. Just rules + lookup.
     Current `data/en/dict.json` is **2.7 MB**. **native ≥ 3** ships
     in 11% of that and *exceeds* the current eval baseline by 11 points
     absolute (87% vs 75%).
-- [ ] P5: Dict elimination — runtime integration of exceptions.json,
-  build-time pipeline for `mine-exceptions` + `compile-lts`, removal of
-  `data/en/dict.json` from the shipping bundle.
+- [x] **P5**: Dict elimination
+  - [x] P5.0: `scripts/mine-exceptions.ts --native-min N` writes the
+    canonical `data/en/exceptions.json` using the hybrid policy (all
+    foreign + native ed≥N). Default N=2 — preserves dict-level lenient
+    accuracy at ~22% the size of dict.json.
+  - [x] P5.1: `src/en-exceptions.ts` loads `data/en/exceptions.json`;
+    `EnglishG2P` constructor accepts `useExceptions: boolean` (default
+    false). When true, `predict()` consults the exceptions table after
+    customDict and before the principled/legacy pipeline, gated by
+    `!disableDict` so eval keeps measuring pure rule quality.
+
+    Three-way comparison (`scripts/eval-exceptions.ts`):
+
+    | config                          | size      | exact   | lenient |
+    |---------------------------------|----------:|--------:|--------:|
+    | Rules only                      |    0 KB   | 43.07%  | 73.89%  |
+    | **Rules + exceptions (proposed)** | **710 KB** | 68.99%  | **99.81%** |
+    | Full dict.json (today)          | 2757 KB   | 99.11%  | 99.72%  |
+
+    Rules+exceptions ships in ~26% of dict.json's size and *exceeds* its
+    lenient accuracy. The remaining work to actually drop the dict from
+    the shipped bundle is configuration: flipping `useExceptions`
+    default + dropping `dict.json` from `package.json#files` once
+    consumers have migrated.
+  - [ ] P5.2 (future): Build pipeline integration — make `yarn
+    build-dict` regenerate `exceptions.json` (and ideally `lts.json`)
+    from `src-data/en/`.
+  - [ ] P5.3 (future): Migration of foreign borrowings to language-
+    specific G2Ps so that even the 2738 foreign exceptions get a
+    principled (rather than memorized) treatment. See user's note on
+    cultural correctness.
 
 ### P1 results
 
