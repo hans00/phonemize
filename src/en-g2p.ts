@@ -2070,6 +2070,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -agronomist: æɡɹənəm→əɡɹɑnəm (agronomist)
     if (lowerWord.endsWith("gronomist") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)æ([ˈˌ]?)ɡ([ˈˌ]?)ɹ([ˈˌ]?)ə([ˈˌ]?)n([ˈˌ]?)ə([ˈˌ]?)m/, "$1ə$2ɡ$3ɹ$4ɑ$5n$6ə$7m");
+    // -arity: ɝɪti→ɛɹəti (polarity, hilarity, barbarity, similarity, vulgarity)
+    if (lowerWord.endsWith("arity") && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)ɝ([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)i$/, "$1ɛɹ$2ə$3t$4i");
+    // -ority: ɝɪti→ɔɹəti (majority, minority)
+    if (lowerWord.endsWith("ority") && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)ɝ([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)i$/, "$1ɔɹ$2ə$3t$4i");
     // -locomotion: ɫəkoʊ→ɫoʊkoʊ at start (locomotion)
     if (lowerWord.startsWith("loc") && lowerWord.endsWith("otion") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)k/, "$1ɫ$2oʊ$3k");
