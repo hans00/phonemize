@@ -25,7 +25,25 @@
  * heuristic; the table is indexed by length at module load.
  */
 
-export type StressClass = "neutral" | "pre" | "pre2" | "self";
+/**
+ * Stress class — positional, measured from the end of the word:
+ *
+ *   - "neutral":     inherit base stress (suffix doesn't alter it).
+ *                    Germanic Class-II suffixes: -ness, -less, -ly, -ed, -ing, …
+ *   - "penult":      primary stress on penultimate syllable of the whole word.
+ *                    Class-I: -ation, -ition, -ic, -ous, -al, -ant/-ent,
+ *                    -ization, -tion, -sion, -ial.
+ *   - "antepenult":  primary stress on antepenultimate (3rd-from-end).
+ *                    Class-I: -ity, -ical, -ative, -ology, -ability, -ological.
+ *   - "final":       primary stress on the last syllable.
+ *                    Self-stressing: -ee, -eer, -ese, -ette, -oon, -aire.
+ *
+ * This single positional view replaces the older "pre/pre2/first/self"
+ * vocabulary, which was relative to the suffix's start position and turned
+ * out to overlap depending on suffix syllable count. Position-from-end is
+ * both simpler and matches the underlying Latin penult/antepenult rule.
+ */
+export type StressClass = "neutral" | "penult" | "antepenult" | "final";
 
 export interface SuffixEntry {
   /** Orthographic suffix matched at word end. */
@@ -54,108 +72,107 @@ export interface SuffixEntry {
 // and minBase, so order within a length class doesn't matter — but keeping
 // it readable helps maintenance.
 export const SUFFIXES: SuffixEntry[] = [
-  // ─── Class I (Latinate): pre-stressed ─────────────────────────────────────
-  // Compound -ity family (longest first so we don't strip "-ity" off "-ality")
-  { suffix: "ization", ipa: "ɪzeɪʃən", stress: "pre", minBase: 3 },
-  { suffix: "isation", ipa: "ɪzeɪʃən", stress: "pre", minBase: 3 },
-  { suffix: "ifications", ipa: "ɪfɪkeɪʃənz", stress: "pre", minBase: 3 },
-  { suffix: "ification", ipa: "ɪfɪkeɪʃən", stress: "pre", minBase: 3 },
-  { suffix: "abilities", ipa: "əbɪlɪtiz", stress: "pre", minBase: 3 },
-  { suffix: "ability", ipa: "əbɪlɪti", stress: "pre", minBase: 3 },
-  { suffix: "ibilities", ipa: "əbɪlɪtiz", stress: "pre", minBase: 3 },
-  { suffix: "ibility", ipa: "əbɪlɪti", stress: "pre", minBase: 3 },
+  // ─── Class I (Latinate) — penult-stressing ────────────────────────────────
+  // Stress falls on the word's penultimate syllable (which often coincides
+  // with the first vowel of a multi-syl suffix like -ation or -ization).
+  { suffix: "ization", ipa: "ɪzeɪʃən", stress: "penult", minBase: 3 },
+  { suffix: "isation", ipa: "ɪzeɪʃən", stress: "penult", minBase: 3 },
+  { suffix: "ifications", ipa: "ɪfɪkeɪʃənz", stress: "penult", minBase: 3 },
+  { suffix: "ification", ipa: "ɪfɪkeɪʃən", stress: "penult", minBase: 3 },
+  { suffix: "ations", ipa: "eɪʃənz", stress: "penult", minBase: 3 },
+  { suffix: "ation", ipa: "eɪʃən", stress: "penult", minBase: 3 },
+  { suffix: "itions", ipa: "ɪʃənz", stress: "penult", minBase: 3 },
+  { suffix: "ition", ipa: "ɪʃən", stress: "penult", minBase: 3 },
+  { suffix: "utions", ipa: "uʃənz", stress: "penult", minBase: 3 },
+  { suffix: "ution", ipa: "uʃən", stress: "penult", minBase: 3 },
+  { suffix: "otions", ipa: "oʊʃənz", stress: "penult", minBase: 3 },
+  { suffix: "otion", ipa: "oʊʃən", stress: "penult", minBase: 3 },
+  { suffix: "etions", ipa: "iʃənz", stress: "penult", minBase: 3 },
+  { suffix: "etion", ipa: "iʃən", stress: "penult", minBase: 3 },
+  { suffix: "ctions", ipa: "kʃənz", stress: "penult", minBase: 3 },
+  { suffix: "ction", ipa: "kʃən", stress: "penult", minBase: 3 },
+  { suffix: "tions", ipa: "ʃənz", stress: "penult", minBase: 3 },
+  { suffix: "tion", ipa: "ʃən", stress: "penult", minBase: 3 },
+  { suffix: "sions", ipa: "ʒənz", stress: "penult", minBase: 3 },
+  { suffix: "sion", ipa: "ʒən", stress: "penult", minBase: 3 },
+  { suffix: "cians", ipa: "ʃənz", stress: "penult", minBase: 3 },
+  { suffix: "cian", ipa: "ʃən", stress: "penult", minBase: 3 },
 
-  // -tion family
-  { suffix: "ations", ipa: "eɪʃənz", stress: "pre", minBase: 3 },
-  { suffix: "ation", ipa: "eɪʃən", stress: "pre", minBase: 3 },
-  { suffix: "itions", ipa: "ɪʃənz", stress: "pre", minBase: 3 },
-  { suffix: "ition", ipa: "ɪʃən", stress: "pre", minBase: 3 },
-  { suffix: "utions", ipa: "uʃənz", stress: "pre", minBase: 3 },
-  { suffix: "ution", ipa: "uʃən", stress: "pre", minBase: 3 },
-  { suffix: "otions", ipa: "oʊʃənz", stress: "pre", minBase: 3 },
-  { suffix: "otion", ipa: "oʊʃən", stress: "pre", minBase: 3 },
-  { suffix: "etions", ipa: "iʃənz", stress: "pre", minBase: 3 },
-  { suffix: "etion", ipa: "iʃən", stress: "pre", minBase: 3 },
-  { suffix: "ctions", ipa: "kʃənz", stress: "pre", minBase: 3 },
-  { suffix: "ction", ipa: "kʃən", stress: "pre", minBase: 3 },
-  { suffix: "tions", ipa: "ʃənz", stress: "pre", minBase: 3 },
-  { suffix: "tion", ipa: "ʃən", stress: "pre", minBase: 3 },
-  { suffix: "sions", ipa: "ʒənz", stress: "pre", minBase: 3 },
-  { suffix: "sion", ipa: "ʒən", stress: "pre", minBase: 3 },
-  { suffix: "cians", ipa: "ʃənz", stress: "pre", minBase: 3 },
-  { suffix: "cian", ipa: "ʃən", stress: "pre", minBase: 3 },
+  // ─── Class I (Latinate) — antepenult-stressing ────────────────────────────
+  // -ity family: "ability" = əˈbɪlɪti (4 syl, stress syl 1 = antepenult)
+  { suffix: "abilities", ipa: "əbɪlɪtiz", stress: "antepenult", minBase: 3 },
+  { suffix: "ability", ipa: "əbɪlɪti", stress: "antepenult", minBase: 3 },
+  { suffix: "ibilities", ipa: "əbɪlɪtiz", stress: "antepenult", minBase: 3 },
+  { suffix: "ibility", ipa: "əbɪlɪti", stress: "antepenult", minBase: 3 },
+  { suffix: "alities", ipa: "ælətiz", stress: "antepenult", minBase: 4 },
+  { suffix: "ality", ipa: "æləti", stress: "antepenult", minBase: 4 },
+  { suffix: "ivities", ipa: "ɪvətiz", stress: "antepenult", minBase: 4 },
+  { suffix: "ivity", ipa: "ɪvəti", stress: "antepenult", minBase: 4 },
+  { suffix: "osities", ipa: "ɑsətiz", stress: "antepenult", minBase: 4 },
+  { suffix: "osity", ipa: "ɑsəti", stress: "antepenult", minBase: 4 },
+  { suffix: "arities", ipa: "ɛɹətiz", stress: "antepenult", minBase: 4 },
+  { suffix: "arity", ipa: "ɛɹəti", stress: "antepenult", minBase: 4 },
+  { suffix: "orities", ipa: "ɔɹətiz", stress: "antepenult", minBase: 4 },
+  { suffix: "ority", ipa: "ɔɹəti", stress: "antepenult", minBase: 4 },
+  { suffix: "ities", ipa: "ətiz", stress: "antepenult", minBase: 3, ipaAlts: ["ɪtiz"] },
+  { suffix: "ity", ipa: "əti", stress: "antepenult", minBase: 3, ipaAlts: ["ɪti"] },
 
-  // -ity family (note: second vowel reduces — "ability" = əˈbɪlət̬i not -ɪti)
-  { suffix: "alities", ipa: "ælətiz", stress: "pre", minBase: 4 },
-  { suffix: "ality", ipa: "æləti", stress: "pre", minBase: 4 },
-  { suffix: "ivities", ipa: "ɪvətiz", stress: "pre", minBase: 4 },
-  { suffix: "ivity", ipa: "ɪvəti", stress: "pre", minBase: 4 },
-  { suffix: "osities", ipa: "ɑsətiz", stress: "pre", minBase: 4 },
-  { suffix: "osity", ipa: "ɑsəti", stress: "pre", minBase: 4 },
-  { suffix: "arities", ipa: "ɛɹətiz", stress: "pre", minBase: 4 },
-  { suffix: "arity", ipa: "ɛɹəti", stress: "pre", minBase: 4 },
-  { suffix: "orities", ipa: "ɔɹətiz", stress: "pre", minBase: 4 },
-  { suffix: "ority", ipa: "ɔɹəti", stress: "pre", minBase: 4 },
-  { suffix: "ities", ipa: "ətiz", stress: "pre", minBase: 3, ipaAlts: ["ɪtiz"] },
-  { suffix: "ity", ipa: "əti", stress: "pre", minBase: 3, ipaAlts: ["ɪti"] },
+  // -ic vs -ical: -ic is penult (a single-syl suffix); -ical antepenult.
+  { suffix: "ically", ipa: "ɪkli", stress: "antepenult", minBase: 3 },
+  { suffix: "icals", ipa: "ɪkəlz", stress: "antepenult", minBase: 3 },
+  { suffix: "ical", ipa: "ɪkəl", stress: "antepenult", minBase: 3 },
+  { suffix: "ics", ipa: "ɪks", stress: "penult", minBase: 3 },
+  { suffix: "ic", ipa: "ɪk", stress: "penult", minBase: 3 },
 
-  // -ic family
-  { suffix: "ically", ipa: "ɪkli", stress: "pre2", minBase: 3 },
-  { suffix: "icals", ipa: "ɪkəlz", stress: "pre2", minBase: 3 },
-  { suffix: "ical", ipa: "ɪkəl", stress: "pre2", minBase: 3 },
-  { suffix: "ics", ipa: "ɪks", stress: "pre", minBase: 3 },
-  { suffix: "ic", ipa: "ɪk", stress: "pre", minBase: 3 },
+  // -ial / -ious / -eous (penult for 1-syl realizations, antepenult for 2-syl)
+  { suffix: "tial", ipa: "ʃəl", stress: "penult", minBase: 3 },
+  { suffix: "cial", ipa: "ʃəl", stress: "penult", minBase: 3 },
+  { suffix: "ial", ipa: "iəl", stress: "antepenult", minBase: 3 },
+  { suffix: "cious", ipa: "ʃəs", stress: "penult", minBase: 3 },
+  { suffix: "tious", ipa: "ʃəs", stress: "penult", minBase: 3 },
+  { suffix: "geous", ipa: "dʒəs", stress: "penult", minBase: 3 },
+  { suffix: "uous", ipa: "juəs", stress: "antepenult", minBase: 3 },
+  { suffix: "ious", ipa: "iəs", stress: "antepenult", minBase: 3 },
+  { suffix: "eous", ipa: "iəs", stress: "antepenult", minBase: 3 },
 
-  // -ial / -ious / -eous
-  { suffix: "tial", ipa: "ʃəl", stress: "pre", minBase: 3 },
-  { suffix: "cial", ipa: "ʃəl", stress: "pre", minBase: 3 },
-  { suffix: "ial", ipa: "iəl", stress: "pre", minBase: 3 },
-  { suffix: "cious", ipa: "ʃəs", stress: "pre", minBase: 3 },
-  { suffix: "tious", ipa: "ʃəs", stress: "pre", minBase: 3 },
-  { suffix: "geous", ipa: "dʒəs", stress: "pre", minBase: 3 },
-  { suffix: "uous", ipa: "juəs", stress: "pre", minBase: 3 },
-  { suffix: "ious", ipa: "iəs", stress: "pre", minBase: 3 },
-  { suffix: "eous", ipa: "iəs", stress: "pre", minBase: 3 },
+  // -ance/-ence/-ant/-ent (1-syl, penult-stressing)
+  { suffix: "ances", ipa: "ənsɪz", stress: "penult", minBase: 3 },
+  { suffix: "ance", ipa: "əns", stress: "penult", minBase: 3 },
+  { suffix: "ences", ipa: "ənsɪz", stress: "penult", minBase: 3 },
+  { suffix: "ence", ipa: "əns", stress: "penult", minBase: 3 },
+  { suffix: "ants", ipa: "ənts", stress: "penult", minBase: 3 },
+  { suffix: "ant", ipa: "ənt", stress: "penult", minBase: 3 },
+  { suffix: "ents", ipa: "ənts", stress: "penult", minBase: 3 },
+  { suffix: "ent", ipa: "ənt", stress: "penult", minBase: 3 },
 
-  // -ance/-ence/-ant/-ent (pre-stressed in most polysyllables)
-  { suffix: "ances", ipa: "ənsɪz", stress: "pre", minBase: 3 },
-  { suffix: "ance", ipa: "əns", stress: "pre", minBase: 3 },
-  { suffix: "ences", ipa: "ənsɪz", stress: "pre", minBase: 3 },
-  { suffix: "ence", ipa: "əns", stress: "pre", minBase: 3 },
-  { suffix: "ants", ipa: "ənts", stress: "pre", minBase: 3 },
-  { suffix: "ant", ipa: "ənt", stress: "pre", minBase: 3 },
-  { suffix: "ents", ipa: "ənts", stress: "pre", minBase: 3 },
-  { suffix: "ent", ipa: "ənt", stress: "pre", minBase: 3 },
+  // -ative / -atory / -ology / -ography / -onomy: antepenult-stressing
+  { suffix: "atively", ipa: "ətɪvli", stress: "antepenult", minBase: 3 },
+  { suffix: "atives", ipa: "ətɪvz", stress: "antepenult", minBase: 3 },
+  { suffix: "ative", ipa: "ətɪv", stress: "antepenult", minBase: 3 },
+  { suffix: "atory", ipa: "ətɔɹi", stress: "antepenult", minBase: 3 },
+  { suffix: "atories", ipa: "ətɔɹiz", stress: "antepenult", minBase: 3 },
+  { suffix: "ologies", ipa: "ɑlədʒiz", stress: "antepenult", minBase: 3 },
+  { suffix: "ology", ipa: "ɑlədʒi", stress: "antepenult", minBase: 3 },
+  { suffix: "ologists", ipa: "ɑlədʒɪsts", stress: "antepenult", minBase: 3 },
+  { suffix: "ologist", ipa: "ɑlədʒɪst", stress: "antepenult", minBase: 3 },
+  { suffix: "ographies", ipa: "ɑɡɹəfiz", stress: "antepenult", minBase: 3 },
+  { suffix: "ography", ipa: "ɑɡɹəfi", stress: "antepenult", minBase: 3 },
+  { suffix: "onomies", ipa: "ɑnəmiz", stress: "antepenult", minBase: 3 },
+  { suffix: "onomy", ipa: "ɑnəmi", stress: "antepenult", minBase: 3 },
+  { suffix: "ological", ipa: "əlɑdʒɪkəl", stress: "antepenult", minBase: 3 },
 
-  // ─── Class I: pre-pre-stressed ────────────────────────────────────────────
-  { suffix: "atively", ipa: "ətɪvli", stress: "pre2", minBase: 3 },
-  { suffix: "atives", ipa: "ətɪvz", stress: "pre2", minBase: 3 },
-  { suffix: "ative", ipa: "ətɪv", stress: "pre2", minBase: 3 },
-  { suffix: "atory", ipa: "ətɔɹi", stress: "pre2", minBase: 3 },
-  { suffix: "atories", ipa: "ətɔɹiz", stress: "pre2", minBase: 3 },
-  { suffix: "ologies", ipa: "ɑlədʒiz", stress: "pre2", minBase: 3 },
-  { suffix: "ology", ipa: "ɑlədʒi", stress: "pre2", minBase: 3 },
-  { suffix: "ologists", ipa: "ɑlədʒɪsts", stress: "pre2", minBase: 3 },
-  { suffix: "ologist", ipa: "ɑlədʒɪst", stress: "pre2", minBase: 3 },
-  { suffix: "ological", ipa: "əlɑdʒɪkəl", stress: "pre2", minBase: 3 },
-  { suffix: "ographies", ipa: "ɑɡɹəfiz", stress: "pre2", minBase: 3 },
-  { suffix: "ography", ipa: "ɑɡɹəfi", stress: "pre2", minBase: 3 },
-  { suffix: "onomies", ipa: "ɑnəmiz", stress: "pre2", minBase: 3 },
-  { suffix: "onomy", ipa: "ɑnəmi", stress: "pre2", minBase: 3 },
-
-  // ─── Class I: self-stressed ───────────────────────────────────────────────
-  { suffix: "esque", ipa: "ɛsk", stress: "self", minBase: 3 },
-  { suffix: "ettes", ipa: "ɛts", stress: "self", minBase: 3 },
-  { suffix: "ette", ipa: "ɛt", stress: "self", minBase: 3 },
-  { suffix: "eers", ipa: "ɪɹz", stress: "self", minBase: 3 },
-  { suffix: "eer", ipa: "ɪɹ", stress: "self", minBase: 3 },
-  { suffix: "ees", ipa: "iz", stress: "self", minBase: 3 },
-  { suffix: "ee", ipa: "i", stress: "self", minBase: 3 },
-  { suffix: "ese", ipa: "iz", stress: "self", minBase: 3 },
-  { suffix: "ette", ipa: "ɛt", stress: "self", minBase: 3 },
-  { suffix: "aire", ipa: "ɛɹ", stress: "self", minBase: 3 },
-  { suffix: "oons", ipa: "unz", stress: "self", minBase: 3 },
-  { suffix: "oon", ipa: "un", stress: "self", minBase: 3 },
+  // ─── Self-stressing (final stress) ────────────────────────────────────────
+  { suffix: "esque", ipa: "ɛsk", stress: "final", minBase: 3 },
+  { suffix: "ettes", ipa: "ɛts", stress: "final", minBase: 3 },
+  { suffix: "ette", ipa: "ɛt", stress: "final", minBase: 3 },
+  { suffix: "eers", ipa: "ɪɹz", stress: "final", minBase: 3 },
+  { suffix: "eer", ipa: "ɪɹ", stress: "final", minBase: 3 },
+  { suffix: "ees", ipa: "iz", stress: "final", minBase: 3 },
+  { suffix: "ee", ipa: "i", stress: "final", minBase: 3 },
+  { suffix: "ese", ipa: "iz", stress: "final", minBase: 3 },
+  { suffix: "aire", ipa: "ɛɹ", stress: "final", minBase: 3 },
+  { suffix: "oons", ipa: "unz", stress: "final", minBase: 3 },
+  { suffix: "oon", ipa: "un", stress: "final", minBase: 3 },
 
   // ─── Class II (Germanic / neutral): base stress preserved ─────────────────
   { suffix: "nesses", ipa: "nəsɪz", stress: "neutral", minBase: 3 },
@@ -202,23 +219,24 @@ export const SUFFIXES: SuffixEntry[] = [
   { suffix: "ibly", ipa: "əbli", stress: "neutral", minBase: 3 },
   { suffix: "ible", ipa: "əbəl", stress: "neutral", minBase: 3 },
 
-  // ─── Verbalising suffixes (pre-pre stressed) ─────────────────────────────
-  { suffix: "izes", ipa: "aɪzɪz", stress: "pre2", minBase: 3 },
-  { suffix: "ized", ipa: "aɪzd", stress: "pre2", minBase: 3 },
-  { suffix: "izing", ipa: "aɪzɪŋ", stress: "pre2", minBase: 3 },
-  { suffix: "ize", ipa: "aɪz", stress: "pre2", minBase: 3 },
-  { suffix: "ises", ipa: "aɪzɪz", stress: "pre2", minBase: 3 },
-  { suffix: "ise", ipa: "aɪz", stress: "pre2", minBase: 3 },
-  { suffix: "ifies", ipa: "ɪfaɪz", stress: "pre2", minBase: 3 },
-  { suffix: "ified", ipa: "ɪfaɪd", stress: "pre2", minBase: 3 },
-  { suffix: "ify", ipa: "ɪfaɪ", stress: "pre2", minBase: 3 },
-  { suffix: "fies", ipa: "faɪz", stress: "pre2", minBase: 3 },
-  { suffix: "fied", ipa: "faɪd", stress: "pre2", minBase: 3 },
+  // ─── Verbalising suffixes — antepenult ────────────────────────────────────
+  // -ize: "civilize" = ˈsɪvəlaɪz (3 syl, stress 0 = antepenult)
+  { suffix: "izes", ipa: "aɪzɪz", stress: "antepenult", minBase: 3 },
+  { suffix: "ized", ipa: "aɪzd", stress: "antepenult", minBase: 3 },
+  { suffix: "izing", ipa: "aɪzɪŋ", stress: "antepenult", minBase: 3 },
+  { suffix: "ize", ipa: "aɪz", stress: "antepenult", minBase: 3 },
+  { suffix: "ises", ipa: "aɪzɪz", stress: "antepenult", minBase: 3 },
+  { suffix: "ise", ipa: "aɪz", stress: "antepenult", minBase: 3 },
+  { suffix: "ifies", ipa: "ɪfaɪz", stress: "antepenult", minBase: 3 },
+  { suffix: "ified", ipa: "ɪfaɪd", stress: "antepenult", minBase: 3 },
+  { suffix: "ify", ipa: "ɪfaɪ", stress: "antepenult", minBase: 3 },
+  { suffix: "fies", ipa: "faɪz", stress: "antepenult", minBase: 3 },
+  { suffix: "fied", ipa: "faɪd", stress: "antepenult", minBase: 3 },
 
-  // -ous (pre-stressed: famous, dangerous, glorious)
-  { suffix: "ously", ipa: "əsli", stress: "pre", minBase: 3 },
-  { suffix: "ousness", ipa: "əsnəs", stress: "pre", minBase: 3 },
-  { suffix: "ous", ipa: "əs", stress: "pre", minBase: 3 },
+  // -ous (penult: famous, dangerous, glorious)
+  { suffix: "ously", ipa: "əsli", stress: "antepenult", minBase: 3 },
+  { suffix: "ousness", ipa: "əsnəs", stress: "antepenult", minBase: 3 },
+  { suffix: "ous", ipa: "əs", stress: "penult", minBase: 3 },
 ];
 
 // Index for fast longest-match lookup

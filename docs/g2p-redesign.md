@@ -107,7 +107,7 @@ Runtime: no matrices, no probabilities, no training. Just rules + lookup.
 - [x] **P1**: Aligner (98.14% coverage, 11K contexts, 430 atoms — see results below)
 - [ ] **P2**: Suffix table + stress shift + reduction
   - [x] P2.0: Suffix table + decomposer (51% base recovery, 94% IPA tail match)
-  - [ ] P2.1: Stress FSM
+  - [x] P2.1: Stress FSM (81% stress-position accuracy with base lookup; 73% without)
   - [ ] P2.2: Reduction rules
   - [ ] P2.3: Integration behind flag
   - [ ] P2.4: Default-on, retire postBase
