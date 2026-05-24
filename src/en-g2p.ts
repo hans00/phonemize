@@ -1276,6 +1276,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -iewicz Polish names: juɪtʃ → əvɪtʃ (markiewicz, dutkiewicz, mazurkiewicz)
     if (lowerWord.endsWith("iewicz"))
       postBase = postBase.replace(/juɪtʃ$/, "əvɪtʃ");
+    // -owitz Yiddish/Polish names: oʊɪts → əwɪts (berkowitz, horowitz, abramowitz)
+    if (lowerWord.endsWith("owitz"))
+      postBase = postBase.replace(/oʊɪts$/, "əwɪts");
+    // -ucci Italian names: ʌtʃɪ → utʃi (gucci, balducci, gallucci, ferrucci)
+    if (lowerWord.endsWith("ucci"))
+      postBase = postBase.replace(/ʌtʃɪ$/, "utʃi");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
