@@ -1556,6 +1556,12 @@ export class EnglishG2P implements LanguageProcessor {
     // German -eger surnames: soft-dʒ→hard-ɡ (breger, brieger, boeger, fieger, fleeger)
     if (lowerWord.endsWith("eger") && lowerWord.length >= 5)
       postBase = postBase.replace(/([ˈˌ]?)dʒ([ˈˌ]?)ɝ$/, "$1ɡ$2ɝ");
+    // German -ohl/-ohn/-ohm: silent-H long-O (bohn→boʊn, bohman→boʊmən, blohm→bloʊm)
+    if (/oh[lmn]/.test(lowerWord) && lowerWord.length >= 6 && !/^john/.test(lowerWord))
+      postBase = postBase.replace(/([ˈˌ]?)ɑh([lmn])/g, "$1oʊ$2");
+    // Italian -aldo: æɫdoʊ→ɑɫdoʊ (castaldo, cataldo, renaldo, reynaldo)
+    if (lowerWord.endsWith("aldo") && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)ldoʊ$/, "$1ɑ$2ldoʊ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
