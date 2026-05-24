@@ -1420,6 +1420,18 @@ export class EnglishG2P implements LanguageProcessor {
     // -rrett/-rett: ɹɪt → ɹɪt — final schwa → lax-I (barrett, garrett, berrett, marrett)
     if (/r{1,2}ett$/.test(lowerWord) && lowerWord.length >= 6)
       postBase = postBase.replace(/ɹ([ˈˌ]?)ət$/, "ɹ$1ɪt");
+    // -ley compound: leɪ → li (begley, presley, barclay-style -ley names)
+    if (lowerWord.endsWith("ley") && lowerWord.length >= 5)
+      postBase = postBase.replace(/leɪ$/, "li");
+    // -chester: tʃɪstɝ → tʃɛstɝ (manchester, winchester, chichester, dorchester)
+    if (lowerWord.endsWith("chester") && lowerWord.length >= 8)
+      postBase = postBase.replace(/tʃɪstɝ$/, "tʃɛstɝ");
+    // -cester/-caster: sɪstɝ → stɝ (worcester, leicester, glocester)
+    if (/c(?:e|a)ster$/.test(lowerWord) && lowerWord.length >= 7)
+      postBase = postBase.replace(/sɪstɝ$/, "stɝ");
+    // -mouth place compound: maʊθ → məθ (dartmouth, portsmouth, falmouth, plymouth)
+    if (lowerWord.endsWith("mouth") && lowerWord.length >= 7)
+      postBase = postBase.replace(/maʊθ$/, "məθ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
