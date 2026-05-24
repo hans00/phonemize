@@ -1473,13 +1473,16 @@ export class EnglishG2P implements LanguageProcessor {
     // German -rein- surnames: ɹeɪn→ɹaɪn (amrein, breining, reindel, reinert, reinig)
     if (/rein/.test(lowerWord) && lowerWord.length >= 6 && !/reina/.test(lowerWord))
       postBase = postBase.replace(/ɹeɪn/, "ɹaɪn");
-    // German -eil- surnames (not French -eil$ / Irish -eill?ey / veil-): eɪl→aɪl (beilfuss, marseille, freilich)
+    // German -eil- surnames (not French -oleil / Irish -eill?ey / veil-): eɪl→aɪl (beilfuss, corbeil, kurzweil, marseille)
     if (/eil/.test(lowerWord) && lowerWord.length >= 5
-        && !lowerWord.endsWith("eil") && !/eill?[eo]?y$/.test(lowerWord) && !/veil/.test(lowerWord))
+        && !/oleil$/.test(lowerWord) && !/eill?[eo]?y$/.test(lowerWord) && !/veil/.test(lowerWord))
       postBase = postBase.replace(/eɪl/, "aɪl");
-    // German -eim- surnames (not Japanese -eimi): eɪm→aɪm (geimer, kleiman, kreimer, reiman, feimster)
-    if (/eim/.test(lowerWord) && lowerWord.length >= 5 && !/eimi$/.test(lowerWord))
+    // German -eim- surnames (not Japanese -eimi): eɪm→aɪm (beim, geimer, kleiman, kreimer, reiman, feimster)
+    if (/eim/.test(lowerWord) && lowerWord.length >= 4 && !/eimi$/.test(lowerWord))
       postBase = postBase.replace(/eɪm/, "aɪm");
+    // German -eith- surnames: eɪð→aɪð (either, neither, reither, seither)
+    if (/eith/.test(lowerWord) && lowerWord.length >= 5)
+      postBase = postBase.replace(/eɪð/, "aɪð");
     // German -ei[zv]- surnames: eɪ[zv]→aɪ[zv] (keizer, seivert)
     if (/ei[zv]/.test(lowerWord) && lowerWord.length >= 5)
       postBase = postBase.replace(/eɪ([zv])/, "aɪ$1");
