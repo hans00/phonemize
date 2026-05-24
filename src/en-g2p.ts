@@ -1707,6 +1707,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -alian demonyms: əlɪən→eɪlɪən$ (australian, mammalian)
     if (lowerWord.endsWith("alian") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)l([ˈˌ]?)ɪ([ˈˌ]?)ən$/, "$1eɪ$2l$3ɪ$4ən");
+    // -onian: initial ə→æ before m/p (amazonian, apollonian)
+    if (lowerWord.endsWith("onian") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)(m|p)/, "$1æ$2$3");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
