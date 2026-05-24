@@ -1282,6 +1282,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -ucci Italian names: ʌtʃɪ → utʃi (gucci, balducci, gallucci, ferrucci)
     if (lowerWord.endsWith("ucci"))
       postBase = postBase.replace(/ʌtʃɪ$/, "utʃi");
+    // aa- prefix: ɑɑɹ → ɑɹ (aardema, aardvark, aargh — Dutch/Afrikaans long-aa)
+    if (lowerWord.startsWith("aa"))
+      postBase = postBase.replace(/^([ˈˌ]?)ɑɑɹ/, "$1ɑɹ");
     // -auer German names: ɔɝ → aʊɝ (bauer, brauer, sauer, dauer, gauer)
     if (lowerWord.endsWith("auer"))
       postBase = postBase.replace(/ɔɝ$/, "aʊɝ");
@@ -1313,6 +1316,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -eux French names: juks → oʊ (lamoreux, leleux, mayeux, veilleux)
     if (lowerWord.endsWith("eux") && lowerWord.length >= 5)
       postBase = postBase.replace(/juks$/, "oʊ");
+    // -dieux French names: iəks → joʊ (cadieux, gladieux)
+    if (lowerWord.endsWith("dieux") && lowerWord.length >= 6)
+      postBase = postBase.replace(/iəks$/, "joʊ");
+    // -ieux French names (non-dieux): iəks → ju (lemieux, merieux)
+    else if (lowerWord.endsWith("ieux") && lowerWord.length >= 5)
+      postBase = postBase.replace(/iəks$/, "ju");
     // -well compound names: uəl/wəl/oʊəl → wɛl (bakewell, bracewell, caldwell, honeywell)
     // Exclude: ho/lo/no/po/cr/mc/mac/ro-well (howell, lowell, nowell, powell, crowell, mcdowell)
     // and n/s/j/e-ewell (newell, sewell, jewell)
