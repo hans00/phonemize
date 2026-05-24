@@ -1296,6 +1296,13 @@ export class EnglishG2P implements LanguageProcessor {
     // ros- Italian/German names: ɹəs → ɹoʊz (rossetti, rosselli, rosenberger, roseville)
     if (lowerWord.startsWith("ros") && lowerWord.length >= 5)
       postBase = postBase.replace(/^([ˈˌ]?)ɹəs/, "$1ɹoʊz");
+    // -oire French names: ɔɪɹə → wɑɹ (repertoire, armoire, victoire, gregoire)
+    if (lowerWord.endsWith("oire") && lowerWord.length >= 5)
+      postBase = postBase.replace(/ɔɪɹə$/, "wɑɹ");
+    // -ero Spanish/Italian names: ɪɹoʊ → ɛɹoʊ (ferrero, herrero, calogero, ibero)
+    // Exclude -hero (superhero) which uses /hɪɹoʊ/ not Spanish /ɛɹoʊ/
+    if (lowerWord.endsWith("ero") && lowerWord.length >= 5 && !lowerWord.endsWith("hero"))
+      postBase = postBase.replace(/ɪɹoʊ$/, "ɛɹoʊ");
     // -well compound names: uəl/wəl/oʊəl → wɛl (bakewell, bracewell, caldwell, honeywell)
     // Exclude: ho/lo/no/po/cr/mc/mac/ro-well (howell, lowell, nowell, powell, crowell, mcdowell)
     // and n/s/j/e-ewell (newell, sewell, jewell)
