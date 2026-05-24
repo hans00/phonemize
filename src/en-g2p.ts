@@ -1432,6 +1432,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -mouth place compound: maʊθ → məθ (dartmouth, portsmouth, falmouth, plymouth)
     if (lowerWord.endsWith("mouth") && lowerWord.length >= 7)
       postBase = postBase.replace(/maʊθ$/, "məθ");
+    // -head compound: hid → hɛd (bridgehead, bullhead, conehead, horsehead, moosehead)
+    if (lowerWord.endsWith("head") && lowerWord.length >= 6)
+      postBase = postBase.replace(/hid$/, "hɛd");
     // -sberg: sbɝɡ → zbɝɡ (kanegsberg, kongsberg — voiced /zb/ cluster)
     if (lowerWord.endsWith("sberg") && lowerWord.length >= 7)
       postBase = postBase.replace(/sbɝɡ$/, "zbɝɡ");
