@@ -1598,6 +1598,18 @@ export class EnglishG2P implements LanguageProcessor {
       // -cinski: Polish 'ci' before '-nski' = /tʃ/ (kocinski, kapuscinski, rucinski)
       if (lowerWord.endsWith("cinski"))
         postBase = postBase.replace(/([ˈˌ]?)sɪ([ˈˌ]?)nsk/, "$1stʃɪ$2nsk");
+      // cz→/tʃ/: Polish digraph (kaczorowski, malczewski, wilczewski)
+      if (lowerWord.includes("cz"))
+        postBase = postBase.replace(/k([ˈˌ]?)z/g, "tʃ");
+      // ci-initial→/tʃɪ/: word-initial 'ci' in Polish = /tʃɪ/ (ciborowski, cisewski)
+      if (/^ci/.test(lowerWord))
+        postBase = postBase.replace(/^([ˈˌ]?)sɪ/, "$1tʃɪ");
+      // aj→/aɪ/: Polish diphthong (gajewski, krajewski, majewski)
+      if (lowerWord.includes("aj"))
+        postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)j/g, "$1aɪ$2");
+      // ej→/eɪ/: Polish diphthong (blazejewski, mierzejewski)
+      if (lowerWord.includes("ej"))
+        postBase = postBase.replace(/([ˈˌ]?)[ɪi]([ˈˌ]?)j/g, "$1eɪ$2");
     }
     // German bau- surnames: initial schwa-reduction corrected (baumeister, bauserman, baucum)
     if (/^bau/.test(lowerWord) && lowerWord.length >= 6)
