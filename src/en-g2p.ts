@@ -1719,6 +1719,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -sian demonyms: əsɪən→eɪʒən (caucasian)
     if (lowerWord.endsWith("sian") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)s([ˈˌ]?)ɪ([ˈˌ]?)ən$/, "$1eɪ$2ʒ$3ən");
+    // -urian: ɝɪən→ʊɹiən (arthurian, timurian, venturian)
+    if (lowerWord.endsWith("urian") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ɝ([ˈˌ]?)ɪ([ˈˌ]?)ən$/, "$1ʊɹ$2iən");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
