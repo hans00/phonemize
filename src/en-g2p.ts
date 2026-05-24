@@ -1492,6 +1492,12 @@ export class EnglishG2P implements LanguageProcessor {
     // German -eier- surnames: eɪɝ→aɪɝ (beierle, reierson)
     if (/eier/.test(lowerWord) && lowerWord.length >= 5)
       postBase = postBase.replace(/eɪɝ/, "aɪɝ");
+    // German -eik- surnames (not Japanese -ki/-ko): eɪk→aɪk (deikel, schweikert, streiker)
+    if (/eik/.test(lowerWord) && lowerWord.length >= 4 && !/k[io]$/.test(lowerWord))
+      postBase = postBase.replace(/eɪk/, "aɪk");
+    // German -eind- surnames: eɪnd→aɪnd (burfeind)
+    if (/eind/.test(lowerWord) && lowerWord.length >= 5)
+      postBase = postBase.replace(/eɪnd/, "aɪnd");
     // -iger surnames: hard /ɡ/ not soft (feiger, seiger)
     if (lowerWord.endsWith("iger") && lowerWord.length >= 6)
       postBase = postBase.replace(/([ˈˌ]?)dʒɝ$/, "$1ɡɝ");
