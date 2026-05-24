@@ -1449,6 +1449,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -woman compound: wəmən → wʊmən (councilwoman)
     if (lowerWord.endsWith("woman") && lowerWord.length >= 8)
       postBase = postBase.replace(/wəmən$/, "wʊmən");
+    // German -ei[gnf]er surnames: eɪ→aɪ (geiger, kreiger, reiger; reiner; heifer, schleifer)
+    if (/ei[gnf]er$/.test(lowerWord) && lowerWord.length >= 6)
+      postBase = postBase.replace(/eɪ([ˈˌ]?)([ɡnf])ɝ$/, "aɪ$1$2ɝ");
+    // German -inger surnames with ei stem: eɪ[ndm]ɪŋɝ→aɪ[ndm]ɪŋɝ (breininger, deininger, meidinger)
+    if (lowerWord.endsWith("inger") && lowerWord.length >= 7)
+      postBase = postBase.replace(/eɪ([ˈˌ]?)([ndm])ɪŋɝ$/, "aɪ$1$2ɪŋɝ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
