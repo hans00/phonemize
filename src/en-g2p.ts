@@ -1432,6 +1432,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -mouth place compound: maʊθ → məθ (dartmouth, portsmouth, falmouth, plymouth)
     if (lowerWord.endsWith("mouth") && lowerWord.length >= 7)
       postBase = postBase.replace(/maʊθ$/, "məθ");
+    // -sberg: sbɝɡ → zbɝɡ (kanegsberg, kongsberg — voiced /zb/ cluster)
+    if (lowerWord.endsWith("sberg") && lowerWord.length >= 7)
+      postBase = postBase.replace(/sbɝɡ$/, "zbɝɡ");
+    // -wick: oʊ[sd]wɪk → ɑ[sd]wɪk (goswick, joswick, lodwick)
+    if (lowerWord.endsWith("wick") && lowerWord.length >= 7)
+      postBase = postBase.replace(/oʊ([sd])wɪk$/, "ɑ$1wɪk");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
