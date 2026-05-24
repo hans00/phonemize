@@ -1685,6 +1685,9 @@ export class EnglishG2P implements LanguageProcessor {
     // Italian -iero suffix: iɹoʊ→iɛɹoʊ (alfiero, cafiero, financiero)
     if (lowerWord.endsWith("iero") && lowerWord.length >= 6)
       postBase = postBase.replace(/([ˈˌ]?)i([ˈˌ]?)ɹ([ˈˌ]?)oʊ$/, "$1i$2ɛɹ$3oʊ");
+    // French -eault surnames: drop final lt (breault, deneault, guilbeault, rheault)
+    if (lowerWord.endsWith("eault") && lowerWord.length >= 5)
+      postBase = postBase.replace(/([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)l([ˈˌ]?)t$/, "$1oʊ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
