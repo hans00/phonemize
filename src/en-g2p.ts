@@ -1568,6 +1568,16 @@ export class EnglishG2P implements LanguageProcessor {
     // Italian -aldo: æɫdoʊ→ɑɫdoʊ (castaldo, cataldo, renaldo, reynaldo)
     if (lowerWord.endsWith("aldo") && lowerWord.length >= 6)
       postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)ldoʊ$/, "$1ɑ$2ldoʊ");
+    // Polish/Slavic j→/j/: orthographic 'j' in Polish is /j/ not /dʒ/ (jakubowski, bojarski, lijewski)
+    if (/(?:ski|sky|wski|ewski|owski|anski|inski|ynski|arski|erski|orski|urski)$/.test(lowerWord)
+        && lowerWord.includes("j") && lowerWord.length >= 7) {
+      if (/^j/.test(lowerWord))
+        postBase = postBase.replace(/^([ˈˌ]?)dʒ/, "$1j");
+      postBase = postBase.replace(/([əɪiuoʊæɑɔɛeaɝɜ])([ˈˌ]?)dʒ([əɪiuoʊæɑɔɛeaɝɜ])/g, "$1$2j$3");
+    }
+    // -stair surnames: stɝ→stɛɹ (alistair, alastair, westair)
+    if (lowerWord.endsWith("stair") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)stɝ$/, "$1stɛɹ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
