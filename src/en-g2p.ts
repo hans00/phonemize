@@ -567,13 +567,14 @@ export class EnglishG2P implements LanguageProcessor {
       return this.customDict[lowerWord];
     }
 
-    // Compact exceptions table (opt-in). When enabled and dict is
-    // disabled, this is the shipping-time replacement for dict.json:
-    // foreign-origin words and native irregulars whose rules deviate
-    // from the dict. Tied to !disableDict so eval keeps measuring pure
-    // rule quality. See src/en-exceptions.ts and P5 in
-    // docs/g2p-redesign.md.
-    if (this.useExceptions && !this.disableDict) {
+    // Compact exceptions table (opt-in). Foreign-origin words and
+    // native irregulars whose rules deviate from the dict — intended as
+    // the shipping-time replacement for dict.json (~26% the size, same
+    // lenient accuracy when paired with the rule pipeline). Independent
+    // of `disableDict`: setting disableDict=true + useExceptions=true is
+    // exactly the "no dict, just exceptions" production scenario.
+    // For *pure rule* eval (no lookup at all), pass both to false.
+    if (this.useExceptions) {
       const ex = lookupException(lowerWord);
       if (ex) return ex;
     }
