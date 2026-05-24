@@ -1791,6 +1791,21 @@ export class EnglishG2P implements LanguageProcessor {
     // -erential: ɪɹɛnʃəɫ→ɝɛnʃəɫ (differential, deferential, inferential)
     if (lowerWord.endsWith("ential") && lowerWord.length >= 9)
       postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)ɛn([ˈˌ]?)ʃ([ˈˌ]?)ə([lɫ])$/, "$1ɝ$2ɛn$3ʃ$4ə$5$6");
+    // -otient: tint→ʃənt (quotient)
+    if (lowerWord.endsWith("otient") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)t([ˈˌ]?)i([ˈˌ]?)nt$/, "$1ʃ$2ənt");
+    // -scient: sint→ʃənt (omniscient) — must precede -ient rule
+    if (lowerWord.endsWith("scient") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)s([ˈˌ]?)i([ˈˌ]?)nt$/, "$1ʃ$2ənt");
+    // -sient: sint→ʒənt (transient) — must precede -ient rule
+    if (lowerWord.endsWith("sient") && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)s([ˈˌ]?)i([ˈˌ]?)nt$/, "$1ʒ$2ənt");
+    // -tience: tiəns→ʃəns (patience, impatience)
+    if (lowerWord.endsWith("tience") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)t([ˈˌ]?)i([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1ʃ$2ə$3ns");
+    // -ient: int→iənt (client, lenient, nutrient, expedient, recipient) — must follow specific -ient rules
+    if (lowerWord.endsWith("ient") && lowerWord.length >= 5)
+      postBase = postBase.replace(/([ˈˌ]?)i([ˈˌ]?)nt$/, "$1i$2ənt");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
