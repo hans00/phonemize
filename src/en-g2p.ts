@@ -1240,6 +1240,22 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.endsWith("ona"))
       postBase = postBase.replace(/ənə$/, "oʊnə");
 
+    // -ola Italian suffix: ələ → oʊlə (angola, agricola, amendola — not gondola/parabola)
+    if (lowerWord.endsWith("ola"))
+      postBase = postBase.replace(/ələ$/, "oʊlə");
+
+    // colb- prefix: kɑlb → koʊlb (colbert, colbath, colbern, colburn)
+    if (lowerWord.startsWith("colb"))
+      postBase = postBase.replace(/^([ˈˌ]?)kɑlb/, "$1koʊlb");
+
+    // German -eier/-eyer: eɪɝ → aɪɝ (altmeyer, beier, beckmeyer, billmeyer)
+    if (/e[iy]er$/.test(lowerWord))
+      postBase = postBase.replace(/eɪɝ$/, "aɪɝ");
+
+    // Terminal -ai: eɪ → aɪ (altai, bandai, bonsai, barkai — not dalai/hyundai)
+    if (lowerWord.endsWith("ai") && lowerWord.length >= 4)
+      postBase = postBase.replace(/eɪ$/, "aɪ");
+
     // gian- Italian names: dʒɪæn → dʒɑn (gianni, giannini, giancarlo, giancola)
     if (lowerWord.startsWith("gian"))
       postBase = postBase.replace(/^([ˈˌ]?)dʒɪæn/, "$1dʒɑn");
