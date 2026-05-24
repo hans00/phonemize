@@ -1535,6 +1535,12 @@ export class EnglishG2P implements LanguageProcessor {
     // accu- (not accust-): ækə→ækju (accurate, accumulate, accuhealth)
     if (lowerWord.startsWith("accu") && !/^accust/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)æk([ˈˌ]?)ə/, "$1æk$2ju");
+    // andro- Greek prefix: ændɹə→ændɹɑ before non-s/z/n/ɹ (androgynous, andrada, andropov)
+    if (/andr/.test(lowerWord) && lowerWord.length >= 6)
+      postBase = postBase.replace(/ændɹ([ˈˌ]?)ə([^szɹn])/, "ændɹ$1ɑ$2");
+    // bren-/pren-/ren- Germanic names: ɹɪn→ɹɛn (brendlinger, prendergast, rensberger)
+    if (/^[bp]?ren/.test(lowerWord) && lowerWord.length >= 5 && !/rene$|rena$/.test(lowerWord))
+      postBase = postBase.replace(/([bp]?)ɹ([ˈˌ]?)ɪn/, "$1ɹ$2ɛn");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
