@@ -559,11 +559,10 @@ export class EnglishG2P implements LanguageProcessor {
     // Principled pipeline (opt-in). Decomposes the word into suffix +
     // base, looks up the base in dict, and rebuilds the IPA via stress
     // + reduction rules — skipping the postBase if-chain. Only fires
-    // when the base resolves cleanly via dict. The LTS path is *not*
-    // wired in as a fallback here because LTS prediction (~64% lenient)
-    // is currently noisier than the legacy rule pipeline (~75%); routing
-    // through it regresses eval by ~-6%. See docs/g2p-redesign.md P3
-    // status for what needs to improve before that integration is safe.
+    // when the base resolves cleanly via dict. LTS-as-base regresses
+    // eval by ~−6% even after native-only retraining; the right answer
+    // for the "no-dict" path is the exceptions table (P4/P5), not LTS
+    // as a base provider.
     if (this.enablePrincipled && !this.disableDict) {
       const principled = predictPrincipled(lowerWord, (w: string) => {
         if (this.customDict[w]) return this.customDict[w];

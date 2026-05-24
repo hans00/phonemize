@@ -26,6 +26,43 @@ const aligned: Record<string, string> = JSON.parse(
   readFileSync("./data/en/alignments.json", "utf8")
 );
 
+// Filter to "native" English words only. Foreign borrowings retain
+// source-language phonology; training the LTS on them contaminates
+// English predictions (e.g., "in" → "æn" from a few French names
+// poisoning every English -in word). The exception list handles
+// foreign words at runtime, so the LTS only needs to do English well.
+//
+// Heuristics mirror scripts/mine-exceptions.ts ORIGIN_RULES — kept inline
+// rather than imported to keep the compile step a leaf script.
+const FOREIGN_PATTERNS: RegExp[] = [
+  /(wski|wska|cki|cka|czyk|czak|wicz)$/,                                  // Polish
+  /(cz|sz|rz|szcz)/,                                                       // Polish clusters
+  /(elli|etti|ozzi|ucci|ello|etto|ozzo|accia|aldo|otto|essa)$/,           // Italian
+  /(gli|gn[aeiou])/,                                                       // Italian clusters (length-guarded below)
+  /(eaux|aux|eau|oise|ois|aire|ette|elle|gne|ille|ique)$/,                // French
+  /(beau|deau|reau|teau|mont|jean)/,                                       // French stems
+  /(ez|os|illo|illa|ando|endo|ente)$/,                                     // Spanish (length-guarded)
+  /(rodriguez|gonzalez|hernandez|sanchez|gomez|santos)/,                   // Spanish surname stems
+  /(stein|berg|burg|mann|hoff|holz|brunn|heim|bach|wald|enstein)$/,       // German
+  /(sch|tsch|pf)/,                                                         // German clusters
+  /(ovich|evich|ovna|evna|insky|insk|ova|ev|ov|enko|sky)$/,                // Russian
+  /(opoulos|idis|akis|opolous|antos|aros)$/,                               // Greek
+  /(ahmed|hamed|hussein|hassan|abdul|mohammed|mohamed)/,                   // Arabic
+  /^(mc|mac|o')/,                                                          // Celtic
+  /(ough|llwyd|gwyn|aoibh)/,                                               // Celtic clusters
+  /(tsuda|shima|moto|hara|yama|kawa|saki|naka|hashi|guchi|sato|suzuki|takaha)$/, // Japanese
+  /^(nguyen|tran|huynh|wang|chen|liu|zhang|kim|lee|park|choi)$/,           // Asian
+];
+// Exclude common English words that happen to match foreign patterns.
+const NATIVE_OVERRIDE = /^(scratch|scheme|schedule|sch|school)$/;
+function isLikelyForeign(word: string): boolean {
+  if (NATIVE_OVERRIDE.test(word)) return false;
+  for (const p of FOREIGN_PATTERNS) {
+    if (p.test(word) && word.length >= 5) return true;
+  }
+  return false;
+}
+
 // Counts: key → phoneme → count
 type Counter = Map<string, Map<string, number>>;
 const fullCtx: Counter = new Map();
@@ -40,7 +77,14 @@ function bump(c: Counter, key: string, phoneme: string) {
 }
 
 let totalTriples = 0;
+let nativeWords = 0;
+let foreignSkipped = 0;
 for (const [word, alignStr] of Object.entries(aligned)) {
+  if (isLikelyForeign(word)) {
+    foreignSkipped++;
+    continue;
+  }
+  nativeWords++;
   const pairs = alignStr.split(" ").map((s: string): [string, string] => {
     const idx = s.indexOf("/");
     return [s.slice(0, idx), s.slice(idx + 1)];
@@ -116,7 +160,9 @@ const sizes = {
 
 writeFileSync("./data/en/lts.json", JSON.stringify(lts), "utf8");
 
-console.log(`Triples emitted: ${totalTriples} (across ${Object.keys(aligned).length} words)`);
+console.log(`Native words used:  ${nativeWords}`);
+console.log(`Foreign skipped:    ${foreignSkipped}`);
+console.log(`Triples emitted:    ${totalTriples}`);
 console.log(`Compact table sizes:`);
 console.log(`  full      (L|g|R): ${sizes.full}`);
 console.log(`  leftCtx   (L|g):   ${sizes.leftCtx}`);
