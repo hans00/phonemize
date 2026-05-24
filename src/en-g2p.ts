@@ -1285,6 +1285,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -auer German names: ɔɝ → aʊɝ (bauer, brauer, sauer, dauer, gauer)
     if (lowerWord.endsWith("auer"))
       postBase = postBase.replace(/ɔɝ$/, "aʊɝ");
+    // schia- Italian names: ʃɪæ → skiɑ (schiavo, schiavi, schiappa, schiavone)
+    if (lowerWord.startsWith("schia"))
+      postBase = postBase.replace(/^([ˈˌ]?)ʃɪæ/, "$1skiɑ");
     // -well compound names: uəl/wəl/oʊəl → wɛl (bakewell, bracewell, caldwell, honeywell)
     // Exclude: ho/lo/no/po/cr/mc/mac/ro-well (howell, lowell, nowell, powell, crowell, mcdowell)
     // and n/s/j/e-ewell (newell, sewell, jewell)
