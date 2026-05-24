@@ -1541,6 +1541,9 @@ export class EnglishG2P implements LanguageProcessor {
     // bren-/pren-/ren- Germanic names: ɹɪn→ɹɛn (brendlinger, prendergast, rensberger)
     if (/^[bp]?ren/.test(lowerWord) && lowerWord.length >= 5 && !/rene$|rena$/.test(lowerWord))
       postBase = postBase.replace(/([bp]?)ɹ([ˈˌ]?)ɪn/, "$1ɹ$2ɛn");
+    // German -ager/-eger surnames: əɡɝ→eɪɡɝ (bontrager, borntrager, loudenslager)
+    if (/[ae]ger$/.test(lowerWord) && lowerWord.length >= 5)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)ɡɝ$/, "$1eɪ$2ɡɝ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
