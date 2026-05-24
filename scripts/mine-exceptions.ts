@@ -64,17 +64,93 @@ function isAcronym(word: string, ipa: string): boolean {
   return p === "";
 }
 
+// ─── Linguistic-origin classifier ──────────────────────────────────────────
+//
+// Foreign borrowings cannot be predicted by English rules — they retain
+// (some of) the source language's phonology. Categorising the candidates
+// lets the threshold decision be informed by linguistics, not just by ED:
+// foreign-origin words *must* ship in the exception list regardless of
+// ED, while native words with high ED suggest rule bugs we should fix.
+//
+// Heuristics are orthographic only — surface patterns characteristic of
+// the source language. They will miss some assimilated borrowings, but
+// the goal is to catch the obvious cases (Polish -wski, French -eaux,
+// Italian -elli, Spanish -ez, Russian -ov, etc.).
+
+type Origin =
+  | "polish"
+  | "french"
+  | "italian"
+  | "spanish"
+  | "german"
+  | "japanese"
+  | "russian"
+  | "greek"
+  | "arabic"
+  | "celtic"
+  | "asian"
+  | "native";
+
+interface OriginRule {
+  origin: Exclude<Origin, "native">;
+  test: (w: string) => boolean;
+}
+
+const ORIGIN_RULES: OriginRule[] = [
+  // Polish — extremely distinctive consonant clusters and surname endings
+  { origin: "polish", test: (w) => /(wski|wska|cki|cka|czyk|czak|wicz)$/.test(w) },
+  { origin: "polish", test: (w) => /(cz|sz|rz|szcz)/.test(w) && !/^(scratch|scheme|schedule|sch)/.test(w) },
+  // Italian
+  { origin: "italian", test: (w) => /(elli|etti|ozzi|ucci|ello|etto|ozzo|accia|ucci|aldo|otto|essa)$/.test(w) },
+  { origin: "italian", test: (w) => /(gli|gn[aeiou])/.test(w) && w.length >= 5 },
+  // French
+  { origin: "french", test: (w) => /(eaux|aux|eau|oise|ois|aire|ette|elle|gne|ille|ique)$/.test(w) },
+  { origin: "french", test: (w) => /(beau|deau|reau|teau|mont|jean)/.test(w) },
+  // Spanish / Portuguese
+  { origin: "spanish", test: (w) => /(ez|os|illo|illa|ando|endo|ente)$/.test(w) && w.length >= 5 },
+  { origin: "spanish", test: (w) => /(rodriguez|gonzalez|hernandez|sanchez|gomez|santos)/.test(w) },
+  // German
+  { origin: "german", test: (w) => /(stein|berg|burg|mann|hoff|holz|brunn|heim|bach|wald|enstein)$/.test(w) },
+  { origin: "german", test: (w) => /(sch|tsch|pf)/.test(w) && w.length >= 5 && !/(schedule|scheme|school)/.test(w) },
+  // Russian (transliterated)
+  { origin: "russian", test: (w) => /(ovich|evich|ovna|evna|insky|insk|ova|ev|ov|enko|sky)$/.test(w) },
+  // Greek
+  { origin: "greek", test: (w) => /(opoulos|idis|akis|opolous|antos|aros)$/.test(w) },
+  // Arabic / Middle Eastern
+  { origin: "arabic", test: (w) => /(ahmed|hamed|hussein|hassan|abdul|mohammed|mohamed)/.test(w) },
+  // Celtic (Irish/Scottish/Welsh)
+  { origin: "celtic", test: (w) => /^(mc|mac|o')/.test(w) },
+  { origin: "celtic", test: (w) => /(ough|llwyd|gwyn|aoibh)/.test(w) && w.length >= 5 },
+  // Japanese (romanized: Hepburn-ish)
+  { origin: "japanese", test: (w) => /(tsuda|shima|moto|hara|yama|kawa|saki|naka|hashi|guchi|sato|suzuki|takaha)$/.test(w) },
+  // Other Asian (Chinese/Korean/Vietnamese surnames in dict are often
+  // 3-4 letter open syllables — too ambiguous to reliably classify; skip)
+  { origin: "asian", test: (w) => /^(nguyen|tran|huynh|wang|chen|liu|zhang|kim|lee|park|choi)$/.test(w) },
+];
+
+function originOf(word: string): Origin {
+  for (const r of ORIGIN_RULES) {
+    if (r.test(word)) return r.origin;
+  }
+  return "native";
+}
+
 interface Cand {
   word: string;
   dictIpa: string;
   predIpa: string;
   ed: number;
+  origin: Origin;
 }
 
 const candidates: Cand[] = [];
 let total = 0;
 let withinLenient = 0;
 let acronymsSkipped = 0;
+
+// Also track origin distribution across the *whole* dict, so we can see
+// how foreign-origin words concentrate in the high-ED tail.
+const originAll: Map<Origin, number> = new Map();
 
 for (const [word, dictIpa] of Object.entries(dict)) {
   if (!/^[a-z]+$/.test(word)) continue;
@@ -83,6 +159,8 @@ for (const [word, dictIpa] of Object.entries(dict)) {
     acronymsSkipped++;
     continue;
   }
+  const origin = originOf(word);
+  originAll.set(origin, (originAll.get(origin) ?? 0) + 1);
   const pred = g2p.predict(word, "en");
   if (!pred) continue;
   const d = levenshtein.get(canon(pred), canon(dictIpa));
@@ -90,7 +168,7 @@ for (const [word, dictIpa] of Object.entries(dict)) {
     withinLenient++;
     continue;
   }
-  candidates.push({ word, dictIpa, predIpa: pred, ed: d });
+  candidates.push({ word, dictIpa, predIpa: pred, ed: d, origin });
 }
 
 // Sort by edit distance (worst first), then alphabetically for stability.
@@ -111,27 +189,62 @@ Array.from(hist.entries()).sort((a, b) => a[0] - b[0]).forEach(([ed, n]) => {
   console.log(`  ed=${ed.toString().padStart(2)}: ${n}`);
 });
 
-// Cumulative sizes at different thresholds (so reader can choose tradeoff)
-console.log(`\n=== Shipping-size tradeoff by threshold ===`);
+// Origin distribution across the whole dict (so we know baseline rates)
+console.log(`\n=== Origin distribution: whole dict vs exception candidates ===`);
+const denomAll = total - acronymsSkipped;
+const allOrigins: Origin[] = ["native", "polish", "french", "italian", "spanish", "german", "russian", "greek", "celtic", "arabic", "japanese", "asian"];
+const inExceptions: Map<Origin, number> = new Map();
+for (const c of candidates) inExceptions.set(c.origin, (inExceptions.get(c.origin) ?? 0) + 1);
+console.log(`  ${"origin".padEnd(10)}  ${"all dict".padStart(8)}  ${"ex cand".padStart(8)}  ${"ex/all".padStart(7)}`);
+for (const o of allOrigins) {
+  const allN = originAll.get(o) ?? 0;
+  const exN = inExceptions.get(o) ?? 0;
+  if (allN === 0) continue;
+  console.log(`  ${o.padEnd(10)}  ${allN.toString().padStart(8)}  ${exN.toString().padStart(8)}  ${fmt(exN, allN).padStart(7)}`);
+}
+
+// Algorithmic threshold ladder (foreign + native both gated by same ED)
+console.log(`\n=== Pure ED threshold ladder ===`);
 for (const t of [2, 3, 4, 5, 6]) {
   const filtered = candidates.filter((c: Cand) => c.ed >= t);
-  const map: Record<string, string> = {};
-  for (const c of filtered) map[c.word] = c.dictIpa;
-  const size = JSON.stringify(map).length;
-  // Runtime accuracy = (total - filtered) words predicted by rules within ed<2 + filtered words exact via exception
-  // i.e., everything ed<t goes to rules (some may be wrong), everything ed≥t is exact.
-  // Strict lenient: rules cover ed<2 perfectly, ed in [2,t) are off, ed≥t exact via exception.
-  const rulesPerfect = withinLenient;
-  const rulesOff = candidates.filter((c: Cand) => c.ed < t).length;
-  const lenientCovered = rulesPerfect + filtered.length;
+  const size = JSON.stringify(Object.fromEntries(filtered.map((c: Cand) => [c.word, c.dictIpa]))).length;
+  const lenientCovered = withinLenient + filtered.length;
   console.log(
-    `  ed≥${t}: ${filtered.length.toString().padStart(6)} entries  (${(size / 1024).toFixed(1)} KB)  lenient acc on dict: ${fmt(lenientCovered, total - acronymsSkipped)}  (rules-only deviation count: ${rulesOff})`
+    `  ed≥${t}: ${filtered.length.toString().padStart(6)} entries  (${(size / 1024).toFixed(1)} KB)  lenient on dict: ${fmt(lenientCovered, denomAll)}`
   );
 }
 
-// Top 20 worst (largest ed)
-console.log(`\n=== 20 worst-prediction non-acronym words ===`);
+// Linguistically-informed policy: keep ALL foreign-origin candidates
+// (English rules can't predict them — they're not "rule bugs"), gate
+// native candidates by a separate ED threshold (those *should* be
+// derivable; high ED there indicates either a rule gap or genuine
+// English irregularity worth shipping as exception).
+console.log(`\n=== Hybrid policy: all foreign + native ed≥N ===`);
+const foreignCands = candidates.filter((c: Cand) => c.origin !== "native");
+const nativeCands = candidates.filter((c: Cand) => c.origin === "native");
+console.log(`  foreign candidates always shipped: ${foreignCands.length}`);
+console.log(`  native candidates by threshold:`);
+for (const t of [2, 3, 4, 5, 6]) {
+  const nativeFiltered = nativeCands.filter((c: Cand) => c.ed >= t);
+  const total = [...foreignCands, ...nativeFiltered];
+  const size = JSON.stringify(Object.fromEntries(total.map((c: Cand) => [c.word, c.dictIpa]))).length;
+  const lenientCovered = withinLenient + total.length;
+  console.log(
+    `    native ed≥${t}: total ${total.length.toString().padStart(6)} (${nativeFiltered.length} native)  (${(size / 1024).toFixed(1)} KB)  lenient on dict: ${fmt(lenientCovered, denomAll)}`
+  );
+}
+
+// Top 20 worst (largest ed) — with origin tag
+console.log(`\n=== 20 worst-prediction words (with origin guess) ===`);
 for (const c of candidates.slice(0, 20)) {
+  console.log(
+    `  ed=${c.ed.toString().padStart(2)}  ${c.origin.padEnd(9)} ${c.word.padEnd(20)} dict=${c.dictIpa.padEnd(25)} pred=${c.predIpa}`
+  );
+}
+
+// Worst 15 NATIVE words specifically — these are the rule-bug suspects.
+console.log(`\n=== 15 worst native-origin words (rule-gap candidates) ===`);
+for (const c of nativeCands.slice(0, 15)) {
   console.log(`  ed=${c.ed.toString().padStart(2)}  ${c.word.padEnd(20)} dict=${c.dictIpa.padEnd(25)} pred=${c.predIpa}`);
 }
 

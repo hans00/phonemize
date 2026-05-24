@@ -117,23 +117,47 @@ Runtime: no matrices, no probabilities, no training. Just rules + lookup.
   - [x] P3.2: Integration measured. **LTS alone: 24.2% exact, 63.8% lenient** after aligner + compiler improvements (empty-atom penalty in DP cost so silent-letter assignments don't win ties; minSupport floor for multi-char clusters so name-only patterns drop out). Still below the legacy rule pipeline (75.4% lenient) — routing it in as the base provider regresses eval by ~−6% lenient, so en-g2p keeps the dict-only gate. Further LTS quality work (joint-sequence model, deeper context windows, stress-aware contexts) is the prerequisite for unblocking P2.4 / P5.
 - [x] **P4**: Exception mining
   - `scripts/mine-exceptions.ts` runs rules (disableDict=true) over the
-    whole dict, computes edit distance to dict IPA per entry, filters
-    acronyms (with canon-equivalent letter-name matching), outputs
-    `data/en/exception-candidates.json` and a shipping-size tradeoff
-    table. Key numbers (out of 100,599 alphabetic non-acronym entries):
+    whole dict, computes edit distance, filters acronyms, classifies
+    each candidate by **linguistic origin** (orthographic heuristics for
+    Polish/French/Italian/Spanish/German/Russian/Greek/Celtic/Arabic/
+    Japanese/Asian → otherwise "native"), and outputs
+    `data/en/exception-candidates.json`.
+  - **Linguistic rationale**: English G2P rules can never correctly
+    predict pronunciations of foreign borrowings (they keep source-
+    language phonology). Lumping them into the same ED-threshold pile
+    as native English irregulars conflates two distinct problems:
+    foreign words *must* ship in the exception table; native high-ED
+    words signal either rule bugs to fix or genuine English irregulars.
+  - **Failure-rate distribution by origin** (% of that origin's dict
+    entries that fall outside ed < 2 of the rule pipeline):
 
-    | threshold | entries | size  | lenient acc on dict | rules-only off |
-    |-----------|---------|-------|---------------------|----------------|
-    | ed ≥ 2    | 26,367  | 583 KB| 100.00%             | 0              |
-    | ed ≥ 3    | 11,777  | 273 KB| 85.50%              | 14,590         |
-    | ed ≥ 4    |  4,412  | 108 KB|  78.18%             | 21,955         |
-    | ed ≥ 5    |  1,424  |  37 KB|  75.21%             | 24,943         |
-    | ed ≥ 6    |    373  |  10 KB|  74.16%             | 25,994         |
+    | origin   | dict entries | exception % |
+    |----------|-------------:|------------:|
+    | japanese |          132 |       81.1% |
+    | greek    |           13 |       69.2% |
+    | arabic   |           16 |       62.5% |
+    | spanish  |          597 |       61.0% |
+    | russian  |          444 |       46.0% |
+    | polish   |          839 |       45.5% |
+    | french   |        1,113 |       34.8% |
+    | italian  |        1,097 |       32.6% |
+    | celtic   |        1,311 |       30.2% |
+    | german   |        2,398 |       21.6% |
+    | **native** |     **92,628** |   **25.5%** |
 
-    Compare to current `data/en/dict.json` at **2.7 MB**. At ed ≥ 3 the
-    package gets *higher* lenient accuracy than the current eval baseline
-    (85.5% vs 75.4%) at ~10% the size. At ed ≥ 5 we match the current
-    baseline with a 99% size reduction.
+  - **Hybrid policy** (recommended): always ship the 2,738 foreign
+    candidates; gate native by ED threshold.
+
+    | native ED  | total entries | size  | lenient on dict |
+    |------------|--------------:|------:|----------------:|
+    | ≥ 2        |        26,367 |  583 KB|         100.00% |
+    | ≥ 3        |        13,157 |  304 KB|          86.87% |
+    | ≥ 4        |         6,551 |  156 KB|          80.30% |
+    | ≥ 5        |         3,942 |   94 KB|          77.71% |
+
+    Current `data/en/dict.json` is **2.7 MB**. **native ≥ 3** ships
+    in 11% of that and *exceeds* the current eval baseline by 11 points
+    absolute (87% vs 75%).
 - [ ] P5: Dict elimination — runtime integration of exceptions.json,
   build-time pipeline for `mine-exceptions` + `compile-lts`, removal of
   `data/en/dict.json` from the shipping bundle.
