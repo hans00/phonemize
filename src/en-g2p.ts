@@ -2025,6 +2025,51 @@ export class EnglishG2P implements LanguageProcessor {
     // -apocryphal: æpəkɹɪf→əpɑkɹəf (apocryphal)
     if (lowerWord.endsWith("pocryphal") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)æ([ˈˌ]?)p([ˈˌ]?)ə([ˈˌ]?)k([ˈˌ]?)ɹ([ˈˌ]?)ɪ([ˈˌ]?)f/, "$1ə$2p$3ɑ$4k$5ɹ$6ə$7f");
+    // -culinary: kʌɫɪn→kjʌɫɪn (culinary)
+    if (lowerWord.endsWith("linary") && lowerWord.length >= 7)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)ʌ([ˈˌ]?)[lɫ]([ˈˌ]?)ɪ([ˈˌ]?)n/, "$1k$2jʌ$3ɫ$4ɪ$5n");
+    // -corollary: kɝɑɫ→kɔɹəɫ (corollary)
+    if (lowerWord.endsWith("rollary") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)ɝ([ˈˌ]?)ɑ([ˈˌ]?)[lɫ]/, "$1k$2ɔɹ$3ə$4ɫ");
+    // -depositary: dɪpoʊsɪt→dəpɑzɪt (depositary)
+    if (lowerWord.endsWith("positary") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)p([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)s([ˈˌ]?)ɪ([ˈˌ]?)t/, "$1d$2ə$3p$4ɑ$5z$6ɪ$7t");
+    // -courageous: kaʊɹeɪdʒ→kɝeɪdʒ (courageous)
+    if (lowerWord.endsWith("ourageous") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)aʊ([ˈˌ]?)ɹ([ˈˌ]?)eɪ([ˈˌ]?)d([ˈˌ]?)ʒ/, "$1k$2ɝ$3eɪ$4d$5ʒ");
+    // -courteous: kuɹtuəs→kɝtiəs (courteous)
+    if (lowerWord.endsWith("ourteous") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)u([ˈˌ]?)ɹ([ˈˌ]?)t([ˈˌ]?)u([ˈˌ]?)ə([ˈˌ]?)s$/, "$1k$2ɝ$3t$4i$5ə$6s");
+    // -abdominal: mɪnəɫ→mənəɫ (abdominal)
+    if (lowerWord.endsWith("dominal") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)m([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)ə([ˈˌ]?)[lɫ]$/, "$1m$2ə$3n$4ə$5ɫ");
+    // -anecdotal: ænɛkdət→ænəkdoʊt (anecdotal)
+    if (lowerWord.endsWith("anecdotal") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)æ([ˈˌ]?)n([ˈˌ]?)ɛ([ˈˌ]?)k([ˈˌ]?)d([ˈˌ]?)ə([ˈˌ]?)t/, "$1æ$2n$3ə$4k$5d$6oʊ$7t");
+    // -aeronautical: ɛɹoʊnɑt→ɛɹənɑt (aeronautical)
+    if (lowerWord.endsWith("eronautical") && lowerWord.length >= 11)
+      postBase = postBase.replace(/^([ˈˌ]?)ɛ([ˈˌ]?)ɹ([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)n/, "$1ɛ$2ɹ$3ə$4n");
+    // -apolitical: əpəɫɪt→eɪpəɫɪt (apolitical)
+    if (lowerWord.endsWith("political") && lowerWord.startsWith("a") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)p([ˈˌ]?)ə([ˈˌ]?)[lɫ]([ˈˌ]?)ɪ([ˈˌ]?)t/, "$1eɪ$2p$3ə$4ɫ$5ɪ$6t");
+    // -antithetical: æntaɪðət→æntəθɛt (antithetical)
+    if (lowerWord.endsWith("ntithetical") && lowerWord.length >= 11)
+      postBase = postBase.replace(/^([ˈˌ]?)æ([ˈˌ]?)n([ˈˌ]?)t([ˈˌ]?)aɪ([ˈˌ]?)ð([ˈˌ]?)ə([ˈˌ]?)t/, "$1æ$2n$3t$4ə$5θ$6ɛ$7t");
+    // -adrenal: ædɹən→ədɹin (adrenal)
+    if (lowerWord.endsWith("drenal") && lowerWord.length >= 7)
+      postBase = postBase.replace(/^([ˈˌ]?)æ([ˈˌ]?)d([ˈˌ]?)ɹ([ˈˌ]?)ə([ˈˌ]?)n/, "$1ə$2d$3ɹ$4i$5n");
+    // -allergist: æɫɝɡɪst→æɫɝdʒəst (allergist)
+    if (lowerWord.endsWith("llergist") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)[lɫ]([ˈˌ]?)ɝ([ˈˌ]?)ɡ([ˈˌ]?)ɪ([ˈˌ]?)s([ˈˌ]?)t$/, "$1æ$2ɫ$3ɝ$4dʒ$5ə$6s$7t");
+    // -anarchist: ænɑɹk→ænɝk (anarchist)
+    if (lowerWord.endsWith("narchist") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)æ([ˈˌ]?)n([ˈˌ]?)ɑ([ˈˌ]?)ɹ([ˈˌ]?)k/, "$1æ$2n$3ɝ$4k");
+    // -anatomist: ænətəm→ənætəm (anatomist)
+    if (lowerWord.endsWith("natomist") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)æ([ˈˌ]?)n([ˈˌ]?)ə([ˈˌ]?)t([ˈˌ]?)ə([ˈˌ]?)m/, "$1ə$2n$3æ$4t$5ə$6m");
+    // -agronomist: æɡɹənəm→əɡɹɑnəm (agronomist)
+    if (lowerWord.endsWith("gronomist") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)æ([ˈˌ]?)ɡ([ˈˌ]?)ɹ([ˈˌ]?)ə([ˈˌ]?)n([ˈˌ]?)ə([ˈˌ]?)m/, "$1ə$2ɡ$3ɹ$4ɑ$5n$6ə$7m");
     // -locomotion: ɫəkoʊ→ɫoʊkoʊ at start (locomotion)
     if (lowerWord.startsWith("loc") && lowerWord.endsWith("otion") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)k/, "$1ɫ$2oʊ$3k");
