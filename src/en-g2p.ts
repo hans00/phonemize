@@ -2076,6 +2076,27 @@ export class EnglishG2P implements LanguageProcessor {
     // -ority: ɝɪti→ɔɹəti (majority, minority)
     if (lowerWord.endsWith("ority") && lowerWord.length >= 6)
       postBase = postBase.replace(/([ˈˌ]?)ɝ([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)i$/, "$1ɔɹ$2ə$3t$4i");
+    // -urity: ɪti→əti at end (security, obscurity — not in- prefix words)
+    if (lowerWord.endsWith("urity") && lowerWord.length >= 6 && !lowerWord.startsWith("in"))
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)i$/, "$1ə$2t$3i");
+    // -quality: ɛkwəɫ→ɪkwɑɫ (equality, inequality)
+    if (lowerWord.endsWith("quality") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ɛ([ˈˌ]?)k([ˈˌ]?)w([ˈˌ]?)ə([ˈˌ]?)[lɫ]/, "$1ɪ$2k$3w$4ɑ$5ɫ");
+    // -priority: pɹɪɔɹ→pɹaɪɔɹ (priority)
+    if (lowerWord.endsWith("priority") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)p([ˈˌ]?)ɹ([ˈˌ]?)ɪ([ˈˌ]?)ɔ([ˈˌ]?)ɹ/, "$1p$2ɹ$3aɪ$4ɔ$5ɹ");
+    // -predatory: pɹɪdæt→pɹɛdət (predatory)
+    if (lowerWord.endsWith("predatory") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)p([ˈˌ]?)ɹ([ˈˌ]?)ɪ([ˈˌ]?)d([ˈˌ]?)æ([ˈˌ]?)t/, "$1p$2ɹ$3ɛ$4d$5ə$6t");
+    // -execut*: ɪɡz[ɪɛ]kj→ɛksəkj (execute, execution)
+    if (lowerWord.startsWith("execut") && lowerWord.length >= 7)
+      postBase = postBase.replace(/^([ˈˌ]?)ɪ([ˈˌ]?)ɡ([ˈˌ]?)z([ˈˌ]?)[ɪɛ]([ˈˌ]?)k([ˈˌ]?)j/, "$1ɛ$2k$3s$4ə$5k$6j");
+    // -exemplary: ɛmpɫɛɹi→ɛmpɫɝi (exemplary)
+    if (lowerWord.startsWith("exempl") && lowerWord.endsWith("ary"))
+      postBase = postBase.replace(/([ˈˌ]?)[lɫ]([ˈˌ]?)ɛɹ([ˈˌ]?)i$/, "$1ɫ$2ɝ$3i");
+    // -irmary: mɛɹi→mɝi at end (infirmary)
+    if (lowerWord.endsWith("irmary") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)m([ˈˌ]?)ɛɹ([ˈˌ]?)i$/, "$1m$2ɝ$3i");
     // -locomotion: ɫəkoʊ→ɫoʊkoʊ at start (locomotion)
     if (lowerWord.startsWith("loc") && lowerWord.endsWith("otion") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)k/, "$1ɫ$2oʊ$3k");
