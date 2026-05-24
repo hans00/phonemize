@@ -1285,6 +1285,11 @@ export class EnglishG2P implements LanguageProcessor {
     // eye- compound prefix: eɪɛ → aɪ (eyeball, eyebrow, eyecare, eyedrop, eyelash — eye=/aɪ/)
     if (lowerWord.startsWith("eye") && lowerWord.length >= 4)
       postBase = postBase.replace(/^([ˈˌ]?)eɪɛ/, "$1aɪ");
+    // breath-/death- compounds: bɹiθ → bɹɛθ, diθ → dɛθ (breathtaking, deathwatch — ea=/ɛ/ before th)
+    if (lowerWord.startsWith("breath"))
+      postBase = postBase.replace(/bɹiθ/, "bɹɛθ");
+    if (lowerWord.startsWith("death"))
+      postBase = postBase.replace(/diθ/, "dɛθ");
     // -burgh surnames: restore final /ɡ/ (harrisburgh, rifenburgh, vanamburgh, aldeburgh)
     if (lowerWord.endsWith("burgh") && lowerWord.length >= 6)
       postBase = postBase.replace(/ɝ$/, "ɝɡ");
