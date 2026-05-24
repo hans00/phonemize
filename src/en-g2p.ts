@@ -1119,17 +1119,19 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("pal"))
       postBase = postBase.replace(/^([ˈˌ]?)pəl/, "$1pɑl");
 
-    // ben- prefix: bɪn → bɛn (benveniste, benvenuti, benninghoff — Romance/proper names)
+    // ben- prefix: bɪn → bɛn (benveniste, benvenuti, benecke — Romance/proper names)
+    // stress can appear between ɪ and n (be-NECKE → bɪˈnɛk)
     if (lowerWord.startsWith("ben"))
-      postBase = postBase.replace(/^([ˈˌ]?)bɪn/, "$1bɛn");
+      postBase = postBase.replace(/^([ˈˌ]?)bɪ([ˈˌ]?)n/, "$1bɛ$2n");
 
     // mc/mac+g names: məkɡ → məɡ (mcgarvey, macgowan, mcgaha — "c" silent before "g")
     if (/^m(?:c|ac)g/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)məkɡ/, "$1məɡ");
 
-    // cam- prefix: kəm → kɑm (cammarano, campanelli, campuzano — Italian names)
+    // cam- prefix: kəm → kɑm (cammarano, campanelli, camilleri — Italian names)
+    // stress can appear between ə and m (ca-MIL-le-ri → kəˈmɪɫɪɹɪ)
     if (lowerWord.startsWith("cam"))
-      postBase = postBase.replace(/^([ˈˌ]?)kəm/, "$1kɑm");
+      postBase = postBase.replace(/^([ˈˌ]?)kə([ˈˌ]?)m/, "$1kɑ$2m");
 
     // cap- prefix: kəp → kɑp (capetillo, cappelletti, cappuccio — Italian/Spanish names)
     if (lowerWord.startsWith("cap"))
