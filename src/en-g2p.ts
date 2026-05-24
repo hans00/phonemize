@@ -1467,6 +1467,12 @@ export class EnglishG2P implements LanguageProcessor {
     // German -reit- surnames: ɹeɪt→ɹaɪt (freitag, kreitzer, kreitman, reitan)
     if (/reit/.test(lowerWord) && lowerWord.length >= 5)
       postBase = postBase.replace(/ɹeɪt/, "ɹaɪt");
+    // German -eig- surnames (not -eigh Irish or -eiga Romance): eɪɡ→aɪɡ (beigel, geigle, schweigert, lickteig)
+    if (/eig/.test(lowerWord) && !/eigh/.test(lowerWord) && !/eiga/.test(lowerWord))
+      postBase = postBase.replace(/eɪɡ/, "aɪɡ");
+    // German -rein- surnames: ɹeɪn→ɹaɪn (amrein, breining, reindel, reinert, reinig)
+    if (/rein/.test(lowerWord) && lowerWord.length >= 6 && !/reina/.test(lowerWord))
+      postBase = postBase.replace(/ɹeɪn/, "ɹaɪn");
     // -ge[rs]on/en surnames: hard /ɡ/ not soft (borgeson, burgeson, fergeson, helgesen)
     if (/g[ei]s[eo]n$/.test(lowerWord) && lowerWord.length >= 7)
       postBase = postBase.replace(/dʒ([ˈˌ]?)ɪs([əɪ])n$/, "ɡ$1ɪs$2n");
