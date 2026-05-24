@@ -2133,6 +2133,30 @@ export class EnglishG2P implements LanguageProcessor {
     // -ndifference: fɪɹ→fɝ (indifference)
     if (lowerWord.includes("ndifference"))
       postBase = postBase.replace(/([ˈˌ]?)fɪɹ([ˈˌ]?)əns$/, "$1fɝ$2əns");
+    // -durable: dɝ→dʊɹ (durable, nondurable)
+    if (lowerWord.endsWith("durable") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)d([ˈˌ]?)ɝ([ˈˌ]?)ə([ˈˌ]?)b([ˈˌ]?)ə([ˈˌ]?)[lɫ]/, "$1d$2ʊɹ$3ə$4b$5ə$6ɫ");
+    // -quisitive: ɪŋkwɪsətɪv→ɪnkwɪzɪtɪv (inquisitive)
+    if (lowerWord.endsWith("quisitive") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ŋ([ˈˌ]?)k([ˈˌ]?)w([ˈˌ]?)ɪ([ˈˌ]?)s([ˈˌ]?)ə([ˈˌ]?)t/, "$1ɪ$2n$3k$4w$5ɪ$6z$7ɪ$8t");
+    // -fugitive: fəˈdʒ→ˈfjudʒ at start (fugitive)
+    if (lowerWord.endsWith("fugitive") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^f([ˈˌ]?)ə([ˈˌ]?)d([ˈˌ]?)ʒ/, "ˈfjudʒ");
+    // -positive: pəs→pɑz at start (positive)
+    if (lowerWord.endsWith("positive") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)p([ˈˌ]?)ə([ˈˌ]?)s/, "$1p$2ɑ$3z");
+    // -punitive: pən→pjun at start (punitive)
+    if (lowerWord.endsWith("punitive") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)p([ˈˌ]?)ə([ˈˌ]?)n/, "$1p$2j$3un");
+    // -prohibitive: pɹəhɪb→pɹoʊhɪb (prohibitive)
+    if (lowerWord.endsWith("prohibitive") && lowerWord.length >= 11)
+      postBase = postBase.replace(/^([ˈˌ]?)p([ˈˌ]?)ɹ([ˈˌ]?)ə([ˈˌ]?)h([ˈˌ]?)ɪ([ˈˌ]?)b/, "$1p$2ɹ$3oʊ$4h$5ɪ$6b");
+    // -dispositive: poʊs→pɑz (dispositive)
+    if (lowerWord.endsWith("dispositive") && lowerWord.length >= 11)
+      postBase = postBase.replace(/([ˈˌ]?)p([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)s/, "$1p$2ɑ$3z");
+    // -generative: dʒɪnɪɹ→dʒɛnɝ (generative, degenerative)
+    if (lowerWord.endsWith("generative") && lowerWord.length >= 10)
+      postBase = postBase.replace(/([ˈˌ]?)d([ˈˌ]?)ʒ([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)ɪ([ˈˌ]?)ɹ/, "$1d$2ʒ$3ɛ$4n$5ɝ");
     // -locomotion: ɫəkoʊ→ɫoʊkoʊ at start (locomotion)
     if (lowerWord.startsWith("loc") && lowerWord.endsWith("otion") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)k/, "$1ɫ$2oʊ$3k");
