@@ -1467,6 +1467,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -elman compound surnames: ɛlmən→əlmən (adelman, appelman, bockelman, begelman)
     if (lowerWord.endsWith("elman") && lowerWord.length >= 7)
       postBase = postBase.replace(/ɛl([ˈˌ]?)mən$/, "əl$1mən");
+    // -el[std]on/en surnames: ɛl→əl (adelson, hazelton, berthelsen, cannelton)
+    if (/el[std](?:on|en)$/.test(lowerWord) && lowerWord.length >= 7)
+      postBase = postBase.replace(/ɛl([ˈˌ]?)([std])ən$/, "əl$1$2ən");
+    // Scandinavian -[ae]nsen: [æɛ]nsən→ənsən (christiansen, clemensen, kristiansen)
+    if (/[ae]nsen$/.test(lowerWord) && lowerWord.length >= 7)
+      postBase = postBase.replace(/[æɛ]nsən$/, "ənsən");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
