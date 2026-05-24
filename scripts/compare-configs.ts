@@ -24,9 +24,9 @@ const passage = readFileSync(
   .filter((l) => !l.startsWith("#") && l.trim())
   .join(" ");
 
-const a = new EnglishG2P({ disableDict: true, useExceptions: false });
-const b = new EnglishG2P({ disableDict: true, useExceptions: true });
-const d = new EnglishG2P({ disableDict: false, useExceptions: false });
+const a = new EnglishG2P({ disableDict: true });   // pure rules
+const b = new EnglishG2P({ disableDict: false });  // rules + exceptions (default)
+const d = b;                                       // same as b post-redesign
 
 const words = passage
   .toLowerCase()

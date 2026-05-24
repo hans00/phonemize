@@ -37,6 +37,17 @@ function externalDataPlugin() {
   };
 }
 
+// JSON files in data/ that are BUILD-TIME ONLY and should not ship to
+// dist/. The legacy 2.7 MB English dict is no longer loaded at runtime
+// (en-g2p.ts uses data/en/exceptions.json instead); alignment artifacts
+// are inputs to scripts/compile-lts.ts and not needed by the runtime.
+const BUILD_ONLY_DATA = new Set([
+  'en/dict.json',
+  'en/alignments.json',
+  'en/align-stats.json',
+  'en/exception-candidates.json',
+]);
+
 function copyDirRecursive(src, dest) {
   if (!existsSync(src)) return;
   for (const entry of readdirSync(src)) {
@@ -45,6 +56,8 @@ function copyDirRecursive(src, dest) {
     if (statSync(srcPath).isDirectory()) {
       copyDirRecursive(srcPath, destPath);
     } else if (entry.endsWith('.json')) {
+      const relPath = relative(DATA_DIR, srcPath);
+      if (BUILD_ONLY_DATA.has(relPath)) continue;
       mkdirSync(dirname(destPath), { recursive: true });
       copyFileSync(srcPath, destPath);
     }
