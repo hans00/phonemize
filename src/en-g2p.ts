@@ -1872,6 +1872,27 @@ export class EnglishG2P implements LanguageProcessor {
     // -potence: oʊtəns→ətəns (impotence)
     if (lowerWord.endsWith("potence") && lowerWord.length >= 8)
       postBase = postBase.replace(/([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)t([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1ə$2t$3ə$4ns");
+    // -fidence: kənfɪdəns→kɑnfədəns (confidence)
+    if (lowerWord.endsWith("fidence") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)k([ˈˌ]?)ə([ˈˌ]?)n([ˈˌ]?)f([ˈˌ]?)ɪ([ˈˌ]?)d([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1k$2ɑ$3n$4f$5ə$6d$7ə$8ns");
+    // -sequence: kənsɛkwəns→kɑnsəkwəns (consequence)
+    if (lowerWord.endsWith("sequence") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)k([ˈˌ]?)ə([ˈˌ]?)n([ˈˌ]?)s([ˈˌ]?)ɛ([ˈˌ]?)k([ˈˌ]?)w([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1k$2ɑ$3n$4s$5ə$6k$7w$8ə$9ns");
+    // -cadence: dɛkeɪdəns→dɛkədəns (decadence)
+    if (lowerWord.endsWith("cadence") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)d([ˈˌ]?)ɛ([ˈˌ]?)k([ˈˌ]?)eɪ([ˈˌ]?)d([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1d$2ɛ$3k$4ə$5d$6ə$7ns");
+    // -enance: pɪnæns→pɛnəns (penance)
+    if (lowerWord.endsWith("enance") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)æ([ˈˌ]?)ns$/, "$1p$2ɛ$3n$4ə$5ns");
+    // -uminance: ɫəmɪnəns→ɫumənəns (luminance)
+    if (lowerWord.endsWith("uminance") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)m([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1ɫ$2u$3m$4ə$5n$6ə$7ns");
+    // -ficence: bɛnɛfɪsəns→bənɛfəsəns (beneficence)
+    if (lowerWord.endsWith("ficence") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)ɛ([ˈˌ]?)n([ˈˌ]?)ɛ([ˈˌ]?)f([ˈˌ]?)ɪ([ˈˌ]?)s([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1ə$2n$3ɛ$4f$5ə$6s$7ə$8ns");
+    // -incidence: kɔɪn→koʊɪn (coincidence)
+    if (lowerWord.endsWith("incidence") && lowerWord.length >= 10)
+      postBase = postBase.replace(/([ˈˌ]?)k([ˈˌ]?)ɔ([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)s/, "$1k$2oʊ$3ɪ$4n$5s");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
