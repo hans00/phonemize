@@ -1561,6 +1561,14 @@ export class EnglishG2P implements LanguageProcessor {
         || lowerWord.endsWith("oger"))
         && lowerWord.length >= 5)
       postBase = postBase.replace(/([ˈˌ]?)dʒ([ˈˌ]?)ɝ$/, "$1ɡ$2ɝ");
+    // ge+specific initial: hard-g for gear*/gee[^z]*/geb[^bi]*/gecko (not gean/geez/gebbia/geck)
+    if (/^ge(?:ar|e[^z]|b[^bi]|ck.)/.test(lowerWord) && lowerWord.length >= 4)
+      postBase = postBase.replace(/^([ˈˌ]?)dʒ/, "$1ɡ");
+    // German/surname -rgen/-agen/-ugen/-eigen: dʒ→ɡ (borgen, beagen, dagen, jurgen, mergen)
+    if ((/rgen$/.test(lowerWord) || /(?:agen|ugen|eigen)$/.test(lowerWord))
+        && lowerWord.length >= 5
+        && !/(?:hydrogen|allergen|antigen|carcinogen|nitrogen|oxygen|estrogen|pathogen)$/.test(lowerWord))
+      postBase = postBase.replace(/([ˈˌ]?)dʒ([ˈˌ]?)[əɛɪiuoʊæɑ]n$/, "$1ɡ$2ən");
     // German blech-/brech-/drech-/buch- compounds: ch=/k/ (blecher, brecher, buchwald, buchsbaum)
     if ((/^(?:blech[^a]|blech$|brech|drech|frech|grech)/.test(lowerWord) && lowerWord.length >= 5)
         || (/^buch/.test(lowerWord) && lowerWord.length >= 7 && !/^buchanan/.test(lowerWord)))
