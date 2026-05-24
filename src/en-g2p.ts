@@ -1282,6 +1282,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -ucci Italian names: ʌtʃɪ → utʃi (gucci, balducci, gallucci, ferrucci)
     if (lowerWord.endsWith("ucci"))
       postBase = postBase.replace(/ʌtʃɪ$/, "utʃi");
+    // eye- compound prefix: eɪɛ → aɪ (eyeball, eyebrow, eyecare, eyedrop, eyelash — eye=/aɪ/)
+    if (lowerWord.startsWith("eye") && lowerWord.length >= 4)
+      postBase = postBase.replace(/^([ˈˌ]?)eɪɛ/, "$1aɪ");
+    // -burgh surnames: restore final /ɡ/ (harrisburgh, rifenburgh, vanamburgh, aldeburgh)
+    if (lowerWord.endsWith("burgh") && lowerWord.length >= 6)
+      postBase = postBase.replace(/ɝ$/, "ɝɡ");
     // ah-C/ah$: æh[consonant] or word-final æh → ɑ (ahmad, brahman, fahd, blah — Arabic/Persian silent-h)
     if (/ah/.test(lowerWord))
       postBase = postBase.replace(/æh([bcdfgklmnpqrstvwxyz])/g, "ɑ$1").replace(/æh$/, "ɑ");
