@@ -1326,6 +1326,10 @@ export class EnglishG2P implements LanguageProcessor {
     // Italian/Spanish -aro: ɝ → ɔɹ (alfaro, alvaro, amaro, arcaro — Spanish/Italian ar)
     if (lowerWord.endsWith("aro") && lowerWord.length >= 5)
       postBase = postBase.replace(/ɝ/g, "ɔɹ");
+    // Italian/Spanish -oria/-orio/-orial/-orian/-ario: ɝɪ → ɔɹɪ
+    // (astoria, euphoria, memorial, editorial, historian, mario, rosario)
+    if ((/ori[ao][ln]?$/.test(lowerWord) || lowerWord.endsWith("ario")) && lowerWord.length >= 6)
+      postBase = postBase.replace(/ɝɪ/, "ɔɹɪ");
     // chia- Italian names: tʃɪ[ɝæəɑ] → kiɑ (chianti, chiarella, chiappetta, chiavetta)
     // Exclude: chiapas (Spanish), chiasso/chiasson (Swiss/French), chiang (Chinese), chiat
     if (lowerWord.startsWith("chia") && lowerWord.length >= 5
@@ -1377,9 +1381,20 @@ export class EnglishG2P implements LanguageProcessor {
         && !/^(ho|lo|no|po|cr|mc|mac|ro)/.test(lowerWord))
       postBase = postBase.replace(/(?:uəl|wəl|oʊəl)$/, "wɛl");
 
-    // bau[rmdl]- German surnames: bɔ → baʊ (bauman, baumgart, bauder, baudoin)
-    if (/^bau[rmdl]/.test(lowerWord) && lowerWord.length >= 5)
+    // bau[rmdl]- German surnames: bɔ/bəm → baʊ/baʊm (bauman, baumberger, baumgartner, bauder)
+    if (/^bau[rmdl]/.test(lowerWord) && lowerWord.length >= 5) {
       postBase = postBase.replace(/^([ˈˌ]?)bɔ/, "$1baʊ");
+      postBase = postBase.replace(/^([ˈˌ]?)bəm/, "$1baʊm");
+    }
+    // -thouse compound: ðaʊs → thaʊs (boathouse, lighthouse, outhouse, hothouse, guesthouse)
+    if (lowerWord.endsWith("thouse") && lowerWord.length >= 7)
+      postBase = postBase.replace(/ðaʊs$/, "thaʊs");
+    // -worth compound: tuɹθ → twɝθ (networth, wentworth, whitworth, atworth, klintworth)
+    if (lowerWord.endsWith("worth") && lowerWord.length >= 6)
+      postBase = postBase.replace(/tuɹθ$/, "twɝθ");
+    // -sworth compound: swɝθ → zwɝθ (ellingsworth, hollingsworth, haynesworth, bloodsworth)
+    if (lowerWord.endsWith("sworth") && lowerWord.length >= 7)
+      postBase = postBase.replace(/swɝθ$/, "zwɝθ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
