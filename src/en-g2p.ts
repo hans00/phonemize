@@ -1340,6 +1340,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -whelm compound: hwəm → wɛlm (overwhelm, underwhelm — wh→w in compounds)
     if (lowerWord.endsWith("whelm") && lowerWord.length >= 6)
       postBase = postBase.replace(/hwəm$/, "wɛlm");
+    // -while compound: hwɪl → waɪl (awhile, meanwhile, worthwhile, erstwhile — wh→w in compounds)
+    if (lowerWord.endsWith("while") && lowerWord.length >= 6)
+      postBase = postBase.replace(/hwɪl$/, "waɪl");
     // -well compound names: uəl/wəl/oʊəl → wɛl (bakewell, bracewell, caldwell, honeywell)
     // Exclude: ho/lo/no/po/cr/mc/mac/ro-well (howell, lowell, nowell, powell, crowell, mcdowell)
     // and n/s/j/e-ewell (newell, sewell, jewell)
