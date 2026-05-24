@@ -1408,6 +1408,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -eman compound: remove epenthetic ɪ before mən (bakeman, baseman, bergeman, bridgeman, addleman)
     if (lowerWord.endsWith("eman") && lowerWord.length >= 6)
       postBase = postBase.replace(/(tʃ|dʒ|[bdfɡhklmnpɹstvwzʃʒ])ɪmən$/, "$1mən");
+    // -ville: remove epenthetic vowel before stressed vɪl (abbeville, belleville, charlotteville)
+    if (lowerWord.endsWith("ville") && lowerWord.length >= 6)
+      postBase = postBase.replace(/[ɪi]v([ˈˌ]?)ɪl$/, "v$1ɪl");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
