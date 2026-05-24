@@ -1688,6 +1688,16 @@ export class EnglishG2P implements LanguageProcessor {
     // French -eault surnames: drop final lt (breault, deneault, guilbeault, rheault)
     if (lowerWord.endsWith("eault") && lowerWord.length >= 5)
       postBase = postBase.replace(/([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)l([ˈˌ]?)t$/, "$1oʊ");
+    // -oville compounds: restore oʊ before vɪl$ (coville, scoville, loville)
+    if (lowerWord.endsWith("oville") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)v([ˈˌ]?)ɪl$/, "$1oʊ$2v$3ɪl");
+    // -rine: reduce aɪn→in in unstressed final syllable (doctrine, ephedrine, figurine, fluorine, latrine)
+    // Exclude -crine (endocrine, exocrine) where -crine carries stress and keeps /aɪn/
+    if (lowerWord.endsWith("rine") && !lowerWord.endsWith("crine") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ɹ([ˈˌ]?)aɪn$/, "$1ɹ$2in");
+    // -stine: reduce taɪn→tin (clandestine, ernestine, philistine, predestine, bridenstine)
+    if (lowerWord.endsWith("stine") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)t([ˈˌ]?)aɪn$/, "$1t$2in");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
