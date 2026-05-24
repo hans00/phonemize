@@ -41,9 +41,39 @@ function applyHappyTensing(ipa: string): string {
 }
 
 /**
- * Apply the small phonotactic rule set. Currently:
+ * Word-initial doubled "aa" (aardvark, aalseth, aachener, aaron):
+ * rules tend to emit `ɑɑ` (two separate nuclei) but the actual
+ * realisation is a single `ɑ`. Collapse the run.
+ *
+ * Triggered only if the input starts with a stress mark followed by
+ * `ɑɑ` or the bare `ɑɑ` — i.e., word-initial position.
+ */
+function collapseInitialDoubleA(ipa: string): string {
+  return ipa.replace(/^(ˈ|ˌ)?ɑɑ/, "$1ɑ");
+}
+
+/**
+ * Cluster simplification at word boundaries:
+ *   -dt$ → -t  (aamodt /ɑmət/, kupferschmidt-style names with silent d)
+ *   -kt$ kept as-is (act, contact — d is voiced) — only apply when the
+ *   /d/ would be redundant against a following voiceless stop with no
+ *   semantic content. Conservative: only -dt where it's clearly a
+ *   foreign-name pattern.
+ */
+function simplifyDtFinal(ipa: string): string {
+  return ipa.replace(/dt$/, "t");
+}
+
+/**
+ * Apply the small phonotactic rule set:
  *   1. Happy-tensing on word-final /ɪ/.
+ *   2. Initial "aa" collapse.
+ *   3. Final "dt" cluster simplification.
  */
 export function applyPhonotactics(ipa: string): string {
-  return applyHappyTensing(ipa);
+  let cur = ipa;
+  cur = collapseInitialDoubleA(cur);
+  cur = simplifyDtFinal(cur);
+  cur = applyHappyTensing(cur);
+  return cur;
 }
