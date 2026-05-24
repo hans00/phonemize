@@ -1308,9 +1308,24 @@ export class EnglishG2P implements LanguageProcessor {
     // -bach German names: bæk|bək|bætʃ → bɑk (bach, steinbach, breitenbach, offenbach)
     if (lowerWord.endsWith("bach"))
       postBase = postBase.replace(/b(?:æk|ək|ætʃ)$/, "bɑk");
-    // -auer German names: ɔɝ → aʊɝ (bauer, brauer, sauer, dauer, gauer)
+    // -auer German names: ɔɝ/əɝ → aʊɝ (bauer, brauer, bernauer, bierbauer)
     if (lowerWord.endsWith("auer"))
-      postBase = postBase.replace(/ɔɝ$/, "aʊɝ");
+      postBase = postBase.replace(/[ɔə]ɝ$/, "aʊɝ");
+    // -baum German compound: bəm → baʊm (birnbaum, elbaum, rosenbaum, feigenbaum)
+    if (lowerWord.endsWith("baum") && lowerWord.length >= 5)
+      postBase = postBase.replace(/bəm$/, "baʊm");
+    // -haus German compound: həs → haʊs (backhaus, feldhaus, steinhaus, neuhaus)
+    if (lowerWord.endsWith("haus") && lowerWord.length >= 5)
+      postBase = postBase.replace(/həs$/, "haʊs");
+    // -hoff/-hof German compound: həf → hɔf (birkhoff, mehlhoff, kirchhoff, schulhof)
+    if (/hof{1,2}$/.test(lowerWord) && lowerWord.length >= 5)
+      postBase = postBase.replace(/həf$/, "hɔf");
+    // Italian -ell*: ɝ → ɔɹ (borelli, carelli, arabella, fiorello — Italian or/ar)
+    if (/el{1,2}[ioa]$/.test(lowerWord) && lowerWord.length >= 6)
+      postBase = postBase.replace(/ɝ/g, "ɔɹ");
+    // Italian/Spanish -aro: ɝ → ɔɹ (alfaro, alvaro, amaro, arcaro — Spanish/Italian ar)
+    if (lowerWord.endsWith("aro") && lowerWord.length >= 5)
+      postBase = postBase.replace(/ɝ/g, "ɔɹ");
     // chia- Italian names: tʃɪ[ɝæəɑ] → kiɑ (chianti, chiarella, chiappetta, chiavetta)
     // Exclude: chiapas (Spanish), chiasso/chiasson (Swiss/French), chiang (Chinese), chiat
     if (lowerWord.startsWith("chia") && lowerWord.length >= 5
@@ -1361,6 +1376,10 @@ export class EnglishG2P implements LanguageProcessor {
         && !/^[nsje]ewell$/.test(lowerWord)
         && !/^(ho|lo|no|po|cr|mc|mac|ro)/.test(lowerWord))
       postBase = postBase.replace(/(?:uəl|wəl|oʊəl)$/, "wɛl");
+
+    // bau[rmdl]- German surnames: bɔ → baʊ (bauman, baumgart, bauder, baudoin)
+    if (/^bau[rmdl]/.test(lowerWord) && lowerWord.length >= 5)
+      postBase = postBase.replace(/^([ˈˌ]?)bɔ/, "$1baʊ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
