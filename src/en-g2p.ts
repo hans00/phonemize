@@ -1529,6 +1529,12 @@ export class EnglishG2P implements LanguageProcessor {
     // Scandinavian -[ae]nsen: [æɛ]nsən→ənsən (christiansen, clemensen, kristiansen)
     if (/[ae]nsen$/.test(lowerWord) && lowerWord.length >= 7)
       postBase = postBase.replace(/[æɛ]nsən$/, "ənsən");
+    // Greek -opolis: oʊpəɫɪs→ɑpəɫəs (acropolis, heliopolis, megalopolis)
+    if (lowerWord.endsWith("opolis") && lowerWord.length >= 7)
+      postBase = postBase.replace(/oʊpəl([ˈˌ]?)ɪs$/, "ɑpəl$1əs");
+    // accu- (not accust-): ækə→ækju (accurate, accumulate, accuhealth)
+    if (lowerWord.startsWith("accu") && !/^accust/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)æk([ˈˌ]?)ə/, "$1æk$2ju");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
