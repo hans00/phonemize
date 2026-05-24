@@ -1743,6 +1743,15 @@ export class EnglishG2P implements LanguageProcessor {
     // -olutionary: ʌʃənɛɹi→uʃənɛɹi (evolutionary)
     if (lowerWord.endsWith("olutionary") && lowerWord.length >= 10)
       postBase = postBase.replace(/([ˈˌ]?)ʌ([ˈˌ]?)ʃ([ˈˌ]?)ənɛɹi$/, "$1u$2ʃ$3ənɛɹi");
+    // -ential: ənʃəl→ɛnʃəl (confidential, credential, sequential)
+    if (lowerWord.endsWith("ential") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)nʃ([ˈˌ]?)əl$/, "$1ɛ$2nʃ$3əl");
+    // -artial: ɝʃ→ɑɹʃ (impartial)
+    if (lowerWord.endsWith("artial") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ɝ([ˈˌ]?)ʃ/, "$1ɑɹ$2ʃ");
+    // -estial: ɪstɪəl→ɛstʃəl (bestial, celestial)
+    if (lowerWord.endsWith("estial") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)st([ˈˌ]?)ɪ([ˈˌ]?)əl$/, "$1ɛ$2st$3ʃ$4əl");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
