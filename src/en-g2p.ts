@@ -1225,6 +1225,17 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.endsWith("uri"))
       postBase = postBase.replace(/ɝɪ$/, "uɹi");
 
+    // Foreign -Xra suffix: ɝə → Xɹə (G2P treats -ra as rhotic; restore vowel+r)
+    // -ara (mascara, carbonara, sahara): ɝə → ɑɹə
+    if (lowerWord.endsWith("ara"))
+      postBase = postBase.replace(/ɝə$/, "ɑɹə");
+    // -ura (figura, collura, amdura): ɝə → uɹə
+    if (lowerWord.endsWith("ura"))
+      postBase = postBase.replace(/ɝə$/, "uɹə");
+    // -era (avera, thera): ɝə → ɛɹə
+    if (lowerWord.endsWith("era"))
+      postBase = postBase.replace(/ɝə$/, "ɛɹə");
+
     // gian- Italian names: dʒɪæn → dʒɑn (gianni, giannini, giancarlo, giancola)
     if (lowerWord.startsWith("gian"))
       postBase = postBase.replace(/^([ˈˌ]?)dʒɪæn/, "$1dʒɑn");
