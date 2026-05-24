@@ -1974,6 +1974,33 @@ export class EnglishG2P implements LanguageProcessor {
     // -derogatory: dɪɹoʊɡ→dɝɑɡ (derogatory)
     if (lowerWord.endsWith("ogatory") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)ɡ/, "$1d$2ɝ$3ɑ$4ɡ");
+    // -admonitory: ədmoʊnɪ→ædmɔnɪ (admonitory)
+    if (lowerWord.endsWith("dmonitory") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)d([ˈˌ]?)m([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)n/, "$1æ$2d$3m$4ɔ$5n");
+    // -ambulatory: əmbʌɫ→æmbjəɫ (ambulatory)
+    if (lowerWord.endsWith("mbulatory") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)m([ˈˌ]?)b([ˈˌ]?)ʌ([ˈˌ]?)[lɫ]/, "$1æ$2m$3bj$4ə$5ɫ");
+    // -depository: dɪpoʊsɪ→dɪpɑzə (depository)
+    if (lowerWord.endsWith("pository") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)p([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)s([ˈˌ]?)ɪ/, "$1d$2ɪ$3p$4ɑ$5z$6ə");
+    // -oscillatory: əsɪɫ→ɑsəɫ (oscillatory)
+    if (lowerWord.endsWith("scillatory") && lowerWord.length >= 10)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)s([ˈˌ]?)ɪ([ˈˌ]?)[lɫ]/, "$1ɑ$2s$3ə$4ɫ");
+    // -acrimonious: əkɹɪ→ækɹə at start (acrimonious)
+    if (lowerWord.startsWith("acr") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)k([ˈˌ]?)ɹ([ˈˌ]?)ɪ/, "$1æ$2k$3ɹ$4ə");
+    // -commodious: kɑməd→kəmoʊd (commodious)
+    if (lowerWord.endsWith("modious") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)ɑ([ˈˌ]?)m([ˈˌ]?)ə([ˈˌ]?)d/, "$1k$2ə$3m$4oʊ$5d");
+    // -anomalous: ɑnoʊm→ənɑm (anomalous)
+    if (lowerWord.endsWith("nomalous") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)ɑ([ˈˌ]?)n([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)m/, "$1ə$2n$3ɑ$4m");
+    // -advantageous: ədvænt→ædvənt (advantageous)
+    if (lowerWord.endsWith("vantageous") && lowerWord.length >= 11)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)d([ˈˌ]?)v([ˈˌ]?)æ([ˈˌ]?)n([ˈˌ]?)t/, "$1æ$2d$3v$4ə$5n$6t");
+    // -apocryphal: æpəkɹɪf→əpɑkɹəf (apocryphal)
+    if (lowerWord.endsWith("pocryphal") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)æ([ˈˌ]?)p([ˈˌ]?)ə([ˈˌ]?)k([ˈˌ]?)ɹ([ˈˌ]?)ɪ([ˈˌ]?)f/, "$1ə$2p$3ɑ$4k$5ɹ$6ə$7f");
     // -locomotion: ɫəkoʊ→ɫoʊkoʊ at start (locomotion)
     if (lowerWord.startsWith("loc") && lowerWord.endsWith("otion") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)k/, "$1ɫ$2oʊ$3k");
