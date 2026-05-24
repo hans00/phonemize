@@ -1441,6 +1441,14 @@ export class EnglishG2P implements LanguageProcessor {
     // -wick: oʊ[sd]wɪk → ɑ[sd]wɪk (goswick, joswick, lodwick)
     if (lowerWord.endsWith("wick") && lowerWord.length >= 7)
       postBase = postBase.replace(/oʊ([sd])wɪk$/, "ɑ$1wɪk");
+    // short-ea compounds: id→ɛd (homestead, whitebread, widespread) and iθ→ɛθ (colebreath)
+    if (/(?:bread|spread|stead)$/.test(lowerWord) && lowerWord.length >= 7)
+      postBase = postBase.replace(/id$/, "ɛd");
+    if (lowerWord.endsWith("breath") && lowerWord.length >= 8)
+      postBase = postBase.replace(/iθ$/, "ɛθ");
+    // -woman compound: wəmən → wʊmən (councilwoman)
+    if (lowerWord.endsWith("woman") && lowerWord.length >= 8)
+      postBase = postBase.replace(/wəmən$/, "wʊmən");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
