@@ -1553,9 +1553,14 @@ export class EnglishG2P implements LanguageProcessor {
     // -aney surnames (not mc-): æni→eɪni (baney, blaney, chaney, franey)
     if (lowerWord.endsWith("aney") && lowerWord.length >= 5 && !/^mc/.test(lowerWord))
       postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)ni$/, "$1eɪ$2ni");
-    // German -eger surnames: soft-dʒ→hard-ɡ (breger, brieger, boeger, fieger, fleeger)
-    if (lowerWord.endsWith("eger") && lowerWord.length >= 5)
+    // German -eger/-rger surnames: soft-dʒ→hard-ɡ (breger, berger, borger, harger)
+    if ((lowerWord.endsWith("eger") || (lowerWord.endsWith("rger")
+        && !/(?:larger|charger|merger|barger|forger|gorger|sparger|urger)$/.test(lowerWord)))
+        && lowerWord.length >= 5)
       postBase = postBase.replace(/([ˈˌ]?)dʒ([ˈˌ]?)ɝ$/, "$1ɡ$2ɝ");
+    // Polish -inski: dʒ→ɡ before ɪnski (baginski, roginski)
+    if (lowerWord.endsWith("inski") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)dʒ([ˈˌ]?)[ɪi]([ˈˌ]?)nsk[iɪ]$/, "$1ɡ$2ɪ$3nskɪ");
     // German oh+consonant: silent-H long-O (bohn/blohm/rohde/lohse/kohtaro/rohwer)
     if (/oh[lmnsdtkfw]/.test(lowerWord) && lowerWord.length >= 5
         && !/^john/.test(lowerWord) && !/^johso/.test(lowerWord))
