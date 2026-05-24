@@ -1785,6 +1785,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -urious: ɝiəs→uɹiəs (injurious, penurious)
     if (lowerWord.endsWith("urious") && lowerWord.length >= 6)
       postBase = postBase.replace(/([ˈˌ]?)ɝ([ˈˌ]?)iəs$/, "$1uɹ$2iəs");
+    // -ibility: bɪɫəti→bɪɫɪti (collectibility, fallibility, impossibility, sensibility)
+    if (lowerWord.endsWith("ibility") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)b([ˈˌ]?)ɪ([ˈˌ]?)[lɫ]([ˈˌ]?)ə([ˈˌ]?)ti$/, "$1b$2ɪ$3ɫ$4ɪ$5ti");
+    // -erential: ɪɹɛnʃəɫ→ɝɛnʃəɫ (differential, deferential, inferential)
+    if (lowerWord.endsWith("ential") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)ɛn([ˈˌ]?)ʃ([ˈˌ]?)ə([lɫ])$/, "$1ɝ$2ɛn$3ʃ$4ə$5$6");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
