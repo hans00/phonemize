@@ -1157,6 +1157,10 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("mon") && lowerWord.length >= 6 && !lowerWord.startsWith("mono") && !lowerWord.startsWith("moni"))
       postBase = postBase.replace(/^([ˈˌ]?)moʊn/, "$1mɑn");
 
+    // don- Irish/proper names (length>=6, not donat-): doʊn → dɑn (donald, donaghy, donahue, donovan)
+    if (lowerWord.startsWith("don") && lowerWord.length >= 6 && !lowerWord.startsWith("donat"))
+      postBase = postBase.replace(/^([ˈˌ]?)doʊn/, "$1dɑn");
+
     // -ohl- Germanic names: ɑhl → oʊl (bohland, kohler, rohland — silent-h "oh" = /oʊ/)
     if (lowerWord.includes("ohl"))
       postBase = postBase.replace(/ɑhl/g, "oʊl");
