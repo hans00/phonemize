@@ -1294,6 +1294,9 @@ export class EnglishG2P implements LanguageProcessor {
     // aa- prefix: ɑɑɹ → ɑɹ (aardema, aardvark, aargh — Dutch/Afrikaans long-aa)
     if (lowerWord.startsWith("aa"))
       postBase = postBase.replace(/^([ˈˌ]?)ɑɑɹ/, "$1ɑɹ");
+    // -bach German names: bæk|bək|bætʃ → bɑk (bach, steinbach, breitenbach, offenbach)
+    if (lowerWord.endsWith("bach"))
+      postBase = postBase.replace(/b(?:æk|ək|ætʃ)$/, "bɑk");
     // -auer German names: ɔɝ → aʊɝ (bauer, brauer, sauer, dauer, gauer)
     if (lowerWord.endsWith("auer"))
       postBase = postBase.replace(/ɔɝ$/, "aʊɝ");
