@@ -60,12 +60,24 @@ for (const [word, alignStr] of Object.entries(aligned)) {
 }
 
 // Convert counter → flat record of (key → most-likely phoneme).
-// Drop entries below minSupport to keep file small.
-function compact(c: Counter, minSupport: number): Record<string, string> {
+//
+// minSupport is applied per-entry. Additionally, multi-char graphemes get
+// a higher floor: clusters that fire rarely (e.g., "in"→"æn" from a
+// handful of French proper nouns) are misleading because the aligner only
+// emits them when the rare phon matches — English -in words go through
+// "i"+"n" instead, so the cluster never sees its dominant realization.
+// Dropping these forces the runtime to back off to single-letter lookup.
+function compact(
+  c: Counter,
+  minSupport: number,
+  isCluster: (key: string) => boolean = () => false,
+  clusterMin = 100
+): Record<string, string> {
   const out: Record<string, string> = {};
   Array.from(c.entries()).forEach(([key, phons]: [string, Map<string, number>]) => {
     const total = Array.from(phons.values()).reduce((a: number, b: number) => a + b, 0);
-    if (total < minSupport) return;
+    const floor = isCluster(key) ? Math.max(minSupport, clusterMin) : minSupport;
+    if (total < floor) return;
     // Pick most frequent; break ties by preferring longer phoneme cluster.
     let bestP = "";
     let bestN = -1;
@@ -80,11 +92,19 @@ function compact(c: Counter, minSupport: number): Record<string, string> {
   return out;
 }
 
+// Multi-char grapheme detector — the grapheme part of the key is either
+// the whole key (noCtx) or the middle segment for context-keyed tables.
+const graphemeOf = (key: string): string => {
+  const parts = key.split("|");
+  return parts.length === 3 ? parts[1] : parts.length === 2 ? (parts[0].length === 1 ? parts[1] : parts[0]) : parts[0];
+};
+const isMultiCharCluster = (key: string) => graphemeOf(key).length >= 2;
+
 const lts = {
-  full: compact(fullCtx, 2),
-  leftCtx: compact(leftCtx, 2),
-  rightCtx: compact(rightCtx, 2),
-  noCtx: compact(noCtx, 1),
+  full: compact(fullCtx, 2, isMultiCharCluster, 30),
+  leftCtx: compact(leftCtx, 2, isMultiCharCluster, 50),
+  rightCtx: compact(rightCtx, 2, isMultiCharCluster, 50),
+  noCtx: compact(noCtx, 1, isMultiCharCluster, 100),
 };
 
 const sizes = {

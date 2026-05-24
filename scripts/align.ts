@@ -251,8 +251,11 @@ function alignWord(word: string, ipa: string): Align | null {
           const pLen = p.length;
           if (j + pLen > P) continue;
           if (pLen > 0 && phon.slice(j, j + pLen) !== p) continue;
-          // Atom matches; cost = +1 (so longer atoms win ties)
-          const newCost = cur + 1;
+          // Cost: 1 per atom, with empty-phoneme atoms penalized so that
+          // when two paths tie on atom count, the one that gives each
+          // grapheme a phoneme wins (avoids spurious silent-letter assigns
+          // like c/k o/∅ n/ən over c/k o/ə n/n).
+          const newCost = cur + (pLen === 0 ? 1.5 : 1);
           const ni = i + gLen;
           const nj = j + pLen;
           if (newCost < dp[ni][nj].cost) {

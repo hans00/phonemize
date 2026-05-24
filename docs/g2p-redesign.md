@@ -114,7 +114,7 @@ Runtime: no matrices, no probabilities, no training. Just rules + lookup.
 - [x] **P3**: Letter-cluster context table
   - [x] P3.0: Compiler (`scripts/compile-lts.ts`) produces `data/en/lts.json` from alignments — 13K full-context entries + 3 backoff levels, 235KB
   - [x] P3.1: Runtime lookup (`predictByLTS(word)`) walks longest-match clusters with context backoff
-  - [x] P3.2: Integration measured. **LTS alone: 21.5% exact, 59.7% lenient** — currently *worse* than the legacy rule pipeline (75.4% lenient), so wiring it in as the base provider regresses the eval by -6.6% lenient. Reverted to dict-only base lookup for now; LTS remains an opt-in tool. Improving LTS quality (richer context, joint-sequence model, better atom curation) is the prerequisite for unblocking P2.4 / P5.
+  - [x] P3.2: Integration measured. **LTS alone: 24.2% exact, 63.8% lenient** after aligner + compiler improvements (empty-atom penalty in DP cost so silent-letter assignments don't win ties; minSupport floor for multi-char clusters so name-only patterns drop out). Still below the legacy rule pipeline (75.4% lenient) — routing it in as the base provider regresses eval by ~−6% lenient, so en-g2p keeps the dict-only gate. Further LTS quality work (joint-sequence model, deeper context windows, stress-aware contexts) is the prerequisite for unblocking P2.4 / P5.
 - [ ] P4: Exception mining
 - [ ] P5: Dict elimination
 
