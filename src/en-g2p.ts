@@ -1657,6 +1657,9 @@ export class EnglishG2P implements LanguageProcessor {
     // German -erich surnames: ɪɹɪk→ɝɪk (berberich, helmerich, emmerich, dieterich)
     if (lowerWord.endsWith("erich") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ɹɪk$/, "$1ɝ$2ɪk");
+    // Italian o+C+ello: medial ə→oʊ before -ello suffix consonant (bonello, covello, novello)
+    if (/o[bcdfgklmnpqrstvwxz]ello$/.test(lowerWord) && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)(l|[bcdfgkmnpqrstvwxzɡɹ])([ˈˌ]?)ɛloʊ$/, "$1oʊ$2$3$4ɛloʊ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
