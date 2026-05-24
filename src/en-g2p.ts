@@ -1920,6 +1920,30 @@ export class EnglishG2P implements LanguageProcessor {
     // -duration: dɝeɪʃən→dʊɹeɪʃən (duration)
     if (lowerWord.endsWith("duration") && lowerWord.length >= 8)
       postBase = postBase.replace(/([ˈˌ]?)d([ˈˌ]?)ɝ([ˈˌ]?)eɪʃ([ˈˌ]?)ən$/, "$1d$2ʊɹ$3eɪʃ$4ən");
+    // -giment: ɹɪdʒɪm→ɹɛdʒəm (regiment)
+    if (lowerWord.endsWith("giment") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ɹ([ˈˌ]?)ɪ([ˈˌ]?)dʒ([ˈˌ]?)ɪ([ˈˌ]?)m/, "$1ɹ$2ɛ$3dʒ$4ə$5m");
+    // -ediment: mpɪdɪm→mpɛdəm (impediment)
+    if (lowerWord.endsWith("ediment") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)m([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)m/, "$1m$2p$3ɛ$4d$5ə$6m");
+    // -plement: pəɫm→pɫəm (complement, implement, supplement)
+    if (lowerWord.endsWith("plement") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)p([ˈˌ]?)ə([ˈˌ]?)[lɫ]([ˈˌ]?)m/, "$1p$2ɫ$3ə$4m");
+    // -xpedition: ɪkspɪdɪʃən→ɛkspədɪʃən (expedition)
+    if (lowerWord.endsWith("edition") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ks([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)ʃ([ˈˌ]?)ən$/, "$1ɛ$2ks$3p$4ə$5d$6ɪ$7ʃ$8ən");
+    // -aptation: ədæpt→ædəpt (adaptation)
+    if (lowerWord.endsWith("aptation") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)d([ˈˌ]?)æ([ˈˌ]?)p([ˈˌ]?)t/, "$1æ$2d$3ə$4p$5t");
+    // -demnation: kəndɛmeɪʃən→kɑndəmneɪʃən (condemnation)
+    if (lowerWord.endsWith("demnation") && lowerWord.length >= 10)
+      postBase = postBase.replace(/([ˈˌ]?)k([ˈˌ]?)ə([ˈˌ]?)n([ˈˌ]?)d([ˈˌ]?)ɛ([ˈˌ]?)m([ˈˌ]?)eɪʃ([ˈˌ]?)ən$/, "$1k$2ɑ$3n$4d$5ə$6mn$7eɪʃ$8ən");
+    // -element: iɫm→ɛɫəm (element)
+    if (lowerWord.endsWith("element") && lowerWord.length >= 7)
+      postBase = postBase.replace(/^([ˈˌ]?)i([ˈˌ]?)[lɫ]([ˈˌ]?)m/, "$1ɛ$2ɫ$3əm");
+    // -xperiment: ɛkspɪɹɪm→ɪkspɛɹəm (experiment)
+    if (lowerWord.endsWith("xperiment") && lowerWord.length >= 10)
+      postBase = postBase.replace(/^([ˈˌ]?)ɛ([ˈˌ]?)ks([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)ɪ([ˈˌ]?)m/, "$1ɪ$2ks$3p$4ɛ$5ɹ$6ə$7m");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
