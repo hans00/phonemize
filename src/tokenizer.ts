@@ -13,6 +13,7 @@ import {
   preProcessByScript,
 } from "./g2p";
 import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
+import { isFunctionWord } from "./pos-tagger";
 import type ChineseG2P from "./zh-g2p";
 
 // Tokenization regex patterns
@@ -489,6 +490,21 @@ export class Tokenizer {
       } else {
         // Regular IPA/ARPABET processing
         phoneme = this._predict(cleanToken, detectedLanguage, pos);
+      }
+
+      // Sentence-level prosody: in a multi-word English context, demote
+      // closed-class function words from citation-form primary stress
+      // to their weak form (drop the ˈ mark). English dict entries mark
+      // function words with stress for citation, but in connected speech
+      // they reduce — "the/of/in/by/and/that/is" etc. should be unstressed.
+      // Single-word inputs keep citation form for dictionary-style use.
+      if (
+        cleanWords.length > 1 &&
+        (detectedLanguage === "en" ||
+          detectedLanguage?.startsWith("en-")) &&
+        isFunctionWord(cleanToken, pos)
+      ) {
+        phoneme = phoneme.replace(/ˈ/g, "");
       }
 
       // Apply custom separator to individual phonemes if needed

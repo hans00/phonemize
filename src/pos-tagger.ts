@@ -166,6 +166,50 @@ const MODAL_VERBS = [
 // Subject pronouns that indicate following word is likely a verb
 const SUBJECT_PRONOUNS = ["i", "you", "he", "she", "it", "we", "they"];
 
+// All personal/object/reflexive pronouns (used as a function-word
+// indicator — they're unstressed in connected speech).
+const PRONOUNS = [
+  ...SUBJECT_PRONOUNS,
+  "me", "him", "us", "them",
+  "my", "your", "his", "her", "its", "our", "their",
+  "myself", "yourself", "himself", "herself", "itself",
+  "ourselves", "yourselves", "themselves",
+];
+
+// Coordinating + subordinating conjunctions
+const CONJUNCTIONS = [
+  "and", "but", "or", "nor", "so", "yet",
+  "for", "as", "if", "than", "that", "though", "while",
+  "because", "since", "unless", "until", "when", "where", "whether",
+];
+
+// Wh-words
+const WH_WORDS = ["what", "who", "whom", "whose", "where", "when", "why", "how", "which"];
+
+/**
+ * Union of all closed-class / function-word categories: determiners,
+ * pronouns, prepositions, auxiliaries, modals, conjunctions, wh-words.
+ *
+ * Used by EnglishG2P to drop primary stress in connected speech — these
+ * words typically reduce when not in citation form.
+ */
+export const FUNCTION_WORDS: Set<string> = new Set([
+  ...DETERMINERS,
+  ...PRONOUNS,
+  ...PREPOSITIONS,
+  ...AUX_VERBS,
+  ...MODAL_VERBS,
+  ...CONJUNCTIONS,
+  ...WH_WORDS,
+]);
+
+export function isFunctionWord(word: string, pos?: string): boolean {
+  if (FUNCTION_WORDS.has(word.toLowerCase())) return true;
+  // POS-based fallback for words my list might miss.
+  if (pos && /^(DT|IN|CC|PRP|MD|AUX|WP|WDT|WRB|TO|EX)$/.test(pos)) return true;
+  return false;
+}
+
 // --- Interface ---
 
 export interface POSResult {

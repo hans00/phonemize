@@ -3,7 +3,9 @@ import { phonemize, toARPABET, toIPA, toZhuyin, addPronunciation, Tokenizer } fr
 describe('Index', function() {
   it('Work Fine', function() {
     expect(phonemize('Hello world!')).toEqual('həˈɫoʊ ˈwɝɫd!')
-    expect(phonemize('this is an apple.')).toEqual('ˈðɪs ˈɪz ˈæn ˈæpəɫ.')
+    // Function words (this/is/an) reduce in connected speech — only the
+    // content word "apple" keeps primary stress.
+    expect(phonemize('this is an apple.')).toEqual('ðɪs ɪz æn ˈæpəɫ.')
     expect(phonemize('John\'s package', true)).toEqual([
       {
         "phoneme": "ˈdʒɑnz",
