@@ -13,8 +13,6 @@ import { expandText } from "./expand-en";
 import { simplePOSTagger } from "./pos-tagger";
 import { transformAmericanToRP } from "./en-gb";
 import { predictPrincipled } from "./en-principled";
-import { applyPostBase } from "./en-postbase";
-import { POST_BASE_RULES } from "./en-postbase-rules";
 
 export type EnglishDialect = "en-US" | "en-GB";
 
@@ -593,9 +591,13 @@ export class EnglishG2P implements LanguageProcessor {
     const base = this.predictInternal(word, pos, this.disableDict);
     if (!base) return base;
 
-    // Word-level post-processing — table of historical IPA fixups
-    // applied in order. See src/en-postbase-rules.ts.
-    const postBase = applyPostBase(base, lowerWord, POST_BASE_RULES);
+    // No more inline postBase patches — historically ~510 ad-hoc
+    // if/replace rules lived here for IPA fixups. They've been retired:
+    // the principled pipeline (en-suffixes/en-stress/en-reduce) handles
+    // the systematic morphology, and exceptions.json absorbs the ~4K
+    // words that were load-bearing for the old patches. See P5 in
+    // docs/g2p-redesign.md.
+    const postBase = base;
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
