@@ -1288,6 +1288,9 @@ export class EnglishG2P implements LanguageProcessor {
     // schia- Italian names: ʃɪæ → skiɑ (schiavo, schiavi, schiappa, schiavone)
     if (lowerWord.startsWith("schia"))
       postBase = postBase.replace(/^([ˈˌ]?)ʃɪæ/, "$1skiɑ");
+    // ros- Italian/German names: ɹəs → ɹoʊz (rossetti, rosselli, rosenberger, roseville)
+    if (lowerWord.startsWith("ros") && lowerWord.length >= 5)
+      postBase = postBase.replace(/^([ˈˌ]?)ɹəs/, "$1ɹoʊz");
     // -well compound names: uəl/wəl/oʊəl → wɛl (bakewell, bracewell, caldwell, honeywell)
     // Exclude: ho/lo/no/po/cr/mc/mac/ro-well (howell, lowell, nowell, powell, crowell, mcdowell)
     // and n/s/j/e-ewell (newell, sewell, jewell)
