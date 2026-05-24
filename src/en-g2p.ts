@@ -1947,8 +1947,8 @@ export class EnglishG2P implements LanguageProcessor {
     // -emissary: ɪmɪ→ɛmə at start (emissary)
     if (lowerWord.startsWith("em") && lowerWord.endsWith("ary") && lowerWord.length >= 7)
       postBase = postBase.replace(/^([ˈˌ]?)ɪ([ˈˌ]?)m([ˈˌ]?)ɪ/, "$1ɛ$2m$3ə");
-    // -ategory: keɪtɪɡ→kætəɡ (category)
-    if (lowerWord.endsWith("egory") && lowerWord.length >= 8)
+    // -ategory/-ategorize: keɪtɪɡ→kætəɡ (category, categorize)
+    if (lowerWord.includes("ategor") && lowerWord.length >= 8)
       postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)eɪ([ˈˌ]?)t([ˈˌ]?)ɪ([ˈˌ]?)ɡ/, "$1k$2æ$3t$4ə$5ɡ");
     // -aboratory: ɫəbɔɹ→ɫæbɹ (laboratory)
     if (lowerWord.endsWith("boratory") && lowerWord.length >= 9)
@@ -1974,6 +1974,30 @@ export class EnglishG2P implements LanguageProcessor {
     // -derogatory: dɪɹoʊɡ→dɝɑɡ (derogatory)
     if (lowerWord.endsWith("ogatory") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)ɹ([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)ɡ/, "$1d$2ɝ$3ɑ$4ɡ");
+    // -colon*: koʊɫ→kɑɫ at start (colonize, colonist)
+    if (lowerWord.startsWith("colon") && lowerWord.length >= 7)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)[lɫ]/, "$1k$2ɑ$3ɫ");
+    // -botan*: boʊtən→bɑtən (botanist)
+    if (lowerWord.startsWith("botan") && lowerWord.length >= 7)
+      postBase = postBase.replace(/^([ˈˌ]?)b([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)t([ˈˌ]?)ə([ˈˌ]?)n/, "$1b$2ɑ$3t$4ə$5n");
+    // -aggrandize: æɡɹənd→əɡɹænd (aggrandize)
+    if (lowerWord.endsWith("grandize") && lowerWord.length >= 9)
+      postBase = postBase.replace(/^([ˈˌ]?)æ([ˈˌ]?)ɡ([ˈˌ]?)ɹ([ˈˌ]?)ə([ˈˌ]?)n([ˈˌ]?)d/, "$1ə$2ɡ$3ɹ$4æ$5n$6d");
+    // -amortize: æmɔɹt→æmɝt (amortize)
+    if (lowerWord.endsWith("mortize") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)m([ˈˌ]?)ɔ([ˈˌ]?)ɹ([ˈˌ]?)t/, "$1æ$2m$3ɝ$4t");
+    // -crystallize: kɹaɪstɔɫ→kɹɪstəɫ (crystallize)
+    if (lowerWord.endsWith("stallize") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)k([ˈˌ]?)ɹ([ˈˌ]?)aɪ([ˈˌ]?)st([ˈˌ]?)ɔ([ˈˌ]?)[lɫ]/, "$1k$2ɹ$3ɪ$4st$5ə$6ɫ");
+    // -adjective: ədʒɛkt→ædʒɪkt (adjective)
+    if (lowerWord.endsWith("jective") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)d([ˈˌ]?)ʒ([ˈˌ]?)ɛ([ˈˌ]?)k([ˈˌ]?)t/, "$1æ$2d$3ʒ$4ɪ$5k$6t");
+    // -distributive: stɹɪbət→stɹɪbjut (distributive)
+    if (lowerWord.endsWith("tributive") && lowerWord.length >= 10)
+      postBase = postBase.replace(/([ˈˌ]?)st([ˈˌ]?)ɹ([ˈˌ]?)ɪ([ˈˌ]?)b([ˈˌ]?)ə([ˈˌ]?)t/, "$1st$2ɹ$3ɪ$4bj$5u$6t");
+    // -combative: kəmbət→kɑmbæt (combative)
+    if (lowerWord.endsWith("mbative") && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)ə([ˈˌ]?)m([ˈˌ]?)b([ˈˌ]?)ə([ˈˌ]?)t/, "$1k$2ɑ$3m$4b$5æ$6t");
     // -admonitory: ədmoʊnɪ→ædmɔnɪ (admonitory)
     if (lowerWord.endsWith("dmonitory") && lowerWord.length >= 9)
       postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)d([ˈˌ]?)m([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)n/, "$1æ$2d$3m$4ɔ$5n");
