@@ -1728,6 +1728,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -ery: ɛri→ɝi when r is ASCII (brewery, drewery, towery, microbrewery)
     if (lowerWord.endsWith("ery") && lowerWord.length >= 5)
       postBase = postBase.replace(/ɛri$/, "ɝi");
+    // -ationary: æʃ→eɪʃ (stationary, deflationary, inflationary)
+    if (lowerWord.endsWith("ationary") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)ʃ([ˈˌ]?)ənɛɹi$/, "$1eɪ$2ʃ$3ənɛɹi");
+    // -atiate: æʃi→eɪʃi (ingratiate)
+    if (lowerWord.includes("atiat") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)ʃi/, "$1eɪ$2ʃi");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
