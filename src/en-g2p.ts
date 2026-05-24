@@ -1458,6 +1458,12 @@ export class EnglishG2P implements LanguageProcessor {
     // German -eid- surnames: eɪd→aɪd (freidel, freidman, geidel, heidel, weidemann)
     if (/eid/.test(lowerWord) && lowerWord.length >= 6)
       postBase = postBase.replace(/eɪd/, "aɪd");
+    // German -eib- surnames: eɪb→aɪb (deibel, deibert, geibel, kleiber, neibauer)
+    if (/eib/.test(lowerWord) && lowerWord.length >= 5)
+      postBase = postBase.replace(/eɪb/, "aɪb");
+    // German -eis- surnames: eɪs→aɪs (beisel, deiss, feist, reiss, weiss)
+    if (/eis/.test(lowerWord) && lowerWord.length >= 5)
+      postBase = postBase.replace(/eɪs/, "aɪs");
     // German -reit- surnames: ɹeɪt→ɹaɪt (freitag, kreitzer, kreitman, reitan)
     if (/reit/.test(lowerWord) && lowerWord.length >= 5)
       postBase = postBase.replace(/ɹeɪt/, "ɹaɪt");
