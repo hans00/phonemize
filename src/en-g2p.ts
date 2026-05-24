@@ -1734,6 +1734,15 @@ export class EnglishG2P implements LanguageProcessor {
     // -atiate: æʃi→eɪʃi (ingratiate)
     if (lowerWord.includes("atiat") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)ʃi/, "$1eɪ$2ʃi");
+    // -usionary: ʌsɪənɛɹi→uʒənɛɹi (illusionary, exclusionary) — run before -sionary
+    if (lowerWord.endsWith("usionary") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)ʌ([ˈˌ]?)s([ˈˌ]?)ɪ([ˈˌ]?)ənɛɹi$/, "$1u$2ʒ$3ənɛɹi");
+    // -sionary: sɪənɛɹi→ʃənɛɹi (concessionary, recessionary, expansionary, visionary)
+    if (lowerWord.endsWith("sionary") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)s([ˈˌ]?)ɪ([ˈˌ]?)ənɛɹi$/, "$1ʃ$2ənɛɹi");
+    // -olutionary: ʌʃənɛɹi→uʃənɛɹi (evolutionary)
+    if (lowerWord.endsWith("olutionary") && lowerWord.length >= 10)
+      postBase = postBase.replace(/([ˈˌ]?)ʌ([ˈˌ]?)ʃ([ˈˌ]?)ənɛɹi$/, "$1u$2ʃ$3ənɛɹi");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
