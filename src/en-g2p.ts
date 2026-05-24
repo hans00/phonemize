@@ -1568,12 +1568,18 @@ export class EnglishG2P implements LanguageProcessor {
     // Italian -aldo: æɫdoʊ→ɑɫdoʊ (castaldo, cataldo, renaldo, reynaldo)
     if (lowerWord.endsWith("aldo") && lowerWord.length >= 6)
       postBase = postBase.replace(/([ˈˌ]?)æ([ˈˌ]?)ldoʊ$/, "$1ɑ$2ldoʊ");
-    // Polish/Slavic j→/j/: orthographic 'j' in Polish is /j/ not /dʒ/ (jakubowski, bojarski, lijewski)
+    // Polish/Slavic phoneme fixes for names ending in -ski/-ewski/-owski etc.
     if (/(?:ski|sky|wski|ewski|owski|anski|inski|ynski|arski|erski|orski|urski)$/.test(lowerWord)
-        && lowerWord.includes("j") && lowerWord.length >= 7) {
-      if (/^j/.test(lowerWord))
-        postBase = postBase.replace(/^([ˈˌ]?)dʒ/, "$1j");
-      postBase = postBase.replace(/([əɪiuoʊæɑɔɛeaɝɜ])([ˈˌ]?)dʒ([əɪiuoʊæɑɔɛeaɝɜ])/g, "$1$2j$3");
+        && lowerWord.length >= 7) {
+      // j→/j/: orthographic 'j' is /j/ not /dʒ/ (jakubowski, bojarski, lijewski)
+      if (lowerWord.includes("j")) {
+        if (/^j/.test(lowerWord))
+          postBase = postBase.replace(/^([ˈˌ]?)dʒ/, "$1j");
+        postBase = postBase.replace(/([əɪiuoʊæɑɔɛeaɝɜ])([ˈˌ]?)dʒ([əɪiuoʊæɑɔɛeaɝɜ])/g, "$1$2j$3");
+      }
+      // sz→ʃ: Polish digraph 'sz' = /ʃ/; stress mark may split s and z in IPA output
+      if (lowerWord.includes("sz"))
+        postBase = postBase.replace(/s([ˈˌ]?)z/g, "$1ʃ");
     }
     // -stair surnames: stɝ→stɛɹ (alistair, alastair, westair)
     if (lowerWord.endsWith("stair") && lowerWord.length >= 7)
