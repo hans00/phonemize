@@ -1662,6 +1662,11 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)(l|[bcdfgkmnpqrstvwxzɡɹ])([ˈˌ]?)ɛloʊ$/, "$1oʊ$2$3$4ɛloʊ");
     if (/o[bcdfgklmnpqrstvwxz]ella$/.test(lowerWord) && lowerWord.length >= 6)
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)(l|[bcdfgkmnpqrstvwxzɡɹ])([ˈˌ]?)ɛlə$/, "$1oʊ$2$3$4ɛlə");
+    // Spanish/Italian -osa/-oso: penultimate o reduced to ə → oʊ (barbosa, formosa, cardoso, barroso)
+    if (lowerWord.endsWith("osa") && lowerWord.length >= 5)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)s([ˈˌ]?)ə$/, "$1oʊ$2s$3ə");
+    if (lowerWord.endsWith("oso") && lowerWord.length >= 5)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)s([ˈˌ]?)oʊ$/, "$1oʊ$2s$3oʊ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
