@@ -1851,6 +1851,27 @@ export class EnglishG2P implements LanguageProcessor {
     // -mpetition: mpɪtɪʃən→mpətɪʃən (competition)
     if (lowerWord.endsWith("etition") && lowerWord.length >= 9)
       postBase = postBase.replace(/([ˈˌ]?)m([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)ɪ([ˈˌ]?)ʃ([ˈˌ]?)ən$/, "$1m$2p$3ə$4t$5ɪ$6ʃ$7ən");
+    // -idential: aɪdɛnʃəɫ→ədɛnʃəɫ (presidential)
+    if (lowerWord.endsWith("idential") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)a([ˈˌ]?)ɪ([ˈˌ]?)d([ˈˌ]?)ɛ([ˈˌ]?)nʃ([ˈˌ]?)ə[lɫ]$/, "$1ə$2d$3ɛ$4nʃ$5əɫ");
+    // -otential: poʊtɛnʃ→pətɛnʃ (potential)
+    if (lowerWord.endsWith("otential") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)p([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)t([ˈˌ]?)ɛ([ˈˌ]?)nʃ([ˈˌ]?)ə[lɫ]$/, "$1p$2ə$3t$4ɛ$5nʃ$6əɫ");
+    // -sonance: soʊnəns→sənəns (dissonance)
+    if (lowerWord.endsWith("sonance") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)s([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)n([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1s$2ə$3n$4ə$5ns");
+    // -minence: ɪmɪnəns→ɛmənəns (eminence)
+    if (lowerWord.endsWith("minence") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)m([ˈˌ]?)ɪ([ˈˌ]?)n([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1ɛ$2m$3ə$4n$5ə$6ns");
+    // -vidence: ɪvɪdəns→ɛvədəns (evidence)
+    if (lowerWord.endsWith("vidence") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)v([ˈˌ]?)ɪ([ˈˌ]?)d([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1ɛ$2v$3ə$4d$5ə$6ns");
+    // -legance: ɪɫɛɡəns→ɛɫəɡəns (elegance)
+    if (lowerWord.endsWith("legance") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)[lɫ]([ˈˌ]?)ɛ([ˈˌ]?)ɡ([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1ɛ$2ɫ$3ə$4ɡ$5ə$6ns");
+    // -potence: oʊtəns→ətəns (impotence)
+    if (lowerWord.endsWith("potence") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)o([ˈˌ]?)ʊ([ˈˌ]?)t([ˈˌ]?)ə([ˈˌ]?)ns$/, "$1ə$2t$3ə$4ns");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
