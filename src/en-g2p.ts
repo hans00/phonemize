@@ -1773,6 +1773,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -ocity: əsɪti→ɑsəti (velocity, atrocity)
     if (lowerWord.endsWith("ocity") && lowerWord.length >= 6)
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)s([ˈˌ]?)ɪti$/, "$1ɑ$2s$3əti");
+    // -culous: kələs→kjələs (meticulous)
+    if (lowerWord.endsWith("culous") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)k([ˈˌ]?)ə([ˈˌ]?)l([ˈˌ]?)əs$/, "$1kj$2ə$3l$4əs");
+    // -pulous: ʌpələs→upjələs (scrupulous, unscrupulous)
+    if (lowerWord.endsWith("pulous") && lowerWord.length >= 8)
+      postBase = postBase.replace(/([ˈˌ]?)ʌ([ˈˌ]?)p([ˈˌ]?)ə([ˈˌ]?)l([ˈˌ]?)əs$/, "$1u$2p$3j$4ə$5ləs");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
