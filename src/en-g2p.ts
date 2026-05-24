@@ -1483,6 +1483,18 @@ export class EnglishG2P implements LanguageProcessor {
     // German -ei[zv]- surnames: eɪ[zv]→aɪ[zv] (keizer, seivert)
     if (/ei[zv]/.test(lowerWord) && lowerWord.length >= 5)
       postBase = postBase.replace(/eɪ([zv])/, "aɪ$1");
+    // German -eif- surnames: eɪf→aɪf (peiffer, seifert, schleif, zweifel)
+    if (/eif/.test(lowerWord) && lowerWord.length >= 4)
+      postBase = postBase.replace(/eɪf/, "aɪf");
+    // German -eisch- surnames (not -eisha Japanese): eɪʃ→aɪʃ (fleisch, fleischer, breisch, deisher)
+    if (/eisc?h/.test(lowerWord) && lowerWord.length >= 5 && !lowerWord.endsWith("a"))
+      postBase = postBase.replace(/eɪʃ/, "aɪʃ");
+    // German -eier- surnames: eɪɝ→aɪɝ (beierle, reierson)
+    if (/eier/.test(lowerWord) && lowerWord.length >= 5)
+      postBase = postBase.replace(/eɪɝ/, "aɪɝ");
+    // -iger surnames: hard /ɡ/ not soft (feiger, seiger)
+    if (lowerWord.endsWith("iger") && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)dʒɝ$/, "$1ɡɝ");
     // -ge[rs]on/en surnames: hard /ɡ/ not soft (borgeson, burgeson, fergeson, helgesen)
     if (/g[ei]s[eo]n$/.test(lowerWord) && lowerWord.length >= 7)
       postBase = postBase.replace(/dʒ([ˈˌ]?)ɪs([əɪ])n$/, "ɡ$1ɪs$2n");
