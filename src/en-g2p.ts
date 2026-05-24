@@ -1197,6 +1197,34 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.endsWith("oni"))
       postBase = postBase.replace(/ənɪ$/, "oʊni");
 
+    // Italian/Latin -o[consonant]i suffix: ə[C]ɪ → oʊ[C]i (oʊ preserved before single consonant)
+    // -osi (kaposi, lugosi, cardosi): əsɪ → oʊsi
+    if (lowerWord.endsWith("osi"))
+      postBase = postBase.replace(/əsɪ$/, "oʊsi");
+    // -omi (salomi, viscomi): əmɪ → oʊmi
+    if (lowerWord.endsWith("omi"))
+      postBase = postBase.replace(/əmɪ$/, "oʊmi");
+    // -oti (livoti, sidoti): ətɪ → oʊti
+    if (lowerWord.endsWith("oti"))
+      postBase = postBase.replace(/ətɪ$/, "oʊti");
+    // -oli (bartoli, bertoli, consoli): əlɪ → oʊli
+    if (lowerWord.endsWith("oli"))
+      postBase = postBase.replace(/əlɪ$/, "oʊli");
+    // -olo (bartolo, consolo, dibartolo): əloʊ → oʊloʊ
+    if (lowerWord.endsWith("olo"))
+      postBase = postBase.replace(/əloʊ$/, "oʊloʊ");
+
+    // Italian/Arabic -Xri suffix: ɝɪ → Xɹi (G2P treats -Xri as "-ary"-type rhotic)
+    // -ari (ansari, atari, baccari, ferrari): ɝɪ → ɑɹi
+    if (lowerWord.endsWith("ari"))
+      postBase = postBase.replace(/ɝɪ$/, "ɑɹi");
+    // -ori (kazunori, salvatori): ɝɪ → oʊɹi
+    if (lowerWord.endsWith("ori"))
+      postBase = postBase.replace(/ɝɪ$/, "oʊɹi");
+    // -uri (arcuri, mercuri): ɝɪ → uɹi
+    if (lowerWord.endsWith("uri"))
+      postBase = postBase.replace(/ɝɪ$/, "uɹi");
+
     // gian- Italian names: dʒɪæn → dʒɑn (gianni, giannini, giancarlo, giancola)
     if (lowerWord.startsWith("gian"))
       postBase = postBase.replace(/^([ˈˌ]?)dʒɪæn/, "$1dʒɑn");
