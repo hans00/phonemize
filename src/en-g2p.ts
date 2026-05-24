@@ -1146,6 +1146,14 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("top") && lowerWord.length >= 6 && !/^top[ei]/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)toʊp/, "$1tɑp");
 
+    // Italian/Spanish -ato/-ado/-amo suffix: əXoʊ → ɑXoʊ (amato, abbado, caccamo)
+    if (/[admt]o$/.test(lowerWord))
+      postBase = postBase.replace(/ə([dtm])oʊ$/, "ɑ$1oʊ");
+
+    // Italian/Spanish -ano suffix: ænoʊ → ɑnoʊ (reitano, prezzano)
+    if (lowerWord.endsWith("ano"))
+      postBase = postBase.replace(/ænoʊ$/, "ɑnoʊ");
+
     // -ohl- Germanic names: ɑhl → oʊl (bohland, kohler, rohland — silent-h "oh" = /oʊ/)
     if (lowerWord.includes("ohl"))
       postBase = postBase.replace(/ɑhl/g, "oʊl");
