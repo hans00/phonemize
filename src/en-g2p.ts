@@ -1806,6 +1806,15 @@ export class EnglishG2P implements LanguageProcessor {
     // -ient: int→iənt (client, lenient, nutrient, expedient, recipient) — must follow specific -ient rules
     if (lowerWord.endsWith("ient") && lowerWord.length >= 5)
       postBase = postBase.replace(/([ˈˌ]?)i([ˈˌ]?)nt$/, "$1i$2ənt");
+    // -actual: ktuəɫ→kʃəɫ (actual)
+    if (lowerWord.endsWith("actual") && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)k([ˈˌ]?)t([ˈˌ]?)u([ˈˌ]?)ə([ˈˌ]?)[lɫ]$/, "$1k$2ʃ$3ə$4ɫ");
+    // -dual: duəɫ→dʒuəɫ (residual, gradual)
+    if (lowerWord.endsWith("dual") && lowerWord.length >= 5)
+      postBase = postBase.replace(/([ˈˌ]?)d([ˈˌ]?)u([ˈˌ]?)ə([ˈˌ]?)[lɫ]$/, "$1dʒ$2u$3ə$4ɫ");
+    // -sual: suəɫ→ʒəwəɫ (casual, visual)
+    if (lowerWord.endsWith("sual") && lowerWord.length >= 5)
+      postBase = postBase.replace(/([ˈˌ]?)s([ˈˌ]?)u([ˈˌ]?)ə([ˈˌ]?)[lɫ]$/, "$1ʒ$2əwə$3ɫ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
