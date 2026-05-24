@@ -1282,9 +1282,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -ucci Italian names: ʌtʃɪ → utʃi (gucci, balducci, gallucci, ferrucci)
     if (lowerWord.endsWith("ucci"))
       postBase = postBase.replace(/ʌtʃɪ$/, "utʃi");
-    // ahm: æhm → ɑm (ahmad, brahman, rahman — Arabic/Persian silent-h before m)
-    if (/ahm/.test(lowerWord))
-      postBase = postBase.replace(/æhm/g, "ɑm");
+    // ah-C: æh[consonant] → ɑ[consonant] (ahmad, brahman, fahd, bahner — Arabic/Persian silent-h)
+    if (/ah[bcdfgklmnpqrstvwxyz]/.test(lowerWord))
+      postBase = postBase.replace(/æh([bcdfgklmnpqrstvwxyz])/g, "ɑ$1");
     // aa- prefix: ɑɑɹ → ɑɹ (aardema, aardvark, aargh — Dutch/Afrikaans long-aa)
     if (lowerWord.startsWith("aa"))
       postBase = postBase.replace(/^([ˈˌ]?)ɑɑɹ/, "$1ɑɹ");
