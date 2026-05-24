@@ -1282,6 +1282,13 @@ export class EnglishG2P implements LanguageProcessor {
     // -ucci Italian names: ʌtʃɪ → utʃi (gucci, balducci, gallucci, ferrucci)
     if (lowerWord.endsWith("ucci"))
       postBase = postBase.replace(/ʌtʃɪ$/, "utʃi");
+    // -well compound names: uəl/wəl/oʊəl → wɛl (bakewell, bracewell, caldwell, honeywell)
+    // Exclude: ho/lo/no/po/cr/mc/mac/ro-well (howell, lowell, nowell, powell, crowell, mcdowell)
+    // and n/s/j/e-ewell (newell, sewell, jewell)
+    if (lowerWord.endsWith("well") && lowerWord.length >= 6
+        && !/^[nsje]ewell$/.test(lowerWord)
+        && !/^(ho|lo|no|po|cr|mc|mac|ro)/.test(lowerWord))
+      postBase = postBase.replace(/(?:uəl|wəl|oʊəl)$/, "wɛl");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
