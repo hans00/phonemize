@@ -1285,6 +1285,9 @@ export class EnglishG2P implements LanguageProcessor {
     // ah-C/ah$: æh[consonant] or word-final æh → ɑ (ahmad, brahman, fahd, blah — Arabic/Persian silent-h)
     if (/ah/.test(lowerWord))
       postBase = postBase.replace(/æh([bcdfgklmnpqrstvwxyz])/g, "ɑ$1").replace(/æh$/, "ɑ");
+    // word-final əh → ə: silent h in Arabic/Hebrew names ending -ah (allah, abdallah, bismillah, mullah)
+    if (lowerWord.endsWith("ah") && lowerWord.length >= 4)
+      postBase = postBase.replace(/əh$/, "ə");
     // weigh-: waɪ → weɪ (weigh, weight, weightlifting — eigh silent gh)
     if (lowerWord.startsWith("weigh"))
       postBase = postBase.replace(/waɪ/, "weɪ");
