@@ -1191,9 +1191,11 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("bost"))
       postBase = postBase.replace(/^([ˈˌ]?)boʊst/, "$1bɑst");
 
-    // -owski Polish names: oʊskɪ → ɔfski (bakowski, bankowski, bobrowski, markowski)
+    // -owski/-ewski Polish names: oʊskɪ → ɔfski, uskɪ → ɛfski
     if (lowerWord.endsWith("owski"))
       postBase = postBase.replace(/oʊskɪ$/, "ɔfski");
+    if (lowerWord.endsWith("ewski"))
+      postBase = postBase.replace(/uskɪ$/, "ɛfski");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
