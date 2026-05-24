@@ -1725,6 +1725,9 @@ export class EnglishG2P implements LanguageProcessor {
     // -sory: ɔɹi→ɝi (compulsory, extrasensory)
     if (lowerWord.endsWith("sory") && lowerWord.length >= 6)
       postBase = postBase.replace(/([ˈˌ]?)ɔ([ˈˌ]?)ɹi$/, "$1ɝi");
+    // -ery: ɛri→ɝi when r is ASCII (brewery, drewery, towery, microbrewery)
+    if (lowerWord.endsWith("ery") && lowerWord.length >= 5)
+      postBase = postBase.replace(/ɛri$/, "ɝi");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
