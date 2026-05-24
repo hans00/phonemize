@@ -1092,58 +1092,33 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("van"))
       postBase = postBase.replace(/^([ˈˌ]?)vən/, "$1væn");
 
-    // del- prefix: dɪl → dɛl (delancey, delgadillo, delcampo — Spanish/Romance proper names)
-    // stress can appear between ɪ and l (de-LANCE-y → dɪˈlænsi)
-    if (lowerWord.startsWith("del"))
-      postBase = postBase.replace(/^([ˈˌ]?)dɪ([ˈˌ]?)l/, "$1dɛ$2l");
+    // del-/bel-/ben- Romance names: Cɪ → Cɛ before l/n (delancey, beland, benecke — stress-aware)
+    if (/^[bd]el/.test(lowerWord) || lowerWord.startsWith("ben"))
+      postBase = postBase.replace(/^([ˈˌ]?)([bd])ɪ([ˈˌ]?)([ln])/, "$1$2ɛ$3$4");
 
     // wal- prefix: wæl → wɑl (walcott, waldeck, waldorf — Germanic proper names)
     if (lowerWord.startsWith("wal"))
       postBase = postBase.replace(/^([ˈˌ]?)wæl/, "$1wɑl");
 
-    // val- prefix: vəl → væl (valedictory, valentine, vallarta)
-    // stress can appear between ə and l (va-LEN-tine → vəˈlɛntaɪn)
+    // val- prefix: vəl → væl (valedictory, valentine, vallarta — stress-aware)
     if (lowerWord.startsWith("val"))
       postBase = postBase.replace(/^([ˈˌ]?)və([ˈˌ]?)l/, "$1væ$2l");
 
-    // bal- prefix: bæl → bɑl (balboa, baldez, baldwin — but not bala-/ball- words)
+    // bal- prefix: bæl → bɑl (balboa, baldez, baldwin — not bala-/ball-)
     if (lowerWord.startsWith("bal") && !/^bal[al]/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)bæl/, "$1bɑl");
-
-    // bel- prefix: bɪl → bɛl (belafonte, belflower, belgarde, beland — Romance/proper names)
-    // stress can appear between ɪ and l (be-LAND → bɪˈlænd)
-    if (lowerWord.startsWith("bel"))
-      postBase = postBase.replace(/^([ˈˌ]?)bɪ([ˈˌ]?)l/, "$1bɛ$2l");
 
     // pal- prefix: pəl → pɑl (palladino, palmieri, palminteri — Spanish/Italian names)
     if (lowerWord.startsWith("pal"))
       postBase = postBase.replace(/^([ˈˌ]?)pəl/, "$1pɑl");
 
-    // ben- prefix: bɪn → bɛn (benveniste, benvenuti, benecke — Romance/proper names)
-    // stress can appear between ɪ and n (be-NECKE → bɪˈnɛk)
-    if (lowerWord.startsWith("ben"))
-      postBase = postBase.replace(/^([ˈˌ]?)bɪ([ˈˌ]?)n/, "$1bɛ$2n");
-
     // mc/mac+g names: məkɡ → məɡ (mcgarvey, macgowan, mcgaha — "c" silent before "g")
     if (/^m(?:c|ac)g/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)məkɡ/, "$1məɡ");
 
-    // cam- prefix: kəm → kɑm (cammarano, campanelli, camilleri — Italian names)
-    // stress can appear between ə and m (ca-MIL-le-ri → kəˈmɪɫɪɹɪ)
-    if (lowerWord.startsWith("cam"))
-      postBase = postBase.replace(/^([ˈˌ]?)kə([ˈˌ]?)m/, "$1kɑ$2m");
-
-    // cap- prefix: kəp → kɑp (capetillo, cappelletti, cappuccio — Italian/Spanish names)
-    if (lowerWord.startsWith("cap"))
-      postBase = postBase.replace(/^([ˈˌ]?)kəp/, "$1kɑp");
-
-    // cas- prefix (not cast-): kəs → kɑs (casalino, casassa, casillas — Italian/Spanish names)
-    if (lowerWord.startsWith("cas") && !lowerWord.startsWith("cast"))
-      postBase = postBase.replace(/^([ˈˌ]?)kə([ˈˌ]?)s/, "$1kɑ$2s");
-
-    // can- prefix: kən → kɑn (canterra, canzoneri — Italian/Spanish names)
-    if (lowerWord.startsWith("can"))
-      postBase = postBase.replace(/^([ˈˌ]?)kən/, "$1kɑn");
+    // cam-/can-/cap-/cas- Italian/Spanish names: kə → kɑ before m/n/p/s (not cast-)
+    if (/^ca[mnps]/.test(lowerWord) && !lowerWord.startsWith("cast"))
+      postBase = postBase.replace(/^([ˈˌ]?)kə([ˈˌ]?)([mnps])/, "$1kɑ$2$3");
 
     // mas- prefix: məs → mɑs (masamilla, massucci — Italian/Japanese names)
     if (lowerWord.startsWith("mas"))
@@ -1153,13 +1128,11 @@ export class EnglishG2P implements LanguageProcessor {
     if (lowerWord.startsWith("cos") && !/^cos[ei]/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)koʊs/, "$1kɑs");
 
-    // mon- prefix (not mono/moni, length>=6): moʊn → mɑn (monaco, monahan, monetarism)
-    if (lowerWord.startsWith("mon") && lowerWord.length >= 6 && !lowerWord.startsWith("mono") && !lowerWord.startsWith("moni"))
-      postBase = postBase.replace(/^([ˈˌ]?)moʊn/, "$1mɑn");
-
-    // don- Irish/proper names (length>=6, not donat-): doʊn → dɑn (donald, donaghy, donahue, donovan)
-    if (lowerWord.startsWith("don") && lowerWord.length >= 6 && !lowerWord.startsWith("donat"))
-      postBase = postBase.replace(/^([ˈˌ]?)doʊn/, "$1dɑn");
+    // mon-/don- proper names (length>=6): XoʊnX → XɑnX (monaco, monahan, donald, donaghy, donahue)
+    // Excludes mono-/moni- (Greek one-), donat- (donate)
+    if (/^[dm]on/.test(lowerWord) && lowerWord.length >= 6 &&
+        !lowerWord.startsWith("mono") && !lowerWord.startsWith("moni") && !lowerWord.startsWith("donat"))
+      postBase = postBase.replace(/^([ˈˌ]?)([dm])oʊn/, "$1$2ɑn");
 
     // -ohl- Germanic names: ɑhl → oʊl (bohland, kohler, rohland — silent-h "oh" = /oʊ/)
     if (lowerWord.includes("ohl"))
