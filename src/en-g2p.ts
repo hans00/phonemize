@@ -1405,6 +1405,9 @@ export class EnglishG2P implements LanguageProcessor {
     // German -nberg: ɪnbɝɡ → ənbɝɡ (eisenberg, greenberg, katzenberg, gutenberg, ehrenberg)
     if (lowerWord.endsWith("nberg") && lowerWord.length >= 6)
       postBase = postBase.replace(/ɪnbɝɡ$/, "ənbɝɡ");
+    // -eman compound: remove epenthetic ɪ before mən (bakeman, baseman, bergeman, bridgeman, addleman)
+    if (lowerWord.endsWith("eman") && lowerWord.length >= 6)
+      postBase = postBase.replace(/(tʃ|dʒ|[bdfɡhklmnpɹstvwzʃʒ])ɪmən$/, "$1mən");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
