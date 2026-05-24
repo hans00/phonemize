@@ -1667,6 +1667,12 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)s([ˈˌ]?)ə$/, "$1oʊ$2s$3ə");
     if (lowerWord.endsWith("oso") && lowerWord.length >= 5)
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)s([ˈˌ]?)oʊ$/, "$1oʊ$2s$3oʊ");
+    // -phone compound: pre-phone vowel reduces to ə (microphone, xylophone, megaphone, saxophone)
+    if (lowerWord.endsWith("phone") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)(oʊ|ɑ|æ|ɛ)([ˈˌ]?)f([ˈˌ]?)oʊn$/, "$1ə$3f$4oʊn");
+    // Italian -ione surnames: add final /i/ (campione, mangione, forgione, stanzione)
+    if (lowerWord.endsWith("ione") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)oʊn$/, "$1i$2oʊni");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
