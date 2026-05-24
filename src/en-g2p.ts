@@ -1134,6 +1134,10 @@ export class EnglishG2P implements LanguageProcessor {
         !lowerWord.startsWith("mono") && !lowerWord.startsWith("moni") && !lowerWord.startsWith("donat"))
       postBase = postBase.replace(/^([ˈˌ]?)([dm])oʊn/, "$1$2ɑn");
 
+    // ros- proper names (length>=6, not rosa/rose/rosi): ɹoʊs → ɹɑs (roscoe, roskam, rosner, roslin)
+    if (lowerWord.startsWith("ros") && lowerWord.length >= 6 && !/^ros[aei]/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)ɹoʊs/, "$1ɹɑs");
+
     // -ohl- Germanic names: ɑhl → oʊl (bohland, kohler, rohland — silent-h "oh" = /oʊ/)
     if (lowerWord.includes("ohl"))
       postBase = postBase.replace(/ɑhl/g, "oʊl");
