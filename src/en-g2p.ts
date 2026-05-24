@@ -1643,6 +1643,14 @@ export class EnglishG2P implements LanguageProcessor {
     // Italian -osio names: ə before -sio suffix = /oʊ/ (ambrosio, agnosio, collosio)
     if (lowerWord.endsWith("osio") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)sɪoʊ$/, "$1oʊ$2sioʊ");
+    // Spanish/Italian al+Ca initial: əl→ɑl (alcantara, almanza, altamira, albarado)
+    if (/^al[bcdfgklmnpqrstvwxz]a/.test(lowerWord) && lowerWord.length >= 6)
+      postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)l/, "$1ɑ$2l");
+    // Italian Co+C+etti/-elli: medial ə→oʊ before suffix consonant (bonetti, coletti, rosetti, bonelli, covelli)
+    if (/[bcdfgklmnpqrstvwxz]o[bcdfgklmnpqrstvwxz]etti$/.test(lowerWord) && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)(l|[bcdfgkmnpqrstvwxzɡɹ])([ˈˌ]?)ɛtɪ$/, "$1oʊ$2$3$4ɛti");
+    if (/[bcdfgklmnpqrstvwxz]o[bcdfgklmnpqrstvwxz]elli$/.test(lowerWord) && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)(l|[bcdfgkmnpqrstvwxzɡɹ])([ˈˌ]?)ɛlɪ$/, "$1oʊ$2$3$4ɛli");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
