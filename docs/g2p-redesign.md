@@ -105,7 +105,12 @@ Runtime: no matrices, no probabilities, no training. Just rules + lookup.
 
 - [x] Architecture agreed
 - [x] **P1**: Aligner (98.14% coverage, 11K contexts, 430 atoms — see results below)
-- [ ] P2: Suffix table + stress shift + reduction
+- [ ] **P2**: Suffix table + stress shift + reduction
+  - [x] P2.0: Suffix table + decomposer (51% base recovery, 94% IPA tail match)
+  - [ ] P2.1: Stress FSM
+  - [ ] P2.2: Reduction rules
+  - [ ] P2.3: Integration behind flag
+  - [ ] P2.4: Default-on, retire postBase
 - [ ] P3: Letter-cluster context table
 - [ ] P4: Exception mining
 - [ ] P5: Dict elimination
