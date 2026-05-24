@@ -847,7 +847,7 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/pɹoʊfɪt/, "pɹɑfɪt");
     // -akable magic-e: æk→eɪk (unshakable)
     if (lowerWord.endsWith("akable"))
-      postBase = postBase.replace(/æk(əbəɫ)$/, "eɪk$1");
+      postBase = postBase.replace(/æk(əbəl)$/, "eɪk$1");
     // typic-: taɪpɪ→tɪpɪ (typical, typically, atypical)
     if (lowerWord.includes("typic"))
       postBase = postBase.replace(/taɪp([ˈˌ]?)ɪ/, "tɪp$1ɪ");
@@ -911,7 +911,7 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/^([ˈˌ]?)pɝ/, "$1pɛɹ");
     // -acial/-acious: [æɑ]ʃ→eɪʃ (facial, racial, gracious, spacious, glacial)
     if (/acious$|acial$/.test(lowerWord))
-      postBase = postBase.replace(/([æɑ])(ʃ(?:əɫ|əs))$/, "eɪ$2");
+      postBase = postBase.replace(/([æɑ])(ʃ(?:əl|əs))$/, "eɪ$2");
     // athe-: æðɪ→eɪθi (atheism, atheist)
     if (lowerWord.startsWith("athe"))
       postBase = postBase.replace(/^([ˈˌ]?)æðɪ/, "$1eɪθi");
@@ -1108,7 +1108,7 @@ export class EnglishG2P implements LanguageProcessor {
 
     // bal- prefix: bæl → bɑl (balboa, baldez, baldwin — but not bala-/ball- words)
     if (lowerWord.startsWith("bal") && !/^bal[al]/.test(lowerWord))
-      postBase = postBase.replace(/^([ˈˌ]?)bæɫ/, "$1bɑɫ");
+      postBase = postBase.replace(/^([ˈˌ]?)bæl/, "$1bɑl");
 
     // bel- prefix: bɪl → bɛl (belafonte, belflower, belgarde, beland — Romance/proper names)
     // stress can appear between ɪ and l (be-LAND → bɪˈlænd)
