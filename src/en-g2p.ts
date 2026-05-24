@@ -1593,6 +1593,16 @@ export class EnglishG2P implements LanguageProcessor {
     // German -linger surnames: schwa before -lɪŋɝ→oʊ (bolinger, dolinger, solinger)
     if (lowerWord.endsWith("linger") && lowerWord.length >= 7 && !/^ol/.test(lowerWord))
       postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)lɪŋɝ$/, "$1oʊ$2lɪŋɝ");
+    // German -stein with consonant+o start: initial ə→oʊ (bodenstein, doberstein, koberstein)
+    if (lowerWord.endsWith("stein") && /^[bcdfgklmnpqrstvwxz]o(?!b{2})/.test(lowerWord) && lowerWord.length >= 8)
+      postBase = postBase.replace(/^([ˈˌ]?)([bcdfgkmnpqrstvwxzɡɹ])([ˈˌ]?)ə/, "$1$2$3oʊ");
+    // German -enbach: initial vowel corrections (kallenbach→kæ, hollenbach→hɑ, aschenbach→æʃ)
+    if (lowerWord.endsWith("enbach") && lowerWord.length >= 8) {
+      if (/^ka/.test(lowerWord)) postBase = postBase.replace(/^([ˈˌ]?)k([ˈˌ]?)ə/, "$1k$2æ");
+      else if (/^[rh]o/.test(lowerWord)) postBase = postBase.replace(/^([ˈˌ]?)([ɹh])([ˈˌ]?)ə/, "$1$2$3ɑ");
+      else if (/^bo/.test(lowerWord)) postBase = postBase.replace(/^([ˈˌ]?)b([ˈˌ]?)ə/, "$1b$2ɑ");
+      else if (/^asc/.test(lowerWord)) postBase = postBase.replace(/^([ˈˌ]?)ə([ˈˌ]?)ʃ/, "$1æ$2ʃ");
+    }
     // -stair surnames: stɝ→stɛɹ (alistair, alastair, westair)
     if (lowerWord.endsWith("stair") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)stɝ$/, "$1stɛɹ");
