@@ -1842,6 +1842,15 @@ export class EnglishG2P implements LanguageProcessor {
     // -editious: ɪkspɛdɪʃəs→ɛkspədɪʃəs (expeditious)
     if (lowerWord.endsWith("editious") && lowerWord.length >= 9)
       postBase = postBase.replace(/([ˈˌ]?)ɪ([ˈˌ]?)ks([ˈˌ]?)p([ˈˌ]?)ɛ([ˈˌ]?)d([ˈˌ]?)ɪ([ˈˌ]?)ʃ([ˈˌ]?)əs$/, "$1ɛ$2ks$3p$4ə$5d$6ɪ$7ʃ$8əs");
+    // -tribution: tɹɪbjuʃən→tɹəbjuʃən (contribution, retribution)
+    if (lowerWord.endsWith("tribution") && lowerWord.length >= 10)
+      postBase = postBase.replace(/([ˈˌ]?)t([ˈˌ]?)ɹ([ˈˌ]?)ɪ([ˈˌ]?)bj([ˈˌ]?)uʃ([ˈˌ]?)ən$/, "$1t$2ɹ$3ə$4bj$5uʃ$6ən");
+    // -stitution: stɪtuʃən→stətuʃən (constitution, destitution, prostitution); not restitution
+    if (lowerWord.endsWith("stitution") && lowerWord.length >= 10 && !lowerWord.startsWith("re"))
+      postBase = postBase.replace(/([ˈˌ]?)st([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)uʃ([ˈˌ]?)ən$/, "$1st$2ə$3t$4uʃ$5ən");
+    // -mpetition: mpɪtɪʃən→mpətɪʃən (competition)
+    if (lowerWord.endsWith("etition") && lowerWord.length >= 9)
+      postBase = postBase.replace(/([ˈˌ]?)m([ˈˌ]?)p([ˈˌ]?)ɪ([ˈˌ]?)t([ˈˌ]?)ɪ([ˈˌ]?)ʃ([ˈˌ]?)ən$/, "$1m$2p$3ə$4t$5ɪ$6ʃ$7ən");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
