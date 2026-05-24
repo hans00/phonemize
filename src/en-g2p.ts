@@ -1177,6 +1177,12 @@ export class EnglishG2P implements LanguageProcessor {
         !lowerWord.startsWith("exp") && (!lowerWord.startsWith("exc") || /^exc[aeiou]/.test(lowerWord)))
       postBase = postBase.replace(/^([ˈˌ]?)ɪks/, "$1ɛks");
 
+    // tal-/ral- names: tæl → tɑl, ɹæl → ɹɑl (talula, talman, ralston — not tale/tali)
+    if (lowerWord.startsWith("tal") && !/^tal[ei]/.test(lowerWord))
+      postBase = postBase.replace(/^([ˈˌ]?)tæl/, "$1tɑl");
+    if (lowerWord.startsWith("ral"))
+      postBase = postBase.replace(/^([ˈˌ]?)ɹæl/, "$1ɹɑl");
+
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
   }
