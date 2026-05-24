@@ -13,6 +13,7 @@ import { expandText } from "./expand-en";
 import { simplePOSTagger } from "./pos-tagger";
 import { transformAmericanToRP } from "./en-gb";
 import { predictPrincipled } from "./en-principled";
+import { applyPhonotactics } from "./en-phonotactics";
 
 export type EnglishDialect = "en-US" | "en-GB";
 
@@ -597,7 +598,11 @@ export class EnglishG2P implements LanguageProcessor {
     // the systematic morphology, and exceptions.json absorbs the ~4K
     // words that were load-bearing for the old patches. See P5 in
     // docs/g2p-redesign.md.
-    const postBase = base;
+    //
+    // We still apply a *small* set of universal phonotactic adjustments
+    // (currently just happy-tensing on word-final /ɪ/) — these are
+    // principled phonological rules, not word patches.
+    const postBase = applyPhonotactics(base);
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
