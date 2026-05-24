@@ -1328,6 +1328,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -ieux French names (non-dieux): iəks → ju (lemieux, merieux)
     else if (lowerWord.endsWith("ieux") && lowerWord.length >= 5)
       postBase = postBase.replace(/iəks$/, "ju");
+    // -where compound: hwɪɹ → wɛɹ (anywhere, elsewhere, everywhere, nowhere — wh→w in compounds)
+    if (lowerWord.endsWith("where") && lowerWord.length >= 6)
+      postBase = postBase.replace(/hwɪɹ$/, "wɛɹ");
+    // -whelm compound: hwəm → wɛlm (overwhelm, underwhelm — wh→w in compounds)
+    if (lowerWord.endsWith("whelm") && lowerWord.length >= 6)
+      postBase = postBase.replace(/hwəm$/, "wɛlm");
     // -well compound names: uəl/wəl/oʊəl → wɛl (bakewell, bracewell, caldwell, honeywell)
     // Exclude: ho/lo/no/po/cr/mc/mac/ro-well (howell, lowell, nowell, powell, crowell, mcdowell)
     // and n/s/j/e-ewell (newell, sewell, jewell)
