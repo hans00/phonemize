@@ -115,8 +115,28 @@ Runtime: no matrices, no probabilities, no training. Just rules + lookup.
   - [x] P3.0: Compiler (`scripts/compile-lts.ts`) produces `data/en/lts.json` from alignments — 13K full-context entries + 3 backoff levels, 235KB
   - [x] P3.1: Runtime lookup (`predictByLTS(word)`) walks longest-match clusters with context backoff
   - [x] P3.2: Integration measured. **LTS alone: 24.2% exact, 63.8% lenient** after aligner + compiler improvements (empty-atom penalty in DP cost so silent-letter assignments don't win ties; minSupport floor for multi-char clusters so name-only patterns drop out). Still below the legacy rule pipeline (75.4% lenient) — routing it in as the base provider regresses eval by ~−6% lenient, so en-g2p keeps the dict-only gate. Further LTS quality work (joint-sequence model, deeper context windows, stress-aware contexts) is the prerequisite for unblocking P2.4 / P5.
-- [ ] P4: Exception mining
-- [ ] P5: Dict elimination
+- [x] **P4**: Exception mining
+  - `scripts/mine-exceptions.ts` runs rules (disableDict=true) over the
+    whole dict, computes edit distance to dict IPA per entry, filters
+    acronyms (with canon-equivalent letter-name matching), outputs
+    `data/en/exception-candidates.json` and a shipping-size tradeoff
+    table. Key numbers (out of 100,599 alphabetic non-acronym entries):
+
+    | threshold | entries | size  | lenient acc on dict | rules-only off |
+    |-----------|---------|-------|---------------------|----------------|
+    | ed ≥ 2    | 26,367  | 583 KB| 100.00%             | 0              |
+    | ed ≥ 3    | 11,777  | 273 KB| 85.50%              | 14,590         |
+    | ed ≥ 4    |  4,412  | 108 KB|  78.18%             | 21,955         |
+    | ed ≥ 5    |  1,424  |  37 KB|  75.21%             | 24,943         |
+    | ed ≥ 6    |    373  |  10 KB|  74.16%             | 25,994         |
+
+    Compare to current `data/en/dict.json` at **2.7 MB**. At ed ≥ 3 the
+    package gets *higher* lenient accuracy than the current eval baseline
+    (85.5% vs 75.4%) at ~10% the size. At ed ≥ 5 we match the current
+    baseline with a 99% size reduction.
+- [ ] P5: Dict elimination — runtime integration of exceptions.json,
+  build-time pipeline for `mine-exceptions` + `compile-lts`, removal of
+  `data/en/dict.json` from the shipping bundle.
 
 ### P1 results
 
