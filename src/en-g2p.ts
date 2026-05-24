@@ -1093,24 +1093,27 @@ export class EnglishG2P implements LanguageProcessor {
       postBase = postBase.replace(/^([ˈˌ]?)vən/, "$1væn");
 
     // del- prefix: dɪl → dɛl (delancey, delgadillo, delcampo — Spanish/Romance proper names)
+    // stress can appear between ɪ and l (de-LANCE-y → dɪˈlænsi)
     if (lowerWord.startsWith("del"))
-      postBase = postBase.replace(/^([ˈˌ]?)dɪl/, "$1dɛl");
+      postBase = postBase.replace(/^([ˈˌ]?)dɪ([ˈˌ]?)l/, "$1dɛ$2l");
 
     // wal- prefix: wæl → wɑl (walcott, waldeck, waldorf — Germanic proper names)
     if (lowerWord.startsWith("wal"))
       postBase = postBase.replace(/^([ˈˌ]?)wæl/, "$1wɑl");
 
     // val- prefix: vəl → væl (valedictory, valentine, vallarta)
+    // stress can appear between ə and l (va-LEN-tine → vəˈlɛntaɪn)
     if (lowerWord.startsWith("val"))
-      postBase = postBase.replace(/^([ˈˌ]?)vəl/, "$1væl");
+      postBase = postBase.replace(/^([ˈˌ]?)və([ˈˌ]?)l/, "$1væ$2l");
 
     // bal- prefix: bæl → bɑl (balboa, baldez, baldwin — but not bala-/ball- words)
     if (lowerWord.startsWith("bal") && !/^bal[al]/.test(lowerWord))
       postBase = postBase.replace(/^([ˈˌ]?)bæɫ/, "$1bɑɫ");
 
-    // bel- prefix: bɪl → bɛl (belafonte, belflower, belgarde — Romance/proper names)
+    // bel- prefix: bɪl → bɛl (belafonte, belflower, belgarde, beland — Romance/proper names)
+    // stress can appear between ɪ and l (be-LAND → bɪˈlænd)
     if (lowerWord.startsWith("bel"))
-      postBase = postBase.replace(/^([ˈˌ]?)bɪl/, "$1bɛl");
+      postBase = postBase.replace(/^([ˈˌ]?)bɪ([ˈˌ]?)l/, "$1bɛ$2l");
 
     // pal- prefix: pəl → pɑl (palladino, palmieri, palminteri — Spanish/Italian names)
     if (lowerWord.startsWith("pal"))
