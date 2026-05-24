@@ -108,7 +108,7 @@ Runtime: no matrices, no probabilities, no training. Just rules + lookup.
 - [ ] **P2**: Suffix table + stress shift + reduction
   - [x] P2.0: Suffix table + decomposer (51% base recovery, 94% IPA tail match)
   - [x] P2.1: Stress FSM (81% stress-position accuracy with base lookup; 73% without)
-  - [ ] P2.2: Reduction rules
+  - [x] P2.2: Vowel reduction (78.7% of unstressed nuclei match reduced-vowel rules)
   - [ ] P2.3: Integration behind flag
   - [ ] P2.4: Default-on, retire postBase
 - [ ] P3: Letter-cluster context table
