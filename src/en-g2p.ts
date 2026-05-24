@@ -1411,6 +1411,12 @@ export class EnglishG2P implements LanguageProcessor {
     // -ville: remove epenthetic vowel before stressed vɪl (abbeville, belleville, charlotteville)
     if (lowerWord.endsWith("ville") && lowerWord.length >= 6)
       postBase = postBase.replace(/[ɪi]v([ˈˌ]?)ɪl$/, "v$1ɪl");
+    // -lough: ɫ(ə|ʌ)f → ɫaʊ (fairclough, clough, blough, carlough; plough, lough)
+    if (lowerWord.endsWith("lough") && lowerWord.length >= 4)
+      postBase = postBase.replace(/l([ˈˌ]?)[əʌ]f$/, "l$1aʊ");
+    // -rrett/-rett: ɹɪt → ɹɪt — final schwa → lax-I (barrett, garrett, berrett, marrett)
+    if (/r{1,2}ett$/.test(lowerWord) && lowerWord.length >= 6)
+      postBase = postBase.replace(/ɹ([ˈˌ]?)ət$/, "ɹ$1ɪt");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
