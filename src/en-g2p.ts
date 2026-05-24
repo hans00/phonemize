@@ -1633,6 +1633,16 @@ export class EnglishG2P implements LanguageProcessor {
     // -stair surnames: stɝ→stɛɹ (alistair, alastair, westair)
     if (lowerWord.endsWith("stair") && lowerWord.length >= 7)
       postBase = postBase.replace(/([ˈˌ]?)stɝ$/, "$1stɛɹ");
+    // aero-/euro-/retro- compound prefix: unstressed -o- = /oʊ/ not /ə/
+    if (/^aero/.test(lowerWord) && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)ɛ([ˈˌ]?)ɹə/, "$1ɛ$2ɹoʊ");
+    if (/^euro/.test(lowerWord) && lowerWord.length >= 6)
+      postBase = postBase.replace(/([ˈˌ]?)juɹə/, "$1juɹoʊ");
+    if (/^retro/.test(lowerWord) && lowerWord.length >= 6)
+      postBase = postBase.replace(/^([ˈˌ]?)ɹɛtɹə/, "$1ɹɛtɹoʊ");
+    // Italian -osio names: ə before -sio suffix = /oʊ/ (ambrosio, agnosio, collosio)
+    if (lowerWord.endsWith("osio") && lowerWord.length >= 7)
+      postBase = postBase.replace(/([ˈˌ]?)ə([ˈˌ]?)sɪoʊ$/, "$1oʊ$2sioʊ");
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
