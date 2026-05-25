@@ -474,6 +474,18 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
 // and reuses the cached form across every call.
 const BCP47_REGION_RE = /^en(?:-[a-z]{4})?-([a-z]{2}|\d{3})(?:$|-)/;
 const PLAIN_L_RE = /l/g;
+const STRESS_PRIMARY = /ˈ/g;
+
+// Fast check for "does this string contain any uppercase ASCII char?".
+// Returns true iff toLowerCase would change the string. Avoids the
+// .toLowerCase() copy in the common all-lowercase case.
+function needsLowerCase(s: string): boolean {
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    if (c >= 65 && c <= 90) return true;
+  }
+  return false;
+}
 
 export class EnglishG2P implements LanguageProcessor {
   private dictionary: EnDict;
@@ -515,14 +527,13 @@ export class EnglishG2P implements LanguageProcessor {
     this.disableDict = options.disableDict || false;
     this.dialect = options.dialect ?? "en-US";
     this.enablePrincipled = options.enablePrincipled || false;
-    this.dictionary = Object.assign(
-      Object.create(null),
-      resolveJson<EnDict>(lookupTable),
-    );
-    this.homographs = Object.assign(
-      Object.create(null),
-      resolveJson<HomographDict>(homographs),
-    );
+    // Share the resolved JSON object directly across instances. Both
+    // tables are read-only at runtime (writes go to this.customDict),
+    // so the previous Object.assign-into-Object.create(null) copy
+    // (~30K and ~1K entries respectively) is pure construction-time
+    // overhead. resolveJson is itself idempotent.
+    this.dictionary = resolveJson<EnDict>(lookupTable);
+    this.homographs = resolveJson<HomographDict>(homographs);
   }
 
   /**
@@ -689,20 +700,22 @@ export class EnglishG2P implements LanguageProcessor {
     pos?: string,
     disableDict?: boolean,
   ): string {
-    const lowerWord = word.toLowerCase();
+    // Avoid re-allocating lowerWord when the caller already lowercased
+    // (true for predict() which is the dominant entry point). Most words
+    // arrive lowercase already, so toLowerCase would just create a copy.
+    const lowerWord = needsLowerCase(word) ? word.toLowerCase() : word;
 
-    // Priority 1: Handle hyphenated compounds (e.g., "recession-hit")
-    if (lowerWord.includes("-")) {
-      const parts = lowerWord.split("-");
-      if (parts.length === 2) {
-        const part1 = this.predictInternal(parts[0], pos, disableDict);
-        const part2 = this.predictInternal(parts[1], pos, disableDict);
-        if (part1 && part2) {
-          // Remove stress from first part, add to second part for compound stress pattern
-          const cleanPart1 = part1.replace(/ˈ/g, "");
-          const cleanPart2 = part2.replace(/ˈ/g, "");
-          return cleanPart1 + "ˈ" + cleanPart2;
-        }
+    // Priority 1: Handle hyphenated compounds. Cheap indexOf gate before
+    // allocating the split-array.
+    const dashAt = lowerWord.indexOf("-");
+    if (dashAt > 0 && dashAt < lowerWord.length - 1 &&
+        lowerWord.indexOf("-", dashAt + 1) < 0) {
+      const part1 = this.predictInternal(lowerWord.slice(0, dashAt), pos, disableDict);
+      const part2 = this.predictInternal(lowerWord.slice(dashAt + 1), pos, disableDict);
+      if (part1 && part2) {
+        // Compound stress: strip primary from each part, add a single
+        // primary at the joint.
+        return part1.replace(STRESS_PRIMARY, "") + "ˈ" + part2.replace(STRESS_PRIMARY, "");
       }
     }
 
