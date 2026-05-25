@@ -135,12 +135,38 @@ function addInitialSecondary(ipa: string): string {
 }
 
 /**
+ * Silent /h/ in consonant clusters. Rules emit /h/ wherever orthographic
+ * "h" appears, but in many foreign-loanword clusters the h is silent
+ * (akhtar, exhaust, dahlia). When /h/ sits between two non-vowel,
+ * non-stress-mark segments, drop it.
+ *
+ * Doesn't touch:
+ *   - Word-initial h (he, hello, hand) — not in a cluster.
+ *   - Intervocalic h (behold, ahead) — h between vowels stays.
+ *   - h preceded by a stress mark (stress mark resets cluster status).
+ */
+function dropSilentH(ipa: string): string {
+  let out = "";
+  for (let i = 0; i < ipa.length; i++) {
+    if (ipa[i] !== "h") { out += ipa[i]; continue; }
+    const prev = ipa[i - 1];
+    const next = ipa[i + 1];
+    const prevIsCluster = prev && !VOWELS.has(prev) && prev !== "ˈ" && prev !== "ˌ";
+    const nextIsCluster = next && !VOWELS.has(next) && next !== "ˈ" && next !== "ˌ";
+    if (prevIsCluster && nextIsCluster) continue; // drop
+    out += ipa[i];
+  }
+  return out;
+}
+
+/**
  * Apply the small phonotactic rule set:
  *   1. Initial "aa" collapse.
  *   2. Final "dt" cluster simplification.
  *   3. Past-tense -ed allomorph correction.
- *   4. Initial secondary stress on long Latinate words.
- *   5. Happy-tensing on word-final /ɪ/.
+ *   4. Drop silent /h/ inside consonant clusters.
+ *   5. Initial secondary stress on long Latinate words.
+ *   6. Happy-tensing on word-final /ɪ/.
  *
  * `word` is currently unused but kept in the signature so future rules
  * can use orthographic context without a breaking change.
@@ -151,6 +177,7 @@ export function applyPhonotactics(ipa: string, _word?: string): string {
   cur = collapseInitialDoubleA(cur);
   cur = simplifyDtFinal(cur);
   cur = fixPastTenseED(cur);
+  cur = dropSilentH(cur);
   cur = addInitialSecondary(cur);
   cur = applyHappyTensing(cur);
   return cur;
