@@ -160,13 +160,38 @@ function dropSilentH(ipa: string): string {
 }
 
 /**
+ * Unstressed /ɪɹ/ → /ɝ/ coalescence. Across hundreds of dict entries
+ * (afferent, anderegg, ampere, aileron, …) an unstressed /ɪ/ followed
+ * by /ɹ/ surfaces as the single rhotic-vowel segment /ɝ/. Our rules
+ * emit /ɪɹ/ because they treat the spelling as two separate segments.
+ *
+ * Don't fire when /ɪ/ is stressed (the ɹ is part of a separate
+ * syllable's onset there) — checked by scanning back for ˈ/ˌ before
+ * any vowel.
+ */
+const RHOTIC_IR_RE = /ɪɹ/g;
+function coalesceUnstressedIR(ipa: string): string {
+  return ipa.replace(RHOTIC_IR_RE, (_m, offset) => {
+    // Walk backward to find the most recent stress mark or vowel; if
+    // we hit ˈ/ˌ before any other vowel, this ɪ is stressed → leave it.
+    for (let i = (offset as number) - 1; i >= 0; i--) {
+      const c = ipa[i];
+      if (c === "ˈ" || c === "ˌ") return "ɪɹ"; // stressed
+      if (VOWELS.has(c)) break; // hit another vowel; ours is unstressed
+    }
+    return "ɝ";
+  });
+}
+
+/**
  * Apply the small phonotactic rule set:
  *   1. Initial "aa" collapse.
  *   2. Final "dt" cluster simplification.
  *   3. Past-tense -ed allomorph correction.
  *   4. Drop silent /h/ inside consonant clusters.
- *   5. Initial secondary stress on long Latinate words.
- *   6. Happy-tensing on word-final /ɪ/.
+ *   5. Unstressed /ɪɹ/ → /ɝ/ rhotic coalescence.
+ *   6. Initial secondary stress on long Latinate words.
+ *   7. Happy-tensing on word-final /ɪ/.
  *
  * `word` is currently unused but kept in the signature so future rules
  * can use orthographic context without a breaking change.
@@ -178,6 +203,7 @@ export function applyPhonotactics(ipa: string, _word?: string): string {
   cur = simplifyDtFinal(cur);
   cur = fixPastTenseED(cur);
   cur = dropSilentH(cur);
+  cur = coalesceUnstressedIR(cur);
   cur = addInitialSecondary(cur);
   cur = applyHappyTensing(cur);
   return cur;
