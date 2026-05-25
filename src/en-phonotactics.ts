@@ -184,14 +184,28 @@ function coalesceUnstressedIR(ipa: string): string {
 }
 
 /**
+ * -ically suffix schwa elision: orthographic -ically surfaces as
+ * /ɪkli/ in fluent speech (academically, basically, dramatically) but
+ * rules add an epenthetic schwa giving /ɪkəɫi/. Drop the schwa for
+ * any IPA ending in /ɪkəɫi/.
+ *
+ * Pre-compiled at module load. Single replace; fast.
+ */
+const ICALLY_RE = /ɪkəɫi$/;
+function elideIcallySchwa(ipa: string): string {
+  return ipa.replace(ICALLY_RE, "ɪkɫi");
+}
+
+/**
  * Apply the small phonotactic rule set:
  *   1. Initial "aa" collapse.
  *   2. Final "dt" cluster simplification.
  *   3. Past-tense -ed allomorph correction.
  *   4. Drop silent /h/ inside consonant clusters.
  *   5. Unstressed /ɪɹ/ → /ɝ/ rhotic coalescence.
- *   6. Initial secondary stress on long Latinate words.
- *   7. Happy-tensing on word-final /ɪ/.
+ *   6. -ically schwa elision.
+ *   7. Initial secondary stress on long Latinate words.
+ *   8. Happy-tensing on word-final /ɪ/.
  *
  * `word` is currently unused but kept in the signature so future rules
  * can use orthographic context without a breaking change.
@@ -204,6 +218,7 @@ export function applyPhonotactics(ipa: string, _word?: string): string {
   cur = fixPastTenseED(cur);
   cur = dropSilentH(cur);
   cur = coalesceUnstressedIR(cur);
+  cur = elideIcallySchwa(cur);
   cur = addInitialSecondary(cur);
   cur = applyHappyTensing(cur);
   return cur;
