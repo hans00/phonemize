@@ -65,15 +65,46 @@ function simplifyDtFinal(ipa: string): string {
 }
 
 /**
+ * Past-tense -ed allomorph: rules tend to emit /əd/ after every coda,
+ * but English orthographic -ed only surfaces as /əd/ (syllabic) after
+ * /t/ or /d/ (where the schwa is needed to break up the cluster). After
+ * any other voiced consonant or vowel, it's just /d/. After voiceless
+ * obstruents it's /t/ (handled separately by reduction rules).
+ *
+ * Concretely: `əd$` → `d` when preceded by a voiced non-coronal-stop
+ * consonant or by a vowel.
+ *   abridged: ˈbɹɪdʒəd → ˈbɹɪdʒd
+ *   loved:    ˈɫəvəd  → ˈɫəvd
+ *   rained:   ˈɹeɪnəd → ˈɹeɪnd
+ *
+ * Guard: don't touch when preceded by t or d (those legitimately need
+ * the schwa) or by a voiceless obstruent (that's a /t/ allomorph
+ * mismatch, separate rule).
+ */
+const ED_VOICED_NON_TD = /[bdʒvzðmnŋɫlɹjbɡæɛɪɔʊʌəɝaeiouy]/;
+function fixPastTenseED(ipa: string): string {
+  if (!ipa.endsWith("əd")) return ipa;
+  const prev = ipa[ipa.length - 3];
+  // Exclude t/d (need the schwa) and voiceless obstruents (need /t/).
+  if (!prev) return ipa;
+  if (prev === "t" || prev === "d") return ipa;
+  if (!ED_VOICED_NON_TD.test(prev)) return ipa;
+  return ipa.slice(0, -2) + "d";
+}
+
+/**
  * Apply the small phonotactic rule set:
  *   1. Happy-tensing on word-final /ɪ/.
  *   2. Initial "aa" collapse.
  *   3. Final "dt" cluster simplification.
+ *   4. Past-tense -ed allomorph correction (-əd → -d after voiced
+ *      non-coronal-stop consonants).
  */
 export function applyPhonotactics(ipa: string): string {
   let cur = ipa;
   cur = collapseInitialDoubleA(cur);
   cur = simplifyDtFinal(cur);
+  cur = fixPastTenseED(cur);
   cur = applyHappyTensing(cur);
   return cur;
 }
