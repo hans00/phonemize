@@ -197,6 +197,21 @@ function elideIcallySchwa(ipa: string): string {
 }
 
 /**
+ * AmE intervocalic /nt/-deletion after a diphthong: /aʊnt/, /eɪnt/,
+ * /ɔɪnt/, /aɪnt/, /oʊnt/ followed by an unstressed vowel drop the /t/.
+ *
+ *   accountable: aʊntə → aʊnə
+ *   acquainted:  eɪntɪ → eɪnɪ (then -ɪd → -əd via independent rule)
+ *
+ * Narrow to *diphthong* contexts because /ɪnt/, /ɛnt/ keep /t/
+ * (winter, interest, mental). Pre-compiled regex.
+ */
+const NT_DELETE_RE = /(aʊ|eɪ|ɔɪ|aɪ|oʊ)nt([əɪi])/g;
+function deleteIntervocalicNT(ipa: string): string {
+  return ipa.replace(NT_DELETE_RE, "$1n$2");
+}
+
+/**
  * Apply the small phonotactic rule set:
  *   1. Initial "aa" collapse.
  *   2. Final "dt" cluster simplification.
@@ -219,6 +234,7 @@ export function applyPhonotactics(ipa: string, _word?: string): string {
   cur = dropSilentH(cur);
   cur = coalesceUnstressedIR(cur);
   cur = elideIcallySchwa(cur);
+  cur = deleteIntervocalicNT(cur);
   cur = addInitialSecondary(cur);
   cur = applyHappyTensing(cur);
   return cur;
