@@ -93,18 +93,65 @@ function fixPastTenseED(ipa: string): string {
 }
 
 /**
- * Apply the small phonotactic rule set:
- *   1. Happy-tensing on word-final /ɪ/.
- *   2. Initial "aa" collapse.
- *   3. Final "dt" cluster simplification.
- *   4. Past-tense -ed allomorph correction (-əd → -d after voiced
- *      non-coronal-stop consonants).
+ * Add a secondary-stress mark to the word-initial nucleus of long
+ * words when primary stress falls on the 3rd syllable or later.
+ *
+ * Many dict entries for long Latinate words (abbreviation, abrogation,
+ * accommodation, …) carry a ˌ on syllable 0 even though our rules
+ * only emit primary. Adding the secondary brings them closer to the
+ * dict's surface form (and to natural English prosody, which often
+ * gives long words a "rocking" stress pattern).
+ *
+ * Guards:
+ *   - Word has ≥ 4 syllables.
+ *   - Primary stress (ˈ) is on syllable 2 or later (0-indexed).
+ *   - Syllable 0 doesn't already carry any stress mark.
+ *   - Syllable 0's nucleus isn't a reduced schwa (ə) — adding stress
+ *     to a schwa would be incoherent.
  */
-export function applyPhonotactics(ipa: string): string {
+function addInitialSecondary(ipa: string): string {
+  const primaryAt = ipa.indexOf("ˈ");
+  if (primaryAt < 0) return ipa;
+  // Count nuclei before the primary mark.
+  let beforePrimary = 0, inV = false;
+  for (let i = 0; i < primaryAt; i++) {
+    const c = ipa[i];
+    if (c === "ˌ") return ipa; // already has a secondary
+    if (VOWELS.has(c)) { if (!inV) beforePrimary++; inV = true; }
+    else if (c !== "ˈ") inV = false;
+  }
+  if (beforePrimary < 2) return ipa;
+  // Find syllable-0 nucleus position.
+  let n0Start = -1;
+  for (let i = 0; i < ipa.length; i++) {
+    if (VOWELS.has(ipa[i])) { n0Start = i; break; }
+  }
+  if (n0Start < 0) return ipa;
+  if (ipa[n0Start] === "ə") return ipa; // don't stress schwa
+  // Walk back to the syllable's onset (first non-vowel run before n0Start).
+  let onset = n0Start;
+  while (onset > 0 && !VOWELS.has(ipa[onset - 1]) && ipa[onset - 1] !== "ˈ" && ipa[onset - 1] !== "ˌ") onset--;
+  return ipa.slice(0, onset) + "ˌ" + ipa.slice(onset);
+}
+
+/**
+ * Apply the small phonotactic rule set:
+ *   1. Initial "aa" collapse.
+ *   2. Final "dt" cluster simplification.
+ *   3. Past-tense -ed allomorph correction.
+ *   4. Initial secondary stress on long Latinate words.
+ *   5. Happy-tensing on word-final /ɪ/.
+ *
+ * `word` is currently unused but kept in the signature so future rules
+ * can use orthographic context without a breaking change.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function applyPhonotactics(ipa: string, _word?: string): string {
   let cur = ipa;
   cur = collapseInitialDoubleA(cur);
   cur = simplifyDtFinal(cur);
   cur = fixPastTenseED(cur);
+  cur = addInitialSecondary(cur);
   cur = applyHappyTensing(cur);
   return cur;
 }

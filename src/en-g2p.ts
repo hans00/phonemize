@@ -602,7 +602,7 @@ export class EnglishG2P implements LanguageProcessor {
     // We still apply a *small* set of universal phonotactic adjustments
     // (currently just happy-tensing on word-final /ɪ/) — these are
     // principled phonological rules, not word patches.
-    const postBase = applyPhonotactics(base);
+    const postBase = applyPhonotactics(base, lowerWord);
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     return out.replace(/l/g, "ɫ");
