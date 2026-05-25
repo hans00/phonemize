@@ -469,6 +469,12 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
 
 // --- EnglishG2P Class ---
 
+// Pre-compiled regexes used in the hot predict() path. Defining them at
+// module scope ensures the engine compiles each pattern exactly once
+// and reuses the cached form across every call.
+const BCP47_REGION_RE = /^en(?:-[a-z]{4})?-([a-z]{2}|\d{3})(?:$|-)/;
+const PLAIN_L_RE = /l/g;
+
 export class EnglishG2P implements LanguageProcessor {
   private dictionary: EnDict;
   /**
@@ -543,16 +549,32 @@ export class EnglishG2P implements LanguageProcessor {
   }
 
   predict(word: string, language?: string, pos?: string): string | null {
-    // BCP 47 tags are case-insensitive — `en-gb`, `EN-GB`, `en-GB`
-    // all mean the same dialect.
-    const tag = language?.toLowerCase();
-
-    // Reject non-English requests. We accept `en`, `en-us`, `en-gb`,
-    // and any unspecified language (registry fallback uses us).
-    if (tag) {
-      const primary =
-        tag.indexOf("-") === -1 ? tag : tag.slice(0, tag.indexOf("-"));
-      if (primary !== "en") return null;
+    // Language tag handling. Fast-path "en"/"en-us"/"en-gb" before
+    // falling back to the BCP-47 regex parser. toLowerCase is needed
+    // because tags are case-insensitive ("en-GB" must match "en-gb").
+    let dialect: EnglishDialect = this.dialect;
+    if (language !== undefined) {
+      const tag = language.toLowerCase();
+      if (tag === "en") {
+        // plain "en" — use instance default
+      } else if (tag === "en-us") {
+        dialect = "en-US";
+      } else if (tag === "en-gb") {
+        dialect = "en-GB";
+      } else {
+        const dashAt = tag.indexOf("-");
+        if (dashAt < 0) {
+          // Non-English single-tag → reject.
+          return null;
+        }
+        const primary = tag.slice(0, dashAt);
+        if (primary !== "en") return null;
+        // Complex BCP-47 (e.g. en-Latn-GB, en-US-x-foo): regex parse.
+        const regionMatch = BCP47_REGION_RE.exec(tag);
+        const region = regionMatch?.[1];
+        if (region === "gb") dialect = "en-GB";
+        else if (region === "us") dialect = "en-US";
+      }
     }
 
     // User-supplied custom pronunciations short-circuit dialect
@@ -560,52 +582,29 @@ export class EnglishG2P implements LanguageProcessor {
     // addPronunciation(), they presumably picked one that's right
     // for their use case. Don't run the RP transform over it.
     const lowerWord = word.toLowerCase();
-    if (this.customDict[lowerWord]) {
-      return this.customDict[lowerWord];
-    }
+    const custom = this.customDict[lowerWord];
+    if (custom !== undefined) return custom;
 
-    // Principled pipeline (opt-in). Decomposes the word into suffix +
-    // base, looks up the base in dict, and rebuilds the IPA via stress
-    // + reduction rules — skipping the postBase if-chain. Only fires
-    // when the base resolves cleanly via dict. LTS-as-base regresses
-    // eval by ~−6% even after native-only retraining; the right answer
-    // for the "no-dict" path is the exceptions table (P4/P5), not LTS
-    // as a base provider.
+    // Principled pipeline (opt-in). See class field doc + P5 status.
     if (this.enablePrincipled && !this.disableDict) {
       const principled = predictPrincipled(lowerWord, (w: string) => {
-        if (this.customDict[w]) return this.customDict[w];
-        return this.dictionary[w];
+        return this.customDict[w] ?? this.dictionary[w];
       });
       if (principled) return principled.ipa;
     }
 
-    // Extract the region subtag from a BCP 47 tag. Skips an optional
-    // 4-letter script (e.g. `en-Latn-US`) and stops at any extension
-    // singleton (`-u-…`, `-x-…`). Matches alpha-2 (`gb`) or digit-3
-    // (`419`) regions. So `en-US-x-foo`, `en-Latn-GB`, and `EN-GB-u-ca-gregory`
-    // all surface their region correctly.
-    const regionMatch = tag?.match(/^en(?:-[a-z]{4})?-([a-z]{2}|\d{3})(?:$|-)/);
-    const region = regionMatch?.[1];
-    const dialect: EnglishDialect =
-      region === "gb" ? "en-GB" : region === "us" ? "en-US" : this.dialect;
-
     const base = this.predictInternal(word, pos, this.disableDict);
     if (!base) return base;
 
-    // No more inline postBase patches — historically ~510 ad-hoc
-    // if/replace rules lived here for IPA fixups. They've been retired:
-    // the principled pipeline (en-suffixes/en-stress/en-reduce) handles
-    // the systematic morphology, and exceptions.json absorbs the ~4K
-    // words that were load-bearing for the old patches. See P5 in
-    // docs/g2p-redesign.md.
-    //
-    // We still apply a *small* set of universal phonotactic adjustments
-    // (currently just happy-tensing on word-final /ɪ/) — these are
-    // principled phonological rules, not word patches.
+    // Universal phonotactic post-processing (en-phonotactics.ts).
+    // Each rule self-guards with a cheap pre-check; the dispatcher
+    // costs roughly O(rule-count) substring scans when nothing fires.
     const postBase = applyPhonotactics(base, lowerWord);
 
     const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
-    return out.replace(/l/g, "ɫ");
+    // Final dark-l replacement. PLAIN_L_RE is module-level so the
+    // regex is compiled once.
+    return out.indexOf("l") < 0 ? out : out.replace(PLAIN_L_RE, "ɫ");
   }
 
   public trace(word: string, language?: string, pos?: string): TraceResult {

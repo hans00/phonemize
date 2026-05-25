@@ -10,235 +10,186 @@
  * Distinct from the retired postBase pile (which was 500+ ad-hoc
  * if/replace rules for specific orthographic patterns). The rules
  * here have ≤10 entries and each one captures a universal pattern.
- */
-
-const VOWELS = new Set("aeiouæɛɪɔʊʌəɝ");
-
-/**
- * Happy-tensing: word-final unstressed high front /ɪ/ realises as
- * tense /i/ (happy, city, abadi, valley). Applies when the IPA ends
- * with a single ɪ preceded by a consonant or stress mark — i.e.,
- * it's actually the nucleus of the final syllable, not the second
- * half of a diphthong (ai, oi, ei).
- */
-function applyHappyTensing(ipa: string): string {
-  if (!ipa.endsWith("ɪ")) return ipa;
-  const len = ipa.length;
-  // Must not be part of a diphthong (eɪ, aɪ, oɪ, ɔɪ).
-  const prev = ipa[len - 2];
-  if (prev && "eaoɔ".includes(prev)) return ipa;
-  // The previous nucleus must not bear stress *immediately* before this
-  // ɪ — that would make ɪ stressed, not "happy". This is approximated
-  // by checking there's no ˈ in the trailing run.
-  // Simpler: scan back for the nearest stress mark and ensure it's not
-  // between this nucleus's onset and the nucleus itself.
-  let i = len - 2;
-  while (i >= 0 && !VOWELS.has(ipa[i])) {
-    if (ipa[i] === "ˈ") return ipa; // stress mark right before ɪ → ɪ is stressed
-    i--;
-  }
-  return ipa.slice(0, len - 1) + "i";
-}
-
-/**
- * Word-initial doubled "aa" (aardvark, aalseth, aachener, aaron):
- * rules tend to emit `ɑɑ` (two separate nuclei) but the actual
- * realisation is a single `ɑ`. Collapse the run.
  *
- * Triggered only if the input starts with a stress mark followed by
- * `ɑɑ` or the bare `ɑɑ` — i.e., word-initial position.
+ * Performance notes:
+ *   - Every regex is module-level const so the engine caches its
+ *     compilation.
+ *   - Each rule is guarded by a cheap substring/endsWith check before
+ *     the regex executes. The vast majority of IPA strings don't hit
+ *     any given rule, so the guards skip the expensive scan.
+ *   - dropSilentH short-circuits when there's no /h/ at all (avoids
+ *     allocating a new string).
  */
+
+// Vowel set as a string for cheap `.includes()` lookups — faster than
+// Set.has() on the hot path because no hash + closure overhead.
+const VOWELS = "aeiouæɛɪɔʊʌəɝ";
+
+// ─── Rule: word-initial /ɑɑ/ → /ɑ/ ────────────────────────────────────────
+const INIT_AA_RE = /^([ˈˌ])?ɑɑ/;
 function collapseInitialDoubleA(ipa: string): string {
-  return ipa.replace(/^(ˈ|ˌ)?ɑɑ/, "$1ɑ");
+  // Cheap pre-check: only fire when input could possibly start with ɑ
+  // (allowing for an optional stress mark in front).
+  const c0 = ipa.charCodeAt(0);
+  // ɑ = U+0251 (0x251 = 593); ˈ = U+02C8 (712); ˌ = U+02CC (716).
+  if (c0 !== 593 && c0 !== 712 && c0 !== 716) return ipa;
+  return ipa.replace(INIT_AA_RE, "$1ɑ");
 }
 
-/**
- * Cluster simplification at word boundaries:
- *   -dt$ → -t  (aamodt /ɑmət/, kupferschmidt-style names with silent d)
- *   -kt$ kept as-is (act, contact — d is voiced) — only apply when the
- *   /d/ would be redundant against a following voiceless stop with no
- *   semantic content. Conservative: only -dt where it's clearly a
- *   foreign-name pattern.
- */
+// ─── Rule: word-final /dt/ → /t/ ──────────────────────────────────────────
 function simplifyDtFinal(ipa: string): string {
-  return ipa.replace(/dt$/, "t");
+  const len = ipa.length;
+  if (len < 2 || ipa.charCodeAt(len - 1) !== 116 /* 't' */) return ipa;
+  if (ipa.charCodeAt(len - 2) !== 100 /* 'd' */) return ipa;
+  return ipa.slice(0, len - 2) + "t";
 }
 
-/**
- * Past-tense -ed allomorph: rules tend to emit /əd/ after every coda,
- * but English orthographic -ed only surfaces as /əd/ (syllabic) after
- * /t/ or /d/ (where the schwa is needed to break up the cluster). After
- * any other voiced consonant or vowel, it's just /d/. After voiceless
- * obstruents it's /t/ (handled separately by reduction rules).
- *
- * Concretely: `əd$` → `d` when preceded by a voiced non-coronal-stop
- * consonant or by a vowel.
- *   abridged: ˈbɹɪdʒəd → ˈbɹɪdʒd
- *   loved:    ˈɫəvəd  → ˈɫəvd
- *   rained:   ˈɹeɪnəd → ˈɹeɪnd
- *
- * Guard: don't touch when preceded by t or d (those legitimately need
- * the schwa) or by a voiceless obstruent (that's a /t/ allomorph
- * mismatch, separate rule).
- */
-const ED_VOICED_NON_TD = /[bdʒvzðmnŋɫlɹjbɡæɛɪɔʊʌəɝaeiouy]/;
+// ─── Rule: past-tense /-əd/ allomorph ─────────────────────────────────────
+// Voiced consonants (excluding t/d) and vowels that license -d (not -əd):
+//   bdʒvzðmnŋɫlɹjɡ + all vowels.
+const ED_VOICED_NON_TD = "bʒvzðmnŋɫlɹjɡæɛɪɔʊʌəɝaeiouy";
 function fixPastTenseED(ipa: string): string {
-  if (!ipa.endsWith("əd")) return ipa;
-  const prev = ipa[ipa.length - 3];
-  // Exclude t/d (need the schwa) and voiceless obstruents (need /t/).
-  if (!prev) return ipa;
+  const len = ipa.length;
+  if (len < 3) return ipa;
+  // Cheap end-check before the slice comparison.
+  if (ipa.charCodeAt(len - 1) !== 100 /* 'd' */) return ipa;
+  if (ipa.charCodeAt(len - 2) !== 601 /* 'ə' (U+0259) */) return ipa;
+  const prev = ipa[len - 3];
   if (prev === "t" || prev === "d") return ipa;
-  if (!ED_VOICED_NON_TD.test(prev)) return ipa;
+  if (ED_VOICED_NON_TD.indexOf(prev) < 0) return ipa;
   return ipa.slice(0, -2) + "d";
 }
 
-/**
- * Add a secondary-stress mark to the word-initial nucleus of long
- * words when primary stress falls on the 3rd syllable or later.
- *
- * Many dict entries for long Latinate words (abbreviation, abrogation,
- * accommodation, …) carry a ˌ on syllable 0 even though our rules
- * only emit primary. Adding the secondary brings them closer to the
- * dict's surface form (and to natural English prosody, which often
- * gives long words a "rocking" stress pattern).
- *
- * Guards:
- *   - Word has ≥ 4 syllables.
- *   - Primary stress (ˈ) is on syllable 2 or later (0-indexed).
- *   - Syllable 0 doesn't already carry any stress mark.
- *   - Syllable 0's nucleus isn't a reduced schwa (ə) — adding stress
- *     to a schwa would be incoherent.
- */
-function addInitialSecondary(ipa: string): string {
-  const primaryAt = ipa.indexOf("ˈ");
-  if (primaryAt < 0) return ipa;
-  // Count nuclei before the primary mark.
-  let beforePrimary = 0, inV = false;
-  for (let i = 0; i < primaryAt; i++) {
-    const c = ipa[i];
-    if (c === "ˌ") return ipa; // already has a secondary
-    if (VOWELS.has(c)) { if (!inV) beforePrimary++; inV = true; }
-    else if (c !== "ˈ") inV = false;
-  }
-  if (beforePrimary < 2) return ipa;
-  // Find syllable-0 nucleus position.
-  let n0Start = -1;
-  for (let i = 0; i < ipa.length; i++) {
-    if (VOWELS.has(ipa[i])) { n0Start = i; break; }
-  }
-  if (n0Start < 0) return ipa;
-  if (ipa[n0Start] === "ə") return ipa; // don't stress schwa
-  // Walk back to the syllable's onset (first non-vowel run before n0Start).
-  let onset = n0Start;
-  while (onset > 0 && !VOWELS.has(ipa[onset - 1]) && ipa[onset - 1] !== "ˈ" && ipa[onset - 1] !== "ˌ") onset--;
-  return ipa.slice(0, onset) + "ˌ" + ipa.slice(onset);
-}
-
-/**
- * Silent /h/ in consonant clusters. Rules emit /h/ wherever orthographic
- * "h" appears, but in many foreign-loanword clusters the h is silent
- * (akhtar, exhaust, dahlia). When /h/ sits between two non-vowel,
- * non-stress-mark segments, drop it.
- *
- * Doesn't touch:
- *   - Word-initial h (he, hello, hand) — not in a cluster.
- *   - Intervocalic h (behold, ahead) — h between vowels stays.
- *   - h preceded by a stress mark (stress mark resets cluster status).
- */
+// ─── Rule: drop silent /h/ in non-initial consonant clusters ──────────────
 function dropSilentH(ipa: string): string {
+  // Fast path: no /h/ → return unchanged (no allocation).
+  if (ipa.indexOf("h") < 0) return ipa;
   let out = "";
+  let writeFrom = 0;
   for (let i = 0; i < ipa.length; i++) {
-    if (ipa[i] !== "h") { out += ipa[i]; continue; }
+    if (ipa[i] !== "h") continue;
     const prev = ipa[i - 1];
     const next = ipa[i + 1];
-    const prevIsCluster = prev && !VOWELS.has(prev) && prev !== "ˈ" && prev !== "ˌ";
-    const nextIsCluster = next && !VOWELS.has(next) && next !== "ˈ" && next !== "ˌ";
-    if (prevIsCluster && nextIsCluster) continue; // drop
-    out += ipa[i];
+    const prevIsCluster = prev !== undefined && VOWELS.indexOf(prev) < 0 && prev !== "ˈ" && prev !== "ˌ";
+    const nextIsCluster = next !== undefined && VOWELS.indexOf(next) < 0 && next !== "ˈ" && next !== "ˌ";
+    if (prevIsCluster && nextIsCluster) {
+      // Drop this /h/ by emitting everything up to but not including it.
+      out += ipa.slice(writeFrom, i);
+      writeFrom = i + 1;
+    }
   }
-  return out;
+  if (writeFrom === 0) return ipa; // no drops
+  return out + ipa.slice(writeFrom);
 }
 
-/**
- * Unstressed /ɪɹ/ → /ɝ/ coalescence. Across hundreds of dict entries
- * (afferent, anderegg, ampere, aileron, …) an unstressed /ɪ/ followed
- * by /ɹ/ surfaces as the single rhotic-vowel segment /ɝ/. Our rules
- * emit /ɪɹ/ because they treat the spelling as two separate segments.
- *
- * Don't fire when /ɪ/ is stressed (the ɹ is part of a separate
- * syllable's onset there) — checked by scanning back for ˈ/ˌ before
- * any vowel.
- */
-/**
- * Stressed-schwa → STRUT vowel. The dict (CMU-derived) writes /ˈə/
- * where IPA convention has /ˈʌ/ for the STRUT vowel (rough, subtle,
- * enough). Phonologically /ʌ/ is the stressed counterpart to
- * unstressed /ə/, and a "stressed schwa" isn't a real English
- * phoneme. AI prosody scoring catches this immediately; fix at the
- * surface so downstream consumers get the conventional form.
- *
- * Match: stress mark + zero or more onset consonants + ə →
- *        keep prefix, ə → ʌ.
- */
+// ─── Rule: stressed schwa → STRUT vowel /ʌ/ ───────────────────────────────
+// Pattern: stress mark + zero-or-more onset consonants + /ə/. The
+// CMU dict's /ˈə/ is convention for what IPA writes as /ˈʌ/.
 const STRESSED_SCHWA_RE = /([ˈˌ])([^aeiouæɛɪɔʊʌəɝˈˌ]*)ə/g;
 function stressedSchwaToStrut(ipa: string): string {
+  // Cheap pre-check: needs both a stress mark and a /ə/.
+  if (ipa.indexOf("ˈ") < 0 && ipa.indexOf("ˌ") < 0) return ipa;
+  if (ipa.indexOf("ə") < 0) return ipa;
   return ipa.replace(STRESSED_SCHWA_RE, "$1$2ʌ");
 }
 
+// ─── Rule: unstressed /ɪɹ/ → /ɝ/ ──────────────────────────────────────────
 const RHOTIC_IR_RE = /ɪɹ/g;
 function coalesceUnstressedIR(ipa: string): string {
+  if (ipa.indexOf("ɪɹ") < 0) return ipa;
   return ipa.replace(RHOTIC_IR_RE, (_m, offset) => {
-    // Walk backward to find the most recent stress mark or vowel; if
-    // we hit ˈ/ˌ before any other vowel, this ɪ is stressed → leave it.
+    // Walk back for nearest stress mark vs vowel. Stress mark before
+    // any other vowel → this ɪ is stressed → don't coalesce.
     for (let i = (offset as number) - 1; i >= 0; i--) {
       const c = ipa[i];
-      if (c === "ˈ" || c === "ˌ") return "ɪɹ"; // stressed
-      if (VOWELS.has(c)) break; // hit another vowel; ours is unstressed
+      if (c === "ˈ" || c === "ˌ") return "ɪɹ";
+      if (VOWELS.indexOf(c) >= 0) break;
     }
     return "ɝ";
   });
 }
 
-/**
- * -ically suffix schwa elision: orthographic -ically surfaces as
- * /ɪkli/ in fluent speech (academically, basically, dramatically) but
- * rules add an epenthetic schwa giving /ɪkəɫi/. Drop the schwa for
- * any IPA ending in /ɪkəɫi/.
- *
- * Pre-compiled at module load. Single replace; fast.
- */
+// ─── Rule: -ically schwa elision ──────────────────────────────────────────
 const ICALLY_RE = /ɪkəɫi$/;
 function elideIcallySchwa(ipa: string): string {
+  // Cheap pre-check; the regex would also short-circuit but this avoids
+  // the regex object allocation in V8's slow path.
+  if (!ipa.endsWith("ɪkəɫi")) return ipa;
   return ipa.replace(ICALLY_RE, "ɪkɫi");
 }
 
-/**
- * AmE intervocalic /nt/-deletion after a diphthong: /aʊnt/, /eɪnt/,
- * /ɔɪnt/, /aɪnt/, /oʊnt/ followed by an unstressed vowel drop the /t/.
- *
- *   accountable: aʊntə → aʊnə
- *   acquainted:  eɪntɪ → eɪnɪ (then -ɪd → -əd via independent rule)
- *
- * Narrow to *diphthong* contexts because /ɪnt/, /ɛnt/ keep /t/
- * (winter, interest, mental). Pre-compiled regex.
- */
+// ─── Rule: AmE /nt/-deletion after diphthong + unstressed V ──────────────
 const NT_DELETE_RE = /(aʊ|eɪ|ɔɪ|aɪ|oʊ)nt([əɪi])/g;
 function deleteIntervocalicNT(ipa: string): string {
+  // Cheap pre-check: must contain "nt".
+  if (ipa.indexOf("nt") < 0) return ipa;
   return ipa.replace(NT_DELETE_RE, "$1n$2");
 }
 
+// ─── Rule: initial secondary stress on long Latinate words ────────────────
+function addInitialSecondary(ipa: string): string {
+  const primaryAt = ipa.indexOf("ˈ");
+  if (primaryAt < 0) return ipa;
+  // Count nuclei before the primary mark. Bail early if a ˌ exists.
+  let beforePrimary = 0;
+  let inV = false;
+  for (let i = 0; i < primaryAt; i++) {
+    const c = ipa[i];
+    if (c === "ˌ") return ipa;
+    if (VOWELS.indexOf(c) >= 0) {
+      if (!inV) {
+        beforePrimary++;
+        if (beforePrimary >= 2) {
+          // We have enough nuclei; just scan the rest for an existing ˌ.
+          // (We need to make sure no later ˌ exists either.) — actually
+          // the original guarantee was "ˌ before primaryAt"; since we
+          // exit the loop at primaryAt, that's already enforced.
+        }
+      }
+      inV = true;
+    } else if (c !== "ˈ") inV = false;
+  }
+  if (beforePrimary < 2) return ipa;
+  // Find syllable-0 nucleus.
+  let n0Start = -1;
+  for (let i = 0; i < ipa.length; i++) {
+    if (VOWELS.indexOf(ipa[i]) >= 0) { n0Start = i; break; }
+  }
+  if (n0Start < 0) return ipa;
+  if (ipa[n0Start] === "ə") return ipa;
+  // Walk back to the syllable's onset.
+  let onset = n0Start;
+  while (
+    onset > 0 &&
+    VOWELS.indexOf(ipa[onset - 1]) < 0 &&
+    ipa[onset - 1] !== "ˈ" &&
+    ipa[onset - 1] !== "ˌ"
+  ) onset--;
+  return ipa.slice(0, onset) + "ˌ" + ipa.slice(onset);
+}
+
+// ─── Rule: happy-tensing (word-final unstressed /ɪ/ → /i/) ────────────────
+function applyHappyTensing(ipa: string): string {
+  const len = ipa.length;
+  if (len === 0 || ipa.charCodeAt(len - 1) !== 618 /* 'ɪ' (U+026A) */) return ipa;
+  // Not part of a diphthong: previous char isn't e/a/o/ɔ.
+  const prev = ipa[len - 2];
+  if (prev && "eaoɔ".indexOf(prev) >= 0) return ipa;
+  // Walk back to make sure ɪ isn't stressed.
+  for (let i = len - 2; i >= 0; i--) {
+    const c = ipa[i];
+    if (c === "ˈ") return ipa;
+    if (VOWELS.indexOf(c) >= 0) break;
+  }
+  return ipa.slice(0, len - 1) + "i";
+}
+
 /**
- * Apply the small phonotactic rule set:
- *   1. Initial "aa" collapse.
- *   2. Final "dt" cluster simplification.
- *   3. Past-tense -ed allomorph correction.
- *   4. Drop silent /h/ inside consonant clusters.
- *   5. Unstressed /ɪɹ/ → /ɝ/ rhotic coalescence.
- *   6. -ically schwa elision.
- *   7. Initial secondary stress on long Latinate words.
- *   8. Happy-tensing on word-final /ɪ/.
+ * Apply the small phonotactic rule set in the canonical order. Each
+ * rule self-guards with a cheap pre-check, so calls that don't trigger
+ * any rule do roughly O(rule-count) substring scans + zero allocations.
  *
- * `word` is currently unused but kept in the signature so future rules
+ * `_word` is currently unused but kept in the signature so future rules
  * can use orthographic context without a breaking change.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
