@@ -109,7 +109,7 @@ describe('Index', function() {
   it('Number processing', function() {
     // Basic number expansion tests
     expect(phonemize('5')).toEqual('ˈfaɪv')
-    expect(phonemize('123')).toEqual('ˈwən ˈhəndɝd ˈtwɛni ˈθɹi')
+    expect(phonemize('123')).toEqual('ˈwʌn ˈhʌndɝd ˈtwɛni ˈθɹi')
   })
 
   it('Abbreviation expansion', function() {

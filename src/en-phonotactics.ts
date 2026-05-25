@@ -169,6 +169,22 @@ function dropSilentH(ipa: string): string {
  * syllable's onset there) — checked by scanning back for ˈ/ˌ before
  * any vowel.
  */
+/**
+ * Stressed-schwa → STRUT vowel. The dict (CMU-derived) writes /ˈə/
+ * where IPA convention has /ˈʌ/ for the STRUT vowel (rough, subtle,
+ * enough). Phonologically /ʌ/ is the stressed counterpart to
+ * unstressed /ə/, and a "stressed schwa" isn't a real English
+ * phoneme. AI prosody scoring catches this immediately; fix at the
+ * surface so downstream consumers get the conventional form.
+ *
+ * Match: stress mark + zero or more onset consonants + ə →
+ *        keep prefix, ə → ʌ.
+ */
+const STRESSED_SCHWA_RE = /([ˈˌ])([^aeiouæɛɪɔʊʌəɝˈˌ]*)ə/g;
+function stressedSchwaToStrut(ipa: string): string {
+  return ipa.replace(STRESSED_SCHWA_RE, "$1$2ʌ");
+}
+
 const RHOTIC_IR_RE = /ɪɹ/g;
 function coalesceUnstressedIR(ipa: string): string {
   return ipa.replace(RHOTIC_IR_RE, (_m, offset) => {
@@ -232,6 +248,7 @@ export function applyPhonotactics(ipa: string, _word?: string): string {
   cur = simplifyDtFinal(cur);
   cur = fixPastTenseED(cur);
   cur = dropSilentH(cur);
+  cur = stressedSchwaToStrut(cur);
   cur = coalesceUnstressedIR(cur);
   cur = elideIcallySchwa(cur);
   cur = deleteIntervocalicNT(cur);
