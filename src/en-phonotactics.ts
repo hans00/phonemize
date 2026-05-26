@@ -112,6 +112,37 @@ function coalesceUnstressedIR(ipa: string): string {
   });
 }
 
+// ─── Rule: hiatus tensing — /ɪ/ before another vowel → /i/ ───────────────
+// Word-internal /ɪV/ sequences (where V is any vowel other than ɪ itself)
+// surface with tense /i/ in fluent speech:
+//   abbreviate: ɪeɪt → ieɪt
+//   curious:    ɪəs  → iəs
+//   audio:      ɪoʊ  → ioʊ
+//
+// Guard: skip when the ɪ bears stress (a stress mark immediately
+// precedes its onset). Stressed ɪ stays /ɪ/.
+const HIATUS_IR_RE = /ɪ([aeiouɑæɛɔʊʌəɝ])/g;
+const DIPHTHONG_PRE_I = "eaoɔ"; // chars that form a diphthong with ɪ (eɪ, aɪ, oɪ, ɔɪ)
+function tenseHiatusI(ipa: string): string {
+  if (ipa.indexOf("ɪ") < 0) return ipa;
+  return ipa.replace(HIATUS_IR_RE, (match, next, offset) => {
+    const pos = offset as number;
+    // Skip when ɪ is the second half of a diphthong (eɪ, aɪ, oɪ, ɔɪ) —
+    // the next char after ɪ is its trail-vowel partner of the NEXT
+    // nucleus, not part of the same syllable.
+    if (pos > 0 && DIPHTHONG_PRE_I.indexOf(ipa[pos - 1]) >= 0) return match;
+    // Scan back for nearest stress mark vs vowel. Stress mark before
+    // any other vowel → this ɪ is stressed → keep lax.
+    for (let i = pos - 1; i >= 0; i--) {
+      const c = ipa[i];
+      if (c === "ˈ") return match;
+      if (c === "ˌ") break;
+      if (VOWELS.indexOf(c) >= 0) break;
+    }
+    return "i" + next;
+  });
+}
+
 // ─── Rule: -ically schwa elision ──────────────────────────────────────────
 const ICALLY_RE = /ɪkəɫi$/;
 function elideIcallySchwa(ipa: string): string {
@@ -204,6 +235,7 @@ export function applyPhonotactics(ipa: string, _word?: string): string {
   cur = dropSilentH(cur);
   cur = stressedSchwaToStrut(cur);
   cur = coalesceUnstressedIR(cur);
+  cur = tenseHiatusI(cur);
   cur = elideIcallySchwa(cur);
   cur = deleteIntervocalicNT(cur);
   cur = addInitialSecondary(cur);
