@@ -14,6 +14,11 @@ import {
 } from "./g2p";
 import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
 import { isFunctionWord } from "./pos-tagger";
+
+// Matches phoneme strings whose only nucleus is /ʌ/ — used to detect when
+// a demoted function word's stressed-schwa→STRUT conversion should be
+// reverted (so "the"→/ðʌ/→/ðə/ after stripping stress in context).
+const FUNCTION_DEMOTE_AHA_RE = /^[^aeiouɑæɛɪɔʊʌəɝ]*ʌ[^aeiouɑæɛɪɔʊʌəɝ]*$/;
 import type ChineseG2P from "./zh-g2p";
 
 // Tokenization regex patterns
@@ -498,6 +503,11 @@ export class Tokenizer {
       // function words with stress for citation, but in connected speech
       // they reduce — "the/of/in/by/and/that/is" etc. should be unstressed.
       // Single-word inputs keep citation form for dictionary-style use.
+      //
+      // Also revert /ʌ/ → /ə/ in unstressed lone-vowel position: the
+      // phonotactic pass (en-phonotactics.ts) converts stressed-ə to
+      // /ʌ/ for citation form, but in sentence context the demoted
+      // word should use the reduced /ə/.
       if (
         cleanWords.length > 1 &&
         (detectedLanguage === "en" ||
@@ -505,6 +515,12 @@ export class Tokenizer {
         isFunctionWord(cleanToken, pos)
       ) {
         phoneme = phoneme.replace(/ˈ/g, "");
+        // Undo stressed-ə → ʌ conversion when the resulting word has a
+        // single nucleus and that nucleus is now unstressed ʌ. Function
+        // words are mostly monosyllabic so this is the common case.
+        if (FUNCTION_DEMOTE_AHA_RE.test(phoneme)) {
+          phoneme = phoneme.replace(/ʌ/g, "ə");
+        }
       }
 
       // Apply custom separator to individual phonemes if needed
