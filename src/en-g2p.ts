@@ -1857,74 +1857,34 @@ export class EnglishG2P implements LanguageProcessor {
         });
         break;
       }
+      // Precompute the set of pattern sources to skip for this syllable
+      // context. The inner per-rule loop becomes a single Set.has() check
+      // instead of 13+ string comparisons per rule. Built once per
+      // syllable; for a 5-syllable word that's 5 small allocations
+      // instead of 13 × 150 × 5 = ~10K string ops.
+      const aFire = (nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE);
+      const uFire = (nextSyllable === "tion" || nextSyllable === "sion" || nextIsMagicE);
+      const iFire = (nextIsMagicE || endsWithSilentE || (nextIsCle && isStressed));
+      const skip = new Set<string>();
+      if (!hadDoubledL) skip.add("^al$");
+      if (gFromDoubling) skip.add("^g(?=[eiy])");
+      if (!hasVowelBeforeTerminalY) skip.add("^y$");
+      if (!isLastSyllable && !isStressed && !nextIsMagicE) skip.add("^o$");
+      if (!isLastSyllable || isStressed) skip.add("^ous$");
+      if (!isStressed || hasDoubledConsonantBeforeY) skip.add("^a(?=[^aeioun]y$)");
+      if (!aFire) skip.add("^a$");
+      if (!uFire) skip.add("^u$");
+      if (!iFire) skip.add("^i$");
+      if (!isLastSyllable) { skip.add("^le$"); skip.add("^ier$"); }
+      if (isStressed) skip.add("^ey$");
+      if (syllableIndex > 0) { skip.add("^x(?=[aeiouy])"); skip.add("^gil"); }
+      if (syllableIndex > 0 || phonemes.length > 0) {
+        skip.add("^pt"); skip.add("^ps"); skip.add("^pn");
+      }
+
       let matchFound = false;
       for (const [pattern, ipa] of PHONEME_RULES) {
-        // ^al$ is for the -all rime (all/ball/call); skip it when the
-        // original syllable had no doubled-l (e.g. "cal" in "calculator").
-        if (!hadDoubledL && pattern.source === "^al$") continue;
-        // g from doubled-gg (bigger/trigger/baggy/nugget) stays hard; skip soft-g rule.
-        if (gFromDoubling && pattern.source === "^g(?=[eiy])") continue;
-        // ^y$ → /i/ only when the syllable already has a prior vowel
-        // (city/happy/novelty); skip for monosyllables like by/fly/try.
-        if (!hasVowelBeforeTerminalY && pattern.source === "^y$") continue;
-        // ^o$ → /oʊ/ for the last syllable (piano/hero/zero), stressed open syllables
-        // (notion/vocal), and unstressed open syllables before magic-e (backbone/jawbone/alone).
-        // Skip only when non-final, unstressed, AND not before magic-e.
-        if (
-          !isLastSyllable &&
-          !isStressed &&
-          !nextIsMagicE &&
-          pattern.source === "^o$"
-        )
-          continue;
-        // ^a$ fires only before tion/sion (nation), consonant-le (table), or magic-e (same/late).
-        if ((!isLastSyllable || isStressed) && pattern.source === "^ous$")
-          continue;
-        if (
-          (!isStressed || hasDoubledConsonantBeforeY) &&
-          pattern.source === "^a(?=[^aeioun]y$)"
-        )
-          continue;
-        if (
-          nextSyllable !== "tion" &&
-          nextSyllable !== "sion" &&
-          !nextIsCle &&
-          !nextIsMagicE &&
-          pattern.source === "^a$"
-        )
-          continue;
-        // ^u$ → /u/ for open-syllable u before tion/sion (solution) or magic-e (cute/tube/rude).
-        if (
-          nextSyllable !== "tion" &&
-          nextSyllable !== "sion" &&
-          !nextIsMagicE &&
-          pattern.source === "^u$"
-        )
-          continue;
-        // ^i$ → /aɪ/ in magic-e context or stressed before syllabic-l (bible/idle/rifle/title).
-        if (
-          !nextIsMagicE &&
-          !endsWithSilentE &&
-          (!nextIsCle || !isStressed) &&
-          pattern.source === "^i$"
-        )
-          continue;
-        if (!isLastSyllable && pattern.source === "^le$") continue; // ^le$: final only (legal/legend)
-        if (isStressed && pattern.source === "^ey$") continue;
-        if (!isLastSyllable && pattern.source === "^ier$") continue;
-        // Word-initial-only rules (xylophone, gild vs agile).
-        if (
-          syllableIndex > 0 &&
-          (pattern.source === "^x(?=[aeiouy])" || pattern.source === "^gil")
-        )
-          continue;
-        // Greek-origin silent-p rules (psalm/pterodactyl/pneumonia) must fire at the very
-        // start of the word only — not mid-syllable (lapse/accept/adept/script).
-        if (
-          (syllableIndex > 0 || phonemes.length > 0) &&
-          (pattern.source === "^pt" || pattern.source === "^ps" || pattern.source === "^pn")
-        )
-          continue;
+        if (skip.has(pattern.source)) continue;
         const match = remaining.match(pattern);
         if (match) {
           phonemes.push(ipa);
