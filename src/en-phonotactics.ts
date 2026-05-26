@@ -23,7 +23,10 @@
 
 // Vowel set as a string for cheap `.includes()` lookups — faster than
 // Set.has() on the hot path because no hash + closure overhead.
-const VOWELS = "aeiouæɛɪɔʊʌəɝ";
+// Includes ASCII a-u (which appear in some IPA composites like /eɪ/,
+// /oʊ/, /aʊ/, /aɪ/, /ɔɪ/) AND the IPA vowels æ ɛ ɪ ɔ ʊ ʌ ə ɝ ɑ.
+// ɑ (U+0251) is distinct from ASCII a (U+0061) — both must be present.
+const VOWELS = "aeiouɑæɛɪɔʊʌəɝ";
 
 // ─── Rule: word-initial /ɑɑ/ → /ɑ/ ────────────────────────────────────────
 const INIT_AA_RE = /^([ˈˌ])?ɑɑ/;
@@ -46,8 +49,8 @@ function simplifyDtFinal(ipa: string): string {
 
 // ─── Rule: past-tense /-əd/ allomorph ─────────────────────────────────────
 // Voiced consonants (excluding t/d) and vowels that license -d (not -əd):
-//   bdʒvzðmnŋɫlɹjɡ + all vowels.
-const ED_VOICED_NON_TD = "bʒvzðmnŋɫlɹjɡæɛɪɔʊʌəɝaeiouy";
+//   bdʒvzðmnŋɫlɹjɡ + all vowels (ASCII a-u + IPA ɑæɛɪɔʊʌəɝ).
+const ED_VOICED_NON_TD = "bʒvzðmnŋɫlɹjɡɑæɛɪɔʊʌəɝaeiouy";
 function fixPastTenseED(ipa: string): string {
   const len = ipa.length;
   if (len < 3) return ipa;
@@ -85,7 +88,7 @@ function dropSilentH(ipa: string): string {
 // ─── Rule: stressed schwa → STRUT vowel /ʌ/ ───────────────────────────────
 // Pattern: stress mark + zero-or-more onset consonants + /ə/. The
 // CMU dict's /ˈə/ is convention for what IPA writes as /ˈʌ/.
-const STRESSED_SCHWA_RE = /([ˈˌ])([^aeiouæɛɪɔʊʌəɝˈˌ]*)ə/g;
+const STRESSED_SCHWA_RE = /([ˈˌ])([^aeiouɑæɛɪɔʊʌəɝˈˌ]*)ə/g;
 function stressedSchwaToStrut(ipa: string): string {
   // Cheap pre-check: needs both a stress mark and a /ə/.
   if (ipa.indexOf("ˈ") < 0 && ipa.indexOf("ˌ") < 0) return ipa;
