@@ -112,6 +112,22 @@ function coalesceUnstressedIR(ipa: string): string {
   });
 }
 
+// ─── Rule: plural -ɪz after vowel/diphthong → -z ──────────────────────────
+// When a word ends in a vowel + plural -s, the suffix surfaces as just
+// /z/, not the syllabic /ɪz/ used after a sibilant. Rules emit the
+// syllabic form for all -es:
+//   echoes:     oʊɪz → oʊz
+//   dominoes:   oʊɪz → oʊz
+//   alkalies:   aɪɪz → aɪz
+//   burrowes:   oʊɪz → oʊz
+//
+// Triggers on diphthongs (oʊ/aɪ/eɪ/ɔɪ/aʊ) + ɪz at word end.
+const PLURAL_VZ_RE = /(oʊ|aɪ|eɪ|ɔɪ|aʊ)ɪz$/;
+function simplifyPluralAfterVowel(ipa: string): string {
+  if (!ipa.endsWith("ɪz")) return ipa;
+  return ipa.replace(PLURAL_VZ_RE, "$1z");
+}
+
 // ─── Rule: hiatus tensing — /ɪ/ before another vowel → /i/ ───────────────
 // Word-internal /ɪV/ sequences (where V is any vowel other than ɪ itself)
 // surface with tense /i/ in fluent speech:
@@ -236,6 +252,7 @@ export function applyPhonotactics(ipa: string, _word?: string): string {
   cur = stressedSchwaToStrut(cur);
   cur = coalesceUnstressedIR(cur);
   cur = tenseHiatusI(cur);
+  cur = simplifyPluralAfterVowel(cur);
   cur = elideIcallySchwa(cur);
   cur = deleteIntervocalicNT(cur);
   cur = addInitialSecondary(cur);
