@@ -143,6 +143,36 @@ function weakVowelInflection(ipa: string): string {
   return ipa;
 }
 
+// ─── Rule: syllabic-/l/ schwa epenthesis ──────────────────────────────────
+// A consonant + /l/ + consonant sequence with no vowel makes /l/ the
+// syllable nucleus, which surfaces with an epenthetic schwa:
+//   addled:    dld → dəld
+//   advisedly: zdli → zdəli  (the d·l·i boundary)
+// Onset clusters (bl, kl, fl, …) are unaffected because /l/ is
+// followed by a vowel there, not a consonant.
+//
+// Input may carry plain /l/ (rule path) or /ɫ/ (dict path); match both
+// and emit plain /l/ (final darkening normalizes). The left and right
+// neighbours must be consonants (non-vowel, non-stress-mark).
+const SYLLABIC_L_CONS = "bcdfgɡhjkmnpqstvwxzðθʃʒŋɹɫ"; // consonants (excl. l itself)
+function epenthesizeSyllabicL(ipa: string): string {
+  if (ipa.indexOf("l") < 0 && ipa.indexOf("ɫ") < 0) return ipa;
+  let out = "";
+  let writeFrom = 0;
+  for (let i = 1; i < ipa.length - 1; i++) {
+    const c = ipa[i];
+    if (c !== "l" && c !== "ɫ") continue;
+    const prev = ipa[i - 1];
+    const next = ipa[i + 1];
+    if (SYLLABIC_L_CONS.indexOf(prev) >= 0 && SYLLABIC_L_CONS.indexOf(next) >= 0) {
+      out += ipa.slice(writeFrom, i) + "ə";
+      writeFrom = i;
+    }
+  }
+  if (writeFrom === 0) return ipa;
+  return out + ipa.slice(writeFrom);
+}
+
 // ─── Rule: hiatus tensing — /ɪ/ before another vowel → /i/ ───────────────
 // Word-internal /ɪV/ sequences (where V is any vowel other than ɪ itself)
 // surface with tense /i/ in fluent speech:
@@ -271,6 +301,7 @@ export function applyPhonotactics(ipa: string, _word?: string): string {
   cur = tenseHiatusI(cur);
   cur = simplifyPluralAfterVowel(cur);
   cur = weakVowelInflection(cur);
+  cur = epenthesizeSyllabicL(cur);
   cur = elideIcallySchwa(cur);
   cur = deleteIntervocalicNT(cur);
   cur = addInitialSecondary(cur);
