@@ -132,6 +132,17 @@ function simplifyPluralAfterVowel(ipa: string): string {
   return ipa.replace(PLURAL_VZ_RE, "$1z");
 }
 
+// ─── Rule: weak-vowel merger in syllabic -es ──────────────────────────────
+// The syllabic plural/3sg -es after a sibilant (s,z,ʃ,ʒ) surfaces with
+// /ə/ in the dict 359:107 over /ɪ/ (ages dʒəz, clauses zəz, approaches
+// tʃəz). Note: -ed is NOT converted — the dict prefers /ɪd/ there
+// (697:316), so the merger only applies to -es. Anchored to word end.
+const SYLLABIC_ES_RE = /([szʃʒ])ɪz$/;
+function weakVowelInflection(ipa: string): string {
+  if (ipa.endsWith("ɪz")) return ipa.replace(SYLLABIC_ES_RE, "$1əz");
+  return ipa;
+}
+
 // ─── Rule: hiatus tensing — /ɪ/ before another vowel → /i/ ───────────────
 // Word-internal /ɪV/ sequences (where V is any vowel other than ɪ itself)
 // surface with tense /i/ in fluent speech:
@@ -257,6 +268,7 @@ export function applyPhonotactics(ipa: string, _word?: string): string {
   cur = coalesceUnstressedIR(cur);
   cur = tenseHiatusI(cur);
   cur = simplifyPluralAfterVowel(cur);
+  cur = weakVowelInflection(cur);
   cur = elideIcallySchwa(cur);
   cur = deleteIntervocalicNT(cur);
   cur = addInitialSecondary(cur);
