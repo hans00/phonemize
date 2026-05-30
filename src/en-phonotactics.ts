@@ -67,16 +67,20 @@ function fixPastTenseED(ipa: string): string {
 function dropSilentH(ipa: string): string {
   // Fast path: no /h/ → return unchanged (no allocation).
   if (ipa.indexOf("h") < 0) return ipa;
+  // Phonotactic fact: English /h/ only occurs immediately before a
+  // vowel (onset position). Any /h/ NOT followed by a vowel is silent:
+  //   - consonant clusters:  akhtar /ˈæktɝ/, hw→w (westernize)
+  //   - post-vocalic coda:   behl /ˈbɛɫ/, ahn /ˈæn/
+  //   - word-final after V:  borah /ˈbɔɹə/, beulah /ˈbjuɫə/
+  // A stress mark after /h/ counts as "not a vowel" too — /h/ never
+  // ends a syllable before the next syllable's onset.
   let out = "";
   let writeFrom = 0;
   for (let i = 0; i < ipa.length; i++) {
     if (ipa[i] !== "h") continue;
-    const prev = ipa[i - 1];
     const next = ipa[i + 1];
-    const prevIsCluster = prev !== undefined && VOWELS.indexOf(prev) < 0 && prev !== "ˈ" && prev !== "ˌ";
-    const nextIsCluster = next !== undefined && VOWELS.indexOf(next) < 0 && next !== "ˈ" && next !== "ˌ";
-    if (prevIsCluster && nextIsCluster) {
-      // Drop this /h/ by emitting everything up to but not including it.
+    const nextIsVowel = next !== undefined && VOWELS.indexOf(next) >= 0;
+    if (!nextIsVowel) {
       out += ipa.slice(writeFrom, i);
       writeFrom = i + 1;
     }
