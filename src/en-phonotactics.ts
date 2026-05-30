@@ -175,12 +175,14 @@ function tenseHiatusI(ipa: string): string {
 }
 
 // ─── Rule: -ically schwa elision ──────────────────────────────────────────
-const ICALLY_RE = /ɪkəɫi$/;
+// NB: the phonotactic pass runs on `base` BEFORE en-g2p's final
+// /l/→/ɫ/ darkening, so the input may contain plain `l` (rule path) or
+// `ɫ` (dict/exception path). Match [lɫ] and emit plain `l`; the final
+// darkening normalizes it.
+const ICALLY_RE = /ɪkə[lɫ]i$/;
 function elideIcallySchwa(ipa: string): string {
-  // Cheap pre-check; the regex would also short-circuit but this avoids
-  // the regex object allocation in V8's slow path.
-  if (!ipa.endsWith("ɪkəɫi")) return ipa;
-  return ipa.replace(ICALLY_RE, "ɪkɫi");
+  if (!ipa.endsWith("i")) return ipa;
+  return ipa.replace(ICALLY_RE, "ɪkli");
 }
 
 // ─── Rule: AmE /nt/-deletion after diphthong + unstressed V ──────────────
