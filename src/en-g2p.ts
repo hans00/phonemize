@@ -615,18 +615,35 @@ export class EnglishG2P implements LanguageProcessor {
     const custom = this.customDict[lowerWord];
     if (custom !== undefined) return custom;
 
-    // Possessive / contracted -'s: "island's" → predict("island") + /z/.
-    // Without this, the whole token ("island's") misses every lookup and
-    // the rules mangle it (islands → ɪˈsɫænds). Strip a trailing
-    // apostrophe(+s) — straight ' or curly ' — recurse on the stem, and
-    // attach the regular -s allomorph. The apostrophe must be at the very
-    // end (…'s or …') so word-internal apostrophes (o'clock, y'all) are
+    // Clitic contractions and possessives: split at a trailing
+    // apostrophe, predict the stem, and append the clitic's phonemes.
+    // Without this the whole token ("island's", "I'm", "we'll") misses
+    // every lookup and the rules mangle it (island's → /ɪˈsɫænds/,
+    // I'm → /ɪm/, we'll → /wɛɫ/). The apostrophe (straight ' or curly ’)
+    // must sit near the end, so word-internal ones (o'clock, y'all) are
     // left for the normal path.
+    //   -'s → -s allomorph (possessive / is / has)   island's → …ndz
+    //   -'m → /m/ (am)        I'm   → /aɪm/
+    //   -'ll → /l/ (will)     we'll → /wil/
+    //   -'ve → /v/ (have)     I've  → /aɪv/
+    //   -'d → /d/ (would/had) I'd   → /aɪd/
+    //   -'re → /ɝ/ (are)      you're → /juɝ/
     const aposAt = lowerWord.search(/['’]/);
-    if (aposAt > 0 && aposAt >= lowerWord.length - 2) {
+    if (aposAt > 0 && aposAt >= lowerWord.length - 3) {
       const tail = lowerWord.slice(aposAt + 1);
+      const stem = lowerWord.slice(0, aposAt);
+      const clitic =
+        tail === "m" ? "m" :
+        tail === "ll" ? "l" :
+        tail === "ve" ? "v" :
+        tail === "d" ? "d" :
+        tail === "re" ? "ɝ" :
+        undefined;
+      if (clitic !== undefined) {
+        const stemIpa = this.predict(stem, language, pos);
+        if (stemIpa) return stemIpa + clitic;
+      }
       if (tail === "s" || tail === "") {
-        const stem = lowerWord.slice(0, aposAt);
         const stemIpa = this.predict(stem, language, pos);
         if (stemIpa) return stemIpa + sAllomorph(stemIpa);
       }
