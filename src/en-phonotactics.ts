@@ -48,19 +48,24 @@ function simplifyDtFinal(ipa: string): string {
 }
 
 // ─── Rule: past-tense /-əd/ allomorph ─────────────────────────────────────
-// Voiced consonants (excluding t/d) and vowels that license -d (not -əd):
-//   bdʒvzðmnŋɫlɹjɡ + all vowels (ASCII a-u + IPA ɑæɛɪɔʊʌəɝ).
+// English -ed has three surface forms by the preceding segment:
+//   /əd/ after coronal stops t,d (needed: syllabic — wanted, added)
+//   /t/  after voiceless obstruents p,k,f,θ,s,ʃ (picked, reached, washed)
+//   /d/  after voiced consonants/vowels (loved, formed, rained)
+// The rule engine emits /əd/ everywhere; collapse to /t/ or /d/ except
+// after t,d. Dict backs this strongly (voiceless→/t/ 346:4).
+const ED_VOICELESS = "pkfθsʃ"; // tʃ ends in ʃ, so prev='ʃ' catches affricate
 const ED_VOICED_NON_TD = "bʒvzðmnŋɫlɹjɡɑæɛɪɔʊʌəɝaeiouy";
 function fixPastTenseED(ipa: string): string {
   const len = ipa.length;
   if (len < 3) return ipa;
-  // Cheap end-check before the slice comparison.
   if (ipa.charCodeAt(len - 1) !== 100 /* 'd' */) return ipa;
   if (ipa.charCodeAt(len - 2) !== 601 /* 'ə' (U+0259) */) return ipa;
   const prev = ipa[len - 3];
-  if (prev === "t" || prev === "d") return ipa;
-  if (ED_VOICED_NON_TD.indexOf(prev) < 0) return ipa;
-  return ipa.slice(0, -2) + "d";
+  if (prev === "t" || prev === "d") return ipa; // syllabic /əd/ stays
+  if (ED_VOICELESS.indexOf(prev) >= 0) return ipa.slice(0, -2) + "t";
+  if (ED_VOICED_NON_TD.indexOf(prev) >= 0) return ipa.slice(0, -2) + "d";
+  return ipa;
 }
 
 // ─── Rule: drop silent /h/ in non-initial consonant clusters ──────────────

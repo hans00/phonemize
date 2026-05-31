@@ -13,12 +13,6 @@ import {
   preProcessByScript,
 } from "./g2p";
 import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
-import { isFunctionWord, weakForm } from "./pos-tagger";
-
-// Matches phoneme strings whose only nucleus is /ʌ/ — used to detect when
-// a demoted function word's stressed-schwa→STRUT conversion should be
-// reverted (so "the"→/ðʌ/→/ðə/ after stripping stress in context).
-const FUNCTION_DEMOTE_AHA_RE = /^[^aeiouɑæɛɪɔʊʌəɝ]*ʌ[^aeiouɑæɛɪɔʊʌəɝ]*$/;
 import type ChineseG2P from "./zh-g2p";
 
 // Tokenization regex patterns
@@ -461,8 +455,17 @@ export class Tokenizer {
       if (hanIsJa && lang === "zh") lang = "ja";
       return lang;
     };
+    // POS is only meaningful in connected (multi-word) context — it drives
+    // both homograph disambiguation and the G2P's function-word weak-form
+    // reduction. A single isolated word is treated as citation form (no
+    // POS), so e.g. phonemize("for") stays /ˈfɔɹ/ while "for" inside a
+    // sentence reduces to /fɝ/. The IPA-level weak-form transform lives in
+    // the G2P (en-g2p.predict), not here — the tokenizer only supplies the
+    // contextual POS signal.
+    const connectedContext = cleanWords.length > 1;
     const cleanInfo = cleanWords.map((entry, i) => {
       const lang = resolveLang(entry.token);
+      if (!connectedContext) return { lang, pos: undefined };
       const proc = this.registry.findBestProcessor(entry.token, lang);
       const prev = i > 0 ? cleanWords[i - 1].token : undefined;
       const next =
@@ -508,40 +511,6 @@ export class Tokenizer {
         phoneme = this._predict(cleanToken, detectedLanguage, pos);
       }
 
-      // Sentence-level prosody: in a multi-word English context, demote
-      // closed-class function words from citation-form primary stress
-      // to their weak form (drop the ˈ mark). English dict entries mark
-      // function words with stress for citation, but in connected speech
-      // they reduce — "the/of/in/by/and/that/is" etc. should be unstressed.
-      // Single-word inputs keep citation form for dictionary-style use.
-      //
-      // Also revert /ʌ/ → /ə/ in unstressed lone-vowel position: the
-      // phonotactic pass (en-phonotactics.ts) converts stressed-ə to
-      // /ʌ/ for citation form, but in sentence context the demoted
-      // word should use the reduced /ə/.
-      if (
-        cleanWords.length > 1 &&
-        (detectedLanguage === "en" ||
-          detectedLanguage?.startsWith("en-")) &&
-        isFunctionWord(cleanToken, pos)
-      ) {
-        // Prefer an explicit weak (reduced) form when we have one:
-        // "for" → /fɝ/, "and" → /ənd/, "was" → /wəz/. These reduce both
-        // the vowel and (for was/has/etc.) fix the voicing, which a bare
-        // stress-strip can't do.
-        const weak = weakForm(cleanToken);
-        if (weak !== undefined) {
-          phoneme = weak;
-        } else {
-          phoneme = phoneme.replace(/ˈ/g, "");
-          // Undo stressed-ə → ʌ conversion when the resulting word has a
-          // single nucleus and that nucleus is now unstressed ʌ. Function
-          // words are mostly monosyllabic so this is the common case.
-          if (FUNCTION_DEMOTE_AHA_RE.test(phoneme)) {
-            phoneme = phoneme.replace(/ʌ/g, "ə");
-          }
-        }
-      }
 
       // Apply custom separator to individual phonemes if needed
       if (this.options.separator !== " ") {

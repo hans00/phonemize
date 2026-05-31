@@ -10,7 +10,7 @@ import * as homographs from "../data/en/homographs.json";
 import { arpabetToIpa, resolveJson } from "./utils";
 import { LanguageProcessor } from "./g2p";
 import { expandText } from "./expand-en";
-import { simplePOSTagger } from "./pos-tagger";
+import { simplePOSTagger, isFunctionWord, reduceToWeakForm } from "./pos-tagger";
 import { transformAmericanToRP } from "./en-gb";
 import { predictPrincipled } from "./en-principled";
 import { applyPhonotactics } from "./en-phonotactics";
@@ -648,10 +648,21 @@ export class EnglishG2P implements LanguageProcessor {
     // costs roughly O(rule-count) substring scans when nothing fires.
     const postBase = applyPhonotactics(base, lowerWord);
 
-    const out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
+    let out = dialect === "en-GB" ? transformAmericanToRP(word, postBase) : postBase;
     // Final dark-l replacement. PLAIN_L_RE is module-level so the
     // regex is compiled once.
-    return out.indexOf("l") < 0 ? out : out.replace(PLAIN_L_RE, "ɫ");
+    if (out.indexOf("l") >= 0) out = out.replace(PLAIN_L_RE, "ɫ");
+
+    // Connected-speech weak form for function words. `pos` is only
+    // supplied by the tokenizer in multi-word context (it's left
+    // undefined for isolated/citation lookups), so this reduces "for"
+    // → /fɝ/ and "and" → /ənd/ inside a sentence while keeping the
+    // citation /ˈfɔɹ/, /ˈænd/ for a lone word. reduceToWeakForm is a
+    // no-op for words it can't reduce (he/you/this/diphthongs).
+    if (pos !== undefined && isFunctionWord(lowerWord, pos)) {
+      return reduceToWeakForm(out);
+    }
+    return out;
   }
 
   public trace(word: string, language?: string, pos?: string): TraceResult {

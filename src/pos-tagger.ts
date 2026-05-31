@@ -210,52 +210,28 @@ export function isFunctionWord(word: string, pos?: string): boolean {
   return false;
 }
 
-// Weak (reduced) forms of high-frequency function words, used in connected
-// speech. Citation form keeps the full vowel ("for" /fɔɹ/, "and" /ænd/),
-// but in a running sentence these reduce to a schwa-centred weak form
-// ("for" /fɝ/, "and" /ənd/). The tokenizer substitutes the weak form when
-// it demotes a function word in multi-word English context.
+// Reduce a function word's IPA to its weak (connected-speech) form by
+// centralizing the stressed nucleus — a general phonological rule, not a
+// per-word table. In running speech a function word's full vowel
+// ("for" /fɔɹ/, "and" /ænd/, "was" /wʌz/) centralizes to schwa
+// ("for" /fɝ/, "and" /ənd/, "was" /wəz/).
 //
-// Only words whose weak form is near-universal in unstressed position are
-// listed — ambiguous cases (this/some/one, which are often stressed
-// content words) are deliberately omitted. IPA uses plain /l/; the
-// en-g2p dark-l step does not run on these literals so they are stored
-// already-final (with /ɫ/) to match the rest of the pipeline's output.
-export const WEAK_FORMS: Record<string, string> = {
-  a: "ə",
-  an: "ən",
-  and: "ənd",
-  are: "ɝ",
-  as: "əz",
-  at: "ət",
-  but: "bət",
-  can: "kən",
-  could: "kəd",
-  do: "də",
-  does: "dəz",
-  for: "fɝ",
-  from: "fɹəm",
-  had: "həd",
-  has: "həz",
-  have: "həv",
-  her: "hɝ",
-  must: "məst",
-  of: "əv",
-  or: "ɝ",
-  shall: "ʃəl",
-  should: "ʃəd",
-  than: "ðən",
-  that: "ðət",
-  them: "ðəm",
-  to: "tə",
-  was: "wəz",
-  were: "wɝ",
-  would: "wəd",
-};
-
-/** Look up the weak (reduced) form of a function word, or undefined. */
-export function weakForm(word: string): string | undefined {
-  return WEAK_FORMS[word.toLowerCase()];
+// Two transforms, applied only to a MONOSYLLABIC nucleus (anchored so no
+// second vowel exists — this protects diphthongs like /aʊ/ in "how" and
+// /eɪ/ in "they", and polysyllables):
+//   1. r-coloured back vowel  ɑɹ / ɔɹ  → ɝ   (for, or, are, your)
+//   2. lone lax/low monophthong  æ ʌ ɛ ɔ ɑ ʊ  → ə   (and, was, but, would)
+// Tense /i u/, /ɪ/, and diphthongs are left intact, so he/she/you/this/
+// I/my/how/no/they keep their vowel. The handful of truly suppletive weak
+// forms the rule can't derive (a→ə from /eɪ/, to/do→ə from /u/) are left
+// at citation form rather than enumerated.
+const WEAK_RCOLOR_RE = /^([^aeiouɑæɛɪɔʊʌəɝ]*)[ɑɔ]ɹ$/;
+const WEAK_MONO_RE = /^([^aeiouɑæɛɪɔʊʌəɝ]*)[æʌɛɔɑʊ]([^aeiouɑæɛɪɔʊʌəɝ]*)$/;
+export function reduceToWeakForm(ipa: string): string {
+  const s = ipa.replace(/[ˈˌ]/g, "");
+  const r = s.replace(WEAK_RCOLOR_RE, "$1ɝ");
+  if (r !== s) return r;
+  return s.replace(WEAK_MONO_RE, "$1ə$2");
 }
 
 // --- Interface ---
