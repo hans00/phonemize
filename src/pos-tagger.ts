@@ -219,19 +219,20 @@ export function isFunctionWord(word: string, pos?: string): boolean {
 // Two transforms, applied only to a MONOSYLLABIC nucleus (anchored so no
 // second vowel exists — this protects diphthongs like /aʊ/ in "how" and
 // /eɪ/ in "they", and polysyllables):
-//   1. r-coloured back vowel  ɑɹ / ɔɹ  → ɝ   (for, or, are, your)
-//   2. lone lax/low monophthong  æ ʌ ɛ ɔ ɑ ʊ  → ə   (and, was, but, would)
-// Tense /i u/, /ɪ/, and diphthongs are left intact, so he/she/you/this/
-// I/my/how/no/they keep their vowel. The handful of truly suppletive weak
-// forms the rule can't derive (a→ə from /eɪ/, to/do→ə from /u/) are left
-// at citation form rather than enumerated.
-const WEAK_RCOLOR_RE = /^([^aeiouɑæɛɪɔʊʌəɝ]*)[ɑɔ]ɹ$/;
+//   1. lone lax/low monophthong  æ ʌ ɛ ɔ ɑ ʊ  → ə   (and, was, but, would;
+//      also ɔ/ɑ before a coda /ɹ/, so "for" → /fəɹ/ ≈ /fɚ/, "are" → /əɹ/)
+//   2. lone /u/ after a plain (non-glide) onset → ə  (to → /tə/, do → /də/);
+//      excluded after /j h w/ so "you", "who" keep /u/
+// Tense /i/, /ɪ/, and diphthongs are left intact, so he/she/this/I/my/
+// how/no/they keep their vowel. "a" (/eɪ/) is the one suppletive weak
+// form the rule can't derive and is left at citation rather than listed.
 const WEAK_MONO_RE = /^([^aeiouɑæɛɪɔʊʌəɝ]*)[æʌɛɔɑʊ]([^aeiouɑæɛɪɔʊʌəɝ]*)$/;
+const WEAK_U_RE = /^([^aeiouɑæɛɪɔʊʌəɝjhw]+)u$/;
 export function reduceToWeakForm(ipa: string): string {
   const s = ipa.replace(/[ˈˌ]/g, "");
-  const r = s.replace(WEAK_RCOLOR_RE, "$1ɝ");
-  if (r !== s) return r;
-  return s.replace(WEAK_MONO_RE, "$1ə$2");
+  const m = s.replace(WEAK_MONO_RE, "$1ə$2");
+  if (m !== s) return m;
+  return s.replace(WEAK_U_RE, "$1ə");
 }
 
 // --- Interface ---

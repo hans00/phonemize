@@ -1242,16 +1242,33 @@ export class EnglishG2P implements LanguageProcessor {
       } // magic-e: coded→code
       const basePron = this.wellKnown(base);
       if (basePron) return edPast(basePron);
+      // Doubled-consonant past tense (stopped → stop, planned → plan):
+      // word = base + doubledC + "ed". Detect by the two chars before
+      // "ed" being identical (word[-3] === word[-4]). The previous check
+      // compared word[-4] against baseShort's last char — which IS
+      // word[-4] — so it was tautological and false-matched non-doubled
+      // words like "asked" (→ "as" /æz/ → /æzd/).
       const baseShort = lowerWord.slice(0, -3);
       if (
         lowerWord.length > 4 &&
-        lowerWord.slice(-4, -3) === baseShort.slice(-1)
+        lowerWord.slice(-4, -3) === lowerWord.slice(-3, -2)
       ) {
         const p = this.wellKnown(baseShort);
         if (p) return edPast(p);
       }
       const magicPron = this.wellKnown(base + "e");
       if (magicPron) return edPast(magicPron);
+      // Dict lookup failed for the stem because it is a regular word the
+      // rules already handle, so it was never memorized as an exception
+      // (ask, form, …). Rule-predict the stem and attach the past-tense
+      // allomorph — this avoids the syllabifier mis-splitting the whole
+      // inflected form (asked → [a][sked] → /æzd/). Guard: the stem must
+      // contain a vowel and end in a consonant, so a root-final -ed with
+      // a vowelless stem (bled, sped, fled) is left for the normal path.
+      if (/[aeiou]/.test(base) && !/[aeiou]$/.test(base)) {
+        const ruleBase = this.predictInternal(base, undefined, true);
+        if (ruleBase) return edPast(ruleBase);
+      }
     }
 
     if (lowerWord.endsWith("ing") && lowerWord.length > 4) {
