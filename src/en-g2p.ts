@@ -475,6 +475,9 @@ const POST_PROC_RULES: Array<[RegExp, string]> = [
 const BCP47_REGION_RE = /^en(?:-[a-z]{4})?-([a-z]{2}|\d{3})(?:$|-)/;
 const PLAIN_L_RE = /l/g;
 const STRESS_PRIMARY = /ˈ/g;
+// Velarized /ɫ/ → clear /l/ in a stop/fricative + l onset cluster before a
+// vowel (pl, bl, kl, ɡl, fl, sl). Keeps coda and word-initial /ɫ/ dark.
+const CLUSTER_L_RE = /([pbkɡfs])ɫ(?=[ˈˌ]?[aeiouɑæɛɪɔʊʌəɝ])/g;
 
 // Fast check for "does this string contain any uppercase ASCII char?".
 // Returns true iff toLowerCase would change the string. Avoids the
@@ -683,6 +686,13 @@ export class EnglishG2P implements LanguageProcessor {
     // Final dark-l replacement. PLAIN_L_RE is module-level so the
     // regex is compiled once.
     if (out.indexOf("l") >= 0) out = out.replace(PLAIN_L_RE, "ɫ");
+    // Clear /l/ in a consonant-cluster onset (pl, bl, kl, gl, fl, sl):
+    // /l/ is light, not velarized, before a vowel in these clusters —
+    // please /pliz/, slice /slaɪs/, replied /ɹɪˈplaɪd/, glad /ɡlæd/.
+    // Velarized /ɫ/ is kept word-initially (lead) and in coda (well,
+    // milk), where AmE genuinely darkens it. Applies to dict/exception
+    // output too (which stores all-dark), for consistency.
+    if (out.indexOf("ɫ") >= 0) out = out.replace(CLUSTER_L_RE, "$1l");
 
     // Connected-speech weak form for function words. `pos` is only
     // supplied by the tokenizer in multi-word context (it's left
