@@ -233,7 +233,15 @@ export function isFunctionWord(word: string, pos?: string): boolean {
 // form the rule can't derive and is left at citation rather than listed.
 const WEAK_MONO_RE = /^([^aeiouɑæɛɪɔʊʌəɝ]*)[æʌɛɔʊ]([^aeiouɑæɛɪɔʊʌəɝ]*)$/;
 const WEAK_U_RE = /^([^aeiouɑæɛɪɔʊʌəɝjhw])u$/;
+const WEAK_NUCLEUS_G = /[aeiouɑæɛɪɔʊʌəɝ]+/g;
 export function reduceToWeakForm(ipa: string): string {
+  // Only monosyllabic function words take a weak form. Polysyllabic ones
+  // (over, after, under, about, into, around) keep their lexical stress
+  // and full vowels — destressing "over" → /oʊvɝ/ is wrong. The anchored
+  // WEAK_*_RE patterns already require a single nucleus, but the stress
+  // strip below would still flatten a polysyllable, so bail out early.
+  const nuclei = ipa.match(WEAK_NUCLEUS_G);
+  if (!nuclei || nuclei.length > 1) return ipa;
   const s = ipa.replace(/[ˈˌ]/g, "");
   const m = s.replace(WEAK_MONO_RE, "$1ə$2");
   if (m !== s) return m;
