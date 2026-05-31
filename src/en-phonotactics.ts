@@ -221,7 +221,10 @@ function elideIcallySchwa(ipa: string): string {
 }
 
 // ─── Rule: AmE /nt/-deletion after diphthong + unstressed V ──────────────
-const NT_DELETE_RE = /(aʊ|eɪ|ɔɪ|aɪ|oʊ)nt([əɪi])/g;
+// Fires on counted /kaʊnəd/, accountable /əkaʊnəbəl/ (nt+ə+{d,b,…}) but
+// NOT on the -tain ending fountain/mountain /faʊntən/ (nt+ə+n), where the
+// dict keeps the /t/ — hence the (?!n) lookahead after the schwa.
+const NT_DELETE_RE = /(aʊ|eɪ|ɔɪ|aɪ|oʊ)nt(ə(?!n)|[ɪi])/g;
 function deleteIntervocalicNT(ipa: string): string {
   // Cheap pre-check: must contain "nt".
   if (ipa.indexOf("nt") < 0) return ipa;
