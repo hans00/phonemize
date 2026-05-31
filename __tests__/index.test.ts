@@ -4,8 +4,9 @@ describe('Index', function() {
   it('Work Fine', function() {
     expect(phonemize('Hello world!')).toEqual('həˈɫoʊ ˈwɝɫd!')
     // Function words (this/is/an) reduce in connected speech — only the
-    // content word "apple" keeps primary stress.
-    expect(phonemize('this is an apple.')).toEqual('ðɪs ɪz æn ˈæpəɫ.')
+    // content word "apple" keeps primary stress; the article "an" takes
+    // its weak form /ən/.
+    expect(phonemize('this is an apple.')).toEqual('ðɪs ɪz ən ˈæpəɫ.')
     expect(phonemize('John\'s package', true)).toEqual([
       {
         "phoneme": "ˈdʒɑnz",

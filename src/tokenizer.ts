@@ -13,7 +13,7 @@ import {
   preProcessByScript,
 } from "./g2p";
 import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
-import { isFunctionWord } from "./pos-tagger";
+import { isFunctionWord, weakForm } from "./pos-tagger";
 
 // Matches phoneme strings whose only nucleus is /ʌ/ — used to detect when
 // a demoted function word's stressed-schwa→STRUT conversion should be
@@ -28,6 +28,17 @@ import type ChineseG2P from "./zh-g2p";
 // regardless of which apostrophe variant the input uses.
 const TOKEN_REGEX =
   /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+[''\u2018\u2019]?\w*|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
+
+// A token is non-spoken punctuation if it contains no word characters,
+// digits, or CJK ideographs. This catches the ASCII PUNCTUATION set AND
+// the Unicode quotes/dashes the ASCII string misses (\u201c \u201d \u2018 \u2019 \u2014 \u2013 \u2026),
+// which would otherwise fall through to the G2P and surface as a stray
+// stress mark. The TOKEN_REGEX splits these into single-char tokens, so
+// they never swallow adjacent letters.
+const WORD_CHAR_RE = /[\w\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/;
+function isPunctuationToken(token: string): boolean {
+  return token.length > 0 && !WORD_CHAR_RE.test(token);
+}
 
 /**
  * Configuration options for tokenizer behavior
@@ -439,7 +450,7 @@ export class Tokenizer {
     // Then Han chars get the hanIsJa flip (analyzeText already factored in
     // the user-supplied ja* override at _preprocess time).
     const cleanWords = tokenMatches.filter(
-      ({ token }) => !PUNCTUATION.includes(token),
+      ({ token }) => !isPunctuationToken(token),
     );
     const resolveLang = (token: string): string | undefined => {
       let lang =
@@ -467,7 +478,7 @@ export class Tokenizer {
       const cleanToken = token.trim();
 
       // Handle punctuation - preserve it
-      if (PUNCTUATION.includes(cleanToken)) {
+      if (isPunctuationToken(cleanToken)) {
         const result =
           includePositions && position !== undefined
             ? { phoneme: cleanToken, word: cleanToken, position }
@@ -514,12 +525,21 @@ export class Tokenizer {
           detectedLanguage?.startsWith("en-")) &&
         isFunctionWord(cleanToken, pos)
       ) {
-        phoneme = phoneme.replace(/ˈ/g, "");
-        // Undo stressed-ə → ʌ conversion when the resulting word has a
-        // single nucleus and that nucleus is now unstressed ʌ. Function
-        // words are mostly monosyllabic so this is the common case.
-        if (FUNCTION_DEMOTE_AHA_RE.test(phoneme)) {
-          phoneme = phoneme.replace(/ʌ/g, "ə");
+        // Prefer an explicit weak (reduced) form when we have one:
+        // "for" → /fɝ/, "and" → /ənd/, "was" → /wəz/. These reduce both
+        // the vowel and (for was/has/etc.) fix the voicing, which a bare
+        // stress-strip can't do.
+        const weak = weakForm(cleanToken);
+        if (weak !== undefined) {
+          phoneme = weak;
+        } else {
+          phoneme = phoneme.replace(/ˈ/g, "");
+          // Undo stressed-ə → ʌ conversion when the resulting word has a
+          // single nucleus and that nucleus is now unstressed ʌ. Function
+          // words are mostly monosyllabic so this is the common case.
+          if (FUNCTION_DEMOTE_AHA_RE.test(phoneme)) {
+            phoneme = phoneme.replace(/ʌ/g, "ə");
+          }
         }
       }
 

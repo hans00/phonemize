@@ -487,6 +487,25 @@ function needsLowerCase(s: string): boolean {
   return false;
 }
 
+// Regular English -s allomorph based on the final phoneme of `ipa`:
+//   /ɪz/ after a sibilant (s z ʃ ʒ tʃ dʒ),
+//   /s/  after a voiceless obstruent (p t k f θ),
+//   /z/  otherwise (voiced consonant or vowel).
+// Used for possessive/plural -'s. `ipa` may carry a trailing dark /ɫ/.
+function sAllomorph(ipa: string): string {
+  const last = ipa[ipa.length - 1];
+  const prev = ipa[ipa.length - 2];
+  // Sibilant affricates surface as tʃ/dʒ — check the two-char tail.
+  if (last === "s" || last === "z" || last === "ʃ" || last === "ʒ" ||
+      (prev === "t" && last === "ʃ") || (prev === "d" && last === "ʒ")) {
+    return "ɪz";
+  }
+  if (last === "p" || last === "t" || last === "k" || last === "f" || last === "θ") {
+    return "s";
+  }
+  return "z";
+}
+
 export class EnglishG2P implements LanguageProcessor {
   private dictionary: EnDict;
   /**
@@ -595,6 +614,23 @@ export class EnglishG2P implements LanguageProcessor {
     const lowerWord = word.toLowerCase();
     const custom = this.customDict[lowerWord];
     if (custom !== undefined) return custom;
+
+    // Possessive / contracted -'s: "island's" → predict("island") + /z/.
+    // Without this, the whole token ("island's") misses every lookup and
+    // the rules mangle it (islands → ɪˈsɫænds). Strip a trailing
+    // apostrophe(+s) — straight ' or curly ' — recurse on the stem, and
+    // attach the regular -s allomorph. The apostrophe must be at the very
+    // end (…'s or …') so word-internal apostrophes (o'clock, y'all) are
+    // left for the normal path.
+    const aposAt = lowerWord.search(/['’]/);
+    if (aposAt > 0 && aposAt >= lowerWord.length - 2) {
+      const tail = lowerWord.slice(aposAt + 1);
+      if (tail === "s" || tail === "") {
+        const stem = lowerWord.slice(0, aposAt);
+        const stemIpa = this.predict(stem, language, pos);
+        if (stemIpa) return stemIpa + sAllomorph(stemIpa);
+      }
+    }
 
     // Principled pipeline (opt-in). See class field doc + P5 status.
     if (this.enablePrincipled && !this.disableDict) {
