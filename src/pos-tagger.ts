@@ -219,8 +219,10 @@ export function isFunctionWord(word: string, pos?: string): boolean {
 // Two transforms, applied only to a MONOSYLLABIC nucleus (anchored so no
 // second vowel exists — this protects diphthongs like /aʊ/ in "how" and
 // /eɪ/ in "they", and polysyllables):
-//   1. lone lax/low monophthong  æ ʌ ɛ ɔ ɑ ʊ  → ə   (and, was, but, would;
-//      also ɔ/ɑ before a coda /ɹ/, so "for" → /fəɹ/ ≈ /fɚ/, "are" → /əɹ/)
+//   1. lone lax/low monophthong  æ ʌ ɛ ɔ ʊ  → ə   (and, was, but, would;
+//      ɔ before a coda /ɹ/ too, so "for" → /fəɹ/ ≈ /fɚ/). /ɑ/ is NOT
+//      reduced — it stays a full back vowel in "on" /ɑn/ and "are" /ɑɹ/,
+//      which keep their citation vowel rather than collapsing to /ən/.
 //   2. /Cu/ — a single plain-onset consonant + lone /u/ → /Cə/
 //      (to → /tə/, do → /də/). The single-consonant constraint and the
 //      /j h w/ exclusion keep "you", "who", and longer /Cːu/ prepositions
@@ -229,7 +231,7 @@ export function isFunctionWord(word: string, pos?: string): boolean {
 // Tense /i/, /ɪ/, and diphthongs are left intact, so he/she/this/I/my/
 // how/no/they keep their vowel. "a" (/eɪ/) is the one suppletive weak
 // form the rule can't derive and is left at citation rather than listed.
-const WEAK_MONO_RE = /^([^aeiouɑæɛɪɔʊʌəɝ]*)[æʌɛɔɑʊ]([^aeiouɑæɛɪɔʊʌəɝ]*)$/;
+const WEAK_MONO_RE = /^([^aeiouɑæɛɪɔʊʌəɝ]*)[æʌɛɔʊ]([^aeiouɑæɛɪɔʊʌəɝ]*)$/;
 const WEAK_U_RE = /^([^aeiouɑæɛɪɔʊʌəɝjhw])u$/;
 export function reduceToWeakForm(ipa: string): string {
   const s = ipa.replace(/[ˈˌ]/g, "");
