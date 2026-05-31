@@ -677,9 +677,12 @@ export class EnglishG2P implements LanguageProcessor {
     // citation /ˈfɔɹ/, /ˈænd/ for a lone word. reduceToWeakForm is a
     // no-op for words it can't reduce (he/you/this/diphthongs).
     //
-    // (Lexical primary stress on content monosyllables is deliberately
-    // KEPT — downstream TTS relies on per-word stress to drive prosody,
-    // even though an IPA reader may find running text "heavily" marked.)
+    // Lexical primary stress on content monosyllables is deliberately
+    // KEPT. It's part of the library's established output contract
+    // (homograph, ARPABET, and number tests all assume it) and downstream
+    // TTS uses per-word stress for prominence. An IPA reader may find
+    // running text "heavily" marked, but the function-word weak-form
+    // reduction below already removes stress where it's genuinely unwanted.
     if (pos !== undefined && isFunctionWord(lowerWord, pos)) {
       return reduceToWeakForm(out);
     }
