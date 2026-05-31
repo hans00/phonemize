@@ -487,6 +487,20 @@ function needsLowerCase(s: string): boolean {
   return false;
 }
 
+// True iff `ipa` has exactly one vowel nucleus (one run of vowel chars).
+const MONO_VOWELS = "aeiouɑæɛɪɔʊʌəɝ";
+function isMonosyllable(ipa: string): boolean {
+  let nuclei = 0;
+  let inV = false;
+  for (let i = 0; i < ipa.length; i++) {
+    if (MONO_VOWELS.indexOf(ipa[i]) >= 0) {
+      if (!inV) { nuclei++; if (nuclei > 1) return false; }
+      inV = true;
+    } else inV = false;
+  }
+  return nuclei === 1;
+}
+
 // Regular English -s allomorph based on the final phoneme of `ipa`:
 //   /ɪz/ after a sibilant (s z ʃ ʒ tʃ dʒ),
 //   /s/  after a voiceless obstruent (p t k f θ),
@@ -677,14 +691,21 @@ export class EnglishG2P implements LanguageProcessor {
     // citation /ˈfɔɹ/, /ˈænd/ for a lone word. reduceToWeakForm is a
     // no-op for words it can't reduce (he/you/this/diphthongs).
     //
-    // Lexical primary stress on content monosyllables is deliberately
-    // KEPT. It's part of the library's established output contract
-    // (homograph, ARPABET, and number tests all assume it) and downstream
-    // TTS uses per-word stress for prominence. An IPA reader may find
-    // running text "heavily" marked, but the function-word weak-form
-    // reduction below already removes stress where it's genuinely unwanted.
-    if (pos !== undefined && isFunctionWord(lowerWord, pos)) {
-      return reduceToWeakForm(out);
+    // Connected-speech prosody (only when `pos` is supplied, i.e. the
+    // tokenizer is processing multi-word text; a lone/citation word keeps
+    // its full marks).
+    if (pos !== undefined) {
+      // Function words reduce to their weak form ("for" → /fɝ/).
+      if (isFunctionWord(lowerWord, pos)) return reduceToWeakForm(out);
+      // Mark stress only where it is contrastive: a monosyllable has a
+      // single syllable, so the primary-stress mark conveys no placement
+      // information and just makes running text read as over-stressed.
+      // Drop it in connected context. The content/function distinction
+      // and homograph disambiguation survive in vowel quality (content
+      // words keep full vowels /kæt/, /ɹid/ vs /ɹɛd/; function words
+      // reduce /ðə/). Polysyllables keep their mark, where placement IS
+      // contrastive (ˈɹɛkɔɹd vs ɹɪˈkɔɹd).
+      if (isMonosyllable(out)) return out.replace(STRESS_PRIMARY, "");
     }
     return out;
   }
