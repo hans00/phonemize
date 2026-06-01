@@ -1321,6 +1321,13 @@ export class EnglishG2P implements LanguageProcessor {
       // contain a vowel and end in a consonant, so a root-final -ed with
       // a vowelless stem (bled, sped, fled) is left for the normal path.
       if (/[aeiou]/.test(base) && !/[aeiou]$/.test(base)) {
+        // Try the silent-e-restored stem first (advanced → advance
+        // /ədvæns/, placed → place /pleɪs/), then the bare base. For
+        // stems with no silent e the +e form is harmless — "aske" and
+        // "forme" predict the same /æsk/, /fɔɹm/ as ask/form (the e is
+        // silent after a coda cluster, no magic-e lengthening).
+        const ruleBaseE = this.predictInternal(base + "e", undefined, true);
+        if (ruleBaseE) return edPast(ruleBaseE);
         const ruleBase = this.predictInternal(base, undefined, true);
         if (ruleBase) return edPast(ruleBase);
       }
