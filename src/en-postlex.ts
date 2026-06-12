@@ -1,3 +1,6 @@
+import * as vowelGramsJson from "../data/en/vowel-grams.json";
+import { resolveJson } from "./utils";
+
 /**
  * Post-lexical corrections for the rule path.
  *
@@ -529,6 +532,50 @@ const LOAN_PENULT_RE = new RegExp(
   `ˈ([${IPA_C}]*)ɪ([${IPA_C.replace("ɹ", "")}])(oʊ|[əai])$`,
 );
 
+// Mined ending-gram → vowel-quality tables for the stressed and the
+// final syllable (scripts/mine-vowel-grams.ts; each entry net-fixes
+// ≥3 words against the gram-free pipeline).
+type GramTable = Record<string, Record<string, string>>;
+const VOWEL_GRAMS = resolveJson<{ stressed: GramTable; final: GramTable }>(
+  vowelGramsJson,
+);
+const lookupGram = (t: GramTable, w: string): string | undefined => {
+  const g4 = t["4"][w.slice(-4)];
+  if (g4 !== undefined && w.length >= 4) return g4;
+  return t["3"][w.slice(-3)];
+};
+
+// A fused rhotic vowel (ɝ = V+ɹ) can't swap with a plain vowel without
+// gaining or losing the /ɹ/ — skip those replacements.
+const rhoticMismatch = (a: string, b: string): boolean =>
+  a.includes("ɝ") !== b.includes("ɝ");
+
+/** Replace the vowel run of the primary-stressed / final syllable. */
+function applyVowelGrams(ipa: string, word: string): string {
+  let out = ipa;
+  const sv = lookupGram(VOWEL_GRAMS.stressed, word);
+  if (sv !== undefined) {
+    const pi = out.indexOf("ˈ");
+    if (pi >= 0) {
+      const m = new RegExp(`^([^${IPA_V}]*)([${IPA_V}]+)`).exec(
+        out.slice(pi + 1),
+      );
+      if (m && m[2] !== sv && !rhoticMismatch(m[2], sv))
+        out =
+          out.slice(0, pi + 1 + m[1].length) +
+          sv +
+          out.slice(pi + 1 + m[1].length + m[2].length);
+    }
+  }
+  const fv = lookupGram(VOWEL_GRAMS.final, word);
+  if (fv !== undefined) {
+    const m = new RegExp(`([${IPA_V}]+)([^${IPA_V}]*)$`).exec(out);
+    if (m && m[1] !== fv && !rhoticMismatch(m[1], fv))
+      out = out.slice(0, m.index) + fv + out.slice(m.index + m[1].length);
+  }
+  return out;
+}
+
 /**
  * Stress-mark convention repair for the rule path, applied after
  * predictInternal inserts the primary mark: onset-maximize the mark
@@ -546,11 +593,20 @@ export function applyPostStress(ipa: string, word: string): string {
   );
   if (LOAN_PENULT_ORTHO_RE.test(word))
     out = out.replace(LOAN_PENULT_RE, "ˈ$1i$2$3");
-  if (word.endsWith("ation")) return out.replace(ATION_SWAP_RE, "ˌ$1ˈeɪʃən");
-  for (const [wordRe, ipaRe] of SECONDARY_SUFFIXES) {
-    if (wordRe.test(word)) return addSecondary(out, ipaRe);
+  if (word.endsWith("ation")) {
+    out = out.replace(ATION_SWAP_RE, "ˌ$1ˈeɪʃən");
+  } else {
+    let secondaried = false;
+    for (const [wordRe, ipaRe] of SECONDARY_SUFFIXES) {
+      if (wordRe.test(word)) {
+        out = addSecondary(out, ipaRe);
+        secondaried = true;
+        break;
+      }
+    }
+    if (!secondaried) out = addFullVowelSecondaries(out);
   }
-  return addFullVowelSecondaries(out);
+  return applyVowelGrams(out, word);
 }
 
 /**
