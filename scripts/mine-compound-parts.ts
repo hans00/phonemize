@@ -25,7 +25,7 @@ const dict: Record<string, string> = JSON.parse(
 // head and the tail to be independently verified is the load-bearing
 // filter; per-part win-rate adds little, so it is set permissively.
 // minRate 0.1 measured net +3,965 exact (4,219 wins : 254 breaks).
-const MIN_PART = 3;
+const MIN_PART = 2;
 const MIN_TAIL = 4;
 const MIN_WINS = 1;
 const MIN_RATE = 0.1;

@@ -892,11 +892,11 @@ export class EnglishG2P implements LanguageProcessor {
    * compounding (abet|ting) and rejects the split point.
    */
   private tryCompoundSplit(word: string): string | undefined {
-    if (word.length < 7) return undefined;
+    if (word.length < 6) return undefined;
     let head: string | undefined;
     let tail: string | undefined;
     let bestScore = -1;
-    for (let i = 3; i <= word.length - 4; i++) {
+    for (let i = 2; i <= word.length - 4; i++) {
       if (word[i - 1] === word[i]) continue;
       const a = word.slice(0, i);
       const b = word.slice(i);
