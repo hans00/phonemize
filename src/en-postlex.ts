@@ -353,6 +353,15 @@ const POST_LEX_RULES: PostLexRule[] = [
   },
   { when: (w) => w.includes("eich") && w.length >= 5, re: /eɪ/g, sub: "aɪ" },
   { when: (w) => w.includes("eich") && w.length >= 5, re: /aɪtʃ/g, sub: "aɪk" },
+
+  // — Final-s voicing (plural/genitive-shaped spellings) —
+  // After a sibilant, -es is the syllabic allomorph /əz/ (classes,
+  // abridges). After a voiced consonant or a vowel, final s voices to
+  // /z/ (abbs, addams, airways). Greek/Latin -as/-us/-is endings keep
+  // /s/ (barnabas, campus, tennis).
+  { when: (w) => /[sxzcg]es$/.test(w), re: /([szʃʒ])əs$/, sub: "$1əz" },
+  { when: (w) => w.endsWith("s") && !w.endsWith("ss"), re: /([bdɡvðmnŋɫlɹ])s$/, sub: "$1z" },
+  { when: (w) => /[aeiouwy]s$/.test(w) && !/[uia]s$/.test(w), re: /([aɪʊoeiɔuəɝ])s$/, sub: "$1z" },
 ];
 
 // --- Stress-mark conventions (applied AFTER the primary mark is inserted) ---
