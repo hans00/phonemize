@@ -587,13 +587,17 @@ const lookupTailGram = (
   n: number,
 ): string | undefined => {
   // Long spelling endings determine the IPA tail regardless of
-  // syllable count — check the count-free 7/6 tiers first.
-  if (w.length >= 7 && t["7"][w.slice(-7)] !== undefined)
-    return t["7"][w.slice(-7)];
-  if (w.length >= 6 && t["6"][w.slice(-6)] !== undefined)
-    return t["6"][w.slice(-6)];
-  const g5 = t["5"][`${w.slice(-5)}|${n}`];
-  if (g5 !== undefined && w.length >= 5) return g5;
+  // syllable count — check the count-free 8/7/6/5 tiers first.
+  for (const L of [8, 7, 6]) {
+    if (w.length >= L && t[String(L)][w.slice(-L)] !== undefined)
+      return t[String(L)][w.slice(-L)];
+  }
+  if (w.length >= 5) {
+    const cf = t["5"][w.slice(-5)];
+    if (cf !== undefined) return cf;
+    const g5 = t["5"][`${w.slice(-5)}|${n}`];
+    if (g5 !== undefined) return g5;
+  }
   return lookupGramN(t, w, n);
 };
 const lookupHeadGram = (
@@ -601,12 +605,16 @@ const lookupHeadGram = (
   w: string,
   n: number,
 ): string | undefined => {
-  if (w.length >= 7 && t["7"][w.slice(0, 7)] !== undefined)
-    return t["7"][w.slice(0, 7)];
-  if (w.length >= 6 && t["6"][w.slice(0, 6)] !== undefined)
-    return t["6"][w.slice(0, 6)];
-  const g5 = t["5"][`${w.slice(0, 5)}|${n}`];
-  if (g5 !== undefined && w.length >= 5) return g5;
+  for (const L of [8, 7, 6]) {
+    if (w.length >= L && t[String(L)][w.slice(0, L)] !== undefined)
+      return t[String(L)][w.slice(0, L)];
+  }
+  if (w.length >= 5) {
+    const cf = t["5"][w.slice(0, 5)];
+    if (cf !== undefined) return cf;
+    const g5 = t["5"][`${w.slice(0, 5)}|${n}`];
+    if (g5 !== undefined) return g5;
+  }
   return lookupInitGramN(t, w, n);
 };
 

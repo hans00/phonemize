@@ -27,8 +27,8 @@ const EMPTY = {
   coda: { "4": {}, "3": {} },
   second: { "4": {}, "3": {} },
   penult: { "4": {}, "3": {} },
-  tail: { "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
-  head: { "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
+  tail: { "8": {}, "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
+  head: { "8": {}, "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
 };
 writeFileSync(OUT, JSON.stringify(EMPTY));
 
@@ -177,14 +177,14 @@ async function main() {
       if (!a) byEndN5.set(k, (a = []));
       a.push(rec);
     }
-    for (const k of [w.slice(-7), w.slice(-6)]) {
-      if (k.length < 6) continue;
+    for (const k of [w.slice(-8), w.slice(-7), w.slice(-6), w.slice(-5)]) {
+      if (k.length < 5) continue;
       let a = byEnd76.get(k);
       if (!a) byEnd76.set(k, (a = []));
       a.push(rec);
     }
-    for (const k of [w.slice(0, 7), w.slice(0, 6)]) {
-      if (k.length < 6) continue;
+    for (const k of [w.slice(0, 8), w.slice(0, 7), w.slice(0, 6), w.slice(0, 5)]) {
+      if (k.length < 5) continue;
       let a = byInit76.get(k);
       if (!a) byInit76.set(k, (a = []));
       a.push(rec);
@@ -244,11 +244,19 @@ async function main() {
   const second = mine((r) => [r.p2, r.d2], byInitN, T43);
   const penult = mine((r) => [r.pp, r.dp], byEndN, T43);
   const tailN = mine((r) => [r.pt, r.dt], byEndN5, ["5", "4", "3"]);
-  const tail76 = mine((r) => [r.pt, r.dt], byEnd76, ["7", "6"]);
-  const tail = { ...tail76, ...tailN };
+  const tailF = mine((r) => [r.pt, r.dt], byEnd76, ["8", "7", "6", "5"]);
+  const tail = {
+    "8": tailF["8"], "7": tailF["7"], "6": tailF["6"],
+    "5": { ...tailF["5"], ...tailN["5"] },
+    "4": tailN["4"], "3": tailN["3"],
+  };
   const headN = mine((r) => [r.ph, r.dh], byInitN5, ["5", "4", "3"]);
-  const head76 = mine((r) => [r.ph, r.dh], byInit76, ["7", "6"]);
-  const head = { ...head76, ...headN };
+  const headF = mine((r) => [r.ph, r.dh], byInit76, ["8", "7", "6", "5"]);
+  const head = {
+    "8": headF["8"], "7": headF["7"], "6": headF["6"],
+    "5": { ...headF["5"], ...headN["5"] },
+    "4": headN["4"], "3": headN["3"],
+  };
   writeFileSync(
     OUT,
     JSON.stringify({ stressed, final, initial, coda, second, penult, tail, head }),
