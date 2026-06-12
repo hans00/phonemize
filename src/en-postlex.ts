@@ -434,6 +434,16 @@ const SECONDARY_SUFFIXES: Array<[RegExp, RegExp]> = [
 // abbreviation əˌbɹiviˈeɪʃən).
 const ATION_SWAP_RE = /ˈ(.*)ˌeɪʃən$/;
 
+// Loanword tense penult: in words spelled …iC[oai]# (bonita, bellini,
+// biko — Romance loans and names), a STRESSED penult ɪ surfaces tense
+// /i/. Native stress sits earlier, leaving the penult reduced, so the
+// stressed-syllable-only match doesn't touch retina/candida. /ɹ/ is
+// excluded (NEAR vowel stays lax: biro ˈbɪɹoʊ). Measured 126:15.
+const LOAN_PENULT_ORTHO_RE = /[^aeiou]i[bdfgklmnpstvz][oai]$/;
+const LOAN_PENULT_RE = new RegExp(
+  `ˈ([${IPA_C}]*)ɪ([${IPA_C.replace("ɹ", "")}])(oʊ|[əai])$`,
+);
+
 /**
  * Stress-mark convention repair for the rule path, applied after
  * predictInternal inserts the primary mark: onset-maximize the mark
@@ -449,6 +459,8 @@ export function applyPostStress(ipa: string, word: string): string {
   out = out.replace(ONSET_MAX_2_RE, (m, v, c1, c2) =>
     ONSET_CLUSTERS.has(c1 + c2) ? v + "ˈ" + c1 + c2 : m,
   );
+  if (LOAN_PENULT_ORTHO_RE.test(word))
+    out = out.replace(LOAN_PENULT_RE, "ˈ$1i$2$3");
   if (word.endsWith("ation")) return out.replace(ATION_SWAP_RE, "ˌ$1ˈeɪʃən");
   for (const [wordRe, ipaRe] of SECONDARY_SUFFIXES) {
     if (wordRe.test(word)) return addSecondary(out, ipaRe);
