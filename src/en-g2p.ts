@@ -7,6 +7,7 @@
 // ~26% of the size. See docs/g2p-redesign.md P5.
 import * as lookupTable from "../data/en/exceptions.json";
 import * as homographs from "../data/en/homographs.json";
+import * as compoundParts from "../data/en/compound-parts.json";
 import { arpabetToIpa, resolveJson } from "./utils";
 import { LanguageProcessor } from "./g2p";
 import { expandText } from "./expand-en";
@@ -59,6 +60,22 @@ const HOMOGRAPHS: HomographDict = Object.assign(
   Object.create(null),
   resolveJson<HomographDict>(homographs),
 );
+// Statistically-verified compound parts (scripts/mine-compound-parts.ts):
+// heads/tails that earn ≥10% join-accuracy against the lexicon when
+// paired with any verified partner. Both sides must match for a split.
+const COMPOUND_PARTS = resolveJson<{ heads: EnDict; tails: EnDict }>(
+  compoundParts,
+);
+const COMPOUND_HEADS: EnDict = Object.assign(
+  Object.create(null),
+  COMPOUND_PARTS.heads,
+);
+const COMPOUND_TAILS: EnDict = Object.assign(
+  Object.create(null),
+  COMPOUND_PARTS.tails,
+);
+// Boundary degemination for compound joins (book+kayak style overlaps).
+const COMPOUND_GEMINATE_RE = /([pbtdkɡfvszʃʒθðmnŋɫɹ])(ˌ?)\1/g;
 
 // --- Linguistics-based Constants ---
 
@@ -465,6 +482,13 @@ export class EnglishG2P implements LanguageProcessor {
 
     // Priority 4: Language-specific G2P - removed as per new architecture
 
+    // Priority 5a: Two-part compound split against the mined parts
+    // tables. Both halves must be independently verified parts; the
+    // join follows the lexicon's compound convention (head keeps ˈ,
+    // tail's primary demotes to ˌ, boundary geminates collapse).
+    const compound = this.tryCompoundSplit(lowerWord);
+    if (compound) return compound;
+
     // Priority 5: Attempt to decompose the word into known dictionary parts
     const decomposition = this.tryDecomposition(lowerWord);
     if (decomposition && decomposition.length > 1) {
@@ -859,6 +883,36 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     return undefined;
+  }
+
+  /**
+   * Two-part compound split using the mined head/tail tables. Picks
+   * the split with the most balanced halves (longest minimum part).
+   * A doubled consonant at the boundary signals suffixing rather than
+   * compounding (abet|ting) and rejects the split point.
+   */
+  private tryCompoundSplit(word: string): string | undefined {
+    if (word.length < 7) return undefined;
+    let head: string | undefined;
+    let tail: string | undefined;
+    let bestScore = -1;
+    for (let i = 3; i <= word.length - 4; i++) {
+      if (word[i - 1] === word[i]) continue;
+      const a = word.slice(0, i);
+      const b = word.slice(i);
+      if (COMPOUND_HEADS[a] === undefined || COMPOUND_TAILS[b] === undefined)
+        continue;
+      const score = Math.min(a.length, b.length);
+      if (score > bestScore) {
+        bestScore = score;
+        head = a;
+        tail = b;
+      }
+    }
+    if (head === undefined || tail === undefined) return undefined;
+    return (
+      COMPOUND_HEADS[head] + COMPOUND_TAILS[tail].replace(/ˈ/g, "ˌ")
+    ).replace(COMPOUND_GEMINATE_RE, "$2$1");
   }
 
   private tryDecomposition(word: string): string[] | undefined {
