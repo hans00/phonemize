@@ -181,15 +181,10 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^[ct]ial$/, "ʃəl", false], // -cial/-tial (commercial, social, potential, partial)
   [/^cient$/, "ʃənt", false],
   [/^scien$/, "ʃən", false], // -cient: efficient/ancient; -scien: conscience (guard: idx>0)
-  [/^tu$/, "tʃu", false], // tu before vowel-initial syllable → /tʃu/ (actual, factual, mutual)
   [/^ture$/, "tʃɝ", false], // -ture (future, nature)
   [/^sure$/, "ʒɝ", false], // -sure (measure, pleasure)
   [/^g[ei]ous$/, "dʒəs", false], // -geous/-gious: gorgeous/contagious
   [/^[ct]ious$|^scious$|^ceous$/, "ʃəs", false], // -cious/-tious/-scious/-ceous: delicious/conscious/crustaceous
-  [/^[ei]ous$/, "iəs", false], // -eous/-ious (miscellaneous, various, serious)
-  [/^uous$/, "juəs", false], // -uous (continuous, ambiguous)
-  [/^[ai]ble$/, "əbəl", false], // -able/-ible
-  [/^[ae]nce$/, "əns", false], // -ance/-ence (dominance, presence)
   [/^kness$/, "knəs", false], // -kness: darkness, frankness, weakness (k is pronounced, not silent)
   [/^ness$/, "nəs", false], // -ness
   [/^ment$/, "mənt", false],
@@ -204,17 +199,14 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ves$/, "vz", false], // -ves plural (loaves/calves/wolves/selves)
   [/^e?s$/, "z", false], // -es/-s (plural/3rd person)
   [/^age$/, "ɪdʒ", false],
-  [/^ive$/, "ɪv", false], // -age/-ive (package/active)
   [/^ism$/, "ɪzəm", false],
   [/^ist$/, "ɪst", false], // -ism/-ist
-  [/^ity$/, "əti", false],
   [/^al$/, "əl", false], // -ity / -al
   [/^ic(s?)$/, "ɪk$1", true], // -ic/-ics attract stress (economic/mathematics)
   [/^lity$/, "ləti", false],
   [/^ty$/, "ti", false],
   [/^[ae]ry$/, "ɛri", false],
   [/^ory$/, "ɔri", false],
-  [/^ry$/, "ri", false],
   [/^y$/, "i", false],
   [/^stein$/, "staɪn", false],
   [/^ford$/, "fɝd", false],
@@ -337,7 +329,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ere$/, "ɪɹ"], // here, mere, sphere
 
   // R-controlled vowels (rhotic)
-  [/^arr/, "æɹ"], // carry, marry, arrow
   [/^ar/, "ɑɹ"], // car, far, start
   [/^er(?=[aeiouwy])/, "ɛɹ"], // berry/cherry/merry: er before vowel → /ɛɹ/ not /ɝ/
   [/^[eiu]r/, "ɝ"], // her/bird/fur (er/ir/ur → /ɝ/)
@@ -355,7 +346,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^scr/, "skɹ"], // screen, script, scratch
   [/^spl/, "spl"], // split, splash, splice
   [/^squ/, "skw"], // square, squash, squeeze
-  [/^shr/, "ʃɹ"], // shrimp, shrink, shrewd
   [/^bl(?!e$)/, "bl"], // blue, black, blow (not -ble syllable)
   [/^br/, "bɹ"], // brown, bring, bread
   [/^cl/, "kl"], // clean, close, class
@@ -1579,11 +1569,6 @@ export class EnglishG2P implements LanguageProcessor {
           pattern.source === "^se$" ||
           pattern.source === "^ge$") &&
         !isLastSyllable
-      )
-        continue;
-      if (
-        pattern.source === "^tu$" &&
-        (isStressed || !nextSyllable?.match(/^[aeiou]/i))
       )
         continue;
       if (pattern.source === "^sto$" && nextSyllable !== "ne") continue;

@@ -113,7 +113,6 @@ const POST_LEX_RULES: PostLexRule[] = [
   // -ect (connect/elect/affect), -ept (accept/concept), -end (amend/offend), -ext (subtext)
   { when: (w) => /(?:ect|ept|ext)$/.test(w), re: /ə([kp]t|kst)$/, sub: "ɛ$1" },
   { when: (w, syl) => w.endsWith("end") && syl >= 2, re: /ənd$/, sub: "ɛnd" },
-  { when: (w) => w.length >= 4 && w.endsWith("yl"), re: /aɪl$/, sub: "əl" },
   { when: (w) => w.endsWith("itis"), re: /ɪtɪs$/, sub: "aɪtɪs" },
   // Polysyllabic -tice/-vice: unstressed final syllable should be /ɪs/ not /aɪs/
   // Guards protect entice(6)/advice(6)/device(6) via length, and service/crevice via -vice≥7
@@ -215,10 +214,6 @@ const POST_LEX_RULES: PostLexRule[] = [
   {
     when: (w) => w.endsWith("gers") && w.length >= 7 && !/(?:[ao]ngers|agers|ingers|ungers)$/.test(w),
     re: /dʒɝz$/, sub: "ɡɝz",
-  },
-  {
-    when: (w) => w.endsWith("gen") && w.length >= 7 && /[bcdfghjklmnpqrstvwxyz]{2}gen$/.test(w),
-    re: /dʒɛn$/, sub: "ɡɛn",
   },
   {
     when: (w) => w.endsWith("gen") && w.length >= 7 && /[bcdfghjklmnpqrstvwxyz]{2}gen$/.test(w),
