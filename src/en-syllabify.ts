@@ -7,6 +7,23 @@
  * PHONEME_RULES, first match wins — order is load-bearing).
  */
 import type { TraceStep } from "./en-g2p";
+import * as stressGramsJson from "../data/en/stress-grams.json";
+import { resolveJson } from "./utils";
+
+// Mined ending-gram → primary-stress-from-end table (see
+// scripts/mine-stress-grams.ts). Longest gram wins; each entry
+// net-fixes ≥3 words against the heuristics below.
+const STRESS_GRAMS = resolveJson<Record<string, Record<string, number>>>(
+  stressGramsJson,
+);
+const STRESS_GRAMS_4: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS["4"],
+);
+const STRESS_GRAMS_3: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS["3"],
+);
 
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
 const CONSONANTS = new Set("bcdfghjklmnpqrstvwxyz".split(""));
@@ -480,6 +497,14 @@ export function assignStress(syllables: string[], word: string): number {
   if (syllables.length <= 1) return 0;
 
   const lowerWord = word.toLowerCase();
+
+  // Mined ending-gram override (longest gram first): the table maps a
+  // spelling ending to the lexicon's modal stress position from the
+  // word end (1 = final syllable).
+  const fromEnd =
+    STRESS_GRAMS_4[lowerWord.slice(-4)] ?? STRESS_GRAMS_3[lowerWord.slice(-3)];
+  if (fromEnd !== undefined)
+    return Math.max(0, Math.min(syllables.length - 1, syllables.length - fromEnd));
 
   // Check for stress-attracting suffixes (stress BEFORE the suffix)
   for (const [pattern, , attracts_stress] of SUFFIX_RULES) {
