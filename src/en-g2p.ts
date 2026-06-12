@@ -454,7 +454,12 @@ export class EnglishG2P implements LanguageProcessor {
     // Priority 3: Morphological analysis - only for unknown words
     const morphPron = this.tryMorphologicalAnalysis(lowerWord);
     if (morphPron) {
-      return morphPron;
+      // Same stress-mark convention repair as the rule branch below —
+      // morphology output joins a stem (dict- or rule-derived) with an
+      // allomorph and can need suffix secondary stress / the -ation
+      // primary shift too. All transforms are idempotent and no-op on
+      // already-marked dict-derived stems.
+      return applyPostStress(morphPron, lowerWord);
     }
 
     // Priority 4: Language-specific G2P - removed as per new architecture
