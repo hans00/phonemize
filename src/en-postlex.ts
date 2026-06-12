@@ -423,7 +423,7 @@ function addSecondary(ipa: string, suffixRe: RegExp): string {
 
 // Suffixes that carry secondary stress on their own syllable.
 const SECONDARY_SUFFIXES: Array<[RegExp, RegExp]> = [
-  [/iz(?:es?|ed|ing)?$/, /aɪz/],
+  [/iz(?:es?|ed|ing|ers?)?$/, /aɪz/],
   [/at(?:es?|ed|ing)?$/, /eɪt(?!.*eɪt)/],
   [/ism$/, /ɪzəm$/],
   [/ory$/, /ɔɹi$/],
