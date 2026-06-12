@@ -542,6 +542,9 @@ const VOWEL_GRAMS = resolveJson<{
   final: GramTable;
   initial: GramTable;
   coda: GramTable;
+  second: GramTable;
+  penult: GramTable;
+  tail: GramTable;
 }>(vowelGramsJson);
 const lookupGram = (t: GramTable, w: string): string | undefined => {
   const g4 = t["4"][w.slice(-4)];
@@ -552,6 +555,30 @@ const lookupInitGram = (t: GramTable, w: string): string | undefined => {
   const g4 = t["4"][w.slice(0, 4)];
   if (g4 !== undefined && w.length >= 4) return g4;
   return t["3"][w.slice(0, 3)];
+};
+// count-keyed variants (`gram|sylCount`)
+const lookupGramN = (t: GramTable, w: string, n: number): string | undefined => {
+  const g4 = t["4"][`${w.slice(-4)}|${n}`];
+  if (g4 !== undefined && w.length >= 4) return g4;
+  return t["3"][`${w.slice(-3)}|${n}`];
+};
+const lookupInitGramN = (
+  t: GramTable,
+  w: string,
+  n: number,
+): string | undefined => {
+  const g4 = t["4"][`${w.slice(0, 4)}|${n}`];
+  if (g4 !== undefined && w.length >= 4) return g4;
+  return t["3"][`${w.slice(0, 3)}|${n}`];
+};
+const lookupTailGram = (
+  t: GramTable,
+  w: string,
+  n: number,
+): string | undefined => {
+  const g5 = t["5"][`${w.slice(-5)}|${n}`];
+  if (g5 !== undefined && w.length >= 5) return g5;
+  return lookupGramN(t, w, n);
 };
 
 // Mined secondary-stress gram override (tables exported by
@@ -639,6 +666,46 @@ function applyVowelGrams(ipa: string, word: string): string {
       !(cd.startsWith("ɹ") && out[m.index - 1] === "ɝ")
     )
       out = out.slice(0, m.index) + cd;
+  }
+  // Medial positions (count-keyed): syllable #2 and the penult.
+  const runs: Array<[number, number]> = [];
+  for (let i = 0; i < out.length; ) {
+    if (IPA_V.includes(out[i])) {
+      const s = i;
+      while (i < out.length && IPA_V.includes(out[i])) i++;
+      runs.push([s, i]);
+    } else i++;
+  }
+  if (runs.length >= 3) {
+    const n = Math.min(runs.length, 5);
+    const swap = (idx: number, v: string | undefined) => {
+      if (v === undefined) return;
+      const [s, e] = runs[idx];
+      const cur = out.slice(s, e);
+      if (cur === v || rhoticMismatch(cur, v)) return;
+      out = out.slice(0, s) + v + out.slice(e);
+      const d = v.length - (e - s);
+      for (let r = idx + 1; r < runs.length; r++) {
+        runs[r][0] += d;
+        runs[r][1] += d;
+      }
+      runs[idx][1] = s + v.length;
+    };
+    swap(1, lookupInitGramN(VOWEL_GRAMS.second, word, n));
+    swap(runs.length - 2, lookupGramN(VOWEL_GRAMS.penult, word, n));
+  }
+  // Whole-tail transplant: the modal IPA from the primary mark to the
+  // word end for very consistent (gram, count) families.
+  if (runs.length > 0) {
+    const tail = lookupTailGram(
+      VOWEL_GRAMS.tail,
+      word,
+      Math.min(runs.length, 5),
+    );
+    if (tail !== undefined) {
+      const pi = out.indexOf("ˈ");
+      if (pi >= 0 && out.slice(pi) !== tail) out = out.slice(0, pi) + tail;
+    }
   }
   return out;
 }

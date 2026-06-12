@@ -1,15 +1,18 @@
 /**
- * Mine ending-gram → vowel-quality statistics from the dict, for the
- * two highest-leverage positions:
- *   stressed — the vowel of the primary-stressed syllable
- *   final    — the vowel of the last syllable
+ * Mine gram → segmental statistics from the dict for the positions the
+ * rule engine misses most:
+ *   stressed — vowel of the primary-stressed syllable   (ending gram)
+ *   final    — vowel of the last syllable               (ending gram)
+ *   initial  — vowel of the first syllable              (initial gram)
+ *   coda     — final consonant coda                     (ending gram)
+ *   second   — vowel of syllable #2                     (initial gram × syl count)
+ *   penult   — vowel of the next-to-last syllable       (ending gram × syl count)
+ *   tail     — whole IPA from the primary mark to the end (ending gram × syl count)
  *
- * Same adoption test as mine-stress-grams.ts: support ≥5, modal vowel
+ * Same adoption test as mine-stress-grams.ts: support ≥5, modal value
  * ≥70%, and net-fixes ≥3 against the gram-free pipeline. The table is
  * reset before importing the pipeline so mining stays deterministic.
- *
- * Output: data/en/vowel-grams.json
- *   { stressed: {"4": {...}, "3": {...}}, final: {"4": {...}, "3": {...}} }
+ * Count-keyed tables use the RUNTIME-visible syllable count.
  */
 import { readFileSync, writeFileSync } from "fs";
 
@@ -19,6 +22,9 @@ const EMPTY = {
   final: { "4": {}, "3": {} },
   initial: { "4": {}, "3": {} },
   coda: { "4": {}, "3": {} },
+  second: { "4": {}, "3": {} },
+  penult: { "4": {}, "3": {} },
+  tail: { "5": {}, "4": {}, "3": {} },
 };
 writeFileSync(OUT, JSON.stringify(EMPTY));
 
@@ -60,6 +66,10 @@ const initialVowel = (p: string): string => {
 };
 const CODA_RE = new RegExp(`([^${V}ˈˌ]*)$`);
 const finalCoda = (p: string): string => CODA_RE.exec(p)?.[1] ?? "";
+const tailFromPrimary = (p: string): string => {
+  const i = p.indexOf("ˈ");
+  return i < 0 ? "" : p.slice(i);
+};
 
 async function main() {
   const { default: EnglishG2P } = await import("../src/en-g2p");
@@ -74,15 +84,28 @@ async function main() {
     di: string;
     pc: string;
     dc: string;
+    p2: string;
+    d2: string;
+    pp: string;
+    dp: string;
+    pt: string;
+    dt: string;
   }
   const byGram = new Map<string, Rec[]>();
   const byInitGram = new Map<string, Rec[]>();
+  const byEndN = new Map<string, Rec[]>(); // ending gram | syl count (penult)
+  const byInitN = new Map<string, Rec[]>(); // initial gram | syl count (second)
+  const byEndN5 = new Map<string, Rec[]>(); // 5/4/3 ending gram | count (tail)
   for (const [w, exp] of Object.entries(dict)) {
     if (!/^[a-z]+$/.test(w)) continue;
     if (FOREIGN.some((r) => r.test(w))) continue;
     const pred = g.predict(w, "en");
     if (!pred) continue;
-    const rec = {
+    const pr = vowelRuns(pred);
+    const dr = vowelRuns(exp);
+    // medial positions only line up when both sides agree on count
+    const sameCount = pr.length === dr.length && pr.length >= 3;
+    const rec: Rec = {
       ps: stressedVowel(pred),
       ds: stressedVowel(exp),
       pf: finalVowel(pred),
@@ -91,6 +114,14 @@ async function main() {
       di: initialVowel(exp),
       pc: finalCoda(pred),
       dc: finalCoda(exp),
+      p2: sameCount ? pred.slice(pr[1][0], pr[1][1]) : "",
+      d2: sameCount ? exp.slice(dr[1][0], dr[1][1]) : "",
+      pp: sameCount
+        ? pred.slice(pr[pr.length - 2][0], pr[pr.length - 2][1])
+        : "",
+      dp: sameCount ? exp.slice(dr[dr.length - 2][0], dr[dr.length - 2][1]) : "",
+      pt: tailFromPrimary(pred),
+      dt: tailFromPrimary(exp),
     };
     for (const k of [w.slice(-4), w.slice(-3)]) {
       if (k.length < 3) continue;
@@ -104,15 +135,40 @@ async function main() {
       if (!a) byInitGram.set(k, (a = []));
       a.push(rec);
     }
+    const ns = Math.min(pr.length, 5);
+    if (sameCount) {
+      for (const k of [`${w.slice(-4)}|${ns}`, `${w.slice(-3)}|${ns}`]) {
+        if (k.indexOf("|") < 3) continue;
+        let a = byEndN.get(k);
+        if (!a) byEndN.set(k, (a = []));
+        a.push(rec);
+      }
+      for (const k of [`${w.slice(0, 4)}|${ns}`, `${w.slice(0, 3)}|${ns}`]) {
+        if (k.indexOf("|") < 3) continue;
+        let a = byInitN.get(k);
+        if (!a) byInitN.set(k, (a = []));
+        a.push(rec);
+      }
+    }
+    for (const k of [
+      `${w.slice(-5)}|${ns}`,
+      `${w.slice(-4)}|${ns}`,
+      `${w.slice(-3)}|${ns}`,
+    ]) {
+      if (k.indexOf("|") < 3) continue;
+      let a = byEndN5.get(k);
+      if (!a) byEndN5.set(k, (a = []));
+      a.push(rec);
+    }
   }
 
   const mine = (
     get: (r: Rec) => [string, string],
-    grams: Map<string, Rec[]> = byGram,
-    minConsistency = 0.7,
-    minNet = 3,
+    grams: Map<string, Rec[]>,
+    buckets: string[],
   ): Record<string, Record<string, string>> => {
-    const out: Record<string, Record<string, string>> = { "4": {}, "3": {} };
+    const out: Record<string, Record<string, string>> = {};
+    for (const b of buckets) out[b] = {};
     for (const [k, recs] of grams) {
       if (recs.length < 5) continue;
       const cnt = new Map<string, number>();
@@ -127,7 +183,7 @@ async function main() {
           mc = c;
           mode = v;
         }
-      if (!mode || mc / recs.length < minConsistency) continue;
+      if (!mode || mc / recs.length < 0.7) continue;
       let fixes = 0;
       let breaks = 0;
       for (const r of recs) {
@@ -135,21 +191,28 @@ async function main() {
         if (p !== d && mode === d) fixes++;
         else if (p === d && mode !== d) breaks++;
       }
-      if (fixes - breaks < minNet) continue;
-      out[String(k.length)][k] = mode;
+      if (fixes - breaks < 3) continue;
+      out[String(k.split("|")[0].length)][k] = mode;
     }
     return out;
   };
 
-  const stressed = mine((r) => [r.ps, r.ds]);
-  const final = mine((r) => [r.pf, r.df]);
-  const initial = mine((r) => [r.pi, r.di], byInitGram);
-  const coda = mine((r) => [r.pc, r.dc]);
-  writeFileSync(OUT, JSON.stringify({ stressed, final, initial, coda }));
+  const T43 = ["4", "3"];
+  const stressed = mine((r) => [r.ps, r.ds], byGram, T43);
+  const final = mine((r) => [r.pf, r.df], byGram, T43);
+  const initial = mine((r) => [r.pi, r.di], byInitGram, T43);
+  const coda = mine((r) => [r.pc, r.dc], byGram, T43);
+  const second = mine((r) => [r.p2, r.d2], byInitN, T43);
+  const penult = mine((r) => [r.pp, r.dp], byEndN, T43);
+  const tail = mine((r) => [r.pt, r.dt], byEndN5, ["5", "4", "3"]);
+  writeFileSync(
+    OUT,
+    JSON.stringify({ stressed, final, initial, coda, second, penult, tail }),
+  );
   const size = (t: Record<string, Record<string, string>>) =>
-    Object.keys(t["4"]).length + Object.keys(t["3"]).length;
+    Object.values(t).reduce((n, m) => n + Object.keys(m).length, 0);
   console.log(
-    `vowel grams adopted: stressed ${size(stressed)}, final ${size(final)}, initial ${size(initial)}, coda ${size(coda)}`,
+    `vowel grams adopted: stressed ${size(stressed)}, final ${size(final)}, initial ${size(initial)}, coda ${size(coda)}, second ${size(second)}, penult ${size(penult)}, tail ${size(tail)}`,
   );
 }
 
