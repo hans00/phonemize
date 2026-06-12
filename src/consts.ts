@@ -11,7 +11,7 @@ export const ARPABET_TO_IPA: Record<string, string> = {
   // Vowels - monophthongs
   AA: "ɑ", // father
   AE: "æ", // cat
-  AH: "ʌ", // cut
+  AH: "ə", // cut — the lexicon writes STRUT as schwa (see strutToSchwa in en-phonotactics)
   AO: "ɔ", // thought
   AX: "ə", // about (schwa)
   AXR: "ɚ", // letter (r-colored schwa)
@@ -139,6 +139,10 @@ export const IPA_TO_ARPABET: Record<string, string> = {
   ...Object.fromEntries(
     Object.entries(ARPABET_TO_IPA).map(([key, value]) => [value, key]),
   ),
+  // AH and AX now both map to ə (lexicon STRUT convention), so the
+  // auto-inversion resolves ə→AX and drops ʌ; keep ʌ→AH for callers
+  // converting standard IPA.
+  ʌ: "AH",
   // RP NURSE — same vowel as ɝ when stripped of rhoticity.
   ɜ: "ER",
   // RP LOT — rounded back vowel; map to AA so consumers get a back

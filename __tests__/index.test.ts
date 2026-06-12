@@ -35,7 +35,7 @@ describe('Index', function() {
   })
 
   it('rule based or compound word', function() {
-    expect(phonemize('buggie')).toEqual('ˈbʌɡi')
+    expect(phonemize('buggie')).toEqual('ˈbəɡi')
     // supercar: rules don't decompose compounds; future work via the
     // compound-parts table will restore ˈsupɝˌkɑɹ. Current output is
     // a single-stress rule prediction.
@@ -110,7 +110,7 @@ describe('Index', function() {
   it('Number processing', function() {
     // Basic number expansion tests
     expect(phonemize('5')).toEqual('ˈfaɪv')
-    expect(phonemize('123')).toEqual('wʌn ˈhʌndɝd ˈtwɛni θɹi')
+    expect(phonemize('123')).toEqual('wən ˈhəndɝd ˈtwɛni θɹi')
   })
 
   it('Abbreviation expansion', function() {

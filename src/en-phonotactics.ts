@@ -94,15 +94,16 @@ function dropSilentH(ipa: string): string {
   return out + ipa.slice(writeFrom);
 }
 
-// ─── Rule: stressed schwa → STRUT vowel /ʌ/ ───────────────────────────────
-// Pattern: stress mark + zero-or-more onset consonants + /ə/. The
-// CMU dict's /ˈə/ is convention for what IPA writes as /ˈʌ/.
-const STRESSED_SCHWA_RE = /([ˈˌ])([^aeiouɑæɛɪɔʊʌəɝˈˌ]*)ə/g;
-function stressedSchwaToStrut(ipa: string): string {
-  // Cheap pre-check: needs both a stress mark and a /ə/.
-  if (ipa.indexOf("ˈ") < 0 && ipa.indexOf("ˌ") < 0) return ipa;
-  if (ipa.indexOf("ə") < 0) return ipa;
-  return ipa.replace(STRESSED_SCHWA_RE, "$1$2ʌ");
+// ─── Rule: STRUT /ʌ/ → /ə/ (lexicon convention) ───────────────────────────
+// The dictionary writes STRUT as /ə/ everywhere — 59,005 ə against
+// 5 ʌ across the whole lexicon (and those 5 are legacy artifacts).
+// The rule engine emits /ʌ/ for orthographic short-u (cut, but);
+// normalize to the lexicon convention so both paths agree. ə↔ʌ is a
+// recognized equivalence pair, so this is purely notational.
+const STRUT_RE = /ʌ/g;
+function strutToSchwa(ipa: string): string {
+  if (ipa.indexOf("ʌ") < 0) return ipa;
+  return ipa.replace(STRUT_RE, "ə");
 }
 
 // ─── Rule: unstressed /ɪɹ/ → /ɝ/ ──────────────────────────────────────────
@@ -308,7 +309,7 @@ export function applyPhonotactics(ipa: string, _word?: string): string {
   cur = simplifyDtFinal(cur);
   cur = fixPastTenseED(cur);
   cur = dropSilentH(cur);
-  cur = stressedSchwaToStrut(cur);
+  cur = strutToSchwa(cur);
   cur = coalesceUnstressedIR(cur);
   cur = tenseHiatusI(cur);
   cur = simplifyPluralAfterVowel(cur);
