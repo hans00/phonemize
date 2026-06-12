@@ -378,6 +378,10 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => /[sxzcg]es$/.test(w), re: /([szʃʒ])əs$/, sub: "$1əz" },
   { when: (w) => w.endsWith("s") && !w.endsWith("ss"), re: /([bdɡvðmnŋɫlɹ])s$/, sub: "$1z" },
   { when: (w) => /[aeiouwy]s$/.test(w) && !/[uia]s$/.test(w), re: /([aɪʊoeiɔuəɝ])s$/, sub: "$1z" },
+
+  // Word-final orthographic u is tense /u/ (abu, bantu, snafu) — the
+  // short-u → STRUT → ə chain only applies to closed syllables.
+  { when: (w) => /[^aeiou]u$/.test(w), re: /ə$/, sub: "u" },
 ];
 
 // --- Stress-mark conventions (applied AFTER the primary mark is inserted) ---
