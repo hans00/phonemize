@@ -187,11 +187,15 @@ function epenthesizeSyllabicL(ipa: string): string {
 //
 // Guard: skip when the ɪ bears stress (a stress mark immediately
 // precedes its onset). Stressed ɪ stays /ɪ/.
-const HIATUS_IR_RE = /ɪ([aeiouɑæɛɔʊʌəɝ])/g;
+//
+// A stress mark between the two vowels (ɪˌeɪt in abbreviate) is
+// suprasegmental — the vowels are still in hiatus, so tense through it
+// (dict: əˈbɹiviˌeɪt with tense i before the marked syllable).
+const HIATUS_IR_RE = /ɪ([ˈˌ]?)([aeiouɑæɛɔʊʌəɝ])/g;
 const DIPHTHONG_PRE_I = "eaoɔ"; // chars that form a diphthong with ɪ (eɪ, aɪ, oɪ, ɔɪ)
 function tenseHiatusI(ipa: string): string {
   if (ipa.indexOf("ɪ") < 0) return ipa;
-  return ipa.replace(HIATUS_IR_RE, (match, next, offset) => {
+  return ipa.replace(HIATUS_IR_RE, (match, mark, next, offset) => {
     const pos = offset as number;
     // Skip when ɪ is the second half of a diphthong (eɪ, aɪ, oɪ, ɔɪ) —
     // the next char after ɪ is its trail-vowel partner of the NEXT
@@ -205,7 +209,7 @@ function tenseHiatusI(ipa: string): string {
       if (c === "ˌ") break;
       if (VOWELS.indexOf(c) >= 0) break;
     }
-    return "i" + next;
+    return "i" + mark + next;
   });
 }
 

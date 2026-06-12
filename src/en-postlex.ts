@@ -355,6 +355,107 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.includes("eich") && w.length >= 5, re: /aɪtʃ/g, sub: "aɪk" },
 ];
 
+// --- Stress-mark conventions (applied AFTER the primary mark is inserted) ---
+
+const IPA_V = "aeiouɑæɛɪɔʊʌəɝ";
+const IPA_C = "pbtdkɡfvszʃʒθðmnŋɫlɹhjw";
+
+// Dict convention is maximal onset: the stress mark sits before the
+// stressed syllable's onset. The syllabifier sometimes leaves a coda
+// consonant behind (ad.dict → ədˈɪkt); pull it into the onset. The
+// dict itself contains zero VCˈV sequences, so this is convention
+// repair, not phonology.
+const ONSET_MAX_1_RE = new RegExp(`([${IPA_V}])([${IPA_C}])ˈ(?=[${IPA_V}])`, "g");
+// Same across a two-consonant cluster when it is a legal onset
+// (a.ggres.sion → əˈɡɹɛʃən). Obstruent+liquid/glide only: dict splits
+// s+C heterosyllabically (æsˈfɪksi), so s-initial clusters stay put.
+const ONSET_MAX_2_RE = new RegExp(
+  `([${IPA_V}])([${IPA_C}])ˈ([${IPA_C}])(?=[${IPA_V}])`,
+  "g",
+);
+const ONSET_CLUSTERS = new Set([
+  "pɹ", "tɹ", "kɹ", "bɹ", "dɹ", "ɡɹ", "fɹ", "θɹ", "ʃɹ",
+  "pl", "bl", "kl", "ɡl", "fl",
+  "pɫ", "bɫ", "kɫ", "ɡɫ", "fɫ",
+  "tw", "kw", "dw", "ɡw", "hw",
+]);
+
+/** Count distinct vowel nuclei (vowel-char runs) in ipa[from..to). */
+function nucleiBetween(ipa: string, from: number, to: number): number {
+  let n = 0;
+  let inV = false;
+  for (let i = from; i < to; i++) {
+    if (IPA_V.includes(ipa[i])) {
+      if (!inV) n++;
+      inV = true;
+    } else inV = false;
+  }
+  return n;
+}
+
+/**
+ * Insert a secondary-stress mark before the onset of the suffix
+ * syllable located by `suffixRe`, when the suffix sits at least one
+ * full syllable after the primary (ˈæɡəˌnaɪz but əˈbeɪt) and isn't
+ * already marked.
+ */
+function addSecondary(ipa: string, suffixRe: RegExp): string {
+  const m = suffixRe.exec(ipa);
+  if (!m) return ipa;
+  let onset = m.index;
+  while (onset > 0 && IPA_C.includes(ipa[onset - 1])) onset--;
+  // A lone /ɹ/ onset after lax ɪ/ə coalesces with it later in the
+  // phonotactic pass (ɪɹ → ɝ). Keep the pair intact and mark after it
+  // (dict: ədʌɫtɝˌeɪt, not ədʌɫtɪˌɹeɪt).
+  if (
+    onset === m.index - 1 &&
+    ipa[onset] === "ɹ" &&
+    onset > 0 &&
+    (ipa[onset - 1] === "ɪ" || ipa[onset - 1] === "ə")
+  )
+    onset = m.index;
+  if (onset > 0 && (ipa[onset - 1] === "ˌ" || ipa[onset - 1] === "ˈ")) return ipa;
+  const pi = ipa.indexOf("ˈ");
+  if (pi < 0 || pi > onset) return ipa;
+  if (nucleiBetween(ipa, pi, onset) < 2) return ipa;
+  return ipa.slice(0, onset) + "ˌ" + ipa.slice(onset);
+}
+
+// Suffixes that carry secondary stress on their own syllable.
+const SECONDARY_SUFFIXES: Array<[RegExp, RegExp]> = [
+  [/iz(?:es?|ed|ing)?$/, /aɪz/],
+  [/at(?:es?|ed|ing)?$/, /eɪt(?!.*eɪt)/],
+  [/ism$/, /ɪzəm$/],
+  [/ory$/, /ɔɹi$/],
+];
+
+// -ation attracts primary stress onto its own syllable; the stem's
+// former primary demotes to secondary (abbreviate əˈbɹiviˌeɪt →
+// abbreviation əˌbɹiviˈeɪʃən).
+const ATION_SWAP_RE = /ˈ(.*)ˌeɪʃən$/;
+
+/**
+ * Stress-mark convention repair for the rule path, applied after
+ * predictInternal inserts the primary mark: onset-maximize the mark
+ * position, add suffix secondary stress, shift primary onto -ation.
+ */
+export function applyPostStress(ipa: string, word: string): string {
+  let out = ipa;
+  if (out.indexOf("ˈ") < 0) return out;
+  out = out.replace(ONSET_MAX_1_RE, (m, v, c) =>
+    // Leave coalescing ɪɹ/əɹ pairs intact (→ ɝ in the phonotactic pass).
+    c === "ɹ" && (v === "ɪ" || v === "ə") ? m : v + "ˈ" + c,
+  );
+  out = out.replace(ONSET_MAX_2_RE, (m, v, c1, c2) =>
+    ONSET_CLUSTERS.has(c1 + c2) ? v + "ˈ" + c1 + c2 : m,
+  );
+  if (word.endsWith("ation")) return out.replace(ATION_SWAP_RE, "ˌ$1ˈeɪʃən");
+  for (const [wordRe, ipaRe] of SECONDARY_SUFFIXES) {
+    if (wordRe.test(word)) return addSecondary(out, ipaRe);
+  }
+  return out;
+}
+
 /**
  * Apply the unconditional cleanup then the guarded corrections, in
  * table order, to the joined syllable IPA of the rule path.

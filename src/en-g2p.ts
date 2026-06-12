@@ -14,7 +14,7 @@ import { simplePOSTagger, isFunctionWord, reduceToWeakForm } from "./pos-tagger"
 import { transformAmericanToRP } from "./en-gb";
 import { predictPrincipled } from "./en-principled";
 import { applyPhonotactics } from "./en-phonotactics";
-import { applyPostLexical } from "./en-postlex";
+import { applyPostLexical, applyPostStress } from "./en-postlex";
 import { assignStress, syllabify, syllableToIPA } from "./en-syllabify";
 
 export type EnglishDialect = "en-US" | "en-GB";
@@ -542,7 +542,10 @@ export class EnglishG2P implements LanguageProcessor {
           result.substring(0, charIndex) + "ˈ" + result.substring(charIndex);
       }
 
-      return result;
+      // Stress-mark convention repair (onset maximization, suffix
+      // secondary stress, -ation primary shift) — needs the mark, so
+      // it runs after insertion. Rule-path only by construction.
+      return applyPostStress(result, lowerWord);
     }
 
     // Final fallback: just spell it out (should be rare)
