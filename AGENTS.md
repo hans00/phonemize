@@ -99,9 +99,19 @@ Rules grow by accumulation. Compression folds patches back into simpler, more ge
 
 The English rule engine spans three modules (refactored 2026-06, snapshot-verified byte-identical):
 
-- `src/en-g2p.ts` — dictionary/morphology/compound dispatch, `tryMorphologicalAnalysis`
+- `src/en-g2p.ts` — dictionary/morphology/compound dispatch, `tryMorphologicalAnalysis`, `tryCompoundSplit`
 - `src/en-syllabify.ts` — syllabification, stress, `PHONEME_RULES`/`SUFFIX_RULES` (first match wins; order is load-bearing)
-- `src/en-postlex.ts` — rule-path-only post-lexical correction tables. NOT mergeable into `en-phonotactics.ts`, which also applies to dict output.
+- `src/en-postlex.ts` — rule-path-only post-lexical correction tables and gram-table application. NOT mergeable into `en-phonotactics.ts`, which also applies to dict output.
+
+### Mined gram tables (2026-06)
+
+`build-dict` also runs three miners that learn statistics from `data/en/dict.json` and emit runtime data (gitignored, regenerated each build):
+
+- `scripts/mine-compound-parts.ts` → `compound-parts.json` — verified compound head/tail tables (both halves must verify; that requirement is the load-bearing filter)
+- `scripts/mine-stress-grams.ts` → `stress-grams.json` — ending-gram × syllable-count → primary/secondary stress position from end
+- `scripts/mine-vowel-grams.ts` → `vowel-grams.json` — ending/initial-gram → stressed/final/initial vowel + final coda
+
+Adoption test everywhere: support ≥5, modal value ≥70%, net-fixes ≥3 vs the gram-free pipeline. Miners RESET their own table before importing the pipeline (re-mining against a live table un-adopts its own grams). Keys that depend on syllable count use the RUNTIME-visible count, not the dict's. New positions should follow the same recipe; 5-letter grams measured net-negative (don't re-add).
 
 For provably score-neutral refactors, gate with `tsx scripts/snapshot-dump.ts` before/after: an empty diff over its 1.3M predictions freezes both eval scores by construction.
 
