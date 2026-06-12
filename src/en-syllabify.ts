@@ -508,11 +508,13 @@ export function assignStress(syllables: string[], word: string): number {
 
   const lowerWord = word.toLowerCase();
 
-  // Mined ending-gram override (longest gram first): the table maps a
-  // spelling ending to the lexicon's modal stress position from the
-  // word end (1 = final syllable).
+  // Mined ending-gram override (longest gram first): keys are
+  // `gram|sylCount` (count capped at 5), value = the lexicon's modal
+  // stress position from the word end (1 = final syllable).
+  const ns = Math.min(syllables.length, 5);
   const fromEnd =
-    STRESS_GRAMS_4[lowerWord.slice(-4)] ?? STRESS_GRAMS_3[lowerWord.slice(-3)];
+    STRESS_GRAMS_4[`${lowerWord.slice(-4)}|${ns}`] ??
+    STRESS_GRAMS_3[`${lowerWord.slice(-3)}|${ns}`];
   if (fromEnd !== undefined)
     return Math.max(0, Math.min(syllables.length - 1, syllables.length - fromEnd));
 

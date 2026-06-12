@@ -558,25 +558,37 @@ const lookupInitGram = (t: GramTable, w: string): string | undefined => {
 // en-syllabify): gram → first-ˌ position from end (0 = no secondary).
 // When a gram matches, it supersedes the heuristics above.
 function applySecondaryGram(ipa: string, word: string): string {
-  const fromEnd =
-    word.length >= 4 && SECONDARY_GRAMS_4[word.slice(-4)] !== undefined
-      ? SECONDARY_GRAMS_4[word.slice(-4)]
-      : SECONDARY_GRAMS_3[word.slice(-3)];
-  if (fromEnd === undefined) return ipa;
-  let out = ipa.replace(/ˌ/g, "");
-  if (fromEnd === 0) return out;
-  // locate target syllable onset
+  // locate syllable nuclei first — the gram key carries the count
   const runs: Array<[number, number]> = [];
+  for (let i = 0; i < ipa.length; ) {
+    if (IPA_V.includes(ipa[i])) {
+      const s = i;
+      while (i < ipa.length && IPA_V.includes(ipa[i])) i++;
+      runs.push([s, i]);
+    } else i++;
+  }
+  const ns = Math.min(runs.length, 5);
+  const k4 = `${word.slice(-4)}|${ns}`;
+  const k3 = `${word.slice(-3)}|${ns}`;
+  const fromEnd =
+    word.length >= 4 && SECONDARY_GRAMS_4[k4] !== undefined
+      ? SECONDARY_GRAMS_4[k4]
+      : SECONDARY_GRAMS_3[k3];
+  if (fromEnd === undefined) return ipa;
+  const out = ipa.replace(/ˌ/g, "");
+  if (fromEnd === 0) return out;
+  // re-locate nuclei on the stripped string (indices shifted)
+  const oruns: Array<[number, number]> = [];
   for (let i = 0; i < out.length; ) {
     if (IPA_V.includes(out[i])) {
       const s = i;
       while (i < out.length && IPA_V.includes(out[i])) i++;
-      runs.push([s, i]);
+      oruns.push([s, i]);
     } else i++;
   }
-  const idx = runs.length - fromEnd;
-  if (idx < 0 || idx >= runs.length) return out;
-  let o = runs[idx][0];
+  const idx = oruns.length - fromEnd;
+  if (idx < 0 || idx >= oruns.length) return out;
+  let o = oruns[idx][0];
   while (o > 0 && IPA_C.includes(out[o - 1])) o--;
   if (out[o - 1] === "ˈ") return out; // that syllable carries primary
   return out.slice(0, o) + "ˌ" + out.slice(o);

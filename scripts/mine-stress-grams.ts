@@ -57,6 +57,17 @@ function markFromEnd(ipa: string, mark: string): number {
   return total - before;
 }
 const primaryFromEnd = (ipa: string): number => markFromEnd(ipa, "ˈ");
+function sylCount(ipa: string): number {
+  let n = 0;
+  let inV = false;
+  for (const c of ipa) {
+    if (V.includes(c)) {
+      if (!inV) n++;
+      inV = true;
+    } else inV = false;
+  }
+  return n;
+}
 
 async function main() {
   const { default: EnglishG2P } = await import("../src/en-g2p");
@@ -83,8 +94,11 @@ async function main() {
       predSE: markFromEnd(pred, "ˌ"),
       dictSE: markFromEnd(exp, "ˌ"),
     };
-    for (const k of [w.slice(-4), w.slice(-3)]) {
-      if (k.length < 3) continue;
+    // Keys carry the RUNTIME-visible syllable count (the pipeline's
+    // own, not the dict's) so training matches inference.
+    const ns = Math.min(sylCount(pred), 5);
+    for (const k of [`${w.slice(-4)}|${ns}`, `${w.slice(-3)}|${ns}`]) {
+      if (k.indexOf("|") < 3) continue;
       let a = byGram.get(k);
       if (!a) byGram.set(k, (a = []));
       a.push(rec);
@@ -118,7 +132,7 @@ async function main() {
         else if (p === d && mode !== d) breaks++;
       }
       if (fixes - breaks < 3) continue;
-      out[String(k.length)][k] = mode;
+      out[String(k.split("|")[0].length)][k] = mode;
     }
     return out;
   };
