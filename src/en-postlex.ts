@@ -1,6 +1,6 @@
 import * as vowelGramsJson from "../data/en/vowel-grams.json";
 import { resolveJson } from "./utils";
-import { SECONDARY_GRAMS_3, SECONDARY_GRAMS_4 } from "./en-syllabify";
+import { NO_GRAMS, SECONDARY_GRAMS_3, SECONDARY_GRAMS_4 } from "./en-syllabify";
 
 /**
  * Post-lexical corrections for the rule path.
@@ -595,6 +595,7 @@ const lookupHeadGram = (
 // en-syllabify): gram → first-ˌ position from end (0 = no secondary).
 // When a gram matches, it supersedes the heuristics above.
 function applySecondaryGram(ipa: string, word: string): string {
+  if (NO_GRAMS) return ipa;
   // locate syllable nuclei first — the gram key carries the count
   const runs: Array<[number, number]> = [];
   for (let i = 0; i < ipa.length; ) {
@@ -645,6 +646,7 @@ const rhoticMismatch = (a: string, b: string): boolean =>
 
 /** Replace the vowel run of the primary-stressed / final syllable. */
 function applyVowelGrams(ipa: string, word: string): string {
+  if (NO_GRAMS) return ipa;
   let out = ipa;
   const sv = lookupGram(VOWEL_GRAMS.stressed, word);
   if (sv !== undefined) {

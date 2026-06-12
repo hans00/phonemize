@@ -70,6 +70,7 @@ function sylCount(ipa: string): number {
 }
 
 async function main() {
+  process.env.PHONEMIZE_NO_GRAMS = "1"; // measure against the gram-free baseline
   const { default: EnglishG2P } = await import("../src/en-g2p");
   const g = new EnglishG2P({ disableDict: true });
 

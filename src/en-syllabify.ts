@@ -10,6 +10,12 @@ import type { TraceStep } from "./en-g2p";
 import * as stressGramsJson from "../data/en/stress-grams.json";
 import { resolveJson } from "./utils";
 
+// The gram miners set PHONEMIZE_NO_GRAMS before importing the
+// pipeline so every miner measures against the same gram-free
+// baseline (deterministic regardless of mining order).
+export const NO_GRAMS =
+  typeof process !== "undefined" && !!process.env?.PHONEMIZE_NO_GRAMS;
+
 // Mined ending-gram → primary-stress-from-end table (see
 // scripts/mine-stress-grams.ts). Longest gram wins; each entry
 // net-fixes ≥3 words against the heuristics below.
@@ -512,9 +518,10 @@ export function assignStress(syllables: string[], word: string): number {
   // `gram|sylCount` (count capped at 5), value = the lexicon's modal
   // stress position from the word end (1 = final syllable).
   const ns = Math.min(syllables.length, 5);
-  const fromEnd =
-    STRESS_GRAMS_4[`${lowerWord.slice(-4)}|${ns}`] ??
-    STRESS_GRAMS_3[`${lowerWord.slice(-3)}|${ns}`];
+  const fromEnd = NO_GRAMS
+    ? undefined
+    : (STRESS_GRAMS_4[`${lowerWord.slice(-4)}|${ns}`] ??
+      STRESS_GRAMS_3[`${lowerWord.slice(-3)}|${ns}`]);
   if (fromEnd !== undefined)
     return Math.max(0, Math.min(syllables.length - 1, syllables.length - fromEnd));
 
