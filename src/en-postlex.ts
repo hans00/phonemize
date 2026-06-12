@@ -439,6 +439,62 @@ function addSecondary(ipa: string, suffixRe: RegExp): string {
   return ipa.slice(0, onset) + "ˌ" + ipa.slice(onset);
 }
 
+// Full (unreduced) nuclei that attract a secondary mark when they sit
+// ≥1 syllable after the primary: ˈækɹɪˌmoʊni, ˈæɫbəˌkɔɹ. Word-final
+// open syllables stay unmarked (ˈæɹoʊ).
+const FULL_NUCLEI = ["eɪ", "aɪ", "oʊ", "aʊ", "ɔɪ", "ɑ", "æ", "ɔ", "ɛ", "u"];
+// Two-consonant onsets a secondary mark may attach before (legal
+// English onsets; superset of ONSET_CLUSTERS — s-clusters are fine to
+// MARK before, they just don't attract a moved primary).
+const LEGAL_ONSET_2 = new Set(
+  Array.from(ONSET_CLUSTERS).concat([
+    "sp", "st", "sk", "sm", "sn", "sw", "sl", "sɫ", "sf",
+  ]),
+);
+
+/**
+ * Insert secondary marks before every still-unmarked full-vowel
+ * syllable lying at least one full syllable after the primary —
+ * the lexicon's convention for compounds and long Latinate words.
+ * No-op when the word already carries any secondary mark.
+ */
+function addFullVowelSecondaries(ipa: string): string {
+  const pi = ipa.indexOf("ˈ");
+  if (pi < 0 || ipa.indexOf("ˌ") >= 0) return ipa;
+  const runs: Array<[number, number]> = [];
+  for (let i = 0; i < ipa.length; ) {
+    if (IPA_V.includes(ipa[i])) {
+      const s = i;
+      while (i < ipa.length && IPA_V.includes(ipa[i])) i++;
+      runs.push([s, i]);
+    } else i++;
+  }
+  let primary = -1;
+  for (let r = 0; r < runs.length; r++)
+    if (runs[r][0] > pi) {
+      primary = r;
+      break;
+    }
+  if (primary < 0) return ipa;
+  let out = ipa;
+  let shift = 0;
+  for (let r = primary + 2; r < runs.length; r++) {
+    const [s, e] = runs[r];
+    const nuc = ipa.slice(s, e);
+    if (!FULL_NUCLEI.some((f) => nuc.startsWith(f))) continue;
+    if (e >= ipa.length) continue; // word-final open syllable
+    let o = s;
+    if (o > 0 && IPA_C.includes(ipa[o - 1])) {
+      if (o > 1 && IPA_C.includes(ipa[o - 2]) && LEGAL_ONSET_2.has(ipa.slice(o - 2, o))) o -= 2;
+      else o -= 1;
+    }
+    if (ipa[o - 1] === "ˈ" || ipa[o - 1] === "ˌ") continue;
+    out = out.slice(0, o + shift) + "ˌ" + out.slice(o + shift);
+    shift++;
+  }
+  return out;
+}
+
 // Suffixes that carry secondary stress on their own syllable.
 const SECONDARY_SUFFIXES: Array<[RegExp, RegExp]> = [
   [/iz(?:es?|ed|ing|ers?)?$/, /aɪz/],
@@ -483,7 +539,7 @@ export function applyPostStress(ipa: string, word: string): string {
   for (const [wordRe, ipaRe] of SECONDARY_SUFFIXES) {
     if (wordRe.test(word)) return addSecondary(out, ipaRe);
   }
-  return out;
+  return addFullVowelSecondaries(out);
 }
 
 /**
