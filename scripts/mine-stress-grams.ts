@@ -22,7 +22,11 @@ const OUT = "./data/en/stress-grams.json";
 // measured against the GRAM-FREE heuristics. Re-mining against a
 // pipeline that already carries the table would un-adopt its own
 // grams (their net contribution measures ~0 once they are live).
-writeFileSync(OUT, JSON.stringify({ "4": {}, "3": {} }));
+const EMPTY = {
+  primary: { "4": {}, "3": {} },
+  secondary: { "4": {}, "3": {} },
+};
+writeFileSync(OUT, JSON.stringify(EMPTY));
 
 const dict: Record<string, string> = JSON.parse(
   readFileSync("./data/en/dict.json", "utf8"),
@@ -35,9 +39,9 @@ const FOREIGN: RegExp[] = [
 ];
 
 const V = "aeiouɑæɛɪɔʊʌəɝ";
-function primaryFromEnd(ipa: string): number {
-  const pi = ipa.indexOf("ˈ");
-  if (pi < 0) return -1;
+function markFromEnd(ipa: string, mark: string): number {
+  const pi = ipa.indexOf(mark);
+  if (pi < 0) return mark === "ˌ" ? 0 : -1; // 0 = "no secondary"
   let total = 0;
   let before = 0;
   let inV = false;
@@ -52,6 +56,7 @@ function primaryFromEnd(ipa: string): number {
   }
   return total - before;
 }
+const primaryFromEnd = (ipa: string): number => markFromEnd(ipa, "ˈ");
 
 async function main() {
   const { default: EnglishG2P } = await import("../src/en-g2p");
@@ -60,6 +65,8 @@ async function main() {
   interface Rec {
     predFE: number;
     dictFE: number;
+    predSE: number;
+    dictSE: number;
   }
   const byGram = new Map<string, Rec[]>();
   for (const [w, exp] of Object.entries(dict)) {
@@ -70,40 +77,60 @@ async function main() {
     const predFE = primaryFromEnd(pred);
     const dictFE = primaryFromEnd(exp);
     if (predFE < 1 || dictFE < 1) continue;
+    const rec = {
+      predFE,
+      dictFE,
+      predSE: markFromEnd(pred, "ˌ"),
+      dictSE: markFromEnd(exp, "ˌ"),
+    };
     for (const k of [w.slice(-4), w.slice(-3)]) {
       if (k.length < 3) continue;
       let a = byGram.get(k);
       if (!a) byGram.set(k, (a = []));
-      a.push({ predFE, dictFE });
+      a.push(rec);
     }
   }
 
-  const out: Record<string, Record<string, number>> = { "4": {}, "3": {} };
-  let adopted = 0;
-  for (const [k, recs] of byGram) {
-    if (recs.length < 5) continue;
-    const cnt = new Map<number, number>();
-    for (const r of recs) cnt.set(r.dictFE, (cnt.get(r.dictFE) ?? 0) + 1);
-    let mode = -1;
-    let mc = 0;
-    for (const [v, c] of cnt)
-      if (c > mc) {
-        mc = c;
-        mode = v;
+  const mine = (
+    get: (r: Rec) => [number, number],
+  ): Record<string, Record<string, number>> => {
+    const out: Record<string, Record<string, number>> = { "4": {}, "3": {} };
+    for (const [k, recs] of byGram) {
+      if (recs.length < 5) continue;
+      const cnt = new Map<number, number>();
+      for (const r of recs) {
+        const [, d] = get(r);
+        cnt.set(d, (cnt.get(d) ?? 0) + 1);
       }
-    if (mc / recs.length < 0.7) continue;
-    let fixes = 0;
-    let breaks = 0;
-    for (const r of recs) {
-      if (r.predFE !== r.dictFE && mode === r.dictFE) fixes++;
-      else if (r.predFE === r.dictFE && mode !== r.dictFE) breaks++;
+      let mode = -1;
+      let mc = 0;
+      for (const [v, c] of cnt)
+        if (c > mc) {
+          mc = c;
+          mode = v;
+        }
+      if (mc / recs.length < 0.7) continue;
+      let fixes = 0;
+      let breaks = 0;
+      for (const r of recs) {
+        const [p, d] = get(r);
+        if (p !== d && mode === d) fixes++;
+        else if (p === d && mode !== d) breaks++;
+      }
+      if (fixes - breaks < 3) continue;
+      out[String(k.length)][k] = mode;
     }
-    if (fixes - breaks < 3) continue;
-    out[String(k.length)][k] = mode;
-    adopted++;
-  }
-  writeFileSync(OUT, JSON.stringify(out));
-  console.log(`stress grams adopted: ${adopted}`);
+    return out;
+  };
+
+  const primary = mine((r) => [r.predFE, r.dictFE]);
+  const secondary = mine((r) => [r.predSE, r.dictSE]);
+  writeFileSync(OUT, JSON.stringify({ primary, secondary }));
+  const size = (t: Record<string, Record<string, number>>) =>
+    Object.keys(t["4"]).length + Object.keys(t["3"]).length;
+  console.log(
+    `stress grams adopted: primary ${size(primary)}, secondary ${size(secondary)}`,
+  );
 }
 
 main();

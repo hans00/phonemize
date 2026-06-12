@@ -13,16 +13,26 @@ import { resolveJson } from "./utils";
 // Mined ending-gram → primary-stress-from-end table (see
 // scripts/mine-stress-grams.ts). Longest gram wins; each entry
 // net-fixes ≥3 words against the heuristics below.
-const STRESS_GRAMS = resolveJson<Record<string, Record<string, number>>>(
-  stressGramsJson,
-);
+const STRESS_GRAMS = resolveJson<{
+  primary: Record<string, Record<string, number>>;
+  secondary: Record<string, Record<string, number>>;
+}>(stressGramsJson);
 const STRESS_GRAMS_4: Record<string, number> = Object.assign(
   Object.create(null),
-  STRESS_GRAMS["4"],
+  STRESS_GRAMS.primary["4"],
 );
 const STRESS_GRAMS_3: Record<string, number> = Object.assign(
   Object.create(null),
-  STRESS_GRAMS["3"],
+  STRESS_GRAMS.primary["3"],
+);
+/** Secondary-stress gram tables, consumed by en-postlex. */
+export const SECONDARY_GRAMS_4: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS.secondary["4"],
+);
+export const SECONDARY_GRAMS_3: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS.secondary["3"],
 );
 
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);

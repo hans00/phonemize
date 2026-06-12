@@ -1,5 +1,6 @@
 import * as vowelGramsJson from "../data/en/vowel-grams.json";
 import { resolveJson } from "./utils";
+import { SECONDARY_GRAMS_3, SECONDARY_GRAMS_4 } from "./en-syllabify";
 
 /**
  * Post-lexical corrections for the rule path.
@@ -552,6 +553,34 @@ const lookupInitGram = (t: GramTable, w: string): string | undefined => {
   return t["3"][w.slice(0, 3)];
 };
 
+// Mined secondary-stress gram override (tables exported by
+// en-syllabify): gram → first-ˌ position from end (0 = no secondary).
+// When a gram matches, it supersedes the heuristics above.
+function applySecondaryGram(ipa: string, word: string): string {
+  const fromEnd =
+    word.length >= 4 && SECONDARY_GRAMS_4[word.slice(-4)] !== undefined
+      ? SECONDARY_GRAMS_4[word.slice(-4)]
+      : SECONDARY_GRAMS_3[word.slice(-3)];
+  if (fromEnd === undefined) return ipa;
+  let out = ipa.replace(/ˌ/g, "");
+  if (fromEnd === 0) return out;
+  // locate target syllable onset
+  const runs: Array<[number, number]> = [];
+  for (let i = 0; i < out.length; ) {
+    if (IPA_V.includes(out[i])) {
+      const s = i;
+      while (i < out.length && IPA_V.includes(out[i])) i++;
+      runs.push([s, i]);
+    } else i++;
+  }
+  const idx = runs.length - fromEnd;
+  if (idx < 0 || idx >= runs.length) return out;
+  let o = runs[idx][0];
+  while (o > 0 && IPA_C.includes(out[o - 1])) o--;
+  if (out[o - 1] === "ˈ") return out; // that syllable carries primary
+  return out.slice(0, o) + "ˌ" + out.slice(o);
+}
+
 // A fused rhotic vowel (ɝ = V+ɹ) can't swap with a plain vowel without
 // gaining or losing the /ɹ/ — skip those replacements.
 const rhoticMismatch = (a: string, b: string): boolean =>
@@ -619,6 +648,7 @@ export function applyPostStress(ipa: string, word: string): string {
     }
     if (!secondaried) out = addFullVowelSecondaries(out);
   }
+  out = applySecondaryGram(out, word);
   return applyVowelGrams(out, word);
 }
 
