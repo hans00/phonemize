@@ -10,7 +10,7 @@ This project uses Heuristic Learning: the G2P rules are the learnable policy; Cl
 
 1. **Diagnose** — `yarn test:eval --cluster`: find top rule failure patterns
 2. **Trace** — `yarn trace <word> [word...]`: see which rule fired for specific words, pre- and post-dictionary
-3. **Fix** — edit `PHONEME_RULES`, `SUFFIX_RULES`, or `tryMorphologicalAnalysis` in `src/en-g2p.ts`
+3. **Fix** — edit `PHONEME_RULES`/`SUFFIX_RULES` (in `src/en-syllabify.ts`), the post-lexical tables (`src/en-postlex.ts`), or `tryMorphologicalAnalysis` (in `src/en-g2p.ts`)
 4. **Validate** — `yarn test` (zero regressions) then `yarn test:eval` (lenient accuracy ≥ baseline)
 5. **Commit** — if both gates pass; update baseline with `yarn test:eval --update-baseline`
 
@@ -95,13 +95,21 @@ From `.cursor/rules/`:
 
 ## Rule Compression
 
-Rules in `en-g2p.ts` grow by accumulation. Compression folds patches back into simpler, more general forms. Run a compression pass whenever a trigger fires.
+Rules grow by accumulation. Compression folds patches back into simpler, more general forms. Run a compression pass whenever a trigger fires.
+
+The English rule engine spans three modules (refactored 2026-06, snapshot-verified byte-identical):
+
+- `src/en-g2p.ts` — dictionary/morphology/compound dispatch, `tryMorphologicalAnalysis`
+- `src/en-syllabify.ts` — syllabification, stress, `PHONEME_RULES`/`SUFFIX_RULES` (first match wins; order is load-bearing)
+- `src/en-postlex.ts` — rule-path-only post-lexical correction tables. NOT mergeable into `en-phonotactics.ts`, which also applies to dict output.
+
+For provably score-neutral refactors, gate with `tsx scripts/snapshot-dump.ts` before/after: an empty diff over its 1.3M predictions freezes both eval scores by construction.
 
 ### Triggers
 
 | Trigger | Condition |
 |---|---|
-| **Line count** | `en-g2p.ts` exceeds 1150 lines |
+| **Line count** | `en-g2p.ts` exceeds 1150 lines, or `en-g2p.ts` + `en-syllabify.ts` + `en-postlex.ts` together exceed 2600 |
 | **Session growth** | A single session adds ≥ 3 entries to `PHONEME_RULES` or `SUFFIX_RULES` |
 | **Cluster overlap** | `yarn test:eval --cluster` shows the same grapheme appearing as top-hit across ≥ 2 different clusters |
 | **Parallel handlers** | `tryMorphologicalAnalysis` gains a new suffix handler that shares base-lookup logic with an existing one |
