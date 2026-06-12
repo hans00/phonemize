@@ -354,6 +354,15 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.includes("eich") && w.length >= 5, re: /eɪ/g, sub: "aɪ" },
   { when: (w) => w.includes("eich") && w.length >= 5, re: /aɪtʃ/g, sub: "aɪk" },
 
+  // — Reduced-vowel quality by spelling (lexicon-measured contexts) —
+  // -et keeps lax ɪ (anklet, badgett) except after c/k/l where the
+  // lexicon reduces (basket, becket, applet). -ec(k) likewise ɪk.
+  // German -enberg names reduce the linking vowel (annenberg ənb).
+  { when: (w) => /[^aeiouckl]ett?$/.test(w), re: /ət(s?)$/, sub: "ɪt$1" },
+  { when: (w) => /[^aeiou]et(t?e?)s$/.test(w), re: /əts$/, sub: "ɪts" },
+  { when: (w) => /ec[k]?$/.test(w), re: /ək$/, sub: "ɪk" },
+  { when: (w) => /enb[eu]rg/.test(w), re: /ɪn(?=b)/, sub: "ən" },
+
   // — Final-s voicing (plural/genitive-shaped spellings) —
   // After a sibilant, -es is the syllabic allomorph /əz/ (classes,
   // abridges). After a voiced consonant or a vowel, final s voices to
