@@ -61,7 +61,7 @@
     "typecheck": "tsc -b",
     "build": "rollup -c",
     "build:watch": "rollup -c --watch",
-    "build-dict": "tsx scripts/build-dict.ts && tsx scripts/mine-compound-parts.ts",
+    "build-dict": "tsx scripts/build-dict.ts && tsx scripts/mine-compound-parts.ts && tsx scripts/mine-stress-grams.ts",
     "prebuild": "yarn build-dict",
     "dev": "tsx src/index.ts",
     "release": "release-it",

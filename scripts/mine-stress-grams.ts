@@ -15,10 +15,14 @@
  * heuristics. The pipeline is imported dynamically AFTER seeding an
  * empty table so a fresh clone can bootstrap.
  */
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 
 const OUT = "./data/en/stress-grams.json";
-if (!existsSync(OUT)) writeFileSync(OUT, JSON.stringify({ "4": {}, "3": {} }));
+// Always reset the table before importing the pipeline: adoption is
+// measured against the GRAM-FREE heuristics. Re-mining against a
+// pipeline that already carries the table would un-adopt its own
+// grams (their net contribution measures ~0 once they are live).
+writeFileSync(OUT, JSON.stringify({ "4": {}, "3": {} }));
 
 const dict: Record<string, string> = JSON.parse(
   readFileSync("./data/en/dict.json", "utf8"),
