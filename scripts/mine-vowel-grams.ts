@@ -190,7 +190,7 @@ async function main() {
     const out: Record<string, Record<string, string>> = {};
     for (const b of buckets) out[b] = {};
     for (const [k, recs] of grams) {
-      if (recs.length < 3) continue;
+      if (recs.length < 2) continue;
       const cnt = new Map<string, number>();
       for (const r of recs) {
         const [, d] = get(r);
