@@ -354,6 +354,13 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.includes("eich") && w.length >= 5, re: /eɪ/g, sub: "aɪ" },
   { when: (w) => w.includes("eich") && w.length >= 5, re: /aɪtʃ/g, sub: "aɪk" },
 
+  // Voiceless th in compound-internal thought/think/thank roots
+  // (afterthought, freethinker) — the voiced-between-vowels default
+  // doesn't apply across the compound boundary.
+  { when: (w) => /th(?:ought|ink|ank)/.test(w), re: /ð/g, sub: "θ" },
+  // Greek ch = /k/ in psych-/tech- roots (psychic, technical).
+  { when: (w) => /psych|tech(?!y)/.test(w), re: /tʃ/g, sub: "k" },
+
   // — Reduced-vowel quality by spelling (lexicon-measured contexts) —
   // -et keeps lax ɪ (anklet, badgett) except after c/k/l where the
   // lexicon reduces (basket, becket, applet). -ec(k) likewise ɪk.
