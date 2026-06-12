@@ -14,7 +14,11 @@
 import { readFileSync, writeFileSync } from "fs";
 
 const OUT = "./data/en/vowel-grams.json";
-const EMPTY = { stressed: { "4": {}, "3": {} }, final: { "4": {}, "3": {} } };
+const EMPTY = {
+  stressed: { "4": {}, "3": {} },
+  final: { "4": {}, "3": {} },
+  initial: { "4": {}, "3": {} },
+};
 writeFileSync(OUT, JSON.stringify(EMPTY));
 
 const dict: Record<string, string> = JSON.parse(
@@ -49,6 +53,10 @@ const finalVowel = (p: string): string => {
   const r = vowelRuns(p);
   return r.length ? p.slice(r[r.length - 1][0], r[r.length - 1][1]) : "";
 };
+const initialVowel = (p: string): string => {
+  const r = vowelRuns(p);
+  return r.length ? p.slice(r[0][0], r[0][1]) : "";
+};
 
 async function main() {
   const { default: EnglishG2P } = await import("../src/en-g2p");
@@ -59,8 +67,11 @@ async function main() {
     ds: string;
     pf: string;
     df: string;
+    pi: string;
+    di: string;
   }
   const byGram = new Map<string, Rec[]>();
+  const byInitGram = new Map<string, Rec[]>();
   for (const [w, exp] of Object.entries(dict)) {
     if (!/^[a-z]+$/.test(w)) continue;
     if (FOREIGN.some((r) => r.test(w))) continue;
@@ -71,6 +82,8 @@ async function main() {
       ds: stressedVowel(exp),
       pf: finalVowel(pred),
       df: finalVowel(exp),
+      pi: initialVowel(pred),
+      di: initialVowel(exp),
     };
     for (const k of [w.slice(-4), w.slice(-3)]) {
       if (k.length < 3) continue;
@@ -78,13 +91,20 @@ async function main() {
       if (!a) byGram.set(k, (a = []));
       a.push(rec);
     }
+    for (const k of [w.slice(0, 4), w.slice(0, 3)]) {
+      if (k.length < 3) continue;
+      let a = byInitGram.get(k);
+      if (!a) byInitGram.set(k, (a = []));
+      a.push(rec);
+    }
   }
 
   const mine = (
     get: (r: Rec) => [string, string],
+    grams: Map<string, Rec[]> = byGram,
   ): Record<string, Record<string, string>> => {
     const out: Record<string, Record<string, string>> = { "4": {}, "3": {} };
-    for (const [k, recs] of byGram) {
+    for (const [k, recs] of grams) {
       if (recs.length < 5) continue;
       const cnt = new Map<string, number>();
       for (const r of recs) {
@@ -114,11 +134,12 @@ async function main() {
 
   const stressed = mine((r) => [r.ps, r.ds]);
   const final = mine((r) => [r.pf, r.df]);
-  writeFileSync(OUT, JSON.stringify({ stressed, final }));
+  const initial = mine((r) => [r.pi, r.di], byInitGram);
+  writeFileSync(OUT, JSON.stringify({ stressed, final, initial }));
+  const size = (t: Record<string, Record<string, string>>) =>
+    Object.keys(t["4"]).length + Object.keys(t["3"]).length;
   console.log(
-    `vowel grams adopted: stressed ${
-      Object.keys(stressed["4"]).length + Object.keys(stressed["3"]).length
-    }, final ${Object.keys(final["4"]).length + Object.keys(final["3"]).length}`,
+    `vowel grams adopted: stressed ${size(stressed)}, final ${size(final)}, initial ${size(initial)}`,
   );
 }
 

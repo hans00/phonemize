@@ -536,13 +536,20 @@ const LOAN_PENULT_RE = new RegExp(
 // final syllable (scripts/mine-vowel-grams.ts; each entry net-fixes
 // ≥3 words against the gram-free pipeline).
 type GramTable = Record<string, Record<string, string>>;
-const VOWEL_GRAMS = resolveJson<{ stressed: GramTable; final: GramTable }>(
-  vowelGramsJson,
-);
+const VOWEL_GRAMS = resolveJson<{
+  stressed: GramTable;
+  final: GramTable;
+  initial: GramTable;
+}>(vowelGramsJson);
 const lookupGram = (t: GramTable, w: string): string | undefined => {
   const g4 = t["4"][w.slice(-4)];
   if (g4 !== undefined && w.length >= 4) return g4;
   return t["3"][w.slice(-3)];
+};
+const lookupInitGram = (t: GramTable, w: string): string | undefined => {
+  const g4 = t["4"][w.slice(0, 4)];
+  if (g4 !== undefined && w.length >= 4) return g4;
+  return t["3"][w.slice(0, 3)];
 };
 
 // A fused rhotic vowel (ɝ = V+ɹ) can't swap with a plain vowel without
@@ -572,6 +579,12 @@ function applyVowelGrams(ipa: string, word: string): string {
     const m = new RegExp(`([${IPA_V}]+)([^${IPA_V}]*)$`).exec(out);
     if (m && m[1] !== fv && !rhoticMismatch(m[1], fv))
       out = out.slice(0, m.index) + fv + out.slice(m.index + m[1].length);
+  }
+  const iv = lookupInitGram(VOWEL_GRAMS.initial, word);
+  if (iv !== undefined) {
+    const m = new RegExp(`([${IPA_V}]+)`).exec(out);
+    if (m && m[1] !== iv && !rhoticMismatch(m[1], iv))
+      out = out.slice(0, m.index) + iv + out.slice(m.index + m[1].length);
   }
   return out;
 }
