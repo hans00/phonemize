@@ -1,6 +1,14 @@
 import * as vowelGramsJson from "../data/en/vowel-grams.json";
 import { resolveJson } from "./utils";
-import { NO_GRAMS, SECONDARY_GRAMS_3, SECONDARY_GRAMS_4 } from "./en-syllabify";
+import * as vowelGrams2Json from "../data/en/vowel-grams2.json";
+import {
+  NO_GRAMS,
+  NO_GRAMS2,
+  SECONDARY2_GRAMS_3,
+  SECONDARY2_GRAMS_4,
+  SECONDARY_GRAMS_3,
+  SECONDARY_GRAMS_4,
+} from "./en-syllabify";
 
 /**
  * Post-lexical corrections for the rule path.
@@ -547,6 +555,7 @@ const VOWEL_GRAMS = resolveJson<{
   tail: GramTable;
   head: GramTable;
 }>(vowelGramsJson);
+const VOWEL_GRAMS2 = resolveJson<typeof VOWEL_GRAMS>(vowelGrams2Json);
 const lookupGram = (t: GramTable, w: string): string | undefined => {
   const g4 = t["4"][w.slice(-4)];
   if (g4 !== undefined && w.length >= 4) return g4;
@@ -594,7 +603,12 @@ const lookupHeadGram = (
 // Mined secondary-stress gram override (tables exported by
 // en-syllabify): gram → first-ˌ position from end (0 = no secondary).
 // When a gram matches, it supersedes the heuristics above.
-function applySecondaryGram(ipa: string, word: string): string {
+function applySecondaryGram(
+  ipa: string,
+  word: string,
+  S4: Record<string, number>,
+  S3: Record<string, number>,
+): string {
   if (NO_GRAMS) return ipa;
   // locate syllable nuclei first — the gram key carries the count
   const runs: Array<[number, number]> = [];
@@ -645,10 +659,21 @@ const rhoticMismatch = (a: string, b: string): boolean =>
   a.includes("ɝ") !== b.includes("ɝ");
 
 /** Replace the vowel run of the primary-stressed / final syllable. */
-function applyVowelGrams(ipa: string, word: string): string {
+type VowelGramSet = {
+  stressed: GramTable;
+  final: GramTable;
+  initial: GramTable;
+  coda: GramTable;
+  second: GramTable;
+  penult: GramTable;
+  tail: GramTable;
+  head: GramTable;
+};
+
+function applyVowelGrams(ipa: string, word: string, VG: VowelGramSet): string {
   if (NO_GRAMS) return ipa;
   let out = ipa;
-  const sv = lookupGram(VOWEL_GRAMS.stressed, word);
+  const sv = lookupGram(VG.stressed, word);
   if (sv !== undefined) {
     const pi = out.indexOf("ˈ");
     if (pi >= 0) {
@@ -662,19 +687,19 @@ function applyVowelGrams(ipa: string, word: string): string {
           out.slice(pi + 1 + m[1].length + m[2].length);
     }
   }
-  const fv = lookupGram(VOWEL_GRAMS.final, word);
+  const fv = lookupGram(VG.final, word);
   if (fv !== undefined) {
     const m = new RegExp(`([${IPA_V}]+)([^${IPA_V}]*)$`).exec(out);
     if (m && m[1] !== fv && !rhoticMismatch(m[1], fv))
       out = out.slice(0, m.index) + fv + out.slice(m.index + m[1].length);
   }
-  const iv = lookupInitGram(VOWEL_GRAMS.initial, word);
+  const iv = lookupInitGram(VG.initial, word);
   if (iv !== undefined) {
     const m = new RegExp(`([${IPA_V}]+)`).exec(out);
     if (m && m[1] !== iv && !rhoticMismatch(m[1], iv))
       out = out.slice(0, m.index) + iv + out.slice(m.index + m[1].length);
   }
-  const cd = lookupGram(VOWEL_GRAMS.coda, word);
+  const cd = lookupGram(VG.coda, word);
   if (cd !== undefined) {
     const m = new RegExp(`([^${IPA_V}ˈˌ]*)$`).exec(out);
     // Fused-rhotic guard: a coda-initial ɹ after an ɝ nucleus would
@@ -710,15 +735,15 @@ function applyVowelGrams(ipa: string, word: string): string {
       }
       runs[idx][1] = s + v.length;
     };
-    swap(1, lookupInitGramN(VOWEL_GRAMS.second, word, n));
-    swap(runs.length - 2, lookupGramN(VOWEL_GRAMS.penult, word, n));
+    swap(1, lookupInitGramN(VG.second, word, n));
+    swap(runs.length - 2, lookupGramN(VG.penult, word, n));
   }
   // Whole head/tail transplants: the modal IPA before / from the
   // primary mark for very consistent (gram, count) families. Keys use
   // the pre-transplant syllable count (what the miner saw).
   if (runs.length > 0) {
     const n = Math.min(runs.length, 5);
-    const head = lookupHeadGram(VOWEL_GRAMS.head, word, n);
+    const head = lookupHeadGram(VG.head, word, n);
     if (head !== undefined) {
       const pi = out.indexOf("ˈ");
       if (pi >= 0 && out.slice(0, pi) !== head) {
@@ -740,7 +765,7 @@ function applyVowelGrams(ipa: string, word: string): string {
           out = head + out.slice(pi);
       }
     }
-    const tail = lookupTailGram(VOWEL_GRAMS.tail, word, n);
+    const tail = lookupTailGram(VG.tail, word, n);
     if (tail !== undefined) {
       const pi = out.indexOf("ˈ");
       if (pi >= 0 && out.slice(pi) !== tail) out = out.slice(0, pi) + tail;
@@ -779,8 +804,14 @@ export function applyPostStress(ipa: string, word: string): string {
     }
     if (!secondaried) out = addFullVowelSecondaries(out);
   }
-  out = applySecondaryGram(out, word);
-  return applyVowelGrams(out, word);
+  out = applySecondaryGram(out, word, SECONDARY_GRAMS_4, SECONDARY_GRAMS_3);
+  out = applyVowelGrams(out, word, VOWEL_GRAMS);
+  if (!NO_GRAMS2) {
+    // Round-2 residual tables, trained against the round-1 pipeline.
+    out = applySecondaryGram(out, word, SECONDARY2_GRAMS_4, SECONDARY2_GRAMS_3);
+    out = applyVowelGrams(out, word, VOWEL_GRAMS2);
+  }
+  return out;
 }
 
 /**

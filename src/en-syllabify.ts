@@ -8,13 +8,19 @@
  */
 import type { TraceStep } from "./en-g2p";
 import * as stressGramsJson from "../data/en/stress-grams.json";
+import * as stressGrams2Json from "../data/en/stress-grams2.json";
 import { resolveJson } from "./utils";
 
 // The gram miners set PHONEMIZE_NO_GRAMS before importing the
 // pipeline so every miner measures against the same gram-free
-// baseline (deterministic regardless of mining order).
+// baseline (deterministic regardless of mining order). Round-2
+// (residual) miners set PHONEMIZE_NO_GRAMS2 instead, measuring
+// against the round-1 pipeline.
 export const NO_GRAMS =
   typeof process !== "undefined" && !!process.env?.PHONEMIZE_NO_GRAMS;
+export const NO_GRAMS2 =
+  NO_GRAMS ||
+  (typeof process !== "undefined" && !!process.env?.PHONEMIZE_NO_GRAMS2);
 
 // Mined ending-gram → primary-stress-from-end table (see
 // scripts/mine-stress-grams.ts). Longest gram wins; each entry
@@ -39,6 +45,28 @@ export const SECONDARY_GRAMS_4: Record<string, number> = Object.assign(
 export const SECONDARY_GRAMS_3: Record<string, number> = Object.assign(
   Object.create(null),
   STRESS_GRAMS.secondary["3"],
+);
+// Round-2 (residual) stress tables — trained against the round-1
+// pipeline, applied with precedence over round 1.
+const STRESS_GRAMS2 = resolveJson<{
+  primary: Record<string, Record<string, number>>;
+  secondary: Record<string, Record<string, number>>;
+}>(stressGrams2Json);
+const STRESS2_4: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS2.primary["4"],
+);
+const STRESS2_3: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS2.primary["3"],
+);
+export const SECONDARY2_GRAMS_4: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS2.secondary["4"],
+);
+export const SECONDARY2_GRAMS_3: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS2.secondary["3"],
 );
 
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
@@ -518,10 +546,13 @@ export function assignStress(syllables: string[], word: string): number {
   // `gram|sylCount` (count capped at 5), value = the lexicon's modal
   // stress position from the word end (1 = final syllable).
   const ns = Math.min(syllables.length, 5);
+  const k4 = `${lowerWord.slice(-4)}|${ns}`;
+  const k3 = `${lowerWord.slice(-3)}|${ns}`;
   const fromEnd = NO_GRAMS
     ? undefined
-    : (STRESS_GRAMS_4[`${lowerWord.slice(-4)}|${ns}`] ??
-      STRESS_GRAMS_3[`${lowerWord.slice(-3)}|${ns}`]);
+    : ((NO_GRAMS2 ? undefined : (STRESS2_4[k4] ?? STRESS2_3[k3])) ??
+      STRESS_GRAMS_4[k4] ??
+      STRESS_GRAMS_3[k3]);
   if (fromEnd !== undefined)
     return Math.max(0, Math.min(syllables.length - 1, syllables.length - fromEnd));
 
