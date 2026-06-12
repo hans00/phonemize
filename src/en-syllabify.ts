@@ -152,7 +152,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^[kg]n/, "n"], // knee/know (kn) and gnome/gnu (gn)
   [/^m[bn]$/, "m"], // thumb/lamb/comb (^mb$) and column/autumn/condemn (^mn$): word-final silent stop/nasal
   [/^mn/, "n"], // mnemonic, mnesic (silent initial m)
-  [/^(?:wr|rh)/, "ɹ"], // write, wrong, wrist; rhyme, rhino (silent h after r)
+  [/^wr/, "ɹ"], // write, wrong, wrist (silent w)
+  [/^rh/, "ɹ"], // rhyme, rhino — Greek silent h; guarded in loop so compound-name r|h boundaries keep /h/ (bar|ham)
   [/^bt$/, "t"], // debt, doubt, subtle (silent b in word/syllable-final bt)
   [/^sph/, "sf"], // sphere, sphinx (Greek-origin /sf/)
   [/^ght/, "t"], // right, might, fight
@@ -796,6 +797,10 @@ export function syllableToIPA(
     if (!isLastSyllable) { skip.add("^le$"); skip.add("^ier$"); }
     if (isStressed) skip.add("^ey$");
     if (syllableIndex > 0) { skip.add("^x(?=[aeiouy])"); skip.add("^gil"); }
+    // Greek silent-h ^rh only fires word-initially or in -rrh- (the
+    // prior syllable ends in r: diarrhea, hemorrhage). A plain medial
+    // r|h is a compound/name boundary where h is pronounced (barham).
+    if (syllableIndex > 0 && !prevSyllable?.endsWith("r")) skip.add("^rh");
     if (syllableIndex > 0 || phonemes.length > 0) {
       skip.add("^pt"); skip.add("^ps"); skip.add("^pn");
     }
