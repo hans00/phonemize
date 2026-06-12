@@ -901,14 +901,7 @@ export class EnglishG2P implements LanguageProcessor {
 
   private tryMorphologicalAnalysis(word: string): string | undefined {
     const lowerWord = word.toLowerCase();
-    const sPlural = (p: string): string => {
-      const last = p.slice(-1);
-      return ["s", "z", "ʃ", "ʒ"].includes(last)
-        ? p + "ɪz"
-        : ["p", "t", "k", "f", "θ"].includes(last)
-          ? p + "s"
-          : p + "z";
-    };
+    const sPlural = (p: string): string => p + sAllomorph(p);
     const edPast = (p: string): string => {
       const last = p.slice(-1);
       return ["t", "d"].includes(last)
@@ -916,6 +909,56 @@ export class EnglishG2P implements LanguageProcessor {
         : ["p", "k", "s", "ʃ", "f", "θ"].includes(last)
           ? p + "t"
           : p + "d";
+    };
+    /**
+     * Shared lookup ladder for regular inflections (-ed/-ing): silent-e
+     * stem (consonant-final bases only) → bare base → doubled-consonant
+     * base (stopped→stop) → unconditional +e stem → optionally the
+     * rule-predicted +e/bare stem. Each handler keeps its original
+     * step order via this single sequence; `join` attaches the
+     * allomorph.
+     */
+    const inflect = (
+      sfxLen: number,
+      join: (p: string) => string,
+      ruleFallback: boolean,
+    ): string | undefined => {
+      const base = lowerWord.slice(0, -sfxLen);
+      if (!/[aeiou]$/.test(base)) {
+        const m = this.wellKnown(base + "e");
+        if (m) return join(m);
+      } // magic-e: coded→code, baking→bake
+      const basePron = this.wellKnown(base);
+      if (basePron) return join(basePron);
+      // Doubled-consonant base: the two chars before the suffix are
+      // identical (stopped → stop, planned → plan).
+      if (
+        lowerWord.length > 4 &&
+        lowerWord.slice(-(sfxLen + 2), -(sfxLen + 1)) ===
+          lowerWord.slice(-(sfxLen + 1), -sfxLen)
+      ) {
+        const p = this.wellKnown(lowerWord.slice(0, -(sfxLen + 1)));
+        if (p) return join(p);
+      }
+      const magicPron = this.wellKnown(base + "e");
+      if (magicPron) return join(magicPron);
+      // Dict lookup failed for the stem because it is a regular word the
+      // rules already handle, so it was never memorized as an exception
+      // (ask, form, …). Rule-predict the stem and attach the allomorph —
+      // this avoids the syllabifier mis-splitting the whole inflected
+      // form (asked → [a][sked] → /æzd/). Guard: the stem must contain a
+      // vowel and end in a consonant, so a root-final suffix with a
+      // vowelless stem (bled, sped, fled) is left for the normal path.
+      // Try the silent-e-restored stem first (advanced → advance,
+      // placed → place); for stems with no silent e the +e form is
+      // harmless ("aske" and "forme" predict the same /æsk/, /fɔɹm/).
+      if (ruleFallback && /[aeiou]/.test(base) && !/[aeiou]$/.test(base)) {
+        const ruleBaseE = this.predictInternal(base + "e", undefined, true);
+        if (ruleBaseE) return join(ruleBaseE);
+        const ruleBase = this.predictInternal(base, undefined, true);
+        if (ruleBase) return join(ruleBase);
+      }
+      return undefined;
     };
 
     if (
@@ -943,17 +986,19 @@ export class EnglishG2P implements LanguageProcessor {
       if (basePron) return basePron + "ɪz";
     }
 
-    if (lowerWord.endsWith("ied") && lowerWord.length > 4) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -3) + "y");
-      if (basePron) return edPast(basePron);
-    }
-    if (lowerWord.endsWith("ies") && lowerWord.length > 4) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -3) + "y");
-      if (basePron) return sPlural(basePron);
-    }
-    if (lowerWord.endsWith("ier") && lowerWord.length > 4) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -3) + "y");
-      if (basePron) return basePron + "ɝ";
+    // y-stem family: restore the -y the suffix replaced (tried → try,
+    // happiness → happy), look the stem up, attach the allomorph.
+    for (const [sfx, join] of [
+      ["ied", edPast],
+      ["ies", sPlural],
+      ["ier", (p: string) => p + "ɝ"],
+      ["iness", (p: string) => p + "nəs"],
+      ["iest", (p: string) => p + "əst"],
+    ] as [string, (p: string) => string][]) {
+      if (!lowerWord.endsWith(sfx) || lowerWord.length <= sfx.length + 1)
+        continue;
+      const basePron = this.wellKnown(lowerWord.slice(0, -sfx.length) + "y");
+      if (basePron) return join(basePron);
     }
 
     if (lowerWord.endsWith("er") && lowerWord.length > 3) {
@@ -976,67 +1021,13 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     if (lowerWord.endsWith("ed") && lowerWord.length > 3) {
-      const base = lowerWord.slice(0, -2);
-      if (!/[aeiou]$/.test(base)) {
-        const m = this.wellKnown(base + "e");
-        if (m) return edPast(m);
-      } // magic-e: coded→code
-      const basePron = this.wellKnown(base);
-      if (basePron) return edPast(basePron);
-      // Doubled-consonant past tense (stopped → stop, planned → plan):
-      // word = base + doubledC + "ed". Detect by the two chars before
-      // "ed" being identical (word[-3] === word[-4]). The previous check
-      // compared word[-4] against baseShort's last char — which IS
-      // word[-4] — so it was tautological and false-matched non-doubled
-      // words like "asked" (→ "as" /æz/ → /æzd/).
-      const baseShort = lowerWord.slice(0, -3);
-      if (
-        lowerWord.length > 4 &&
-        lowerWord.slice(-4, -3) === lowerWord.slice(-3, -2)
-      ) {
-        const p = this.wellKnown(baseShort);
-        if (p) return edPast(p);
-      }
-      const magicPron = this.wellKnown(base + "e");
-      if (magicPron) return edPast(magicPron);
-      // Dict lookup failed for the stem because it is a regular word the
-      // rules already handle, so it was never memorized as an exception
-      // (ask, form, …). Rule-predict the stem and attach the past-tense
-      // allomorph — this avoids the syllabifier mis-splitting the whole
-      // inflected form (asked → [a][sked] → /æzd/). Guard: the stem must
-      // contain a vowel and end in a consonant, so a root-final -ed with
-      // a vowelless stem (bled, sped, fled) is left for the normal path.
-      if (/[aeiou]/.test(base) && !/[aeiou]$/.test(base)) {
-        // Try the silent-e-restored stem first (advanced → advance
-        // /ədvæns/, placed → place /pleɪs/), then the bare base. For
-        // stems with no silent e the +e form is harmless — "aske" and
-        // "forme" predict the same /æsk/, /fɔɹm/ as ask/form (the e is
-        // silent after a coda cluster, no magic-e lengthening).
-        const ruleBaseE = this.predictInternal(base + "e", undefined, true);
-        if (ruleBaseE) return edPast(ruleBaseE);
-        const ruleBase = this.predictInternal(base, undefined, true);
-        if (ruleBase) return edPast(ruleBase);
-      }
+      const p = inflect(2, edPast, true);
+      if (p) return p;
     }
 
     if (lowerWord.endsWith("ing") && lowerWord.length > 4) {
-      const base = lowerWord.slice(0, -3);
-      if (!/[aeiou]$/.test(base)) {
-        const m = this.wellKnown(base + "e");
-        if (m) return m + "ɪŋ";
-      } // magic-e: baking→bake
-      const basePron = this.wellKnown(base);
-      if (basePron) return basePron + "ɪŋ";
-      const baseShort = lowerWord.slice(0, -4);
-      if (
-        lowerWord.length > 4 &&
-        lowerWord.slice(-4, -3) === baseShort.slice(-1)
-      ) {
-        const p = this.wellKnown(baseShort);
-        if (p) return p + "ɪŋ";
-      }
-      const magicPron = this.wellKnown(base + "e");
-      if (magicPron) return magicPron + "ɪŋ";
+      const p = inflect(3, (b) => b + "ɪŋ", false);
+      if (p) return p;
     }
 
     if (lowerWord.endsWith("ally") && lowerWord.length > 6) {
@@ -1092,20 +1083,6 @@ export class EnglishG2P implements LanguageProcessor {
               "ˈɑlədʒi"
           : bp.replace(/ə$/, "") + "lədʒi";
     }
-    if (lowerWord.endsWith("iness") && lowerWord.length > 6) {
-      const p = this.wellKnown(lowerWord.slice(0, -5) + "y");
-      if (p) return p + "nəs";
-    }
-    if (lowerWord.endsWith("iest") && lowerWord.length > 5) {
-      const p = this.wellKnown(lowerWord.slice(0, -4) + "y");
-      if (p) return p + "əst";
-    }
-    if (lowerWord.endsWith("ify") && lowerWord.length > 5) {
-      const p =
-        this.wellKnown(lowerWord.slice(0, -3), undefined, true) ||
-        this.predictInternal(lowerWord.slice(0, -3), undefined, false);
-      if (p) return p + "əˌfaɪ";
-    }
     if (
       (lowerWord.endsWith("cial") ||
         (!lowerWord.endsWith("stial") && lowerWord.endsWith("tial"))) &&
@@ -1160,6 +1137,7 @@ export class EnglishG2P implements LanguageProcessor {
       if (p) return p.replace(/[uʊ]$/, "") + "uəl";
     }
     for (const [sfx, ipa] of [
+      ["ify", "əˌfaɪ"],
       ["tual", "tʃuəl"],
       ["tuous", "tʃuəs"],
       ["ulation", "jəleɪʃən"],
