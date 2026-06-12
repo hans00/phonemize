@@ -25,6 +25,7 @@ const EMPTY = {
   second: { "4": {}, "3": {} },
   penult: { "4": {}, "3": {} },
   tail: { "5": {}, "4": {}, "3": {} },
+  head: { "5": {}, "4": {}, "3": {} },
 };
 writeFileSync(OUT, JSON.stringify(EMPTY));
 
@@ -70,6 +71,10 @@ const tailFromPrimary = (p: string): string => {
   const i = p.indexOf("ˈ");
   return i < 0 ? "" : p.slice(i);
 };
+const headToPrimary = (p: string): string => {
+  const i = p.indexOf("ˈ");
+  return i < 0 ? "" : p.slice(0, i);
+};
 
 async function main() {
   const { default: EnglishG2P } = await import("../src/en-g2p");
@@ -90,12 +95,15 @@ async function main() {
     dp: string;
     pt: string;
     dt: string;
+    ph: string;
+    dh: string;
   }
   const byGram = new Map<string, Rec[]>();
   const byInitGram = new Map<string, Rec[]>();
   const byEndN = new Map<string, Rec[]>(); // ending gram | syl count (penult)
   const byInitN = new Map<string, Rec[]>(); // initial gram | syl count (second)
   const byEndN5 = new Map<string, Rec[]>(); // 5/4/3 ending gram | count (tail)
+  const byInitN5 = new Map<string, Rec[]>(); // 5/4/3/2 initial gram | count (head)
   for (const [w, exp] of Object.entries(dict)) {
     if (!/^[a-z]+$/.test(w)) continue;
     if (FOREIGN.some((r) => r.test(w))) continue;
@@ -122,6 +130,8 @@ async function main() {
       dp: sameCount ? exp.slice(dr[dr.length - 2][0], dr[dr.length - 2][1]) : "",
       pt: tailFromPrimary(pred),
       dt: tailFromPrimary(exp),
+      ph: headToPrimary(pred),
+      dh: headToPrimary(exp),
     };
     for (const k of [w.slice(-4), w.slice(-3)]) {
       if (k.length < 3) continue;
@@ -158,6 +168,16 @@ async function main() {
       if (k.indexOf("|") < 3) continue;
       let a = byEndN5.get(k);
       if (!a) byEndN5.set(k, (a = []));
+      a.push(rec);
+    }
+    for (const k of [
+      `${w.slice(0, 5)}|${ns}`,
+      `${w.slice(0, 4)}|${ns}`,
+      `${w.slice(0, 3)}|${ns}`,
+    ]) {
+      if (k.indexOf("|") < 3) continue;
+      let a = byInitN5.get(k);
+      if (!a) byInitN5.set(k, (a = []));
       a.push(rec);
     }
   }
@@ -205,14 +225,15 @@ async function main() {
   const second = mine((r) => [r.p2, r.d2], byInitN, T43);
   const penult = mine((r) => [r.pp, r.dp], byEndN, T43);
   const tail = mine((r) => [r.pt, r.dt], byEndN5, ["5", "4", "3"]);
+  const head = mine((r) => [r.ph, r.dh], byInitN5, ["5", "4", "3"]);
   writeFileSync(
     OUT,
-    JSON.stringify({ stressed, final, initial, coda, second, penult, tail }),
+    JSON.stringify({ stressed, final, initial, coda, second, penult, tail, head }),
   );
   const size = (t: Record<string, Record<string, string>>) =>
     Object.values(t).reduce((n, m) => n + Object.keys(m).length, 0);
   console.log(
-    `vowel grams adopted: stressed ${size(stressed)}, final ${size(final)}, initial ${size(initial)}, coda ${size(coda)}, second ${size(second)}, penult ${size(penult)}, tail ${size(tail)}`,
+    `vowel grams adopted: stressed ${size(stressed)}, final ${size(final)}, initial ${size(initial)}, coda ${size(coda)}, second ${size(second)}, penult ${size(penult)}, tail ${size(tail)}, head ${size(head)}`,
   );
 }
 

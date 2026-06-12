@@ -545,6 +545,7 @@ const VOWEL_GRAMS = resolveJson<{
   second: GramTable;
   penult: GramTable;
   tail: GramTable;
+  head: GramTable;
 }>(vowelGramsJson);
 const lookupGram = (t: GramTable, w: string): string | undefined => {
   const g4 = t["4"][w.slice(-4)];
@@ -579,6 +580,15 @@ const lookupTailGram = (
   const g5 = t["5"][`${w.slice(-5)}|${n}`];
   if (g5 !== undefined && w.length >= 5) return g5;
   return lookupGramN(t, w, n);
+};
+const lookupHeadGram = (
+  t: GramTable,
+  w: string,
+  n: number,
+): string | undefined => {
+  const g5 = t["5"][`${w.slice(0, 5)}|${n}`];
+  if (g5 !== undefined && w.length >= 5) return g5;
+  return lookupInitGramN(t, w, n);
 };
 
 // Mined secondary-stress gram override (tables exported by
@@ -694,14 +704,34 @@ function applyVowelGrams(ipa: string, word: string): string {
     swap(1, lookupInitGramN(VOWEL_GRAMS.second, word, n));
     swap(runs.length - 2, lookupGramN(VOWEL_GRAMS.penult, word, n));
   }
-  // Whole-tail transplant: the modal IPA from the primary mark to the
-  // word end for very consistent (gram, count) families.
+  // Whole head/tail transplants: the modal IPA before / from the
+  // primary mark for very consistent (gram, count) families. Keys use
+  // the pre-transplant syllable count (what the miner saw).
   if (runs.length > 0) {
-    const tail = lookupTailGram(
-      VOWEL_GRAMS.tail,
-      word,
-      Math.min(runs.length, 5),
-    );
+    const n = Math.min(runs.length, 5);
+    const head = lookupHeadGram(VOWEL_GRAMS.head, word, n);
+    if (head !== undefined) {
+      const pi = out.indexOf("ˈ");
+      if (pi >= 0 && out.slice(0, pi) !== head) {
+        // Only transplant when the syllable counts agree — a modal
+        // head from family members with a different stress position
+        // would add/remove syllables.
+        const vcount = (s: string) => {
+          let c = 0;
+          let inV = false;
+          for (const ch of s) {
+            if (IPA_V.includes(ch)) {
+              if (!inV) c++;
+              inV = true;
+            } else inV = false;
+          }
+          return c;
+        };
+        if (vcount(out.slice(0, pi)) === vcount(head))
+          out = head + out.slice(pi);
+      }
+    }
+    const tail = lookupTailGram(VOWEL_GRAMS.tail, word, n);
     if (tail !== undefined) {
       const pi = out.indexOf("ˈ");
       if (pi >= 0 && out.slice(pi) !== tail) out = out.slice(0, pi) + tail;
