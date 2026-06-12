@@ -625,8 +625,15 @@ function applySecondaryGram(ipa: string, word: string): string {
   }
   const idx = oruns.length - fromEnd;
   if (idx < 0 || idx >= oruns.length) return out;
+  // attach before a LEGAL onset only (single consonant or legal
+  // 2-cluster) — walking back arbitrarily would split codas (syn|tax).
   let o = oruns[idx][0];
-  while (o > 0 && IPA_C.includes(out[o - 1])) o--;
+  if (o > 0 && IPA_C.includes(out[o - 1])) {
+    if (o > 1 && IPA_C.includes(out[o - 2]) && LEGAL_ONSET_2.has(out.slice(o - 2, o))) o -= 2;
+    else if (o > 1 && out[o - 2] === "d" && out[o - 1] === "ʒ") o -= 2;
+    else if (o > 1 && out[o - 2] === "t" && out[o - 1] === "ʃ") o -= 2;
+    else o -= 1;
+  }
   if (out[o - 1] === "ˈ") return out; // that syllable carries primary
   return out.slice(0, o) + "ˌ" + out.slice(o);
 }

@@ -110,7 +110,7 @@ async function main() {
   ): Record<string, Record<string, number>> => {
     const out: Record<string, Record<string, number>> = { "4": {}, "3": {} };
     for (const [k, recs] of byGram) {
-      if (recs.length < 5) continue;
+      if (recs.length < 3) continue;
       const cnt = new Map<number, number>();
       for (const r of recs) {
         const [, d] = get(r);
@@ -131,7 +131,7 @@ async function main() {
         if (p !== d && mode === d) fixes++;
         else if (p === d && mode !== d) breaks++;
       }
-      if (fixes - breaks < 3) continue;
+      if (fixes - breaks < 2) continue;
       out[String(k.split("|")[0].length)][k] = mode;
     }
     return out;
