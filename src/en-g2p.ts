@@ -44,6 +44,20 @@ export interface TraceResult {
   steps: TraceStep[];
 }
 
+// Shared lookup tables, re-keyed once onto null-prototype objects so
+// that Object.prototype names ("constructor", "toString", "valueOf",
+// …) can't leak through `dict[word]` when the word itself isn't an
+// entry. Module-level so the copy happens once per process, keeping
+// instance construction allocation-free.
+const DICTIONARY: EnDict = Object.assign(
+  Object.create(null),
+  resolveJson<EnDict>(lookupTable),
+);
+const HOMOGRAPHS: HomographDict = Object.assign(
+  Object.create(null),
+  resolveJson<HomographDict>(homographs),
+);
+
 // --- Linguistics-based Constants ---
 
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
@@ -563,13 +577,10 @@ export class EnglishG2P implements LanguageProcessor {
     this.disableDict = options.disableDict || false;
     this.dialect = options.dialect ?? "en-US";
     this.enablePrincipled = options.enablePrincipled || false;
-    // Share the resolved JSON object directly across instances. Both
-    // tables are read-only at runtime (writes go to this.customDict),
-    // so the previous Object.assign-into-Object.create(null) copy
-    // (~30K and ~1K entries respectively) is pure construction-time
-    // overhead. resolveJson is itself idempotent.
-    this.dictionary = resolveJson<EnDict>(lookupTable);
-    this.homographs = resolveJson<HomographDict>(homographs);
+    // Share the module-level null-prototype tables across instances.
+    // Both are read-only at runtime (writes go to this.customDict).
+    this.dictionary = DICTIONARY;
+    this.homographs = HOMOGRAPHS;
   }
 
   /**
