@@ -27,8 +27,8 @@ const EMPTY = {
   coda: { "4": {}, "3": {} },
   second: { "4": {}, "3": {} },
   penult: { "4": {}, "3": {} },
-  tail: { "5": {}, "4": {}, "3": {} },
-  head: { "5": {}, "4": {}, "3": {} },
+  tail: { "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
+  head: { "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
 };
 writeFileSync(OUT, JSON.stringify(EMPTY));
 
@@ -108,6 +108,8 @@ async function main() {
   const byEndN = new Map<string, Rec[]>(); // ending gram | syl count (penult)
   const byInitN = new Map<string, Rec[]>(); // initial gram | syl count (second)
   const byEndN5 = new Map<string, Rec[]>(); // 5/4/3 ending gram | count (tail)
+  const byEnd76 = new Map<string, Rec[]>(); // 7/6 ending gram, count-free (tail)
+  const byInit76 = new Map<string, Rec[]>(); // 7/6 initial gram, count-free (head)
   const byInitN5 = new Map<string, Rec[]>(); // 5/4/3/2 initial gram | count (head)
   for (const [w, exp] of Object.entries(dict)) {
     if (!/^[a-z]+$/.test(w)) continue;
@@ -175,6 +177,18 @@ async function main() {
       if (!a) byEndN5.set(k, (a = []));
       a.push(rec);
     }
+    for (const k of [w.slice(-7), w.slice(-6)]) {
+      if (k.length < 6) continue;
+      let a = byEnd76.get(k);
+      if (!a) byEnd76.set(k, (a = []));
+      a.push(rec);
+    }
+    for (const k of [w.slice(0, 7), w.slice(0, 6)]) {
+      if (k.length < 6) continue;
+      let a = byInit76.get(k);
+      if (!a) byInit76.set(k, (a = []));
+      a.push(rec);
+    }
     for (const k of [
       `${w.slice(0, 5)}|${ns}`,
       `${w.slice(0, 4)}|${ns}`,
@@ -229,8 +243,12 @@ async function main() {
   const coda = mine((r) => [r.pc, r.dc], byGram, T43);
   const second = mine((r) => [r.p2, r.d2], byInitN, T43);
   const penult = mine((r) => [r.pp, r.dp], byEndN, T43);
-  const tail = mine((r) => [r.pt, r.dt], byEndN5, ["5", "4", "3"]);
-  const head = mine((r) => [r.ph, r.dh], byInitN5, ["5", "4", "3"]);
+  const tailN = mine((r) => [r.pt, r.dt], byEndN5, ["5", "4", "3"]);
+  const tail76 = mine((r) => [r.pt, r.dt], byEnd76, ["7", "6"]);
+  const tail = { ...tail76, ...tailN };
+  const headN = mine((r) => [r.ph, r.dh], byInitN5, ["5", "4", "3"]);
+  const head76 = mine((r) => [r.ph, r.dh], byInit76, ["7", "6"]);
+  const head = { ...head76, ...headN };
   writeFileSync(
     OUT,
     JSON.stringify({ stressed, final, initial, coda, second, penult, tail, head }),

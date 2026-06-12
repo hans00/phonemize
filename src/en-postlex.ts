@@ -586,6 +586,12 @@ const lookupTailGram = (
   w: string,
   n: number,
 ): string | undefined => {
+  // Long spelling endings determine the IPA tail regardless of
+  // syllable count — check the count-free 7/6 tiers first.
+  if (w.length >= 7 && t["7"][w.slice(-7)] !== undefined)
+    return t["7"][w.slice(-7)];
+  if (w.length >= 6 && t["6"][w.slice(-6)] !== undefined)
+    return t["6"][w.slice(-6)];
   const g5 = t["5"][`${w.slice(-5)}|${n}`];
   if (g5 !== undefined && w.length >= 5) return g5;
   return lookupGramN(t, w, n);
@@ -595,6 +601,10 @@ const lookupHeadGram = (
   w: string,
   n: number,
 ): string | undefined => {
+  if (w.length >= 7 && t["7"][w.slice(0, 7)] !== undefined)
+    return t["7"][w.slice(0, 7)];
+  if (w.length >= 6 && t["6"][w.slice(0, 6)] !== undefined)
+    return t["6"][w.slice(0, 6)];
   const g5 = t["5"][`${w.slice(0, 5)}|${n}`];
   if (g5 !== undefined && w.length >= 5) return g5;
   return lookupInitGramN(t, w, n);
@@ -623,9 +633,7 @@ function applySecondaryGram(
   const k4 = `${word.slice(-4)}|${ns}`;
   const k3 = `${word.slice(-3)}|${ns}`;
   const fromEnd =
-    word.length >= 4 && SECONDARY_GRAMS_4[k4] !== undefined
-      ? SECONDARY_GRAMS_4[k4]
-      : SECONDARY_GRAMS_3[k3];
+    word.length >= 4 && S4[k4] !== undefined ? S4[k4] : S3[k3];
   if (fromEnd === undefined) return ipa;
   const out = ipa.replace(/ˌ/g, "");
   if (fromEnd === 0) return out;
