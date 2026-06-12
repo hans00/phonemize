@@ -541,6 +541,7 @@ const VOWEL_GRAMS = resolveJson<{
   stressed: GramTable;
   final: GramTable;
   initial: GramTable;
+  coda: GramTable;
 }>(vowelGramsJson);
 const lookupGram = (t: GramTable, w: string): string | undefined => {
   const g4 = t["4"][w.slice(-4)];
@@ -614,6 +615,18 @@ function applyVowelGrams(ipa: string, word: string): string {
     const m = new RegExp(`([${IPA_V}]+)`).exec(out);
     if (m && m[1] !== iv && !rhoticMismatch(m[1], iv))
       out = out.slice(0, m.index) + iv + out.slice(m.index + m[1].length);
+  }
+  const cd = lookupGram(VOWEL_GRAMS.coda, word);
+  if (cd !== undefined) {
+    const m = new RegExp(`([^${IPA_V}ˈˌ]*)$`).exec(out);
+    // Fused-rhotic guard: a coda-initial ɹ after an ɝ nucleus would
+    // double the /ɹ/ the vowel already carries.
+    if (
+      m &&
+      m[1] !== cd &&
+      !(cd.startsWith("ɹ") && out[m.index - 1] === "ɝ")
+    )
+      out = out.slice(0, m.index) + cd;
   }
   return out;
 }

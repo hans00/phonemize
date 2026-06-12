@@ -18,6 +18,7 @@ const EMPTY = {
   stressed: { "4": {}, "3": {} },
   final: { "4": {}, "3": {} },
   initial: { "4": {}, "3": {} },
+  coda: { "4": {}, "3": {} },
 };
 writeFileSync(OUT, JSON.stringify(EMPTY));
 
@@ -57,6 +58,8 @@ const initialVowel = (p: string): string => {
   const r = vowelRuns(p);
   return r.length ? p.slice(r[0][0], r[0][1]) : "";
 };
+const CODA_RE = new RegExp(`([^${V}ˈˌ]*)$`);
+const finalCoda = (p: string): string => CODA_RE.exec(p)?.[1] ?? "";
 
 async function main() {
   const { default: EnglishG2P } = await import("../src/en-g2p");
@@ -69,6 +72,8 @@ async function main() {
     df: string;
     pi: string;
     di: string;
+    pc: string;
+    dc: string;
   }
   const byGram = new Map<string, Rec[]>();
   const byInitGram = new Map<string, Rec[]>();
@@ -84,6 +89,8 @@ async function main() {
       df: finalVowel(exp),
       pi: initialVowel(pred),
       di: initialVowel(exp),
+      pc: finalCoda(pred),
+      dc: finalCoda(exp),
     };
     for (const k of [w.slice(-4), w.slice(-3)]) {
       if (k.length < 3) continue;
@@ -102,6 +109,8 @@ async function main() {
   const mine = (
     get: (r: Rec) => [string, string],
     grams: Map<string, Rec[]> = byGram,
+    minConsistency = 0.7,
+    minNet = 3,
   ): Record<string, Record<string, string>> => {
     const out: Record<string, Record<string, string>> = { "4": {}, "3": {} };
     for (const [k, recs] of grams) {
@@ -118,7 +127,7 @@ async function main() {
           mc = c;
           mode = v;
         }
-      if (!mode || mc / recs.length < 0.7) continue;
+      if (!mode || mc / recs.length < minConsistency) continue;
       let fixes = 0;
       let breaks = 0;
       for (const r of recs) {
@@ -126,7 +135,7 @@ async function main() {
         if (p !== d && mode === d) fixes++;
         else if (p === d && mode !== d) breaks++;
       }
-      if (fixes - breaks < 3) continue;
+      if (fixes - breaks < minNet) continue;
       out[String(k.length)][k] = mode;
     }
     return out;
@@ -135,11 +144,12 @@ async function main() {
   const stressed = mine((r) => [r.ps, r.ds]);
   const final = mine((r) => [r.pf, r.df]);
   const initial = mine((r) => [r.pi, r.di], byInitGram);
-  writeFileSync(OUT, JSON.stringify({ stressed, final, initial }));
+  const coda = mine((r) => [r.pc, r.dc]);
+  writeFileSync(OUT, JSON.stringify({ stressed, final, initial, coda }));
   const size = (t: Record<string, Record<string, string>>) =>
     Object.keys(t["4"]).length + Object.keys(t["3"]).length;
   console.log(
-    `vowel grams adopted: stressed ${size(stressed)}, final ${size(final)}, initial ${size(initial)}`,
+    `vowel grams adopted: stressed ${size(stressed)}, final ${size(final)}, initial ${size(initial)}, coda ${size(coda)}`,
   );
 }
 
