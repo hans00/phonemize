@@ -1,8 +1,8 @@
 {
   "total": 90361,
-  "exact": 34330,
-  "stressOnly": 5990,
-  "vowelOnly": 9634,
-  "structural": 40407,
-  "meanED": 1.6674
+  "exact": 34767,
+  "stressOnly": 5939,
+  "vowelOnly": 9617,
+  "structural": 40038,
+  "meanED": 1.6561
 }
