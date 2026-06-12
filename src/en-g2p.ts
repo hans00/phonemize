@@ -168,8 +168,7 @@ const VALID_ONSETS = new Set([
 // Improved stress-sensitive suffix rules
 const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^ge$/, "dʒ", false],
-  [/^ce$/, "s", false],
-  [/^se$/, "s", false],
+  [/^[cs]e$/, "s", false],
   [/^que$/, "k", false],
   [/^the$/, "ð", false],
   [/^sten$/, "sən", false],
@@ -236,9 +235,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^[kg]n/, "n"], // knee/know (kn) and gnome/gnu (gn)
   [/^m[bn]$/, "m"], // thumb/lamb/comb (^mb$) and column/autumn/condemn (^mn$): word-final silent stop/nasal
   [/^mn/, "n"], // mnemonic, mnesic (silent initial m)
-  [/^wr/, "ɹ"], // write, wrong, wrist
+  [/^(?:wr|rh)/, "ɹ"], // write, wrong, wrist; rhyme, rhino (silent h after r)
   [/^bt$/, "t"], // debt, doubt, subtle (silent b in word/syllable-final bt)
-  [/^rh/, "ɹ"], // rhyme, rhino, rhythm, rhetoric (silent h after r)
   [/^sph/, "sf"], // sphere, sphinx (Greek-origin /sf/)
   [/^ght/, "t"], // right, might, fight
   [/^gh$/, ""], // silent gh at word end (though, bough)
@@ -246,8 +244,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^lm/, "m"], // palm, calm, psalm
 
   // Rime-conditioned patterns (rime is more predictive than onset-only; must precede generic vowel rules).
-  [/^ought/, "ɔt"], // thought, bought, fought, sought, ought, nought
-  [/^aught/, "ɔt"], // caught, taught, daughter, naughty, fraught
+  [/^[oa]ught/, "ɔt"], // thought, bought, fought; caught, taught, daughter
   [/^ough$/, "ʌf"], // rough, tough, enough (default; misses though/cough/through/bough)
   [/^alm$/, "ɑm"], // calm, palm, psalm (silent l + a→ɑ)
   [/^alk(?=[^aeiou]|$)/, "ɔk"], // walk, talk, chalk, stalk, balky, chalker
@@ -261,17 +258,15 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ould$/, "ʊd"], // would, could, should (silent l, lax u — closed function-word family)
   // Improved digraph handling
   [/^tsch/, "tʃ"], // German loanwords
-  [/^sch/, "ʃ"], // schmaltz/schnapps/Schmidt (German); English words like school/schema in dict
+  [/^s(?:ch|z)/, "ʃ"], // German sch (schmaltz/Schmidt) + Polish/Hungarian sz (szabo); school/schema live in dict
   [/^she$/, "ʃi"], // she (pronoun; anchored so it doesn't eat shed/shell)
   [/^he$/, "hi"], // he  (pronoun; anchored so it doesn't eat here/hen)
-  [/^sz/, "ʃ"], // Polish/Hungarian sz (szabo, szymanowski)
-  [/^dz/, "dʒ"], // Polish dz (dziedzic, dzierzinski)
+  [/^d[zg]/, "dʒ"], // Polish dz (dziedzic) + dg (bridge, judge, edge)
   [/^cz/, "tʃ"], // czech, czechoslovak, czar (Polish/Czech cz)
   [/^chr/, "kɹ"], // chrome, chronic, Christ (Greek ch before r)
   [/^chl/, "kl"], // chlorine, chlorinated (Greek ch before l)
-  [/^ch/, "tʃ"], // chair, church, much
+  [/^t?ch/, "tʃ"], // chair, church, much; watch, match, catch
   [/^ck/, "k"], // back, pick, truck
-  [/^dg/, "dʒ"], // bridge, judge, edge
   [/^ph/, "f"], // phone, graph, elephant
   [/^sh/, "ʃ"], // shoe, fish, wash
   [/^thr/, "θɹ"], // th + r cluster is always voiceless: through, three
@@ -279,7 +274,6 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^the$/, "ðə"], // the (definite article — anchored so it doesn't eat them/then/their)
   [/^th(?=[aeiou])/, "ð"], // voiced before vowels: this, that, they
   [/^th/, "θ"], // voiceless (default): path, math
-  [/^tch/, "tʃ"], // watch, match, catch
   [/^wor(?!e)/, "wɝ"], // word, work, world, worry, worse, worst, worm (not wore)
   [/^wh(?=o)/, "h"], // who, whole, whom, whose (silent w before o)
   [/^wh/, "hw"], // what, where, when, which, white
@@ -302,8 +296,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ai/, "eɪ"], // rain, main, paid
   [/^eau[x]?/, "oʊ"], // plateau/beau + beaux/bordeaux: French eau(x) → /oʊ/ (x silent)
   [/^ealth/, "ɛlθ"], // health, wealth, stealth (ea+lth → /ɛ/)
-  [/^ea/, "i"], // read, seat, beat (default long)
-  [/^ee/, "i"], // see, tree, free
+  [/^e[ae]/, "i"], // read, seat, beat; see, tree, free (default long)
   [/^iew/, "ju"],
   [/^ier$/, "iɝ"], // -iew (view/review) → ju; -ier word-final → iɝ (guard: isLastSyllable)
   [/^ie/, "i"], // piece, field, believe
@@ -1565,8 +1558,7 @@ export class EnglishG2P implements LanguageProcessor {
           pattern.source === "^al$" ||
           pattern.source === "^que$" ||
           pattern.source === "^sten$" ||
-          pattern.source === "^ce$" ||
-          pattern.source === "^se$" ||
+          pattern.source === "^[cs]e$" ||
           pattern.source === "^ge$") &&
         !isLastSyllable
       )
