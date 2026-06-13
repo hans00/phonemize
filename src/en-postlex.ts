@@ -557,8 +557,11 @@ const VOWEL_GRAMS = resolveJson<{
 }>(vowelGramsJson);
 const VOWEL_GRAMS2 = resolveJson<typeof VOWEL_GRAMS>(vowelGrams2Json);
 const lookupGram = (t: GramTable, w: string): string | undefined => {
-  const g4 = t["4"][w.slice(-4)];
-  if (g4 !== undefined && w.length >= 4) return g4;
+  for (let L = 6; L >= 4; L--) {
+    if (w.length < L) continue;
+    const v = t[String(L)]?.[w.slice(-L)];
+    if (v !== undefined) return v;
+  }
   return t["3"][w.slice(-3)];
 };
 const lookupInitGram = (t: GramTable, w: string): string | undefined => {

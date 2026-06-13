@@ -21,10 +21,10 @@ const OUT = ROUND2
   ? "./data/en/vowel-grams2.json"
   : "./data/en/vowel-grams.json";
 const EMPTY = {
-  stressed: { "4": {}, "3": {} },
-  final: { "4": {}, "3": {} },
+  stressed: { "6": {}, "5": {}, "4": {}, "3": {} },
+  final: { "6": {}, "5": {}, "4": {}, "3": {} },
   initial: { "6": {}, "5": {}, "4": {}, "3": {} },
-  coda: { "4": {}, "3": {} },
+  coda: { "6": {}, "5": {}, "4": {}, "3": {} },
   second: { "4": {}, "3": {} },
   penult: { "4": {}, "3": {} },
   tail: { "8": {}, "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
@@ -140,7 +140,7 @@ async function main() {
       ph: headToPrimary(pred),
       dh: headToPrimary(exp),
     };
-    for (const k of [w.slice(-4), w.slice(-3)]) {
+    for (const k of [w.slice(-6), w.slice(-5), w.slice(-4), w.slice(-3)]) {
       if (k.length < 3) continue;
       let a = byGram.get(k);
       if (!a) byGram.set(k, (a = []));
@@ -237,10 +237,10 @@ async function main() {
   };
 
   const T43 = ["4", "3"];
-  const stressed = mine((r) => [r.ps, r.ds], byGram, T43);
-  const final = mine((r) => [r.pf, r.df], byGram, T43);
+  const stressed = mine((r) => [r.ps, r.ds], byGram, ["6","5","4","3"]);
+  const final = mine((r) => [r.pf, r.df], byGram, ["6","5","4","3"]);
   const initial = mine((r) => [r.pi, r.di], byInitGram, ["6", "5", "4", "3"]);
-  const coda = mine((r) => [r.pc, r.dc], byGram, T43);
+  const coda = mine((r) => [r.pc, r.dc], byGram, ["6","5","4","3"]);
   const second = mine((r) => [r.p2, r.d2], byInitN, T43);
   const penult = mine((r) => [r.pp, r.dp], byEndN, T43);
   const tailN = mine((r) => [r.pt, r.dt], byEndN5, ["5", "4", "3"]);
