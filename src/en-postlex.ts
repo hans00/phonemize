@@ -776,7 +776,7 @@ function applyVowelGrams(ipa: string, word: string, VG: VowelGramSet): string {
       runs[idx][1] = s + v.length;
     };
     swap(1, lookupInitGram(VG.second, word));
-    swap(runs.length - 2, lookupGramN(VG.penult, word, n));
+    swap(runs.length - 2, lookupGram(VG.penult, word));
   }
   // Whole head/tail transplants: the modal IPA before / from the
   // primary mark for very consistent (gram, count) families. Keys use

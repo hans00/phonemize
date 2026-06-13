@@ -27,7 +27,7 @@ const EMPTY = {
   initial: { "6": {}, "5": {}, "4": {}, "3": {} },
   coda: { "6": {}, "5": {}, "4": {}, "3": {} },
   second: { "6": {}, "5": {}, "4": {}, "3": {} },
-  penult: { "4": {}, "3": {} },
+  penult: { "6": {}, "5": {}, "4": {}, "3": {} },
   tail: { "8": {}, "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
   head: { "8": {}, "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
 };
@@ -119,8 +119,6 @@ async function main() {
     if (!pred) continue;
     const pr = vowelRuns(pred);
     const dr = vowelRuns(exp);
-    // medial positions only line up when both sides agree on count
-    const sameCount = pr.length === dr.length && pr.length >= 3;
     const rec: Rec = {
       ps: stressedVowel(pred),
       ds: stressedVowel(exp),
@@ -135,10 +133,16 @@ async function main() {
       // each (count-free, like initial).
       p2: pr.length >= 2 && dr.length >= 2 ? pred.slice(pr[1][0], pr[1][1]) : "",
       d2: pr.length >= 2 && dr.length >= 2 ? exp.slice(dr[1][0], dr[1][1]) : "",
-      pp: sameCount
-        ? pred.slice(pr[pr.length - 2][0], pr[pr.length - 2][1])
-        : "",
-      dp: sameCount ? exp.slice(dr[dr.length - 2][0], dr[dr.length - 2][1]) : "",
+      // penult vowel: position 2 from the END is the same slot
+      // regardless of total count → count-free (≥2 syllables each).
+      pp:
+        pr.length >= 2 && dr.length >= 2
+          ? pred.slice(pr[pr.length - 2][0], pr[pr.length - 2][1])
+          : "",
+      dp:
+        pr.length >= 2 && dr.length >= 2
+          ? exp.slice(dr[dr.length - 2][0], dr[dr.length - 2][1])
+          : "",
       pt: tailFromPrimary(pred),
       dt: tailFromPrimary(exp),
       ph: headToPrimary(pred),
@@ -157,9 +161,10 @@ async function main() {
       a.push(rec);
     }
     const ns = Math.min(pr.length, 5);
-    if (sameCount) {
-      for (const k of [`${w.slice(-4)}|${ns}`, `${w.slice(-3)}|${ns}`]) {
-        if (k.indexOf("|") < 3) continue;
+    // penult vowel: count-free ending gram (≥2 syllables each).
+    if (pr.length >= 2 && dr.length >= 2) {
+      for (const k of [w.slice(-6), w.slice(-5), w.slice(-4), w.slice(-3)]) {
+        if (k.length < 3) continue;
         let a = byEndN.get(k);
         if (!a) byEndN.set(k, (a = []));
         a.push(rec);
@@ -243,13 +248,12 @@ async function main() {
     return out;
   };
 
-  const T43 = ["4", "3"];
   const stressed = mine((r) => [r.ps, r.ds], byGram, ["6","5","4","3"]);
   const final = mine((r) => [r.pf, r.df], byGram, ["6","5","4","3"]);
   const initial = mine((r) => [r.pi, r.di], byInitGram, ["6", "5", "4", "3"]);
   const coda = mine((r) => [r.pc, r.dc], byGram, ["6","5","4","3"]);
   const second = mine((r) => [r.p2, r.d2], byInitN, ["6","5","4","3"]);
-  const penult = mine((r) => [r.pp, r.dp], byEndN, T43);
+  const penult = mine((r) => [r.pp, r.dp], byEndN, ["6", "5", "4", "3"]);
   const tailN = mine((r) => [r.pt, r.dt], byEndN5, ["5", "4", "3"]);
   const tailF = mine((r) => [r.pt, r.dt], byEnd76, ["8", "7", "6", "5"]);
   const tail = {
