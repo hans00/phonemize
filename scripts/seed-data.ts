@@ -38,7 +38,7 @@ const vowelShape = () => ({
   final: { ...len654 },
   initial: { ...len654 },
   coda: { ...len654 },
-  second: { ...len43 },
+  second: { ...len654 },
   penult: { ...len43 },
   tail: { ...lenLong },
   head: { ...lenLong },

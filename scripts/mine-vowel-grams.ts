@@ -26,7 +26,7 @@ const EMPTY = {
   final: { "6": {}, "5": {}, "4": {}, "3": {} },
   initial: { "6": {}, "5": {}, "4": {}, "3": {} },
   coda: { "6": {}, "5": {}, "4": {}, "3": {} },
-  second: { "4": {}, "3": {} },
+  second: { "6": {}, "5": {}, "4": {}, "3": {} },
   penult: { "4": {}, "3": {} },
   tail: { "8": {}, "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
   head: { "8": {}, "7": {}, "6": {}, "5": {}, "4": {}, "3": {} },
@@ -130,8 +130,11 @@ async function main() {
       di: initialVowel(exp),
       pc: finalCoda(pred),
       dc: finalCoda(exp),
-      p2: sameCount ? pred.slice(pr[1][0], pr[1][1]) : "",
-      d2: sameCount ? exp.slice(dr[1][0], dr[1][1]) : "",
+      // second-syllable vowel: position 2 from the start is the same
+      // slot regardless of total count, so require only ≥2 syllables
+      // each (count-free, like initial).
+      p2: pr.length >= 2 && dr.length >= 2 ? pred.slice(pr[1][0], pr[1][1]) : "",
+      d2: pr.length >= 2 && dr.length >= 2 ? exp.slice(dr[1][0], dr[1][1]) : "",
       pp: sameCount
         ? pred.slice(pr[pr.length - 2][0], pr[pr.length - 2][1])
         : "",
@@ -161,8 +164,11 @@ async function main() {
         if (!a) byEndN.set(k, (a = []));
         a.push(rec);
       }
-      for (const k of [`${w.slice(0, 4)}|${ns}`, `${w.slice(0, 3)}|${ns}`]) {
-        if (k.indexOf("|") < 3) continue;
+    }
+    // second-syllable vowel: count-free initial gram (≥2 syllables each).
+    if (pr.length >= 2 && dr.length >= 2) {
+      for (const k of [w.slice(0, 6), w.slice(0, 5), w.slice(0, 4), w.slice(0, 3)]) {
+        if (k.length < 3) continue;
         let a = byInitN.get(k);
         if (!a) byInitN.set(k, (a = []));
         a.push(rec);
@@ -242,7 +248,7 @@ async function main() {
   const final = mine((r) => [r.pf, r.df], byGram, ["6","5","4","3"]);
   const initial = mine((r) => [r.pi, r.di], byInitGram, ["6", "5", "4", "3"]);
   const coda = mine((r) => [r.pc, r.dc], byGram, ["6","5","4","3"]);
-  const second = mine((r) => [r.p2, r.d2], byInitN, T43);
+  const second = mine((r) => [r.p2, r.d2], byInitN, ["6","5","4","3"]);
   const penult = mine((r) => [r.pp, r.dp], byEndN, T43);
   const tailN = mine((r) => [r.pt, r.dt], byEndN5, ["5", "4", "3"]);
   const tailF = mine((r) => [r.pt, r.dt], byEnd76, ["8", "7", "6", "5"]);
