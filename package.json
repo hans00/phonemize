@@ -61,7 +61,7 @@
     "typecheck": "tsc -b",
     "build": "rollup -c",
     "build:watch": "rollup -c --watch",
-    "build-dict": "tsx scripts/build-dict.ts && tsx scripts/mine-compound-parts.ts && tsx scripts/mine-stress-grams.ts && tsx scripts/mine-vowel-grams.ts && MINE_ROUND=2 tsx scripts/mine-stress-grams.ts && MINE_ROUND=2 tsx scripts/mine-vowel-grams.ts",
+    "build-dict": "tsx scripts/build-dict.ts && tsx scripts/seed-data.ts && PHONEMIZE_NO_GRAMS=1 tsx scripts/mine-exceptions.ts --native-min 1 && tsx scripts/mine-compound-parts.ts && tsx scripts/mine-stress-grams.ts && tsx scripts/mine-vowel-grams.ts && MINE_ROUND=2 tsx scripts/mine-stress-grams.ts && MINE_ROUND=2 tsx scripts/mine-vowel-grams.ts",
     "prebuild": "yarn build-dict",
     "dev": "tsx src/index.ts",
     "release": "release-it",

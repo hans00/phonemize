@@ -164,7 +164,14 @@ for (const [word, dictIpa] of Object.entries(dict)) {
   const pred = g2p.predict(word, "en");
   if (!pred) continue;
   const d = levenshtein.get(canon(pred), canon(dictIpa));
-  if (d < 2) {
+  // Floor at ed≥1: ship every in-dict word the rules don't already
+  // reproduce (after similar-vowel canonicalization). The runtime
+  // returns the dict value for these directly, so common words keep
+  // their exact pronunciation even as the rule engine improves. (A
+  // higher floor shrinks the table but lets the rule path's residual
+  // ed≤1 deviations leak through on known words — which the test
+  // suite pins to exact dict values.)
+  if (d < 1) {
     withinLenient++;
     continue;
   }
@@ -284,6 +291,15 @@ const shippedCands = candidates.filter(
 );
 const shippedMap: Record<string, string> = {};
 for (const c of shippedCands) shippedMap[c.word] = c.dictIpa;
+// "a" and "I" are the only single-letter English words. The rule
+// engine reproduces their letter-name IPA (so edit-distance mining
+// skips them), but they must stay in the lookup table: as words for
+// direct lookup, and so the acronym speller can voice them ("AI" →
+// /ˈeɪˈaɪ/). Other letters are not words and stay out, leaving
+// consonant initialisms like "TTS" to the fallback path.
+for (const letter of ["a", "i"]) {
+  if (dict[letter]) shippedMap[letter] = dict[letter];
+}
 const shippedSize = JSON.stringify(shippedMap).length;
 writeFileSync(
   "./data/en/exceptions.json",
