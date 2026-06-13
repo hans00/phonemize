@@ -23,7 +23,7 @@ const OUT = ROUND2
 const EMPTY = {
   stressed: { "4": {}, "3": {} },
   final: { "4": {}, "3": {} },
-  initial: { "4": {}, "3": {} },
+  initial: { "6": {}, "5": {}, "4": {}, "3": {} },
   coda: { "4": {}, "3": {} },
   second: { "4": {}, "3": {} },
   penult: { "4": {}, "3": {} },
@@ -146,7 +146,7 @@ async function main() {
       if (!a) byGram.set(k, (a = []));
       a.push(rec);
     }
-    for (const k of [w.slice(0, 4), w.slice(0, 3)]) {
+    for (const k of [w.slice(0, 6), w.slice(0, 5), w.slice(0, 4), w.slice(0, 3)]) {
       if (k.length < 3) continue;
       let a = byInitGram.get(k);
       if (!a) byInitGram.set(k, (a = []));
@@ -239,7 +239,7 @@ async function main() {
   const T43 = ["4", "3"];
   const stressed = mine((r) => [r.ps, r.ds], byGram, T43);
   const final = mine((r) => [r.pf, r.df], byGram, T43);
-  const initial = mine((r) => [r.pi, r.di], byInitGram, T43);
+  const initial = mine((r) => [r.pi, r.di], byInitGram, ["6", "5", "4", "3"]);
   const coda = mine((r) => [r.pc, r.dc], byGram, T43);
   const second = mine((r) => [r.p2, r.d2], byInitN, T43);
   const penult = mine((r) => [r.pp, r.dp], byEndN, T43);

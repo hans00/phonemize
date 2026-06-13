@@ -562,8 +562,11 @@ const lookupGram = (t: GramTable, w: string): string | undefined => {
   return t["3"][w.slice(-3)];
 };
 const lookupInitGram = (t: GramTable, w: string): string | undefined => {
-  const g4 = t["4"][w.slice(0, 4)];
-  if (g4 !== undefined && w.length >= 4) return g4;
+  for (let L = 6; L >= 4; L--) {
+    if (w.length < L) continue;
+    const v = t[String(L)]?.[w.slice(0, L)];
+    if (v !== undefined) return v;
+  }
   return t["3"][w.slice(0, 3)];
 };
 // count-keyed variants (`gram|sylCount`)
@@ -778,6 +781,11 @@ function applyVowelGrams(ipa: string, word: string, VG: VowelGramSet): string {
     // word whose rule-stress lands on the wrong syllable (əbˈkoʊ vs
     // dict ˈæbkoʊ) duplicates or drops syllables when spliced
     // (æbˈkoʊ + tail "ˈæbkoʊ" → æbˈæbkoʊ).
+    // Head transplant stays PRIMARY-aligned with a nucleus-count guard:
+    // the head (dict IPA before primary) only splices cleanly when out's
+    // own pre-primary span has the same syllable count. Start-aligning
+    // it (like the tail) measured much worse — the pre-primary span is
+    // far less predictable than the suffix.
     const head = lookupHeadGram(VG.head, word, n);
     if (head !== undefined) {
       const pi = out.indexOf("ˈ");

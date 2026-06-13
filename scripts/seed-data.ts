@@ -47,7 +47,7 @@ const PLACEHOLDERS: Record<string, unknown> = {
   "./data/en/vowel-grams.json": {
     stressed: len43,
     final: len43,
-    initial: len43,
+    initial: { "6": {}, "5": {}, "4": {}, "3": {} },
     coda: len43,
     second: len43,
     penult: len43,
@@ -57,7 +57,7 @@ const PLACEHOLDERS: Record<string, unknown> = {
   "./data/en/vowel-grams2.json": {
     stressed: len43,
     final: len43,
-    initial: len43,
+    initial: { "6": {}, "5": {}, "4": {}, "3": {} },
     coda: len43,
     second: len43,
     penult: len43,
