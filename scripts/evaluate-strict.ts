@@ -80,6 +80,39 @@ function isAcronym(word: string, ipa: string): boolean {
 const STRESS = /[ˈˌ]/g;
 const stripStress = (s: string) => s.replace(STRESS, "");
 
+// en-US phonemic canonicalization — the headline accuracy metric.
+// CMUDict (the reference) marks two things inconsistently and
+// non-contrastively for General American, so matching its exact string
+// over-penalizes pronunciations that are equally correct en-US:
+//   1. Secondary stress (ˌ) — not phonemically contrastive; dictionaries
+//      disagree heavily on whether/where to mark it. Neutralized.
+//   2. The unstressed weak-vowel merger — unstressed /ɪ/ and /ə/ are
+//      merged for most NAmE speakers (roses ≈ Rosa's), and CMUDict uses
+//      IH0/AH0 interchangeably for the same contexts. Unstressed /ɪ/ → /ə/.
+// Primary stress placement, stressed-vowel quality, and every consonant
+// stay fully strict.
+const PHON_VOWELS = "aeiouɑæɛɪɔʊʌəɝ";
+function enUsPhonemic(ipa: string): string {
+  const noSecondary = ipa.replace(/ˌ/g, "");
+  let out = "";
+  for (let i = 0; i < noSecondary.length; i++) {
+    if (noSecondary[i] !== "ɪ") {
+      out += noSecondary[i];
+      continue;
+    }
+    // /ɪ/ is stressed iff scanning back over its onset reaches a primary
+    // mark before any other vowel; otherwise it is the reduced weak vowel.
+    let stressed = false;
+    for (let j = i - 1; j >= 0; j--) {
+      const c = noSecondary[j];
+      if (c === "ˈ") { stressed = true; break; }
+      if (PHON_VOWELS.includes(c)) break;
+    }
+    out += stressed ? "ɪ" : "ə";
+  }
+  return out;
+}
+
 // Find the index of the primary-stressed nucleus (-1 if none).
 const VOWELS = new Set("aeiouæɛɪɔʊʌəɝ");
 function primaryStressIdx(ipa: string): number {
@@ -106,7 +139,7 @@ const buckets: Record<string, Bucket> = {
   structural: { count: 0, sample: [] },
 };
 
-let total = 0, edSum = 0;
+let total = 0, edSum = 0, phonemicExact = 0;
 const g2p = new EnglishG2P({ disableDict: true });
 
 for (const [word, expected] of Object.entries(dict)) {
@@ -123,6 +156,8 @@ for (const [word, expected] of Object.entries(dict)) {
 
   const distance = levenshtein.get(pred, expected);
   edSum += distance;
+
+  if (enUsPhonemic(pred) === enUsPhonemic(expected)) phonemicExact++;
 
   if (pred === expected) {
     buckets.exact.count++;
@@ -152,6 +187,7 @@ const pct = (n: number) => ((n / total) * 100).toFixed(2) + "%";
 const results = {
   total,
   exact: buckets.exact.count,
+  phonemicExact,
   stressOnly: buckets.stressOnly.count,
   vowelOnly: buckets.vowelOnly.count,
   structural: buckets.structural.count,
@@ -159,6 +195,7 @@ const results = {
 };
 
 console.log(`Total scored: ${total}`);
+console.log(`en-US phonemic accuracy:      ${results.phonemicExact}  (${pct(results.phonemicExact)})  ← headline (2ry-stress + weak-vowel neutralized)`);
 console.log(`Exact match (full IPA):       ${results.exact}  (${pct(results.exact)})`);
 console.log(`Stress-only mismatch:         ${results.stressOnly}  (${pct(results.stressOnly)})`);
 console.log(`Vowel-quality only:           ${results.vowelOnly}  (${pct(results.vowelOnly)})`);
@@ -174,6 +211,7 @@ if (existsSync(BASELINE) && !UPDATE) {
     return ` (${d >= 0 ? "+" : ""}${d})`;
   };
   console.log(`\nΔ vs baseline (${BASELINE}):`);
+  console.log(`  phonemic:   ${delta(results.phonemicExact, base.phonemicExact ?? 0)}`);
   console.log(`  exact:      ${delta(results.exact, base.exact)}`);
   console.log(`  stressOnly: ${delta(results.stressOnly, base.stressOnly)}`);
   console.log(`  vowelOnly:  ${delta(results.vowelOnly, base.vowelOnly)}`);
