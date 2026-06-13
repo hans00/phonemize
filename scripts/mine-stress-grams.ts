@@ -28,6 +28,7 @@ const OUT = ROUND2
 const EMPTY = {
   primary: { "4": {}, "3": {} },
   secondary: { "4": {}, "3": {} },
+  primaryInit: { "6": {}, "5": {}, "4": {}, "3": {} },
 };
 writeFileSync(OUT, JSON.stringify(EMPTY));
 
@@ -151,7 +152,7 @@ async function main() {
         if (p !== d && mode === d) fixes++;
         else if (p === d && mode !== d) breaks++;
       }
-      if (fixes - breaks < 2) continue;
+      if (fixes - breaks < 1) continue;
       out[String(k.split("|")[0].length)][k] = mode;
     }
     return out;
