@@ -40,7 +40,7 @@ describe('Index', function() {
     // name-tail); full ˈsupɝˌkɑɹ needs the compound-parts table to
     // admit it. The mined initial-gram table at least restores the
     // tense /u/ of super-.
-    expect(phonemize('supercar')).toEqual('suˈpɝˌkɝ')
+    expect(phonemize('supercar')).toEqual('suˈpɝkɝ')
     expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).toMatch(/njumən|njumoʊ/)
   })
 

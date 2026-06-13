@@ -674,6 +674,19 @@ function applySecondaryGram(
 const rhoticMismatch = (a: string, b: string): boolean =>
   a.includes("ɝ") !== b.includes("ɝ");
 
+// Count vowel nuclei (vowel-char runs) in an IPA fragment.
+function nucleusCount(s: string): number {
+  let c = 0;
+  let inV = false;
+  for (const ch of s) {
+    if (IPA_V.includes(ch)) {
+      if (!inV) c++;
+      inV = true;
+    } else inV = false;
+  }
+  return c;
+}
+
 /** Replace the vowel run of the primary-stressed / final syllable. */
 type VowelGramSet = {
   stressed: GramTable;
@@ -759,32 +772,57 @@ function applyVowelGrams(ipa: string, word: string, VG: VowelGramSet): string {
   // the pre-transplant syllable count (what the miner saw).
   if (runs.length > 0) {
     const n = Math.min(runs.length, 5);
+    // A head/tail transplant only aligns when the runtime primary sits
+    // at the same syllable as the dict's: the part being replaced must
+    // have the same nucleus count as the replacement. Without this a
+    // word whose rule-stress lands on the wrong syllable (əbˈkoʊ vs
+    // dict ˈæbkoʊ) duplicates or drops syllables when spliced
+    // (æbˈkoʊ + tail "ˈæbkoʊ" → æbˈæbkoʊ).
     const head = lookupHeadGram(VG.head, word, n);
     if (head !== undefined) {
       const pi = out.indexOf("ˈ");
-      if (pi >= 0 && out.slice(0, pi) !== head) {
-        // Only transplant when the syllable counts agree — a modal
-        // head from family members with a different stress position
-        // would add/remove syllables.
-        const vcount = (s: string) => {
-          let c = 0;
-          let inV = false;
-          for (const ch of s) {
-            if (IPA_V.includes(ch)) {
-              if (!inV) c++;
-              inV = true;
-            } else inV = false;
-          }
-          return c;
-        };
-        if (vcount(out.slice(0, pi)) === vcount(head))
-          out = head + out.slice(pi);
-      }
+      if (
+        pi >= 0 &&
+        out.slice(0, pi) !== head &&
+        nucleusCount(out.slice(0, pi)) === nucleusCount(head)
+      )
+        out = head + out.slice(pi);
     }
+    // Tail transplant is END-aligned: the gram is the dict IPA from
+    // its primary to the word end, i.e. the last `k` syllables. Splice
+    // it onto out's last k syllables regardless of where out's own
+    // (possibly mis-placed) primary landed — primary-aligning instead
+    // duplicates/drops syllables when rule-stress ≠ dict-stress
+    // (æbˈkoʊ + "ˈæbkoʊ" → æbˈæbkoʊ).
     const tail = lookupTailGram(VG.tail, word, n);
-    if (tail !== undefined) {
-      const pi = out.indexOf("ˈ");
-      if (pi >= 0 && out.slice(pi) !== tail) out = out.slice(0, pi) + tail;
+    if (tail !== undefined && tail.indexOf("ˈ") >= 0) {
+      const k = nucleusCount(tail);
+      const r: Array<[number, number]> = [];
+      for (let i = 0; i < out.length; ) {
+        if (IPA_V.includes(out[i])) {
+          const s = i;
+          while (i < out.length && IPA_V.includes(out[i])) i++;
+          r.push([s, i]);
+        } else i++;
+      }
+      if (k >= 1 && r.length >= k) {
+        let o = r[r.length - k][0];
+        while (o > 0 && IPA_C.includes(out[o - 1])) o--;
+        // The tail carries the primary. Demote any primary left in the
+        // retained head so the word keeps exactly one — but a head with
+        // no nucleus (e.g. a stray leading ˌ from the secondary pass)
+        // must shed its marks entirely to avoid a dangling ˌˈ.
+        let head = out.slice(0, o);
+        head =
+          nucleusCount(head) === 0
+            ? head.replace(/[ˈˌ]/g, "")
+            : head.replace(/ˈ/g, "ˌ");
+        // A stress mark at the splice boundary belonged to the syllable
+        // now supplied by the tail — drop it to avoid a dangling ˌˈ.
+        head = head.replace(/[ˈˌ]+$/, "");
+        const candidate = head + tail;
+        if (candidate !== out) out = candidate;
+      }
     }
   }
   return out;
