@@ -87,6 +87,7 @@ async function main() {
     dictSE: number;
   }
   const byGram = new Map<string, Rec[]>();
+  const byInitGram = new Map<string, Rec[]>();
   for (const [w, exp] of Object.entries(dict)) {
     if (!/^[a-z]+$/.test(w)) continue;
     if (FOREIGN.some((r) => r.test(w))) continue;
@@ -110,13 +111,25 @@ async function main() {
       if (!a) byGram.set(k, (a = []));
       a.push(rec);
     }
+    // Prefix-keyed primary stress (abs-, mono-, …): the suffix tables
+    // miss stress that the prefix governs. 6→3 char initial grams.
+    for (const L of [6, 5, 4, 3]) {
+      if (w.length < L) continue;
+      const k = `${w.slice(0, L)}|${ns}`;
+      let a = byInitGram.get(k);
+      if (!a) byInitGram.set(k, (a = []));
+      a.push(rec);
+    }
   }
 
   const mine = (
     get: (r: Rec) => [number, number],
+    grams: Map<string, Rec[]> = byGram,
+    buckets: string[] = ["4", "3"],
   ): Record<string, Record<string, number>> => {
-    const out: Record<string, Record<string, number>> = { "4": {}, "3": {} };
-    for (const [k, recs] of byGram) {
+    const out: Record<string, Record<string, number>> = {};
+    for (const b of buckets) out[b] = {};
+    for (const [k, recs] of grams) {
       if (recs.length < 2) continue;
       const cnt = new Map<number, number>();
       for (const r of recs) {
@@ -146,11 +159,16 @@ async function main() {
 
   const primary = mine((r) => [r.predFE, r.dictFE]);
   const secondary = mine((r) => [r.predSE, r.dictSE]);
-  writeFileSync(OUT, JSON.stringify({ primary, secondary }));
+  const primaryInit = mine(
+    (r) => [r.predFE, r.dictFE],
+    byInitGram,
+    ["6", "5", "4", "3"],
+  );
+  writeFileSync(OUT, JSON.stringify({ primary, secondary, primaryInit }));
   const size = (t: Record<string, Record<string, number>>) =>
-    Object.keys(t["4"]).length + Object.keys(t["3"]).length;
+    Object.values(t).reduce((n, m) => n + Object.keys(m).length, 0);
   console.log(
-    `stress grams adopted (round ${ROUND2 ? 2 : 1}): primary ${size(primary)}, secondary ${size(secondary)}`,
+    `stress grams adopted (round ${ROUND2 ? 2 : 1}): primary ${size(primary)}, secondary ${size(secondary)}, primaryInit ${size(primaryInit)}`,
   );
 }
 

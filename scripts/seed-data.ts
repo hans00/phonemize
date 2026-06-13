@@ -34,8 +34,16 @@ const PLACEHOLDERS: Record<string, unknown> = {
   // clean checkout without pulling the heavy aligner→compile-lts chain.
   "./data/en/lts.json": { full: {}, leftCtx: {}, rightCtx: {}, noCtx: {} },
   "./data/en/compound-parts.json": { heads: {}, tails: {} },
-  "./data/en/stress-grams.json": { primary: len43, secondary: len43 },
-  "./data/en/stress-grams2.json": { primary: len43, secondary: len43 },
+  "./data/en/stress-grams.json": {
+    primary: len43,
+    secondary: len43,
+    primaryInit: { "6": {}, "5": {}, "4": {}, "3": {} },
+  },
+  "./data/en/stress-grams2.json": {
+    primary: len43,
+    secondary: len43,
+    primaryInit: { "6": {}, "5": {}, "4": {}, "3": {} },
+  },
   "./data/en/vowel-grams.json": {
     stressed: len43,
     final: len43,

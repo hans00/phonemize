@@ -36,11 +36,10 @@ describe('Index', function() {
 
   it('rule based or compound word', function() {
     expect(phonemize('buggie')).toEqual('ˈbəɡi')
-    // supercar: rules don't decompose this compound (car is a blocked
-    // name-tail); full ˈsupɝˌkɑɹ needs the compound-parts table to
-    // admit it. The mined initial-gram table at least restores the
-    // tense /u/ of super-.
-    expect(phonemize('supercar')).toEqual('suˈpɝkɝ')
+    // supercar: rules don't decompose this compound, so the primary/
+    // secondary stress is swapped vs the dict's ˈsupɝˌkɑɹ — but the
+    // mined gram tables now recover the correct segments (supɝkɑɹ).
+    expect(phonemize('supercar')).toEqual('ˌsupɝˈkɑɹ')
     expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).toMatch(/njumən|njumoʊ/)
   })
 
