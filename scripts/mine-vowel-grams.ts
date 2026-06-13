@@ -222,7 +222,7 @@ async function main() {
           mc = c;
           mode = v;
         }
-      if (!mode || mc / recs.length < 0.7) continue;
+      if (!mode || mc / recs.length < 0.65) continue;
       let fixes = 0;
       let breaks = 0;
       for (const r of recs) {

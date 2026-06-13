@@ -144,7 +144,7 @@ async function main() {
           mc = c;
           mode = v;
         }
-      if (mc / recs.length < 0.7) continue;
+      if (mc / recs.length < 0.65) continue;
       let fixes = 0;
       let breaks = 0;
       for (const r of recs) {
