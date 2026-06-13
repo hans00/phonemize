@@ -789,21 +789,6 @@ function applyVowelGrams(ipa: string, word: string, VG: VowelGramSet): string {
     // word whose rule-stress lands on the wrong syllable (əbˈkoʊ vs
     // dict ˈæbkoʊ) duplicates or drops syllables when spliced
     // (æbˈkoʊ + tail "ˈæbkoʊ" → æbˈæbkoʊ).
-    // Head transplant stays PRIMARY-aligned with a nucleus-count guard:
-    // the head (dict IPA before primary) only splices cleanly when out's
-    // own pre-primary span has the same syllable count. Start-aligning
-    // it (like the tail) measured much worse — the pre-primary span is
-    // far less predictable than the suffix.
-    const head = lookupHeadGram(VG.head, word, n);
-    if (head !== undefined) {
-      const pi = out.indexOf("ˈ");
-      if (
-        pi >= 0 &&
-        out.slice(0, pi) !== head &&
-        nucleusCount(out.slice(0, pi)) === nucleusCount(head)
-      )
-        out = head + out.slice(pi);
-    }
     // Tail transplant is END-aligned: the gram is the dict IPA from
     // its primary to the word end, i.e. the last `k` syllables. Splice
     // it onto out's last k syllables regardless of where out's own
@@ -839,6 +824,21 @@ function applyVowelGrams(ipa: string, word: string, VG: VowelGramSet): string {
         const candidate = head + tail;
         if (candidate !== out) out = candidate;
       }
+    }
+    // Head transplant runs AFTER the tail: the tail's end-alignment has
+    // by now corrected the primary position, so the head's pre-primary
+    // nucleus-count guard matches far more often. PRIMARY-aligned with
+    // that guard (start-aligning measured much worse — the pre-primary
+    // span is far less predictable than the suffix).
+    const head = lookupHeadGram(VG.head, word, n);
+    if (head !== undefined) {
+      const pi = out.indexOf("ˈ");
+      if (
+        pi >= 0 &&
+        out.slice(0, pi) !== head &&
+        nucleusCount(out.slice(0, pi)) === nucleusCount(head)
+      )
+        out = head + out.slice(pi);
     }
   }
   return out;
