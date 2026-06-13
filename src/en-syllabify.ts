@@ -9,6 +9,7 @@
 import type { TraceStep } from "./en-g2p";
 import * as stressGramsJson from "../data/en/stress-grams.json";
 import * as stressGrams2Json from "../data/en/stress-grams2.json";
+import * as stressGrams3Json from "../data/en/stress-grams3.json";
 import { resolveJson } from "./utils";
 
 // The gram miners set PHONEMIZE_NO_GRAMS before importing the
@@ -21,6 +22,9 @@ export const NO_GRAMS =
 export const NO_GRAMS2 =
   NO_GRAMS ||
   (typeof process !== "undefined" && !!process.env?.PHONEMIZE_NO_GRAMS2);
+export const NO_GRAMS3 =
+  NO_GRAMS2 ||
+  (typeof process !== "undefined" && !!process.env?.PHONEMIZE_NO_GRAMS3);
 
 // Mined ending-gram → primary-stress-from-end table (see
 // scripts/mine-stress-grams.ts). Longest gram wins; each entry
@@ -76,6 +80,28 @@ export const SECONDARY2_GRAMS_3: Record<string, number> = Object.assign(
 const PRIMARY_INIT2: Record<string, Record<string, number>> = Object.assign(
   Object.create(null),
   STRESS_GRAMS2.primaryInit ?? {},
+);
+// Round-3 (residual) stress tables — trained against the R1+R2 pipeline.
+const STRESS_GRAMS3 = resolveJson<StressTable>(stressGrams3Json);
+const STRESS3_4: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS3.primary["4"],
+);
+const STRESS3_3: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS3.primary["3"],
+);
+export const SECONDARY3_GRAMS_4: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS3.secondary["4"],
+);
+export const SECONDARY3_GRAMS_3: Record<string, number> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS3.secondary["3"],
+);
+const PRIMARY_INIT3: Record<string, Record<string, number>> = Object.assign(
+  Object.create(null),
+  STRESS_GRAMS3.primaryInit ?? {},
 );
 
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
@@ -571,9 +597,11 @@ export function assignStress(syllables: string[], word: string): number {
   };
   const fromEnd = NO_GRAMS
     ? undefined
-    : ((NO_GRAMS2 ? undefined : (STRESS2_4[k4] ?? STRESS2_3[k3])) ??
+    : ((NO_GRAMS3 ? undefined : (STRESS3_4[k4] ?? STRESS3_3[k3])) ??
+      (NO_GRAMS2 ? undefined : (STRESS2_4[k4] ?? STRESS2_3[k3])) ??
       STRESS_GRAMS_4[k4] ??
       STRESS_GRAMS_3[k3] ??
+      (NO_GRAMS3 ? undefined : initStress(PRIMARY_INIT3)) ??
       (NO_GRAMS2 ? undefined : initStress(PRIMARY_INIT2)) ??
       initStress(PRIMARY_INIT));
   if (fromEnd !== undefined)

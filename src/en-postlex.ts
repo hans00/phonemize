@@ -1,11 +1,15 @@
 import * as vowelGramsJson from "../data/en/vowel-grams.json";
 import { resolveJson } from "./utils";
 import * as vowelGrams2Json from "../data/en/vowel-grams2.json";
+import * as vowelGrams3Json from "../data/en/vowel-grams3.json";
 import {
   NO_GRAMS,
   NO_GRAMS2,
+  NO_GRAMS3,
   SECONDARY2_GRAMS_3,
   SECONDARY2_GRAMS_4,
+  SECONDARY3_GRAMS_3,
+  SECONDARY3_GRAMS_4,
   SECONDARY_GRAMS_3,
   SECONDARY_GRAMS_4,
 } from "./en-syllabify";
@@ -556,6 +560,7 @@ const VOWEL_GRAMS = resolveJson<{
   head: GramTable;
 }>(vowelGramsJson);
 const VOWEL_GRAMS2 = resolveJson<typeof VOWEL_GRAMS>(vowelGrams2Json);
+const VOWEL_GRAMS3 = resolveJson<typeof VOWEL_GRAMS>(vowelGrams3Json);
 const lookupGram = (t: GramTable, w: string): string | undefined => {
   for (let L = 6; L >= 4; L--) {
     if (w.length < L) continue;
@@ -875,6 +880,11 @@ export function applyPostStress(ipa: string, word: string): string {
     // Round-2 residual tables, trained against the round-1 pipeline.
     out = applySecondaryGram(out, word, SECONDARY2_GRAMS_4, SECONDARY2_GRAMS_3);
     out = applyVowelGrams(out, word, VOWEL_GRAMS2);
+  }
+  if (!NO_GRAMS3) {
+    // Round-3 residual tables, trained against the R1+R2 pipeline.
+    out = applySecondaryGram(out, word, SECONDARY3_GRAMS_4, SECONDARY3_GRAMS_3);
+    out = applyVowelGrams(out, word, VOWEL_GRAMS3);
   }
   return out;
 }

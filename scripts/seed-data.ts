@@ -27,6 +27,23 @@ mkdirSync("./data/en", { recursive: true });
 const lenLong = { "8": {}, "7": {}, "6": {}, "5": {}, "4": {}, "3": {} };
 const len43 = { "4": {}, "3": {} };
 
+const len654 = { "6": {}, "5": {}, "4": {}, "3": {} };
+const stressShape = () => ({
+  primary: { "4": {}, "3": {} },
+  secondary: { "4": {}, "3": {} },
+  primaryInit: { ...len654 },
+});
+const vowelShape = () => ({
+  stressed: { ...len654 },
+  final: { ...len654 },
+  initial: { ...len654 },
+  coda: { ...len654 },
+  second: { ...len43 },
+  penult: { ...len43 },
+  tail: { ...lenLong },
+  head: { ...lenLong },
+});
+
 const PLACEHOLDERS: Record<string, unknown> = {
   "./data/en/exceptions.json": {},
   // lts.json is consumed only by the dead-code en-lts.ts (kept for the
@@ -34,36 +51,13 @@ const PLACEHOLDERS: Record<string, unknown> = {
   // clean checkout without pulling the heavy aligner→compile-lts chain.
   "./data/en/lts.json": { full: {}, leftCtx: {}, rightCtx: {}, noCtx: {} },
   "./data/en/compound-parts.json": { heads: {}, tails: {} },
-  "./data/en/stress-grams.json": {
-    primary: len43,
-    secondary: len43,
-    primaryInit: { "6": {}, "5": {}, "4": {}, "3": {} },
-  },
-  "./data/en/stress-grams2.json": {
-    primary: len43,
-    secondary: len43,
-    primaryInit: { "6": {}, "5": {}, "4": {}, "3": {} },
-  },
-  "./data/en/vowel-grams.json": {
-    stressed: { "6": {}, "5": {}, "4": {}, "3": {} },
-    final: { "6": {}, "5": {}, "4": {}, "3": {} },
-    initial: { "6": {}, "5": {}, "4": {}, "3": {} },
-    coda: { "6": {}, "5": {}, "4": {}, "3": {} },
-    second: len43,
-    penult: len43,
-    tail: lenLong,
-    head: lenLong,
-  },
-  "./data/en/vowel-grams2.json": {
-    stressed: { "6": {}, "5": {}, "4": {}, "3": {} },
-    final: { "6": {}, "5": {}, "4": {}, "3": {} },
-    initial: { "6": {}, "5": {}, "4": {}, "3": {} },
-    coda: { "6": {}, "5": {}, "4": {}, "3": {} },
-    second: len43,
-    penult: len43,
-    tail: lenLong,
-    head: lenLong,
-  },
+  // Three residual-boosting rounds of stress / vowel gram tables.
+  "./data/en/stress-grams.json": stressShape(),
+  "./data/en/stress-grams2.json": stressShape(),
+  "./data/en/stress-grams3.json": stressShape(),
+  "./data/en/vowel-grams.json": vowelShape(),
+  "./data/en/vowel-grams2.json": vowelShape(),
+  "./data/en/vowel-grams3.json": vowelShape(),
 };
 
 let seeded = 0;

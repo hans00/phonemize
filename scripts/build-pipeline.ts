@@ -46,6 +46,9 @@ const STEPS: Step[] = [
   // Round 2 (residual boosting) — trained against the round-1 pipeline.
   { script: "mine-stress-grams.ts", env: { MINE_ROUND: "2" } },
   { script: "mine-vowel-grams.ts", env: { MINE_ROUND: "2" } },
+  // Round 3 (residual boosting) — trained against the R1+R2 pipeline.
+  { script: "mine-stress-grams.ts", env: { MINE_ROUND: "3" } },
+  { script: "mine-vowel-grams.ts", env: { MINE_ROUND: "3" } },
 ];
 
 for (const step of STEPS) {

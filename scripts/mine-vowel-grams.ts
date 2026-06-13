@@ -16,10 +16,11 @@
  */
 import { readFileSync, writeFileSync } from "fs";
 
-const ROUND2 = process.env.MINE_ROUND === "2";
-const OUT = ROUND2
-  ? "./data/en/vowel-grams2.json"
-  : "./data/en/vowel-grams.json";
+const ROUND = parseInt(process.env.MINE_ROUND || "1", 10);
+const OUT =
+  ROUND >= 2
+    ? `./data/en/vowel-grams${ROUND}.json`
+    : "./data/en/vowel-grams.json";
 const EMPTY = {
   stressed: { "6": {}, "5": {}, "4": {}, "3": {} },
   final: { "6": {}, "5": {}, "4": {}, "3": {} },
@@ -80,7 +81,7 @@ const headToPrimary = (p: string): string => {
 };
 
 async function main() {
-  if (ROUND2) process.env.PHONEMIZE_NO_GRAMS2 = "1";
+  if (ROUND >= 2) process.env[`PHONEMIZE_NO_GRAMS${ROUND}`] = "1";
   else process.env.PHONEMIZE_NO_GRAMS = "1";
   const { default: EnglishG2P } = await import("../src/en-g2p");
   const g = new EnglishG2P({ disableDict: true });
@@ -264,7 +265,7 @@ async function main() {
   const size = (t: Record<string, Record<string, string>>) =>
     Object.values(t).reduce((n, m) => n + Object.keys(m).length, 0);
   console.log(
-    `vowel grams adopted (round ${ROUND2 ? 2 : 1}): stressed ${size(stressed)}, final ${size(final)}, initial ${size(initial)}, coda ${size(coda)}, second ${size(second)}, penult ${size(penult)}, tail ${size(tail)}, head ${size(head)}`,
+    `vowel grams adopted (round ${ROUND}): stressed ${size(stressed)}, final ${size(final)}, initial ${size(initial)}, coda ${size(coda)}, second ${size(second)}, penult ${size(penult)}, tail ${size(tail)}, head ${size(head)}`,
   );
 }
 

@@ -17,10 +17,11 @@
  */
 import { readFileSync, writeFileSync } from "fs";
 
-const ROUND2 = process.env.MINE_ROUND === "2";
-const OUT = ROUND2
-  ? "./data/en/stress-grams2.json"
-  : "./data/en/stress-grams.json";
+const ROUND = parseInt(process.env.MINE_ROUND || "1", 10);
+const OUT =
+  ROUND >= 2
+    ? `./data/en/stress-grams${ROUND}.json`
+    : "./data/en/stress-grams.json";
 // Always reset the table before importing the pipeline: adoption is
 // measured against the GRAM-FREE heuristics. Re-mining against a
 // pipeline that already carries the table would un-adopt its own
@@ -76,7 +77,7 @@ function sylCount(ipa: string): number {
 async function main() {
   // Round 1 measures against the gram-free baseline; round 2 measures
   // against the round-1 pipeline (residual boosting).
-  if (ROUND2) process.env.PHONEMIZE_NO_GRAMS2 = "1";
+  if (ROUND >= 2) process.env[`PHONEMIZE_NO_GRAMS${ROUND}`] = "1";
   else process.env.PHONEMIZE_NO_GRAMS = "1";
   const { default: EnglishG2P } = await import("../src/en-g2p");
   const g = new EnglishG2P({ disableDict: true });
@@ -169,7 +170,7 @@ async function main() {
   const size = (t: Record<string, Record<string, number>>) =>
     Object.values(t).reduce((n, m) => n + Object.keys(m).length, 0);
   console.log(
-    `stress grams adopted (round ${ROUND2 ? 2 : 1}): primary ${size(primary)}, secondary ${size(secondary)}, primaryInit ${size(primaryInit)}`,
+    `stress grams adopted (round ${ROUND}): primary ${size(primary)}, secondary ${size(secondary)}, primaryInit ${size(primaryInit)}`,
   );
 }
 
