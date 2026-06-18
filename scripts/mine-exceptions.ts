@@ -32,6 +32,23 @@ const SIMILAR: string[][] = [
 function norm(s: string): string {
   return s.replace(/[ˈˌ]/g, "");
 }
+// Index (from word start) of the vowel nucleus carrying primary stress;
+// -1 if unmarked. Used to detect contrastive primary-stress mismatches.
+const PRIMARY_V = "aeiouɑæɛɪɔʊʌəɝ";
+function primaryNucleusIdx(s: string): number {
+  const i = s.indexOf("ˈ");
+  if (i < 0) return -1;
+  let n = 0;
+  let inV = false;
+  for (let j = 0; j < i; j++) {
+    if (PRIMARY_V.includes(s[j])) {
+      if (!inV) n++;
+      inV = true;
+    } else inV = false;
+  }
+  return n;
+}
+
 function canon(s: string): string {
   let t = norm(s);
   SIMILAR.forEach((g: string[]) => {
@@ -165,6 +182,13 @@ for (const [word, dictIpa] of Object.entries(dict)) {
   const pred = g2p.predict(word, "en");
   if (!pred) continue;
   const d = levenshtein.get(canon(pred), canon(dictIpa));
+  // Primary-stress position (vowel-nuclei before the ˈ mark). canon()
+  // strips stress, so a word the rules get segmentally right but mis-stress
+  // (bouquet ˈbukeɪ vs buˈkeɪ) scores d=0 and would be skipped. Treat a
+  // primary-stress-position mismatch as a real error worth memorizing —
+  // lexical primary stress IS contrastive. (Secondary stress is ignored.)
+  const stressDiff = primaryNucleusIdx(pred) !== primaryNucleusIdx(dictIpa);
+  const ed = stressDiff ? Math.max(d, 1) : d;
   // Floor at ed≥1: ship every in-dict word the rules don't already
   // reproduce (after similar-vowel canonicalization). The runtime
   // returns the dict value for these directly, so common words keep
@@ -172,11 +196,11 @@ for (const [word, dictIpa] of Object.entries(dict)) {
   // higher floor shrinks the table but lets the rule path's residual
   // ed≤1 deviations leak through on known words — which the test
   // suite pins to exact dict values.)
-  if (d < 1) {
+  if (ed < 1) {
     withinLenient++;
     continue;
   }
-  candidates.push({ word, dictIpa, predIpa: pred, ed: d, origin });
+  candidates.push({ word, dictIpa, predIpa: pred, ed, origin });
 }
 
 // Sort by edit distance (worst first), then alphabetically for stability.
