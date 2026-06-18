@@ -269,17 +269,6 @@ function elideIcallySchwa(ipa: string): string {
   return ipa.replace(ICALLY_RE, "ɪkli");
 }
 
-// ─── Rule: AmE /nt/-deletion after diphthong + unstressed V ──────────────
-// Fires on counted /kaʊnəd/, accountable /əkaʊnəbəl/ (nt+ə+{d,b,…}) but
-// NOT on the -tain ending fountain/mountain /faʊntən/ (nt+ə+n), where the
-// dict keeps the /t/ — hence the (?!n) lookahead after the schwa.
-const NT_DELETE_RE = /(aʊ|eɪ|ɔɪ|aɪ|oʊ)nt(ə(?!n)|[ɪi])/g;
-function deleteIntervocalicNT(ipa: string): string {
-  // Cheap pre-check: must contain "nt".
-  if (ipa.indexOf("nt") < 0) return ipa;
-  return ipa.replace(NT_DELETE_RE, "$1n$2");
-}
-
 // ─── Rule: initial secondary stress on long Latinate words ────────────────
 function addInitialSecondary(ipa: string): string {
   const primaryAt = ipa.indexOf("ˈ");
@@ -361,7 +350,6 @@ export function applyPhonotactics(ipa: string, word?: string): string {
   cur = weakVowelInflection(cur);
   cur = epenthesizeSyllabicL(cur);
   cur = elideIcallySchwa(cur);
-  cur = deleteIntervocalicNT(cur);
   cur = addInitialSecondary(cur);
   cur = applyHappyTensing(cur);
   return cur;
