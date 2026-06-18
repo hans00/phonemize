@@ -56,7 +56,11 @@ function simplifyDtFinal(ipa: string): string {
 // after t,d. Dict backs this strongly (voiceless→/t/ 346:4).
 const ED_VOICELESS = "pkfθsʃ"; // tʃ ends in ʃ, so prev='ʃ' catches affricate
 const ED_VOICED_NON_TD = "bʒvzðmnŋɫlɹjɡɑæɛɪɔʊʌəɝaeiouy";
-function fixPastTenseED(ipa: string): string {
+function fixPastTenseED(ipa: string, word?: string): string {
+  // Only a real orthographic -ed past tense takes the allomorph. Without
+  // this guard the rule mangles any word ending in /Cəd/ (rapid→ɹæpt,
+  // candid, vivid, splendid, method, salad…).
+  if (word !== undefined && !word.endsWith("ed")) return ipa;
   const len = ipa.length;
   if (len < 3) return ipa;
   if (ipa.charCodeAt(len - 1) !== 100 /* 'd' */) return ipa;
@@ -347,7 +351,7 @@ export function applyPhonotactics(ipa: string, word?: string): string {
   let cur = ipa;
   cur = collapseInitialDoubleA(cur);
   cur = simplifyDtFinal(cur);
-  cur = fixPastTenseED(cur);
+  cur = fixPastTenseED(cur, word);
   cur = dropSilentH(cur);
   cur = normalizeStrut(cur, word);
   cur = laxFleeceBeforeCodaR(cur);
