@@ -814,6 +814,18 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
 
+    // -ization ← -ize verb (prioritization→prioritize). The suffix carries
+    // primary stress onto its own /ˈzeɪʃən/; the stem's former primary
+    // demotes to secondary, and the -ize /aɪz/ becomes /əˈzeɪʃən/.
+    if (lowerWord.endsWith("ization") && lowerWord.length > 9) {
+      const bp = this.wellKnown(lowerWord.slice(0, -7) + "ize", undefined, true);
+      if (bp && /aɪz$/.test(bp))
+        // demote the stem's primary to secondary, then turn the -ize
+        // syllable (its onset's secondary mark + /aɪz/) into unstressed
+        // /əˈzeɪʃən/ — the suffix carries the new primary.
+        return bp.replace(/[ˈˌ]/g, "ˌ").replace(/ˌ?([^ˈˌ]*)aɪz$/, "$1əˈzeɪʃən");
+    }
+
     if (lowerWord.endsWith("logy") && lowerWord.length > 6) {
       const bp =
         this.wellKnown(lowerWord.slice(0, -4), undefined, true) ||
