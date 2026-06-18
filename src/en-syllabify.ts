@@ -7,102 +7,6 @@
  * PHONEME_RULES, first match wins — order is load-bearing).
  */
 import type { TraceStep } from "./en-g2p";
-import * as stressGramsJson from "../data/en/stress-grams.json";
-import * as stressGrams2Json from "../data/en/stress-grams2.json";
-import * as stressGrams3Json from "../data/en/stress-grams3.json";
-import { resolveJson } from "./utils";
-
-// The gram miners set PHONEMIZE_NO_GRAMS before importing the
-// pipeline so every miner measures against the same gram-free
-// baseline (deterministic regardless of mining order). Round-2
-// (residual) miners set PHONEMIZE_NO_GRAMS2 instead, measuring
-// against the round-1 pipeline.
-export const NO_GRAMS =
-  typeof process !== "undefined" && !!process.env?.PHONEMIZE_NO_GRAMS;
-export const NO_GRAMS2 =
-  NO_GRAMS ||
-  (typeof process !== "undefined" && !!process.env?.PHONEMIZE_NO_GRAMS2);
-export const NO_GRAMS3 =
-  NO_GRAMS2 ||
-  (typeof process !== "undefined" && !!process.env?.PHONEMIZE_NO_GRAMS3);
-
-// Mined ending-gram → primary-stress-from-end table (see
-// scripts/mine-stress-grams.ts). Longest gram wins; each entry
-// net-fixes ≥3 words against the heuristics below.
-type StressTable = {
-  primary: Record<string, Record<string, number>>;
-  secondary: Record<string, Record<string, number>>;
-  primaryInit?: Record<string, Record<string, number>>;
-};
-const STRESS_GRAMS = resolveJson<StressTable>(stressGramsJson);
-const STRESS_GRAMS_4: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS.primary["4"],
-);
-const STRESS_GRAMS_3: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS.primary["3"],
-);
-/** Secondary-stress gram tables, consumed by en-postlex. */
-export const SECONDARY_GRAMS_4: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS.secondary["4"],
-);
-export const SECONDARY_GRAMS_3: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS.secondary["3"],
-);
-// Prefix-keyed primary-stress fallback (6→3 char initial grams ×
-// count), consulted only when no ending gram matches.
-const PRIMARY_INIT: Record<string, Record<string, number>> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS.primaryInit ?? {},
-);
-// Round-2 (residual) stress tables — trained against the round-1
-// pipeline, applied with precedence over round 1.
-const STRESS_GRAMS2 = resolveJson<StressTable>(stressGrams2Json);
-const STRESS2_4: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS2.primary["4"],
-);
-const STRESS2_3: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS2.primary["3"],
-);
-export const SECONDARY2_GRAMS_4: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS2.secondary["4"],
-);
-export const SECONDARY2_GRAMS_3: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS2.secondary["3"],
-);
-const PRIMARY_INIT2: Record<string, Record<string, number>> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS2.primaryInit ?? {},
-);
-// Round-3 (residual) stress tables — trained against the R1+R2 pipeline.
-const STRESS_GRAMS3 = resolveJson<StressTable>(stressGrams3Json);
-const STRESS3_4: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS3.primary["4"],
-);
-const STRESS3_3: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS3.primary["3"],
-);
-export const SECONDARY3_GRAMS_4: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS3.secondary["4"],
-);
-export const SECONDARY3_GRAMS_3: Record<string, number> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS3.secondary["3"],
-);
-const PRIMARY_INIT3: Record<string, Record<string, number>> = Object.assign(
-  Object.create(null),
-  STRESS_GRAMS3.primaryInit ?? {},
-);
 
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
 const CONSONANTS = new Set("bcdfghjklmnpqrstvwxyz".split(""));
@@ -577,35 +481,6 @@ export function assignStress(syllables: string[], word: string): number {
 
   const lowerWord = word.toLowerCase();
 
-  // Mined ending-gram override (longest gram first): keys are
-  // `gram|sylCount` (count capped at 5), value = the lexicon's modal
-  // stress position from the word end (1 = final syllable).
-  const ns = Math.min(syllables.length, 5);
-  const k4 = `${lowerWord.slice(-4)}|${ns}`;
-  const k3 = `${lowerWord.slice(-3)}|${ns}`;
-  // Prefix-keyed primary stress (6→3 char initial gram × count),
-  // longest-first; consulted only when no ending gram matches.
-  const initStress = (
-    t: Record<string, Record<string, number>>,
-  ): number | undefined => {
-    for (let L = 6; L >= 3; L--) {
-      if (lowerWord.length < L) continue;
-      const v = t[String(L)]?.[`${lowerWord.slice(0, L)}|${ns}`];
-      if (v !== undefined) return v;
-    }
-    return undefined;
-  };
-  const fromEnd = NO_GRAMS
-    ? undefined
-    : ((NO_GRAMS3 ? undefined : (STRESS3_4[k4] ?? STRESS3_3[k3])) ??
-      (NO_GRAMS2 ? undefined : (STRESS2_4[k4] ?? STRESS2_3[k3])) ??
-      STRESS_GRAMS_4[k4] ??
-      STRESS_GRAMS_3[k3] ??
-      (NO_GRAMS3 ? undefined : initStress(PRIMARY_INIT3)) ??
-      (NO_GRAMS2 ? undefined : initStress(PRIMARY_INIT2)) ??
-      initStress(PRIMARY_INIT));
-  if (fromEnd !== undefined)
-    return Math.max(0, Math.min(syllables.length - 1, syllables.length - fromEnd));
 
   // Check for stress-attracting suffixes (stress BEFORE the suffix)
   for (const [pattern, , attracts_stress] of SUFFIX_RULES) {

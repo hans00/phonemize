@@ -35,11 +35,10 @@ describe('Index', function() {
   })
 
   it('rule based or compound word', function() {
-    expect(phonemize('buggie')).toEqual('ˈbəɡi')
-    // supercar: rules don't decompose this compound, so the primary/
-    // secondary stress is swapped vs the dict's ˈsupɝˌkɑɹ — but the
-    // mined gram tables now recover the correct segments (supɝkɑɹ).
-    expect(phonemize('supercar')).toEqual('ˌsupɝˈkɑɹ')
+    expect(phonemize('buggie')).toEqual('ˈbʌɡi')
+    // supercar decomposes into the verified compound parts super + car
+    // (fore-stressed, as English noun compounds are): ˈsuper + ˌcar.
+    expect(phonemize('supercar')).toEqual('ˈsupɝˌkɑɹ')
     expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).toMatch(/njumən|njumoʊ/)
   })
 
@@ -110,7 +109,7 @@ describe('Index', function() {
   it('Number processing', function() {
     // Basic number expansion tests
     expect(phonemize('5')).toEqual('ˈfaɪv')
-    expect(phonemize('123')).toEqual('wən ˈhəndɝd ˈtwɛni θɹi')
+    expect(phonemize('123')).toEqual('wʌn ˈhʌndɝd ˈtwɛni θɹi')
   })
 
   it('Abbreviation expansion', function() {

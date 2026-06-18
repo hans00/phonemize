@@ -172,7 +172,7 @@ describe('Utils', function() {
     })
 
     it('should handle multiple stress markers', function() {
-      expect(arpabetToIpa('AH1 B AX2 K EY T')).toEqual('ˈəbəkeɪt')
+      expect(arpabetToIpa('AH1 B AX2 K EY T')).toEqual('ˈəˌbəkeɪt')
     })
 
     it('should handle unknown phonemes', function() {
@@ -187,7 +187,7 @@ describe('Utils', function() {
     })
 
     it('should prefer primary stress over secondary', function() {
-      expect(arpabetToIpa('AH2 B AX1 K EY T')).toEqual('ˈəbəkeɪt')
+      expect(arpabetToIpa('AH2 B AX1 K EY T')).toEqual('ˌəˈbəkeɪt')
     })
 
     it('should handle diphthongs', function() {

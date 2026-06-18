@@ -896,7 +896,7 @@ export class EnglishG2P implements LanguageProcessor {
     let head: string | undefined;
     let tail: string | undefined;
     let bestScore = -1;
-    for (let i = 2; i <= word.length - 4; i++) {
+    for (let i = 2; i <= word.length - 3; i++) {
       if (word[i - 1] === word[i]) continue;
       const a = word.slice(0, i);
       const b = word.slice(i);

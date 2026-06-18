@@ -17,6 +17,7 @@
 
 import { readFileSync, writeFileSync } from "fs";
 import EnglishG2P from "../src/en-g2p";
+import { FUNCTION_WORDS } from "../src/pos-tagger";
 import * as levenshtein from "fast-levenshtein";
 
 const dict: Record<string, string> = JSON.parse(
@@ -299,6 +300,16 @@ for (const c of shippedCands) shippedMap[c.word] = c.dictIpa;
 // consonant initialisms like "TTS" to the fallback path.
 for (const letter of ["a", "i"]) {
   if (dict[letter]) shippedMap[letter] = dict[letter];
+}
+// Closed-class function words are the highest-frequency vocabulary, and
+// several are lexically irregular in ways spelling-driven rules can't
+// derive — TH-voicing (this/that/those/the → /ð/, not /θ/) and weak
+// vowels. The edit-distance gate deliberately leaves high-ED native words
+// for rule fixes, which drops exactly these. Always ship every function
+// word that has a dictionary entry so the most common words in any text
+// are correct by lookup rather than by an unreliable spelling rule.
+for (const w of FUNCTION_WORDS) {
+  if (dict[w]) shippedMap[w] = dict[w];
 }
 const shippedSize = JSON.stringify(shippedMap).length;
 writeFileSync(

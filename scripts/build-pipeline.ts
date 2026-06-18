@@ -39,16 +39,16 @@ const STEPS: Step[] = [
     args: ["--native-min", "1"],
     env: { PHONEMIZE_NO_GRAMS: "1" },
   },
-  // Statistical tables learned from the dictionary.
+  // Statistical compound head/tail table (helps decompose compounds).
   { script: "mine-compound-parts.ts" },
-  { script: "mine-stress-grams.ts" },
-  { script: "mine-vowel-grams.ts" },
-  // Round 2 (residual boosting) — trained against the round-1 pipeline.
-  { script: "mine-stress-grams.ts", env: { MINE_ROUND: "2" } },
-  { script: "mine-vowel-grams.ts", env: { MINE_ROUND: "2" } },
-  // Round 3 (residual boosting) — trained against the R1+R2 pipeline.
-  { script: "mine-stress-grams.ts", env: { MINE_ROUND: "3" } },
-  { script: "mine-vowel-grams.ts", env: { MINE_ROUND: "3" } },
+  // The stress-gram and vowel-gram miners are intentionally NOT run. They
+  // were tuned to maximize dictionary-MATCH (the old eval standard), but
+  // AI-eval measurements showed they net-HURT pronunciation quality on the
+  // common high-frequency vocabulary — they override correct rule output
+  // with the dictionary's modal n-gram guess, injecting errors
+  // (floor→fɫʌɹ, morning→mɝˈnɪŋ, reached→ɹiˈtʃɛd, asked→ʌskt). seed-data.ts
+  // leaves the gram tables as empty placeholders, so the (now removed) gram
+  // application is a no-op. Compound parts stay — they help, not hurt.
 ];
 
 for (const step of STEPS) {

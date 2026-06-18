@@ -83,6 +83,13 @@ export function ipaToArpabet(ipa: string): string {
  * @param arpabet - ARPABET phonetic string
  * @returns IPA formatted string
  */
+// ARPABET vowel symbols (stress digit already stripped) — used to locate
+// syllable onsets when placing stress marks.
+const ARPABET_VOWELS = new Set([
+  "AA", "AE", "AH", "AO", "AW", "AY", "EH", "ER", "EY",
+  "IH", "IY", "OW", "OY", "UH", "UW", "AX", "AXR",
+]);
+
 export function arpabetToIpa(arpabet: string): string {
   if (!arpabet || typeof arpabet !== "string" || !arpabet.trim()) {
     return "";
@@ -90,40 +97,47 @@ export function arpabetToIpa(arpabet: string): string {
 
   const phonemes = arpabet.split(/\s+/).filter((p) => p.trim());
   const result: string[] = [];
-  let primaryStressFound = false;
-  let secondaryStressFound = false;
+  const isVowel: boolean[] = [];
+  let primaryIdx = -1;
+  let secondaryIdx = -1;
 
-  // First pass: convert phonemes without stress markers
+  // First pass: convert phonemes, remembering which output slot is the
+  // primary/secondary-stressed vowel so the mark can be placed at that
+  // syllable's onset (not naively at the start of the word).
   for (const phoneme of phonemes) {
-    const stressMatch = phoneme.match(/([012])$/);
-    const stress = stressMatch?.[0] || "";
+    const stress = phoneme.match(/([012])$/)?.[0] || "";
     const basePhoneme = phoneme.replace(/[012]$/, "");
 
     const ipaPhoneme = ARPABET_TO_IPA[basePhoneme];
     if (ipaPhoneme) {
       result.push(ipaPhoneme);
-
-      // Track stress positions
-      if (stress === "1") {
-        primaryStressFound = true;
-      } else if (stress === "2") {
-        secondaryStressFound = true;
-      }
+      isVowel.push(ARPABET_VOWELS.has(basePhoneme));
     } else {
       // Preserve unknown phonemes as-is
       result.push(phoneme);
+      isVowel.push(false);
     }
+    if (stress === "1" && primaryIdx < 0) primaryIdx = result.length - 1;
+    else if (stress === "2" && secondaryIdx < 0) secondaryIdx = result.length - 1;
   }
 
-  // Add stress markers at the beginning if found
-  let finalResult = result.join("");
-  if (primaryStressFound) {
-    finalResult = "ˈ" + finalResult;
-  } else if (secondaryStressFound) {
-    finalResult = "ˌ" + finalResult;
-  }
+  // Onset of the stressed vowel = walk left over consonants to just after the
+  // previous vowel (maximal-onset-ish; correct for the short custom entries
+  // this path serves). Returns the result[] index to insert the mark before.
+  const onsetOf = (vowelIdx: number): number => {
+    let p = vowelIdx;
+    while (p > 0 && !isVowel[p - 1]) p--;
+    return p;
+  };
 
-  return finalResult;
+  const marks: Array<[number, string]> = [];
+  if (primaryIdx >= 0) marks.push([onsetOf(primaryIdx), "ˈ"]);
+  if (secondaryIdx >= 0) marks.push([onsetOf(secondaryIdx), "ˌ"]);
+  // Insert right-to-left so earlier indices stay valid.
+  marks.sort((a, b) => b[0] - a[0]);
+  for (const [idx, mark] of marks) result.splice(idx, 0, mark);
+
+  return result.join("");
 }
 
 /**
