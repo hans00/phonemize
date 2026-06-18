@@ -648,7 +648,11 @@ export class EnglishG2P implements LanguageProcessor {
         const m = this.wellKnown(base + "e");
         if (m) return join(m);
       } // magic-e: coded→code, baking→bake
-      const basePron = this.wellKnown(base);
+      // skipMorphology: the base of an inflection must be a real lexicon
+      // word, not a re-decomposition. Without this, wellKnown("chas")
+      // morphologises to "cha"+s → /tʃɑz/, intercepting the magic-e
+      // recovery and yielding chased→/tʃɑzd/ instead of /tʃeɪst/.
+      const basePron = this.wellKnown(base, undefined, true);
       if (basePron) return join(basePron);
       // Doubled-consonant base: the two chars before the suffix are
       // identical (stopped → stop, planned → plan).
