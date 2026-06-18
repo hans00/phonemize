@@ -777,9 +777,21 @@ export class EnglishG2P implements LanguageProcessor {
       !lowerWord.endsWith("ally") &&
       lowerWord.length > 4
     ) {
+      const stem = lowerWord.slice(0, -2);
+      // y-restoration: a stem ending in vowel+i came from a base-final -y
+      // the suffix replaced (daily→day, gaily→gay, oily→oy). Guarded to
+      // vowel+i so consonant+i roots (family, homily, happily, bodily) are
+      // NOT mis-restored. Try the -y base first.
+      if (/[aeiou]i$/.test(stem)) {
+        const yBase =
+          this.wellKnown(stem.slice(0, -1) + "y", undefined, true) ||
+          this.predictInternal(stem.slice(0, -1) + "y", undefined, false);
+        if (yBase)
+          return /[lɫ]$/.test(yBase) ? yBase + "i" : yBase + "li";
+      }
       const basePron =
-        this.wellKnown(lowerWord.slice(0, -2), undefined, true) ||
-        this.predictInternal(lowerWord.slice(0, -2), undefined, false);
+        this.wellKnown(stem, undefined, true) ||
+        this.predictInternal(stem, undefined, false);
       if (basePron)
         return /[lɫ]$/.test(basePron) ? basePron + "i" : basePron + "li";
     }
