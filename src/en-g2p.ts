@@ -801,6 +801,19 @@ export class EnglishG2P implements LanguageProcessor {
       if (basePron) return basePron + "əbəl";
     }
 
+    // -ible magic-e derivations (reproducible→reproduce, reducible→reduce,
+    // responsible→response). Require a LONG base (≥5) so short coincidental
+    // stems (poss→posse, vis→vise, leg→lege) don't misfire — those roots
+    // (possible, visible, legible) stay on the normal path — and require
+    // the +e stem to be a real known word.
+    if (lowerWord.endsWith("ible") && lowerWord.length > 7) {
+      const base = lowerWord.slice(0, -4);
+      if (base.length >= 5 && !/[aeiour]$/.test(base) && !this.wellKnown(base, undefined, true)) {
+        const m = this.wellKnown(base + "e", undefined, true);
+        if (m) return m.replace(/ə$/, "") + "əbəl";
+      }
+    }
+
     if (lowerWord.endsWith("logy") && lowerWord.length > 6) {
       const bp =
         this.wellKnown(lowerWord.slice(0, -4), undefined, true) ||
