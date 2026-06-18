@@ -287,8 +287,16 @@ writeFileSync(
 );
 console.log(`\nWrote data/en/exception-candidates.json (${candidates.length} entries, ${(JSON.stringify(candidatesMap).length / 1024).toFixed(1)} KB)`);
 
+// A standard IPA transcription has exactly one primary stress. ~1,400
+// dict entries carry two or more ˈ marks (corrupt / non-reduced compounds
+// like addresses→ˈæˈdɹɛsɪz). Don't memorize those when the rule path
+// already produces a single, cleaner primary stress — the AI eval scores
+// mis-stress as wrong, and the rule output is the better pronunciation.
+const primaryCount = (s: string): number => (s.match(/ˈ/g) ?? []).length;
 const shippedCands = candidates.filter(
-  (c: Cand) => c.origin !== "native" || c.ed >= cliMin
+  (c: Cand) =>
+    !(primaryCount(c.dictIpa) >= 2 && primaryCount(c.predIpa) < 2) &&
+    (c.origin !== "native" || c.ed >= cliMin)
 );
 const shippedMap: Record<string, string> = {};
 for (const c of shippedCands) shippedMap[c.word] = c.dictIpa;
