@@ -204,6 +204,19 @@ Assign EXACTLY ONE verdict per word:
           salient position, a wrong contrastive suprasegmental (stress/tone/pitch
           accent), or an inserted / deleted phoneme.
 
+Rigor — you are graded on ACCURACY, so do not over-flag:
+  - Default to OK. Use WRONG only when you are confident the transcription is genuinely
+    not a valid pronunciation of the word. If you are unsure, it is OK.
+  - Before marking a STRESS error, recall the word's actual standard primary-stress
+    syllable and check the prediction truly differs. Do NOT flag stress from a vague
+    impression — long Latinate words (e.g. the -ation/-ity/-ic families: ˌɛdʒəˈkeɪʃən,
+    pəˈsɪbɪlɪti, ˌɛkəˈnɑmɪk) carry predictable primary stress; verify before flagging.
+  - Treat unstressed-vowel quality (ɪ~ə~i in reduced syllables) and secondary-stress
+    placement as never-WRONG; at most MINOR.
+A real phonemic error (wrong stem vowel like chase→/ɑ/, a deleted/inserted segment,
+primary stress on a demonstrably wrong syllable) must still be marked WRONG — accuracy
+means catching those, not waving them through.
+
 Words (index, word, predicted IPA):
 ${list}
 
