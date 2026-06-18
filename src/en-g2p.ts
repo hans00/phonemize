@@ -670,11 +670,15 @@ export class EnglishG2P implements LanguageProcessor {
       // vowel and end in a consonant, so a root-final suffix with a
       // vowelless stem (bled, sped, fled) is left for the normal path.
       // Try the silent-e-restored stem first (advanced → advance,
-      // placed → place); for stems with no silent e the +e form is
-      // harmless ("aske" and "forme" predict the same /æsk/, /fɔɹm/).
+      // placed → place) — but ONLY when the restored e is actually silent,
+      // i.e. the prediction still ends in a consonant. For sibilant-final
+      // stems the e is pronounced (distinguishe → …ʃi, washe → …ʃi), which
+      // would wrongly attach the allomorph to a vowel; fall back to the
+      // bare stem there so distinguished → …ʃt, not …ʃid.
       if (ruleFallback && /[aeiou]/.test(base) && !/[aeiou]$/.test(base)) {
         const ruleBaseE = this.predictInternal(base + "e", undefined, true);
-        if (ruleBaseE) return join(ruleBaseE);
+        if (ruleBaseE && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(ruleBaseE))
+          return join(ruleBaseE);
         const ruleBase = this.predictInternal(base, undefined, true);
         if (ruleBase) return join(ruleBase);
       }
