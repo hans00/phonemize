@@ -76,6 +76,7 @@ phonemize('Hello world!', { returnArray: true })  // IPA array
 - `format` ('ipa' | 'arpabet'): Output format
 - `stripStress` (boolean): Remove stress markers
 - `separator` (string): Phoneme separator (default: ' ')
+- `affricates` ('separate' | 'ligature' | 'tie-bar'): How to render /dʒ/ and /tʃ/ in IPA output — `'separate'` (default) `dʒ`/`tʃ`, `'ligature'` `ʤ`/`ʧ`, or `'tie-bar'` `d͡ʒ`/`t͡ʃ`
 - `anyAscii` (boolean): Enable multilingual support via anyAscii transliteration
 - `language` (string): Preferred language tag (BCP 47, e.g. `'en-GB'`). Words written in unambiguously different scripts (CJK, Cyrillic, …) still go through their own processor.
 

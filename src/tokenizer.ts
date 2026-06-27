@@ -53,6 +53,15 @@ export interface TokenizerOptions {
   /** Chinese tone format: 'unicode' (˧˩˧) or 'arrow' (↓↗↘→). Only applies when format is 'ipa' */
   toneFormat?: "unicode" | "arrow";
   /**
+   * How to render the affricates /dʒ/ and /tʃ/ in IPA output:
+   *   'separate' (default) — two characters dʒ / tʃ (current IPA standard)
+   *   'ligature'           — single glyphs ʤ / ʧ (withdrawn from IPA 1989,
+   *                          but still consumed by some TTS systems)
+   *   'tie-bar'            — d͡ʒ / t͡ʃ with the U+0361 tie bar (most precise)
+   * Only applies when format is 'ipa'.
+   */
+  affricates?: "separate" | "ligature" | "tie-bar";
+  /**
    * Preferred language tag (BCP 47, e.g. "en", "en-GB", "zh").
    *
    * When set, the tokenizer skips Unicode-based auto-detection for words
@@ -123,6 +132,7 @@ export class Tokenizer {
       separator: options.separator ?? " ",
       anyAscii: options.anyAscii ?? false,
       toneFormat: options.toneFormat ?? "unicode",
+      affricates: options.affricates ?? "separate",
       language: options.language,
     };
     this.registry = options.registry ?? defaultRegistry;
@@ -369,6 +379,13 @@ export class Tokenizer {
       // Convert Chinese tone format if requested
       if (this.options.toneFormat === "arrow") {
         phonemes = convertChineseTonesToArrows(phonemes);
+      }
+
+      // Affricate rendering style (internal rules always use dʒ/tʃ).
+      if (this.options.affricates === "ligature") {
+        phonemes = phonemes.replace(/dʒ/g, "ʤ").replace(/tʃ/g, "ʧ");
+      } else if (this.options.affricates === "tie-bar") {
+        phonemes = phonemes.replace(/dʒ/g, "d͡ʒ").replace(/tʃ/g, "t͡ʃ");
       }
 
       // Remove IPA stress markers if requested

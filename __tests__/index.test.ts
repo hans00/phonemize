@@ -106,6 +106,17 @@ describe('Index', function() {
     expect(phonemize('hello', { format: 'arpabet', stripStress: true })).toEqual('HH AX EL OW')
   })
 
+  it('affricate rendering style', function() {
+    // default: separate two-character affricates
+    expect(phonemize('judge church')).toEqual('dʒʌdʒ tʃɝtʃ')
+    // ligature glyphs (some TTS systems expect these)
+    expect(phonemize('judge church', { affricates: 'ligature' })).toEqual('ʤʌʤ ʧɝʧ')
+    // tie-bar (U+0361)
+    expect(phonemize('judge church', { affricates: 'tie-bar' })).toEqual('d͡ʒʌd͡ʒ t͡ʃɝt͡ʃ')
+    // IPA-only: ARPABET output is unaffected
+    expect(phonemize('judge', { format: 'arpabet', affricates: 'ligature' })).toEqual('JH1 AH JH')
+  })
+
   it('Number processing', function() {
     // Basic number expansion tests
     expect(phonemize('5')).toEqual('ˈfaɪv')
