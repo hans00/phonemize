@@ -1,5 +1,5 @@
-import { LanguageProcessor } from "./g2p";
-import { expandRussianText } from "./expand-ru";
+import { LanguageProcessor } from "../g2p";
+import { expandRussianText } from "./expand";
 
 // === Russian G2P Processor ===
 

@@ -14,7 +14,7 @@
  */
 
 import { readFileSync } from "fs";
-import { findNuclei, extractStressedNuclei } from "../src/en-reduce";
+import { findNuclei, extractStressedNuclei } from "../src/en/reduce";
 
 const dict: Record<string, string> = JSON.parse(
   readFileSync("./data/en/dict.json", "utf8")

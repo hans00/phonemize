@@ -1,6 +1,6 @@
 import { phonemize, toIPA, toARPABET, createPhonemizer } from "../src/all";
-import EnglishG2P from "../src/en-g2p";
-import { transformAmericanToRP } from "../src/en-gb";
+import EnglishG2P from "../src/en/g2p";
+import { transformAmericanToRP } from "../src/en/gb";
 
 describe("en-GB (Received Pronunciation) transformation", () => {
   describe("non-rhotic transformation", () => {

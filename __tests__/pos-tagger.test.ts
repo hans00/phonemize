@@ -1,4 +1,4 @@
-import { SimplePOSTagger, POSResult } from '../src/pos-tagger'
+import { SimplePOSTagger, POSResult } from '../src/en/pos-tagger'
 
 describe('POS Tagger', function() {
   let tagger: SimplePOSTagger

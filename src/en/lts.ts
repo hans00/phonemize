@@ -12,8 +12,8 @@
  * pipeline (en-principled).
  */
 
-import * as lts from "../data/en/lts.json";
-import { resolveJson } from "./utils";
+import * as lts from "../../data/en/lts.json";
+import { resolveJson } from "../utils";
 
 interface LtsTable {
   full: Record<string, string>;

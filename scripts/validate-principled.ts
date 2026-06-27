@@ -7,7 +7,7 @@
  */
 
 import { readFileSync } from "fs";
-import { predictPrincipled } from "../src/en-principled";
+import { predictPrincipled } from "../src/en/principled";
 
 const dict: Record<string, string> = JSON.parse(
   readFileSync("./data/en/dict.json", "utf8")

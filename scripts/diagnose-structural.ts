@@ -8,7 +8,7 @@
  */
 
 import { readFileSync } from "fs";
-import EnglishG2P from "../src/en-g2p";
+import EnglishG2P from "../src/en/g2p";
 
 const dict: Record<string, string> = JSON.parse(
   readFileSync("./data/en/dict.json", "utf8")

@@ -4,7 +4,7 @@
  * optimization pass has a baseline.
  */
 
-import EnglishG2P from "../src/en-g2p";
+import EnglishG2P from "../src/en/g2p";
 import { phonemize } from "../src/index";
 
 const g2p = new EnglishG2P();

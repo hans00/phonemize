@@ -1,6 +1,6 @@
 /**
  * Bootstrap empty placeholders for the generated data files that
- * `src/en-g2p.ts` (and its imports) load *statically*.
+ * `src/en/g2p.ts` (and its imports) load *statically*.
  *
  * The build pipeline mines several of these tables by importing the
  * runtime pipeline itself (mine-exceptions, mine-stress-grams,

@@ -65,7 +65,16 @@ function copyDirRecursive(src, dest) {
 }
 
 export default {
-  input: Object.keys(pkg.exports).map((name) => 'src/' + (name.replace(/^\.\/?/, '') || 'index') + '.ts'),
+  // Map each public export to its source entry. Language G2P entries live
+  // under src/<lang>/g2p.ts; the public name stays "<lang>-g2p" (= the output
+  // chunk name), everything else is a flat src/<name>.ts.
+  input: Object.fromEntries(
+    Object.keys(pkg.exports).map((name) => {
+      const key = name.replace(/^\.\/?/, '') || 'index';
+      const lang = key.match(/^([a-z]+)-g2p$/);
+      return [key, lang ? `src/${lang[1]}/g2p.ts` : `src/${key}.ts`];
+    }),
+  ),
   output: [
     {
       dir: 'dist',

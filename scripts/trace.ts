@@ -1,4 +1,4 @@
-import EnglishG2P from '../src/en-g2p';
+import EnglishG2P from '../src/en/g2p';
 
 const words = process.argv.slice(2);
 if (!words.length) {

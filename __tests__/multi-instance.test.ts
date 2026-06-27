@@ -6,8 +6,8 @@ import {
   LanguageRegistry,
 } from "../src/all";
 import type { LanguageProcessor } from "../src/g2p";
-import EnglishG2P from "../src/en-g2p";
-import ChineseG2P from "../src/zh-g2p";
+import EnglishG2P from "../src/en/g2p";
+import ChineseG2P from "../src/zh/g2p";
 
 describe("Multi-instance and language preference", () => {
   describe("phonemize() language shorthand", () => {

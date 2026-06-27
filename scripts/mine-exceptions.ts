@@ -16,8 +16,8 @@
  */
 
 import { readFileSync, writeFileSync } from "fs";
-import EnglishG2P from "../src/en-g2p";
-import { FUNCTION_WORDS } from "../src/pos-tagger";
+import EnglishG2P from "../src/en/g2p";
+import { FUNCTION_WORDS } from "../src/en/pos-tagger";
 import * as levenshtein from "fast-levenshtein";
 
 const dict: Record<string, string> = JSON.parse(

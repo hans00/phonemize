@@ -11,4 +11,4 @@
  * becomes a thin compatibility shim.
  */
 
-export { expandText, expandNumbers, expandAbbreviations } from "./expand-en";
+export { expandText, expandNumbers, expandAbbreviations } from "./en/expand";

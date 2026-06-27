@@ -3,11 +3,11 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join, resolve } from 'path';
 import OpenAI from 'openai';
-import EnglishG2P from '../src/en-g2p';
-import ChineseG2P from '../src/zh-g2p';
-import JapaneseG2P from '../src/ja-g2p';
-import KoreanG2P from '../src/ko-g2p';
-import RussianG2P from '../src/ru-g2p';
+import EnglishG2P from '../src/en/g2p';
+import ChineseG2P from '../src/zh/g2p';
+import JapaneseG2P from '../src/ja/g2p';
+import KoreanG2P from '../src/ko/g2p';
+import RussianG2P from '../src/ru/g2p';
 import { createPhonemizer } from '../src/core';
 
 const DATA_DIR = resolve(__dirname, 'eval-data');

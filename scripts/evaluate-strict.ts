@@ -21,7 +21,7 @@
  * reference; subsequent runs compare against it.
  */
 
-import EnglishG2P from "../src/en-g2p";
+import EnglishG2P from "../src/en/g2p";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import * as levenshtein from "fast-levenshtein";
 

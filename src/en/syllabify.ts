@@ -6,7 +6,7 @@
  * stress assignment, and per-syllable IPA conversion (SUFFIX_RULES /
  * PHONEME_RULES, first match wins — order is load-bearing).
  */
-import type { TraceStep } from "./en-g2p";
+import type { TraceStep } from "./g2p";
 
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
 const CONSONANTS = new Set("bcdfghjklmnpqrstvwxyz".split(""));

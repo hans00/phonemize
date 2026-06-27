@@ -19,7 +19,7 @@
  *   pos:   eval-data tokens predicted with a pos tag — covers the
  *          weak-form / monosyllable-stress connected-speech branch
  */
-import EnglishG2P from "../src/en-g2p";
+import EnglishG2P from "../src/en/g2p";
 import dictionary from "../data/en/dict.json";
 import fs from "fs";
 import { join } from "path";

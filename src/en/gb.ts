@@ -19,8 +19,8 @@
  * source file.
  */
 
-import { resolveJson } from "./utils";
-import * as lexicalData from "../src-data/en-gb/lexical.json";
+import { resolveJson } from "../utils";
+import * as lexicalData from "../../src-data/en-gb/lexical.json";
 
 /**
  * Lexical exceptions — true shibboleths whose RP pronunciation diverges

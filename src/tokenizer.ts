@@ -13,7 +13,7 @@ import {
   preProcessByScript,
 } from "./g2p";
 import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
-import type ChineseG2P from "./zh-g2p";
+import type ChineseG2P from "./zh/g2p";
 
 // Tokenization regex patterns
 // Apostrophe class includes the ASCII straight apostrophe plus U+2018/U+2019

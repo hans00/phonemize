@@ -10,7 +10,7 @@ This project uses Heuristic Learning: the G2P rules are the learnable policy; Cl
 
 1. **Diagnose** — `yarn test:eval --cluster`: find top rule failure patterns
 2. **Trace** — `yarn trace <word> [word...]`: see which rule fired for specific words, pre- and post-dictionary
-3. **Fix** — edit `PHONEME_RULES`/`SUFFIX_RULES` (in `src/en-syllabify.ts`), the post-lexical tables (`src/en-postlex.ts`), or `tryMorphologicalAnalysis` (in `src/en-g2p.ts`)
+3. **Fix** — edit `PHONEME_RULES`/`SUFFIX_RULES` (in `src/en/syllabify.ts`), the post-lexical tables (`src/en/postlex.ts`), or `tryMorphologicalAnalysis` (in `src/en/g2p.ts`)
 4. **Validate** — `yarn test` (zero regressions) then `yarn test:eval` (lenient accuracy ≥ baseline)
 5. **Commit** — if both gates pass; update baseline with `yarn test:eval --update-baseline`
 
@@ -70,7 +70,11 @@ Rollup's `externalDataPlugin` (`rollup.config.mjs`) keeps `data/**/*.json` as se
 - `data/` — generated, committed JSON consumed at runtime
 - Run `yarn build-dict` after editing `src-data/`. `prebuild` does it automatically.
 
-### English dialect handling (`src/en-gb.ts`)
+### Source layout (by language)
+
+Language-specific modules live under `src/<lang>/` (`src/en/`, `src/zh/`, `src/ja/`, `src/ko/`, `src/ru/`) — e.g. `src/en/g2p.ts`, `src/en/syllabify.ts`, `src/zh/g2p.ts`, `src/<lang>/expand.ts`. Shared/cross-language code stays flat in `src/` (`g2p.ts` registry, `tokenizer.ts`, `core.ts`, `index.ts`, `all.ts`, `zh.ts`, `utils.ts`, `consts.ts`, `anyascii.ts`). The public `phonemize/<lang>-g2p` export names are unchanged — rollup maps each `<lang>-g2p` entry to `src/<lang>/g2p.ts`.
+
+### English dialect handling (`src/en/gb.ts`)
 
 en-GB is *not* a separate dictionary — it's a rule-based post-processor over the AmE base (non-rhotic conversion, NURSE split, SQUARE/NEAR/CURE diphthongs, word-level overrides). Adding `en-GB` pronunciations means extending the rules or `src-data/en-gb/lexical.json`, not duplicating the AmE dict.
 
@@ -78,18 +82,18 @@ en-GB is *not* a separate dictionary — it's a rule-based post-processor over t
 
 Each language has its own expander module that `LanguageProcessor.preProcess` calls:
 
-- `expand-en.ts` — numbers, abbreviations, currency, dates, times, ordinals, phone numbers.
-- `expand-zh.ts` — positional Chinese cardinals with 零 fill, `年` digit-by-digit, `点/分` time, currency (¥/$), percent, decimal, `第N` ordinal.
-- `expand-ja.ts` — positional hiragana, no rendaku (the ja-g2p syllable map lacks the palatal voiced rows).
-- `expand-ko.ts` — Sino-Korean Hangul positional.
-- `expand-ru.ts` — positional Cyrillic with feminine forms for тысяча and 1 / 2-4 / 5+ plural agreement on тысяча / миллион / процент / рубль / доллар.
+- `src/en/expand.ts` — numbers, abbreviations, currency, dates, times, ordinals, phone numbers.
+- `src/zh/expand.ts` — positional Chinese cardinals with 零 fill, `年` digit-by-digit, `点/分` time, currency (¥/$), percent, decimal, `第N` ordinal.
+- `src/ja/expand.ts` — positional hiragana, no rendaku (the ja G2P syllable map lacks the palatal voiced rows).
+- `src/ko/expand.ts` — Sino-Korean Hangul positional.
+- `src/ru/expand.ts` — positional Cyrillic with feminine forms for тысяча and 1 / 2-4 / 5+ plural agreement on тысяча / миллион / процент / рубль / доллар.
 
 ## Conventions
 
 From `.cursor/rules/`:
 
-- **`*-g2p.ts` files are rule-based.** Don't add word lists or per-word special cases — that defeats the point of rule-based G2P. Adjust general rules instead. Debug a G2P module with `new EnglishG2P({ disableDict: true })` to see what the rules alone produce.
-- **`pos-tagger.ts`** — keep the algorithm general, no per-word lookup tables.
+- **`src/<lang>/g2p.ts` files are rule-based.** Don't add word lists or per-word special cases — that defeats the point of rule-based G2P. Adjust general rules instead. Debug a G2P module with `new EnglishG2P({ disableDict: true })` to see what the rules alone produce.
+- **`src/en/pos-tagger.ts`** — keep the algorithm general, no per-word lookup tables.
 - **Tests** — don't tweak tests to pass. If an expected IPA value looks wrong, confirm with the user before changing it.
 - Don't leave dead comments or vestigial explanations in code.
 
@@ -99,9 +103,9 @@ Rules grow by accumulation. Compression folds patches back into simpler, more ge
 
 The English rule engine spans three modules (refactored 2026-06, snapshot-verified byte-identical):
 
-- `src/en-g2p.ts` — dictionary/morphology/compound dispatch, `tryMorphologicalAnalysis`, `tryCompoundSplit`
-- `src/en-syllabify.ts` — syllabification, stress, `PHONEME_RULES`/`SUFFIX_RULES` (first match wins; order is load-bearing)
-- `src/en-postlex.ts` — rule-path-only post-lexical correction tables and gram-table application. NOT mergeable into `en-phonotactics.ts`, which also applies to dict output.
+- `src/en/g2p.ts` — dictionary/morphology/compound dispatch, `tryMorphologicalAnalysis`, `tryCompoundSplit`
+- `src/en/syllabify.ts` — syllabification, stress, `PHONEME_RULES`/`SUFFIX_RULES` (first match wins; order is load-bearing)
+- `src/en/postlex.ts` — rule-path-only post-lexical correction tables. NOT mergeable into `src/en/phonotactics.ts`, which also applies to dict output.
 
 ### Mined gram tables (2026-06)
 
@@ -119,7 +123,7 @@ For provably score-neutral refactors, gate with `tsx scripts/snapshot-dump.ts` b
 
 | Trigger | Condition |
 |---|---|
-| **Line count** | `en-g2p.ts` exceeds 1150 lines, or `en-g2p.ts` + `en-syllabify.ts` + `en-postlex.ts` together exceed 2600 |
+| **Line count** | `src/en/g2p.ts` exceeds 1150 lines, or `src/en/g2p.ts` + `src/en/syllabify.ts` + `src/en/postlex.ts` together exceed 2600 |
 | **Session growth** | A single session adds ≥ 3 entries to `PHONEME_RULES` or `SUFFIX_RULES` |
 | **Cluster overlap** | `yarn test:eval --cluster` shows the same grapheme appearing as top-hit across ≥ 2 different clusters |
 | **Parallel handlers** | `tryMorphologicalAnalysis` gains a new suffix handler that shares base-lookup logic with an existing one |

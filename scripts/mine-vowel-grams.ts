@@ -83,7 +83,7 @@ const headToPrimary = (p: string): string => {
 async function main() {
   if (ROUND >= 2) process.env[`PHONEMIZE_NO_GRAMS${ROUND}`] = "1";
   else process.env.PHONEMIZE_NO_GRAMS = "1";
-  const { default: EnglishG2P } = await import("../src/en-g2p");
+  const { default: EnglishG2P } = await import("../src/en/g2p");
   const g = new EnglishG2P({ disableDict: true });
 
   interface Rec {

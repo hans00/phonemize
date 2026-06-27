@@ -5,7 +5,7 @@
  * see the delta of enabling the new path.
  */
 
-import EnglishG2P from "../src/en-g2p";
+import EnglishG2P from "../src/en/g2p";
 import { readFileSync } from "fs";
 import * as levenshtein from "fast-levenshtein";
 

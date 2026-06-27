@@ -5,18 +5,18 @@
 // data/en/dict.json (2.7 MB) is no longer shipped or loaded — the rule
 // pipeline plus this table reproduces the dict's lenient accuracy at
 // ~26% of the size. See docs/g2p-redesign.md P5.
-import * as lookupTable from "../data/en/exceptions.json";
-import * as homographs from "../data/en/homographs.json";
-import * as compoundParts from "../data/en/compound-parts.json";
-import { arpabetToIpa, resolveJson } from "./utils";
-import { LanguageProcessor } from "./g2p";
-import { expandText } from "./expand-en";
+import * as lookupTable from "../../data/en/exceptions.json";
+import * as homographs from "../../data/en/homographs.json";
+import * as compoundParts from "../../data/en/compound-parts.json";
+import { arpabetToIpa, resolveJson } from "../utils";
+import { LanguageProcessor } from "../g2p";
+import { expandText } from "./expand";
 import { simplePOSTagger, isFunctionWord, reduceToWeakForm } from "./pos-tagger";
-import { transformAmericanToRP } from "./en-gb";
-import { predictPrincipled } from "./en-principled";
-import { applyPhonotactics } from "./en-phonotactics";
-import { applyPostLexical, applyPostStress } from "./en-postlex";
-import { assignStress, syllabify, syllableToIPA } from "./en-syllabify";
+import { transformAmericanToRP } from "./gb";
+import { predictPrincipled } from "./principled";
+import { applyPhonotactics } from "./phonotactics";
+import { applyPostLexical, applyPostStress } from "./postlex";
+import { assignStress, syllabify, syllableToIPA } from "./syllabify";
 
 export type EnglishDialect = "en-US" | "en-GB";
 
