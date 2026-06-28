@@ -9,3 +9,7 @@ coverage/
 *.tsbuildinfo
 src/*.js
 
+
+# WikiPron eval benchmark (generated on demand; Wiktionary-derived)
+scripts/.wikipron-cache/
+scripts/eval-data-wikipron/

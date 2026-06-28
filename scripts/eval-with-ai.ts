@@ -10,8 +10,6 @@ import KoreanG2P from '../src/ko/g2p';
 import RussianG2P from '../src/ru/g2p';
 import { createPhonemizer } from '../src/core';
 
-const DATA_DIR = resolve(__dirname, 'eval-data');
-
 const LANG_NAMES: Record<string, string> = {
   en: 'English',
   'en-US': 'English (US)',
@@ -22,15 +20,17 @@ const LANG_NAMES: Record<string, string> = {
   ru: 'Russian',
 };
 
-const { provider, evalModel, langFilter } = parseArgs(process.argv.slice(2));
+const { provider, evalModel, langFilter, dataDir } = parseArgs(process.argv.slice(2));
 
 function parseArgs(argv: string[]): {
   provider: 'codex' | 'openai';
   evalModel: string;
   langFilter: Set<string>;
+  dataDir: string;
 } {
   let provider: 'codex' | 'openai' | undefined;
   let evalModel: string | undefined;
+  let dataDir: string | undefined;
   const langFilter = new Set<string>();
   const addLangs = (raw: string) => {
     for (const code of raw.split(',').map(s => s.trim()).filter(Boolean)) {
@@ -46,6 +46,8 @@ function parseArgs(argv: string[]): {
     else if (a.startsWith('--model=')) evalModel = a.slice('--model='.length);
     else if (a === '--lang' || a === '-l') addLangs(next());
     else if (a.startsWith('--lang=')) addLangs(a.slice('--lang='.length));
+    else if (a === '--data-dir' || a === '-d') dataDir = next();
+    else if (a.startsWith('--data-dir=')) dataDir = a.slice('--data-dir='.length);
     else if (a === '--help' || a === '-h') {
       console.log(`Usage: eval-with-ai [--provider codex|openai] [--model <name>] [--lang <codes>]
 
@@ -54,8 +56,11 @@ Options:
   -m, --model      Model name (default: gpt-5.5 for codex, o3-mini for openai)
   -l, --lang       Comma-separated language codes to evaluate (repeatable).
                    Omit to run all cases. Example: --lang en,zh
+  -d, --data-dir   Directory of .txt eval cases (default: scripts/eval-data).
+                   e.g. --data-dir scripts/eval-data-wikipron for the
+                   held-out WikiPron benchmark built by build-eval-set.ts.
 
-Test cases are loaded from scripts/eval-data/*.txt — add a new .txt file there to add a case.
+Test cases are loaded from <data-dir>/*.txt — add a new .txt file there to add a case.
 Each file may start with a "# lang: <code>" header line (default: en).
 Supported languages: ${Object.keys(LANG_NAMES).join(', ')}.`);
       process.exit(0);
@@ -68,7 +73,8 @@ Supported languages: ${Object.keys(LANG_NAMES).join(', ')}.`);
   }
   provider ??= 'codex';
   evalModel ??= provider === 'codex' ? 'gpt-5.5' : 'o3-mini';
-  return { provider, evalModel, langFilter };
+  dataDir ??= resolve(__dirname, 'eval-data');
+  return { provider, evalModel, langFilter, dataDir };
 }
 
 async function scoreWithOpenAI(prompt: string): Promise<string | null> {
@@ -131,9 +137,9 @@ function parseCase(filename: string, raw: string): TestCase {
 }
 
 function loadCases(): TestCase[] {
-  const files = readdirSync(DATA_DIR).filter(f => f.endsWith('.txt')).sort();
-  if (files.length === 0) throw new Error(`No .txt test cases found in ${DATA_DIR}`);
-  return files.map(f => parseCase(f, readFileSync(join(DATA_DIR, f), 'utf8')));
+  const files = readdirSync(dataDir).filter(f => f.endsWith('.txt')).sort();
+  if (files.length === 0) throw new Error(`No .txt test cases found in ${dataDir}`);
+  return files.map(f => parseCase(f, readFileSync(join(dataDir, f), 'utf8')));
 }
 
 interface WordEntry {
