@@ -22,6 +22,23 @@ Inspired by [ttstokenizer](https://github.com/neuml/ttstokenizer)
 - 💻 **Pure JavaScript** - No native dependencies, works everywhere
 - 🔧 **Simple API** - Easy to integrate and use
 
+## Language Support
+
+| Language | Code | Approach | Quality |
+|---|---|---|---|
+| English (US/GB) | `en`, `en-GB` | rules + mined exception lexicon + phonotactics | **Mature** (~95% representative) |
+| Chinese (Mandarin) | `zh` | `pinyin-pro` → IPA / Zhuyin, tone sandhi | **Good** |
+| Japanese | `ja` | kana/romaji syllable rules | **Good** |
+| Korean | `ko` | Hangul → romaja → IPA rules | **Good** |
+| Russian | `ru` | transliteration + heuristic stress & vowel reduction | **Approximate** |
+
+Quality is measured with an LLM-judged **phonemic rubric** over public, held-out
+datasets ([WikiPron](https://github.com/CUNY-CL/wikipron), frequency-stratified
+word lists) — not exact dictionary match, since a word has many valid
+pronunciations. Full methodology, per-language scores, datasets, and known
+limitations (incl. the AI-judge's variance and Russian's heuristic stress) are
+documented and reproducible in **[docs/BENCHMARK.md](docs/BENCHMARK.md)**.
+
 ## Installation
 
 ```bash
