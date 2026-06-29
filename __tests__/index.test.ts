@@ -120,7 +120,7 @@ describe('Index', function() {
   it('Number processing', function() {
     // Basic number expansion tests
     expect(phonemize('5')).toEqual('ˈfaɪv')
-    expect(phonemize('123')).toEqual('wʌn ˈhʌndɝd ˈtwɛni θɹi')
+    expect(phonemize('123')).toEqual('wʌn ˈhʌndɝd ˈtwɛnti θɹi')
   })
 
   it('Abbreviation expansion', function() {

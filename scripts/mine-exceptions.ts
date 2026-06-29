@@ -317,9 +317,20 @@ console.log(`\nWrote data/en/exception-candidates.json (${candidates.length} ent
 // already produces a single, cleaner primary stress — the AI eval scores
 // mis-stress as wrong, and the rule output is the better pronunciation.
 const primaryCount = (s: string): number => (s.match(/ˈ/g) ?? []).length;
+// The ipa-dict source frequently drops /t/ in an /nt/ cluster (county
+// ˈkaʊni, accountable əˈkaʊnəbəl) — a casual-speech reduction the AI judge
+// penalises in careful pronunciation. When the spelling has "nt" and the
+// rule keeps it but the dict dropped it, don't memorize the corrupt dict
+// value; the rule's /nt/ form is the better pronunciation.
+const ntDropped = (c: Cand): boolean =>
+  c.word.includes("nt") &&
+  c.predIpa.includes("nt") &&
+  !c.dictIpa.includes("nt") &&
+  c.dictIpa.includes("n");
 const shippedCands = candidates.filter(
   (c: Cand) =>
     !(primaryCount(c.dictIpa) >= 2 && primaryCount(c.predIpa) < 2) &&
+    !ntDropped(c) &&
     (c.origin !== "native" || c.ed >= cliMin)
 );
 const shippedMap: Record<string, string> = {};
