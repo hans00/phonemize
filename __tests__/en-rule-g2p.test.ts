@@ -1,4 +1,4 @@
-import EnG2P from '../src/en-g2p';
+import EnG2P from '../src/en/g2p';
 
 const words = [
   'phonemize',

@@ -14,7 +14,7 @@
  */
 
 import { readFileSync } from "fs";
-import EnglishG2P from "../src/en-g2p";
+import EnglishG2P from "../src/en/g2p";
 
 const passage = readFileSync(
   "./scripts/eval-data/01-en-irregular-spellings.txt",

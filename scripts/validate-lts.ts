@@ -13,7 +13,7 @@
 
 import { readFileSync } from "fs";
 import * as levenshtein from "fast-levenshtein";
-import { predictByLTS } from "../src/en-lts";
+import { predictByLTS } from "../src/en/lts";
 
 const dict: Record<string, string> = JSON.parse(
   readFileSync("./data/en/dict.json", "utf8")

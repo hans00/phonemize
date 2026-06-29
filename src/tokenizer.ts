@@ -13,8 +13,7 @@ import {
   preProcessByScript,
 } from "./g2p";
 import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
-import { isFunctionWord } from "./pos-tagger";
-import type ChineseG2P from "./zh-g2p";
+import type ChineseG2P from "./zh/g2p";
 
 // Tokenization regex patterns
 // Apostrophe class includes the ASCII straight apostrophe plus U+2018/U+2019
@@ -23,6 +22,17 @@ import type ChineseG2P from "./zh-g2p";
 // regardless of which apostrophe variant the input uses.
 const TOKEN_REGEX =
   /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+[''\u2018\u2019]?\w*|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
+
+// A token is non-spoken punctuation if it contains no word characters,
+// digits, or CJK ideographs. This catches the ASCII PUNCTUATION set AND
+// the Unicode quotes/dashes the ASCII string misses (\u201c \u201d \u2018 \u2019 \u2014 \u2013 \u2026),
+// which would otherwise fall through to the G2P and surface as a stray
+// stress mark. The TOKEN_REGEX splits these into single-char tokens, so
+// they never swallow adjacent letters.
+const WORD_CHAR_RE = /[\w\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/;
+function isPunctuationToken(token: string): boolean {
+  return token.length > 0 && !WORD_CHAR_RE.test(token);
+}
 
 /**
  * Configuration options for tokenizer behavior
@@ -42,6 +52,15 @@ export interface TokenizerOptions {
   anyAscii?: boolean;
   /** Chinese tone format: 'unicode' (˧˩˧) or 'arrow' (↓↗↘→). Only applies when format is 'ipa' */
   toneFormat?: "unicode" | "arrow";
+  /**
+   * How to render the affricates /dʒ/ and /tʃ/ in IPA output:
+   *   'separate' (default) — two characters dʒ / tʃ (current IPA standard)
+   *   'ligature'           — single glyphs ʤ / ʧ (withdrawn from IPA 1989,
+   *                          but still consumed by some TTS systems)
+   *   'tie-bar'            — d͡ʒ / t͡ʃ with the U+0361 tie bar (most precise)
+   * Only applies when format is 'ipa'.
+   */
+  affricates?: "separate" | "ligature" | "tie-bar";
   /**
    * Preferred language tag (BCP 47, e.g. "en", "en-GB", "zh").
    *
@@ -113,6 +132,7 @@ export class Tokenizer {
       separator: options.separator ?? " ",
       anyAscii: options.anyAscii ?? false,
       toneFormat: options.toneFormat ?? "unicode",
+      affricates: options.affricates ?? "separate",
       language: options.language,
     };
     this.registry = options.registry ?? defaultRegistry;
@@ -361,6 +381,13 @@ export class Tokenizer {
         phonemes = convertChineseTonesToArrows(phonemes);
       }
 
+      // Affricate rendering style (internal rules always use dʒ/tʃ).
+      if (this.options.affricates === "ligature") {
+        phonemes = phonemes.replace(/dʒ/g, "ʤ").replace(/tʃ/g, "ʧ");
+      } else if (this.options.affricates === "tie-bar") {
+        phonemes = phonemes.replace(/dʒ/g, "d͡ʒ").replace(/tʃ/g, "t͡ʃ");
+      }
+
       // Remove IPA stress markers if requested
       if (this.options.stripStress) {
         phonemes = phonemes.replace(/[ˈˌ]/g, "");
@@ -434,7 +461,7 @@ export class Tokenizer {
     // Then Han chars get the hanIsJa flip (analyzeText already factored in
     // the user-supplied ja* override at _preprocess time).
     const cleanWords = tokenMatches.filter(
-      ({ token }) => !PUNCTUATION.includes(token),
+      ({ token }) => !isPunctuationToken(token),
     );
     const resolveLang = (token: string): string | undefined => {
       let lang =
@@ -445,8 +472,17 @@ export class Tokenizer {
       if (hanIsJa && lang === "zh") lang = "ja";
       return lang;
     };
+    // POS is only meaningful in connected (multi-word) context — it drives
+    // both homograph disambiguation and the G2P's function-word weak-form
+    // reduction. A single isolated word is treated as citation form (no
+    // POS), so e.g. phonemize("for") stays /ˈfɔɹ/ while "for" inside a
+    // sentence reduces to /fɝ/. The IPA-level weak-form transform lives in
+    // the G2P (en-g2p.predict), not here — the tokenizer only supplies the
+    // contextual POS signal.
+    const connectedContext = cleanWords.length > 1;
     const cleanInfo = cleanWords.map((entry, i) => {
       const lang = resolveLang(entry.token);
+      if (!connectedContext) return { lang, pos: undefined };
       const proc = this.registry.findBestProcessor(entry.token, lang);
       const prev = i > 0 ? cleanWords[i - 1].token : undefined;
       const next =
@@ -462,7 +498,7 @@ export class Tokenizer {
       const cleanToken = token.trim();
 
       // Handle punctuation - preserve it
-      if (PUNCTUATION.includes(cleanToken)) {
+      if (isPunctuationToken(cleanToken)) {
         const result =
           includePositions && position !== undefined
             ? { phoneme: cleanToken, word: cleanToken, position }
@@ -492,20 +528,6 @@ export class Tokenizer {
         phoneme = this._predict(cleanToken, detectedLanguage, pos);
       }
 
-      // Sentence-level prosody: in a multi-word English context, demote
-      // closed-class function words from citation-form primary stress
-      // to their weak form (drop the ˈ mark). English dict entries mark
-      // function words with stress for citation, but in connected speech
-      // they reduce — "the/of/in/by/and/that/is" etc. should be unstressed.
-      // Single-word inputs keep citation form for dictionary-style use.
-      if (
-        cleanWords.length > 1 &&
-        (detectedLanguage === "en" ||
-          detectedLanguage?.startsWith("en-")) &&
-        isFunctionWord(cleanToken, pos)
-      ) {
-        phoneme = phoneme.replace(/ˈ/g, "");
-      }
 
       // Apply custom separator to individual phonemes if needed
       if (this.options.separator !== " ") {

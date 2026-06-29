@@ -1,7 +1,7 @@
 {
-  "date": "2026-05-24",
-  "strictAccuracy": 40.72280675050895,
-  "lenientAccuracy": 70.09360908693087,
-  "averageDistance": 1.0432846895869403,
-  "medianDistance": 1
+  "date": "2026-06-13",
+  "strictAccuracy": 76.73259320566606,
+  "lenientAccuracy": 86.99829713557274,
+  "averageDistance": 0.4454465024686778,
+  "medianDistance": 0
 }

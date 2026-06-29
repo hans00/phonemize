@@ -1,8 +1,8 @@
-import * as kanjiDict from "../data/ja/kanji.json";
-import * as kanjiWords from "../data/ja/words.json";
-import { resolveJson } from "./utils";
-import { LanguageProcessor } from "./g2p";
-import { expandJapaneseText } from "./expand-ja";
+import * as kanjiDict from "../../data/ja/kanji.json";
+import * as kanjiWords from "../../data/ja/words.json";
+import { resolveJson } from "../utils";
+import { LanguageProcessor } from "../g2p";
+import { expandJapaneseText } from "./expand";
 
 interface KanjiReading {
   o?: string;

@@ -1,5 +1,5 @@
-import { LanguageProcessor } from "./g2p";
-import { expandKoreanText } from "./expand-ko";
+import { LanguageProcessor } from "../g2p";
+import { expandKoreanText } from "./expand";
 
 // === Korean G2P Processor ===
 

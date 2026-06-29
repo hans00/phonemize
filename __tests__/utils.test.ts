@@ -150,7 +150,7 @@ describe('Utils', function() {
     it('should convert basic ARPABET to IPA', function() {
       expect(arpabetToIpa('AA')).toEqual('ɑ')
       expect(arpabetToIpa('AE')).toEqual('æ')
-      expect(arpabetToIpa('AH')).toEqual('ʌ')
+      expect(arpabetToIpa('AH')).toEqual('ə')
       expect(arpabetToIpa('AO')).toEqual('ɔ')
       expect(arpabetToIpa('AX')).toEqual('ə')
     })
@@ -167,12 +167,12 @@ describe('Utils', function() {
 
     it('should handle stress markers correctly', function() {
       expect(arpabetToIpa('HH AX1 L OW')).toEqual('ˈhəloʊ')
-      expect(arpabetToIpa('AH2 B AW T')).toEqual('ˌʌbaʊt')
+      expect(arpabetToIpa('AH2 B AW T')).toEqual('ˌəbaʊt')
       expect(arpabetToIpa('HH AX L OW')).toEqual('həloʊ')
     })
 
     it('should handle multiple stress markers', function() {
-      expect(arpabetToIpa('AH1 B AX2 K EY T')).toEqual('ˈʌbəkeɪt')
+      expect(arpabetToIpa('AH1 B AX2 K EY T')).toEqual('ˈəˌbəkeɪt')
     })
 
     it('should handle unknown phonemes', function() {
@@ -187,7 +187,7 @@ describe('Utils', function() {
     })
 
     it('should prefer primary stress over secondary', function() {
-      expect(arpabetToIpa('AH2 B AX1 K EY T')).toEqual('ˈʌbəkeɪt')
+      expect(arpabetToIpa('AH2 B AX1 K EY T')).toEqual('ˌəˈbəkeɪt')
     })
 
     it('should handle diphthongs', function() {

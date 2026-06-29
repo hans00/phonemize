@@ -21,7 +21,7 @@
  * syllabifying. The FSM works on syllable counts + heaviness predicate.
  */
 
-import type { SuffixEntry } from "./en-suffixes";
+import type { SuffixEntry } from "./suffixes";
 
 export interface Stress {
   /** Index (0-based) of the primary-stressed syllable. */

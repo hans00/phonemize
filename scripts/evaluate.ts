@@ -1,4 +1,4 @@
-import EnglishG2P from '../src/en-g2p';
+import EnglishG2P from '../src/en/g2p';
 import dictionary from '../data/en/dict.json';
 import fs from 'fs';
 import { join } from 'path';

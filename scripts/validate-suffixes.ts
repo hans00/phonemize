@@ -9,7 +9,7 @@
  */
 
 import { readFileSync } from "fs";
-import { decompose, SuffixEntry } from "../src/en-suffixes";
+import { decompose, SuffixEntry } from "../src/en/suffixes";
 
 const dict: Record<string, string> = JSON.parse(
   readFileSync("./data/en/dict.json", "utf8")

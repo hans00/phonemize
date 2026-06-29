@@ -1,5 +1,5 @@
-import { LanguageProcessor } from "./g2p";
-import { expandRussianText } from "./expand-ru";
+import { LanguageProcessor } from "../g2p";
+import { expandRussianText } from "./expand";
 
 // === Russian G2P Processor ===
 
@@ -94,6 +94,14 @@ class RussianG2P implements LanguageProcessor {
    */
   private processRussian(text: string): string {
     text = text.toLowerCase();
+    // Stress is per-word: if handed a multi-word string (e.g. predict()
+    // called on a phrase), process each word independently and keep the
+    // whitespace so each gets its own heuristic stress + reduction.
+    if (/\s/.test(text))
+      return text
+        .split(/(\s+)/)
+        .map((p) => (/^\s+$/.test(p) || p === "" ? p : this.processRussian(p)))
+        .join("");
     const tokens: string[] = [];
 
     let i = 0;
@@ -175,7 +183,49 @@ class RussianG2P implements LanguageProcessor {
       if (VOWELS_LATIN.has(t) || ["m", "n", "l", "r", "j"].includes(t)) break;
     }
 
+    // Heuristic lexical stress + unstressed-vowel reduction (akan'e /
+    // ikan'e). Russian stress is lexically unpredictable and we ship no
+    // stress dictionary, so the position is a guess (monosyllable → its
+    // vowel; otherwise the penult, the most common default) — but the
+    // reduction it drives makes output markedly more Russian, and a
+    // wrong-stress word is no worse off than the previous stress-less form.
+    // Runs after devoicing so that pass still sees plain a/e/i/o/u vowels.
+    this.applyStressAndReduction(tokens);
+
     return tokens.join("");
+  }
+
+  /**
+   * Assign heuristic stress and apply unstressed-vowel reduction in place.
+   * Vowel tokens are a/e/i/o/u/ɨ. Stressed vowel keeps full quality; for
+   * unstressed: o,a → ɐ (first-pretonic or word-initial) else ə; e → ɪ;
+   * i/u/ɨ stay. A ˈ mark is inserted at the stressed syllable's onset.
+   */
+  private applyStressAndReduction(tokens: string[]): void {
+    const VOW = new Set(["a", "e", "i", "o", "u", "ɨ"]);
+    const nuclei: number[] = [];
+    for (let k = 0; k < tokens.length; k++) if (VOW.has(tokens[k])) nuclei.push(k);
+    if (nuclei.length === 0) return;
+
+    const sN = nuclei.length === 1 ? 0 : nuclei.length - 2; // monosyllable | penult
+    const stressed = nuclei[sN];
+    const pretonic = sN > 0 ? nuclei[sN - 1] : -1;
+
+    // Stressed-syllable onset (walk back over consonants) — computed BEFORE
+    // reduction, while the preceding vowel is still a plain a/e/i/o/u.
+    let onset = stressed;
+    while (onset > 0 && !VOW.has(tokens[onset - 1])) onset--;
+
+    for (let n = 0; n < nuclei.length; n++) {
+      const idx = nuclei[n];
+      if (idx === stressed) continue;
+      const v = tokens[idx];
+      if (v === "o" || v === "a")
+        tokens[idx] = idx === pretonic || n === 0 ? "ɐ" : "ə";
+      else if (v === "e") tokens[idx] = "ɪ";
+    }
+
+    tokens.splice(onset, 0, "ˈ");
   }
 
   public addPronunciation(word: string, pronunciation: string): void {

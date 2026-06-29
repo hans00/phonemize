@@ -4,10 +4,10 @@
  */
 
 import { pinyin, addDict } from "pinyin-pro";
-import * as dict from "../data/zh/dict.json";
-import { pinyinToZhuyin, resolveJson } from "./utils";
-import { LanguageProcessor } from "./g2p";
-import { expandChineseText } from "./expand-zh";
+import * as dict from "../../data/zh/dict.json";
+import { pinyinToZhuyin, resolveJson } from "../utils";
+import { LanguageProcessor } from "../g2p";
+import { expandChineseText } from "./expand";
 
 addDict(resolveJson(dict), "phonemize-zh");
 addDict({}, "custom");

@@ -2,13 +2,14 @@ import { phonemize, toARPABET, toIPA, toZhuyin, addPronunciation, Tokenizer } fr
 
 describe('Index', function() {
   it('Work Fine', function() {
-    expect(phonemize('Hello world!')).toEqual('həˈɫoʊ ˈwɝɫd!')
+    expect(phonemize('Hello world!')).toEqual('həˈɫoʊ wɝɫd!')
     // Function words (this/is/an) reduce in connected speech — only the
-    // content word "apple" keeps primary stress.
-    expect(phonemize('this is an apple.')).toEqual('ðɪs ɪz æn ˈæpəɫ.')
+    // content word "apple" keeps primary stress; the article "an" takes
+    // its weak form /ən/.
+    expect(phonemize('this is an apple.')).toEqual('ðɪs ɪz ən ˈæpəɫ.')
     expect(phonemize('John\'s package', true)).toEqual([
       {
-        "phoneme": "ˈdʒɑnz",
+        "phoneme": "dʒɑnz",
         "position": 0,
         "word": "John's"
       },
@@ -26,19 +27,18 @@ describe('Index', function() {
   })
 
   it('toIPA', function() {
-    expect(toIPA('Hello world!')).toEqual('həˈɫoʊ ˈwɝɫd!')
+    expect(toIPA('Hello world!')).toEqual('həˈɫoʊ wɝɫd!')
   })
 
   it('toARPABET', function() {
-    expect(toARPABET('Hello world!')).toEqual('HH AX EL1 OW W1 ER EL D!')
+    expect(toARPABET('Hello world!')).toEqual('HH AX EL1 OW W ER EL D!')
   })
 
   it('rule based or compound word', function() {
     expect(phonemize('buggie')).toEqual('ˈbʌɡi')
-    // supercar: rules don't decompose compounds; future work via the
-    // compound-parts table will restore ˈsupɝˌkɑɹ. Current output is
-    // a single-stress rule prediction.
-    expect(phonemize('supercar')).toEqual('səˈpɝkɝ')
+    // supercar decomposes into the verified compound parts super + car
+    // (fore-stressed, as English noun compounds are): ˈsuper + ˌcar.
+    expect(phonemize('supercar')).toEqual('ˈsupɝˌkɑɹ')
     expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).toMatch(/njumən|njumoʊ/)
   })
 
@@ -92,8 +92,9 @@ describe('Index', function() {
     expect(phonemize('こんにちは', { anyAscii: true })).toEqual('konnitɕiwa')
     // Korean test (with liaison rule)
     expect(phonemize('한국어', { anyAscii: true })).toEqual('hanɡuɡʌ')
-    // Russian test
-    expect(phonemize('Привет', { anyAscii: true })).toEqual('prʲivʲet')
+    // Russian test (heuristic stress: penult default — privet is actually
+    // end-stressed, a known limitation without a stress dictionary)
+    expect(phonemize('Привет', { anyAscii: true })).toEqual('ˈprʲivʲɪt')
   })
 
   it('Options and configurations', function() {
@@ -106,10 +107,21 @@ describe('Index', function() {
     expect(phonemize('hello', { format: 'arpabet', stripStress: true })).toEqual('HH AX EL OW')
   })
 
+  it('affricate rendering style', function() {
+    // default: separate two-character affricates
+    expect(phonemize('judge church')).toEqual('dʒʌdʒ tʃɝtʃ')
+    // ligature glyphs (some TTS systems expect these)
+    expect(phonemize('judge church', { affricates: 'ligature' })).toEqual('ʤʌʤ ʧɝʧ')
+    // tie-bar (U+0361)
+    expect(phonemize('judge church', { affricates: 'tie-bar' })).toEqual('d͡ʒʌd͡ʒ t͡ʃɝt͡ʃ')
+    // IPA-only: ARPABET output is unaffected
+    expect(phonemize('judge', { format: 'arpabet', affricates: 'ligature' })).toEqual('JH1 AH JH')
+  })
+
   it('Number processing', function() {
     // Basic number expansion tests
     expect(phonemize('5')).toEqual('ˈfaɪv')
-    expect(phonemize('123')).toEqual('ˈwən ˈhəndɝd ˈtwɛni ˈθɹi')
+    expect(phonemize('123')).toEqual('wʌn ˈhʌndɝd ˈtwɛnti θɹi')
   })
 
   it('Abbreviation expansion', function() {

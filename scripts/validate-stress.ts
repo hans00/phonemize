@@ -12,8 +12,8 @@
  */
 
 import { readFileSync } from "fs";
-import { decompose } from "../src/en-suffixes";
-import { assignStress, countIpaSyllables, dictStressIdx } from "../src/en-stress";
+import { decompose } from "../src/en/suffixes";
+import { assignStress, countIpaSyllables, dictStressIdx } from "../src/en/stress";
 
 const dict: Record<string, string> = JSON.parse(
   readFileSync("./data/en/dict.json", "utf8")

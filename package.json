@@ -61,11 +61,12 @@
     "typecheck": "tsc -b",
     "build": "rollup -c",
     "build:watch": "rollup -c --watch",
-    "build-dict": "tsx scripts/build-dict.ts",
+    "build-dict": "tsx scripts/build-pipeline.ts",
     "prebuild": "yarn build-dict",
     "dev": "tsx src/index.ts",
     "release": "release-it",
-    "pretty": "prettier -w src"
+    "pretty": "prettier -w src",
+    "build-eval-set": "tsx scripts/build-eval-set.ts"
   },
   "files": [
     "dist/"

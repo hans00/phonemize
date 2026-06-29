@@ -22,17 +22,17 @@
  * en-suffixes, en-stress, and en-reduce.
  */
 
-import { decompose, reduces, SuffixEntry } from "./en-suffixes";
+import { decompose, reduces, SuffixEntry } from "./suffixes";
 import {
   assignStress,
   countIpaSyllables,
   dictStressIdx,
   Stress,
-} from "./en-stress";
+} from "./stress";
 import {
   findNuclei,
   reduceUnstressedVowels,
-} from "./en-reduce";
+} from "./reduce";
 
 export type BaseLookup = (word: string) => string | undefined;
 

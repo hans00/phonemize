@@ -210,6 +210,44 @@ export function isFunctionWord(word: string, pos?: string): boolean {
   return false;
 }
 
+// Reduce a function word's IPA to its weak (connected-speech) form by
+// centralizing the stressed nucleus — a general phonological rule, not a
+// per-word table. In running speech a function word's full vowel
+// ("for" /fɔɹ/, "and" /ænd/, "was" /wʌz/) centralizes to schwa
+// ("for" /fɝ/, "and" /ənd/, "was" /wəz/).
+//
+// Two transforms, applied only to a MONOSYLLABIC nucleus (anchored so no
+// second vowel exists — this protects diphthongs like /aʊ/ in "how" and
+// /eɪ/ in "they", and polysyllables):
+//   1. lone lax/low monophthong  æ ʌ ɛ ɔ ʊ  → ə   (and, was, but, would;
+//      ɔ before a coda /ɹ/ too, so "for" → /fəɹ/ ≈ /fɚ/). /ɑ/ is NOT
+//      reduced — it stays a full back vowel in "on" /ɑn/ and "are" /ɑɹ/,
+//      which keep their citation vowel rather than collapsing to /ən/.
+//   2. /Cu/ — a single plain-onset consonant + lone /u/ → /Cə/
+//      (to → /tə/, do → /də/). The single-consonant constraint and the
+//      /j h w/ exclusion keep "you", "who", and longer /Cːu/ prepositions
+//      ("through" /θɹu/, "into") at /u/; only the most grammaticalized
+//      monosyllables reduce.
+// Tense /i/, /ɪ/, and diphthongs are left intact, so he/she/this/I/my/
+// how/no/they keep their vowel. "a" (/eɪ/) is the one suppletive weak
+// form the rule can't derive and is left at citation rather than listed.
+const WEAK_MONO_RE = /^([^aeiouɑæɛɪɔʊʌəɝ]*)[æʌɛɔʊ]([^aeiouɑæɛɪɔʊʌəɝ]*)$/;
+const WEAK_U_RE = /^([^aeiouɑæɛɪɔʊʌəɝjhw])u$/;
+const WEAK_NUCLEUS_G = /[aeiouɑæɛɪɔʊʌəɝ]+/g;
+export function reduceToWeakForm(ipa: string): string {
+  // Only monosyllabic function words take a weak form. Polysyllabic ones
+  // (over, after, under, about, into, around) keep their lexical stress
+  // and full vowels — destressing "over" → /oʊvɝ/ is wrong. The anchored
+  // WEAK_*_RE patterns already require a single nucleus, but the stress
+  // strip below would still flatten a polysyllable, so bail out early.
+  const nuclei = ipa.match(WEAK_NUCLEUS_G);
+  if (!nuclei || nuclei.length > 1) return ipa;
+  const s = ipa.replace(/[ˈˌ]/g, "");
+  const m = s.replace(WEAK_MONO_RE, "$1ə$2");
+  if (m !== s) return m;
+  return s.replace(WEAK_U_RE, "$1ə");
+}
+
 // --- Interface ---
 
 export interface POSResult {
