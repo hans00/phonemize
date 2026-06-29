@@ -499,6 +499,22 @@ export function assignStress(syllables: string[], word: string): number {
     return Math.max(0, syllables.length - 2);
   }
 
+  // Greek/Latin scientific suffixes with fixed stress: uranium, samarium,
+  // osmosis, diagnosis, arthritis, analysis, psoriasis. They pull the
+  // primary onto the syllable before the suffix. The orthographic
+  // syllabifier groups the trailing "-rium/-nosis/-lysis" as one chunk, so
+  // that target is the penult of the syllable array (length - 2).
+  if (
+    (lowerWord.endsWith("ium") ||
+      lowerWord.endsWith("osis") ||
+      lowerWord.endsWith("itis") ||
+      lowerWord.endsWith("ysis") ||
+      lowerWord.endsWith("iasis")) &&
+    syllables.length >= 2
+  ) {
+    return Math.max(0, syllables.length - 2);
+  }
+
   // -ance/-ence words typically stress the antepenult (like dominance -> dəˈmɪnəns)
   if (
     (lowerWord.endsWith("ance") || lowerWord.endsWith("ence")) &&
