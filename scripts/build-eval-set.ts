@@ -89,9 +89,56 @@ async function fetchText(url: string): Promise<string> {
   return res.text();
 }
 
+// Frequency-stratified English set: a representative real-usage benchmark
+// (the random WikiPron draw over-weights the rare/foreign long tail). Samples
+// evenly across frequency bands of the 10k most-common US English words, run
+// through the FULL system (dict + rules) — what users actually experience.
+const FREQ_URL =
+  "https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english-usa.txt";
+
+async function buildFrequencyEn() {
+  const cachePath = `${CACHE}/google-10000-english-usa.txt`;
+  const text = existsSync(cachePath)
+    ? readFileSync(cachePath, "utf8")
+    : await fetchText(FREQ_URL).then((t) => (writeFileSync(cachePath, t), t));
+  // Real words only: the frequency list has corpus junk (il, wi, ge, bbc,
+  // pty) — keep words that are real English (present in the dict).
+  const real = existsSync("data/en/dict.json")
+    ? (JSON.parse(readFileSync("data/en/dict.json", "utf8")) as Record<string, unknown>)
+    : null;
+  const ranked = text
+    .split("\n")
+    .map((w) => w.trim().toLowerCase())
+    .filter((w) => /^[a-z]{3,}$/.test(w) && (!real || w in real));
+  // Even sample across 4 rank bands (common → mid-frequency).
+  const bands = [
+    [0, 1000],
+    [1000, 3000],
+    [3000, 6000],
+    [6000, ranked.length],
+  ];
+  const per = Math.ceil(COUNT / bands.length);
+  const rng = mulberry32(0x5eed ^ "freq".charCodeAt(0));
+  const picked = new Set<string>();
+  for (const [lo, hi] of bands) {
+    const band = ranked.slice(lo, hi);
+    for (let k = 0; k < per && band.length; k++)
+      picked.add(band[Math.floor(rng() * band.length)]);
+  }
+  const sample = [...picked].sort();
+  const outPath = `${OUT}/freq-en.txt`;
+  writeFileSync(outPath, `# lang: en\n${sample.join(" ")}\n`);
+  console.log(`✓ freq-en: ${ranked.length} ranked words → ${sample.length} stratified → ${outPath}`);
+}
+
 async function main() {
   mkdirSync(CACHE, { recursive: true });
   mkdirSync(OUT, { recursive: true });
+
+  if (process.env.FREQ === "1") {
+    await buildFrequencyEn();
+    return;
+  }
 
   console.log("Fetching WikiPron file index…");
   const tree = JSON.parse(await fetchText(TREE_API));
