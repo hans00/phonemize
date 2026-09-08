@@ -1,0 +1,23 @@
+[
+  {
+    "file": "blue-sky.txt",
+    "title": "Why Is the Sky Blue?",
+    "url": "https://spaceplace.nasa.gov/blue-sky/en/",
+    "sha256": "8f88159f26151187c359e51cf05ea2be66c3439ae3716f933cbbb4e0a4f8619c",
+    "scope": "Complete article prose, headings and captions; GPS complete story transcript. Navigation, media download controls and related resources excluded."
+  },
+  {
+    "file": "hurricanes.txt",
+    "title": "How Do Hurricanes Form?",
+    "url": "https://spaceplace.nasa.gov/hurricanes/en/",
+    "sha256": "0a9bb4a7ce57d1c6a3195460dd2f6a9f2bd6e0a491a86b5b4ac75869831a6c3c",
+    "scope": "Complete article prose, headings and captions; GPS complete story transcript. Navigation, media download controls and related resources excluded."
+  },
+  {
+    "file": "gps-pizza.txt",
+    "title": "How Does GPS Work?",
+    "url": "https://spaceplace.nasa.gov/gps-pizza/en/",
+    "sha256": "5040d05f01c6b477a09ca46a8bcce39643c9e7bcb05b499c5df4c6ad0b838aa9",
+    "scope": "Complete article prose, headings and captions; GPS complete story transcript. Navigation, media download controls and related resources excluded."
+  }
+]

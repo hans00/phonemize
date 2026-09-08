@@ -1,0 +1,43 @@
+# lang: en-US
+
+How Do Hurricanes Form?
+
+Hurricane Fran. Image made from GOES satellite data.
+
+Hurricanes are the most violent storms on Earth. People call these storms by other names, such as typhoons or cyclones, depending on where they occur.  The scientific term for all these storms is tropical cyclone . Only tropical cyclones that form over the Atlantic Ocean or eastern Pacific Ocean are called "hurricanes."
+
+Whatever they are called, tropical cyclones all form the same way.
+
+Tropical cyclones are like giant engines that use warm, moist air as fuel.  That is why they form only over warm ocean waters near the equator.  The warm, moist air over the ocean rises upward from near the surface.  Because this air moves up and away from the surface, there is less air left near the surface.  Another way to say the same thing is that the warm air rises, causing an area of lower air pressure below.
+
+A cumulonimbus cloud. A tropical cyclone has so many of these, they form huge, circular bands.
+
+Air from surrounding areas with higher air pressure pushes in to the low pressure area.  Then that "new" air becomes warm and moist and rises, too.  As the warm air continues to rise, the surrounding air swirls in to take its place.  As the warmed, moist air rises and cools off, the water in the air forms clouds.  The whole system of clouds and wind spins and grows, fed by the ocean's heat and water evaporating from the surface.
+
+Storms that form north of the equator spin counterclockwise.  Storms south of the equator spin clockwise.  This difference is because of Earth's rotation on its axis.
+
+As the storm system rotates faster and faster, an eye forms in the center.  It is very calm and clear in the eye, with very low air pressure.  Higher pressure air from above flows down into the eye.
+
+If you could slice into a tropical cyclone, it would look something like this.  The small red arrows show warm, moist air rising from the ocean's surface, and forming clouds in bands around the eye.  The blue arrows show how cool, dry air sinks in the eye and between the bands of clouds.  The large red arrows show the rotation of the rising bands of clouds.
+
+When the winds in the rotating storm reach 39 mph, the storm is called a "tropical storm."  And when the wind speeds reach 74 mph, the storm is officially a "tropical cyclone," or hurricane.
+
+Tropical cyclones usually weaken when they hit land, because they are no longer being "fed" by the energy from the warm ocean waters.  However, they often move far inland, dumping many inches of rain and causing lots of wind damage before they die out completely.
+
+Tropical cyclone categories:
+
+Category Wind Speed (mph) Damage at Landfall Storm Surge (feet)
+
+1 74-95 Minimal 4-5
+
+2 96-110 Moderate 6-8
+
+3 111-129 Extensive 9-12
+
+4 130-156 Extreme 13-18
+
+5 157 or higher Catastrophic 19+
+
+The two GOES satellites keep their eyes on hurricanes from far above Earth's surface—22,300 miles above, to be exact! ( Learn more about this kind of orbit. )
+
+These satellites, built by NASA and operated by the National Oceanic and Atmospheric Administration (NOAA), save lives by helping weather forecasters predict and warn people where and when these severe storms will hit land.

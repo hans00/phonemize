@@ -16,7 +16,6 @@
  */
 
 import { readFileSync, writeFileSync } from "fs";
-import EnglishG2P from "../src/en/g2p";
 import { FUNCTION_WORDS } from "../src/en/pos-tagger";
 import * as levenshtein from "fast-levenshtein";
 
@@ -24,6 +23,12 @@ const dict: Record<string, string> = JSON.parse(
   readFileSync("./data/en/dict.json", "utf8")
 );
 
+// disableDict still consults lexical stems during morphology. Reset the
+// previous output before loading G2P, otherwise repeated builds learn from
+// their own exception table and alternately add/remove the same entries.
+writeFileSync("./data/en/exceptions.json", "{}");
+const EnglishG2P: typeof import("../src/en/g2p").default =
+  require("../src/en/g2p").default;
 const g2p = new EnglishG2P({ disableDict: true });
 
 const SIMILAR: string[][] = [
@@ -58,9 +63,9 @@ function canon(s: string): string {
   return t;
 }
 
-// Acronym detector: spelled-out letter sequences (abc → eɪ-bi-si). These
-// belong in a separate abbreviation handler, not in a phoneme exception
-// table. Same heuristic as scripts/align.ts.
+// Recognize dictionary-attested letter sequences (abc → eɪ-bi-si).
+// Their pronunciation cannot be inferred from lowercase spelling; retain
+// them as lexical entries instead of discarding them from the runtime data.
 const LETTER_NAMES: Record<string, string> = {
   a: "eɪ", b: "bi", c: "si", d: "di", e: "i", f: "ɛf", g: "dʒi", h: "eɪtʃ",
   i: "aɪ", j: "dʒeɪ", k: "keɪ", l: "ɛɫ", m: "ɛm", n: "ɛn", o: "oʊ", p: "pi",
@@ -162,6 +167,7 @@ interface Cand {
 }
 
 const candidates: Cand[] = [];
+const initialisms: Record<string, string> = Object.create(null);
 let total = 0;
 let withinLenient = 0;
 let acronymsSkipped = 0;
@@ -174,6 +180,7 @@ for (const [word, dictIpa] of Object.entries(dict)) {
   if (!/^[a-z]+$/.test(word)) continue;
   total++;
   if (isAcronym(word, dictIpa)) {
+    initialisms[word] = dictIpa;
     acronymsSkipped++;
     continue;
   }
@@ -209,7 +216,7 @@ candidates.sort((a: Cand, b: Cand) => b.ed - a.ed || a.word.localeCompare(b.word
 const fmt = (n: number, d: number) => ((n / d) * 100).toFixed(2) + "%";
 
 console.log(`Total alphabetic dict entries:        ${total}`);
-console.log(`Acronyms skipped:                     ${acronymsSkipped}`);
+console.log(`Initialisms retained separately:      ${acronymsSkipped}`);
 console.log(`Rules already within ed < 2 of dict:  ${withinLenient} (${fmt(withinLenient, total)})`);
 console.log(`Exception candidates (ed ≥ 2):        ${candidates.length} (${fmt(candidates.length, total)})`);
 
@@ -335,12 +342,14 @@ const shippedCands = candidates.filter(
 );
 const shippedMap: Record<string, string> = {};
 for (const c of shippedCands) shippedMap[c.word] = c.dictIpa;
-// "a" and "I" are the only single-letter English words. The rule
-// engine reproduces their letter-name IPA (so edit-distance mining
-// skips them), but they must stay in the lookup table: as words for
-// direct lookup, and so the acronym speller can voice them ("AI" →
-// /ˈeɪˈaɪ/). Other letters are not words and stay out, leaving
-// consonant initialisms like "TTS" to the fallback path.
+// Keep alphabet names for isolated letters and the existing uppercase
+// initialism speller. These are sourced from the same pronunciation lexicon.
+for (const letter of "abcdefghijklmnopqrstuvwxyz") {
+  if (dict[letter]) initialisms[letter] = dict[letter];
+}
+// Keep spelling pronunciations separate from lexical stems: GA + s must
+// not intercept gas, and letter sequences must not become compound parts.
+writeFileSync("./data/en/initialisms.json", JSON.stringify(initialisms), "utf8");
 for (const letter of ["a", "i"]) {
   if (dict[letter]) shippedMap[letter] = dict[letter];
 }
@@ -354,6 +363,55 @@ for (const letter of ["a", "i"]) {
 for (const w of FUNCTION_WORDS) {
   if (dict[w]) shippedMap[w] = dict[w];
 }
+// Adding lexical stems can change morphology/decomposition for words that
+// matched on the empty-table pass (collect + ion is a typical false split).
+// Close over those new errors using the production pipeline. Entries only
+// accumulate, so this cannot oscillate between successive builds. No word
+// frequency list or benchmark reference participates in this process.
+let refinementRounds = 0;
+const refinedWords = new Set<string>();
+for (;;) {
+  writeFileSync("./data/en/exceptions.json", JSON.stringify(shippedMap), "utf8");
+  delete require.cache[require.resolve("../data/en/exceptions.json")];
+  delete require.cache[require.resolve("../data/en/initialisms.json")];
+  delete require.cache[require.resolve("../src/en/g2p")];
+  const RuntimeG2P: typeof import("../src/en/g2p").default = require("../src/en/g2p").default;
+  const runtime = new RuntimeG2P();
+  let added = 0;
+  for (const [word, dictIpa] of Object.entries(dict)) {
+    if (!/^[a-z]+$/.test(word) || Object.hasOwn(shippedMap, word) || initialisms[word]) continue;
+    const predIpa = runtime.predict(word, "en");
+    if (!predIpa) continue;
+    const distance = levenshtein.get(canon(predIpa), canon(dictIpa));
+    const ed = primaryNucleusIdx(predIpa) !== primaryNucleusIdx(dictIpa)
+      ? Math.max(distance, 1) : distance;
+    const candidate: Cand = { word, dictIpa, predIpa, ed, origin: originOf(word) };
+    if (ed < 1 || (candidate.origin === "native" && ed < cliMin)) continue;
+    if (primaryCount(dictIpa) >= 2 && primaryCount(predIpa) < 2) continue;
+    if (ntDropped(candidate)) continue;
+    shippedMap[word] = dictIpa;
+    refinedWords.add(word);
+    added++;
+  }
+  refinementRounds++;
+  console.log(`Runtime refinement ${refinementRounds}: ${added} additional exceptions`);
+  if (added === 0) break;
+}
+// Refinement can temporarily need an exception that later stems make
+// redundant. Retain its lexical availability, but avoid changing only the
+// primary-stress boundary within the same consonant cluster. Segments,
+// secondary stress and the stressed vowel must all be identical.
+const FinalG2P: typeof import("../src/en/g2p").default = require("../src/en/g2p").default;
+const finalRules = new FinalG2P({ disableDict: true });
+for (const word of refinedWords) {
+  const lexical = shippedMap[word];
+  const predicted = finalRules.predict(word, "en");
+  if (predicted && primaryCount(lexical) === 1 && primaryCount(predicted) === 1 &&
+      lexical.replace(/ˈ/g, "") === predicted.replace(/ˈ/g, "") &&
+      primaryNucleusIdx(lexical) === primaryNucleusIdx(predicted)) {
+    shippedMap[word] = predicted;
+  }
+}
 const shippedSize = JSON.stringify(shippedMap).length;
 writeFileSync(
   "./data/en/exceptions.json",
@@ -361,8 +419,9 @@ writeFileSync(
   "utf8"
 );
 console.log(
-  `Wrote data/en/exceptions.json (hybrid policy: all foreign + native ed≥${cliMin}): ${shippedCands.length} entries, ${(shippedSize / 1024).toFixed(1)} KB`
+  `Wrote data/en/exceptions.json (hybrid policy: all foreign + native ed≥${cliMin}): ${Object.keys(shippedMap).length} entries, ${(shippedSize / 1024).toFixed(1)} KB`
 );
 const shippedForeign = shippedCands.filter((c: Cand) => c.origin !== "native").length;
 const shippedNative = shippedCands.length - shippedForeign;
-console.log(`  breakdown: ${shippedForeign} foreign + ${shippedNative} native`);
+console.log(`  initial pass: ${shippedForeign} foreign + ${shippedNative} native`);
+console.log(`  separate initialisms: ${Object.keys(initialisms).length} entries`);

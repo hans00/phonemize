@@ -1,5 +1,7 @@
+import { createHash } from 'crypto';
+import { contextEntries, parseVerdicts, scoreCase, type WordEntry, type CaseScore } from './ai-eval-scoring';
 import { spawnSync } from 'child_process';
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join, resolve } from 'path';
 import OpenAI from 'openai';
@@ -20,17 +22,23 @@ const LANG_NAMES: Record<string, string> = {
   ru: 'Russian',
 };
 
-const { provider, evalModel, langFilter, dataDir } = parseArgs(process.argv.slice(2));
+const { provider, evalModel, langFilter, dataDir, contextMode, minScore, reportDir } = parseArgs(process.argv.slice(2));
 
 function parseArgs(argv: string[]): {
   provider: 'codex' | 'openai';
   evalModel: string;
   langFilter: Set<string>;
   dataDir: string;
+  contextMode: boolean;
+  minScore: number;
+  reportDir?: string;
 } {
   let provider: 'codex' | 'openai' | undefined;
   let evalModel: string | undefined;
   let dataDir: string | undefined;
+  let contextMode = false;
+  let minScore = 0;
+  let reportDir: string | undefined;
   const langFilter = new Set<string>();
   const addLangs = (raw: string) => {
     for (const code of raw.split(',').map(s => s.trim()).filter(Boolean)) {
@@ -48,6 +56,9 @@ function parseArgs(argv: string[]): {
     else if (a.startsWith('--lang=')) addLangs(a.slice('--lang='.length));
     else if (a === '--data-dir' || a === '-d') dataDir = next();
     else if (a.startsWith('--data-dir=')) dataDir = a.slice('--data-dir='.length);
+    else if (a === '--min-score') minScore = Number(next());
+    else if (a === '--report-dir') reportDir = resolve(next());
+    else if (a === '--context' || a === '--sentence') contextMode = true;
     else if (a === '--help' || a === '-h') {
       console.log(`Usage: eval-with-ai [--provider codex|openai] [--model <name>] [--lang <codes>]
 
@@ -59,6 +70,10 @@ Options:
   -d, --data-dir   Directory of .txt eval cases (default: scripts/eval-data).
                    e.g. --data-dir scripts/eval-data-wikipron for the
                    held-out WikiPron benchmark built by build-eval-set.ts.
+      --min-score  Required score for EVERY case (0–100); incomplete judging fails.
+      --report-dir Save prompts, raw verdicts and a JSON report.
+      --context    Score every token occurrence in its complete source text.
+                   Repeated words are retained for context-sensitive readings.
 
 Test cases are loaded from <data-dir>/*.txt — add a new .txt file there to add a case.
 Each file may start with a "# lang: <code>" header line (default: en).
@@ -74,7 +89,8 @@ Supported languages: ${Object.keys(LANG_NAMES).join(', ')}.`);
   provider ??= 'codex';
   evalModel ??= provider === 'codex' ? 'gpt-5.5' : 'o3-mini';
   dataDir ??= resolve(__dirname, 'eval-data');
-  return { provider, evalModel, langFilter, dataDir };
+  if (!Number.isFinite(minScore) || minScore < 0 || minScore > 100) throw new Error("Invalid --min-score");
+  return { provider, evalModel, langFilter, dataDir, contextMode, minScore, reportDir };
 }
 
 async function scoreWithOpenAI(prompt: string): Promise<string | null> {
@@ -96,13 +112,13 @@ function scoreWithCodex(prompt: string): string | null {
       // stdout → 'ignore' (the judge's answer is read from outFile); stderr
       // captured to a pipe so codex's live token stream doesn't clutter output —
       // it's surfaced only when the run actually fails (usage limit, auth).
-      { input: prompt, stdio: ['pipe', 'ignore', 'pipe'], encoding: 'utf8' },
+      { input: prompt, cwd: dir, timeout: 600_000, stdio: ['pipe', 'ignore', 'pipe'], encoding: 'utf8' },
     );
     if (res.status !== 0) {
-      // Don't abort the whole batch on a transient failure (e.g. usage limit) —
-      // return null so the caller skips this case and the rest still run.
+      // Continue collecting evidence for other cases; the missing response
+      // remains an incomplete evaluation and fails the final gate.
       const tail = (res.stderr ?? '').toString().trim().split(/\r?\n/).slice(-3).join('\n');
-      console.error(`\n⚠ codex exec exited with status ${res.status} — skipping this case.${tail ? `\n${tail}` : ''}`);
+      console.error(`\n⚠ codex exec failed (${res.error?.message ?? res.status}) — case incomplete.${tail ? `\n${tail}` : ''}`);
       return null;
     }
     return readFileSync(outFile, 'utf8');
@@ -139,25 +155,16 @@ function parseCase(filename: string, raw: string): TestCase {
 function loadCases(): TestCase[] {
   const files = readdirSync(dataDir).filter(f => f.endsWith('.txt')).sort();
   if (files.length === 0) throw new Error(`No .txt test cases found in ${dataDir}`);
+  const manifestPath = join(dataDir, 'sources.json');
+  if (existsSync(manifestPath)) {
+    const sources: Array<{ file: string; sha256: string }> = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    if (sources.map(s => s.file).sort().join('\n') !== files.join('\n')) throw new Error('Source manifest does not match cases');
+    for (const source of sources) {
+      const hash = createHash('sha256').update(readFileSync(join(dataDir, source.file))).digest('hex');
+      if (hash !== source.sha256) throw new Error(`Source checksum mismatch: ${source.file}`);
+    }
+  }
   return files.map(f => parseCase(f, readFileSync(join(dataDir, f), 'utf8')));
-}
-
-interface WordEntry {
-  word: string;
-  ipa: string;
-}
-
-type Verdict = "OK" | "MINOR" | "WRONG";
-
-interface CaseScore {
-  name: string;
-  lang: string;
-  total: number;
-  ok: number;
-  minor: number;
-  wrong: number;
-  score: number;
-  rows: Array<{ word: string; ipa: string; verdict: Verdict | "?"; reason: string }>;
 }
 
 // Tokenize into scoring units: unique words (case-insensitive, order-preserved).
@@ -176,14 +183,30 @@ function tokenizeWords(text: string): string[] {
   return out;
 }
 
-function buildPrompt(lang: string, entries: WordEntry[]): string {
+function tokenizeOccurrences(text: string): string[] {
+  return text.match(/[\p{L}\p{M}\p{N}'’]+/gu) ?? [];
+}
+
+function buildPrompt(lang: string, entries: WordEntry[], sourceText?: string): string {
   const langName = LANG_NAMES[lang] ?? lang;
   const list = entries.map((e, i) => `${i + 1}\t${e.word}\t${e.ipa}`).join("\n");
-  return `\
-You are a phonetician auditing a rule-based grapheme-to-phoneme (G2P) system for ${langName}.
-Each line below is one word and the system's predicted IPA (citation form, judged in
+  const contextInstructions = sourceText
+    ? `Each line is one TOKEN OCCURRENCE in the complete source text below.
+English labels are the actual expanded spoken tokens (including numbers and abbreviations).
+Check each expansion against the original text as well as its pronunciation.
+Repeated words are intentionally present and must be judged independently using
+their local sentence context. The listed IPA is the system output for that
+occurrence; punctuation is not scored.
+
+Source text:
+${sourceText}`
+    : `Each line below is one word and the system's predicted IPA (citation form, judged in
 isolation — no sentence context, no part-of-speech, so do NOT penalise the absence of
-context-dependent forms such as weak/reduced forms or sandhi).
+context-dependent forms such as weak/reduced forms or sandhi).`;
+  return `\
+Do not use tools or inspect files. Judge only the supplied text and IPA.
+You are a phonetician auditing a rule-based grapheme-to-phoneme (G2P) system for ${langName}.
+${contextInstructions}
 
 Judge at the PHONEMIC level — the level that distinguishes one word from another in
 ${langName}. Two things matter, and only these:
@@ -201,7 +224,7 @@ secondary stress. Accept ANY pronunciation that is standard or a legitimate, wid
 used regional/free variant: if the word has several valid pronunciations and the
 prediction matches any one of them, it is OK.
 
-Assign EXACTLY ONE verdict per word:
+Assign EXACTLY ONE verdict per entry:
   OK    = phonemically correct — segments and any contrastive suprasegmental are valid
           for a standard (or accepted variant) pronunciation of the word.
   MINOR = the right word and clearly intelligible, but one sub-optimal phonemic choice a
@@ -236,42 +259,6 @@ END_VERDICTS
 Output nothing after END_VERDICTS.`;
 }
 
-function parseVerdicts(content: string, entries: WordEntry[]): CaseScore["rows"] {
-  const rows: CaseScore["rows"] = entries.map((e) => ({
-    word: e.word,
-    ipa: e.ipa,
-    verdict: "?" as Verdict | "?",
-    reason: "",
-  }));
-  const begin = content.indexOf("BEGIN_VERDICTS");
-  const block = begin >= 0 ? content.slice(begin + "BEGIN_VERDICTS".length) : content;
-  const end = block.indexOf("END_VERDICTS");
-  const body = end >= 0 ? block.slice(0, end) : block;
-  for (const line of body.split(/\r?\n/)) {
-    const m = line.match(/^\s*(\d+)\s*\|\s*(OK|MINOR|WRONG)\b\s*(?:\|\s*(.*))?$/i);
-    if (!m) continue;
-    const idx = parseInt(m[1], 10) - 1;
-    if (idx < 0 || idx >= rows.length) continue;
-    rows[idx].verdict = m[2].toUpperCase() as Verdict;
-    rows[idx].reason = (m[3] ?? "").trim();
-  }
-  return rows;
-}
-
-function scoreCase(name: string, lang: string, rows: CaseScore["rows"]): CaseScore {
-  let ok = 0,
-    minor = 0,
-    wrong = 0;
-  for (const r of rows) {
-    if (r.verdict === "OK") ok++;
-    else if (r.verdict === "MINOR") minor++;
-    else if (r.verdict === "WRONG") wrong++;
-  }
-  const total = ok + minor + wrong; // unparsed ("?") rows excluded from the denominator
-  const score = total ? (100 * (ok + 0.5 * minor)) / total : 0;
-  return { name, lang, total, ok, minor, wrong, score, rows };
-}
-
 (async () => {
   const phonemizer = createPhonemizer({
     processors: [
@@ -298,6 +285,7 @@ function scoreCase(name: string, lang: string, rows: CaseScore["rows"]): CaseSco
   console.log(`Scoring via ${provider} (model: ${evalModel}) — ${cases.length}/${allCases.length} case(s)${filterNote}\n`);
 
   const scores: CaseScore[] = [];
+  if (reportDir) mkdirSync(reportDir, { recursive: true });
   for (const tc of cases) {
     const langName = LANG_NAMES[tc.lang] ?? tc.lang;
     // anyAscii is mandatory for ja/ko/ru — their G2Ps expect romaji/romaja/
@@ -305,21 +293,27 @@ function scoreCase(name: string, lang: string, rows: CaseScore["rows"]): CaseSco
     // (already Latin) and zh (the tokenizer preserves Han for pinyin-pro).
     const ipaOf = (w: string) =>
       phonemizer.toIPA(w, { language: tc.lang, anyAscii: true }).trim();
-    const entries: WordEntry[] = tokenizeWords(tc.text)
-      .map((word) => ({ word, ipa: ipaOf(word) }))
-      .filter((e) => e.ipa.length > 0);
+    const entries: WordEntry[] = contextMode
+      ? (() => {
+          const sourceWords = tokenizeOccurrences(tc.text);
+          return contextEntries(
+            phonemizer.phonemize(tc.text, { language: tc.lang, anyAscii: true, returnArray: true }),
+            tc.lang.startsWith('en') ? undefined : sourceWords,
+          );
+        })()
+      : tokenizeWords(tc.text)
+          .map((word) => ({ word, ipa: ipaOf(word) }))
+          .filter((e) => e.ipa.length > 0);
 
     console.log(`\n━━━ ${tc.name}  [${langName}] ━━━`);
     console.log(`Words to score: ${entries.length}\n`);
 
-    const prompt = buildPrompt(tc.lang, entries);
-    const content =
-      provider === 'codex' ? scoreWithCodex(prompt) : await scoreWithOpenAI(prompt);
-    if (!content) {
-      console.log('(no response from judge — skipping case)\n');
-      continue;
-    }
-
+    const prompt = buildPrompt(tc.lang, entries, contextMode ? tc.text : undefined);
+    if (reportDir) writeFileSync(join(reportDir, `${tc.name}.prompt.txt`), prompt);
+    let content = '';
+    try { content = (provider === 'codex' ? scoreWithCodex(prompt) : await scoreWithOpenAI(prompt)) ?? ''; }
+    catch (error) { console.error(error); }
+    if (reportDir) writeFileSync(join(reportDir, `${tc.name}.verdicts.txt`), content);
     const rows = parseVerdicts(content, entries);
     const cs = scoreCase(tc.name, tc.lang, rows);
     scores.push(cs);
@@ -339,7 +333,7 @@ function scoreCase(name: string, lang: string, rows: CaseScore["rows"]): CaseSco
     const totOk = sum((c) => c.ok);
     const totMinor = sum((c) => c.minor);
     const totWrong = sum((c) => c.wrong);
-    const n = totOk + totMinor + totWrong;
+    const n = sum(c => c.total);
     const micro = n ? (100 * (totOk + 0.5 * totMinor)) / n : 0; // per-word pooled
     const macro = sum((c) => c.score) / scores.length; // per-case mean
     console.log('═'.repeat(56));
@@ -352,4 +346,11 @@ function scoreCase(name: string, lang: string, rows: CaseScore["rows"]): CaseSco
     console.log(`  macro (mean of cases): ${macro.toFixed(1)}%   cases=${scores.length}`);
     console.log('═'.repeat(56));
   }
+  const passed = scores.length === cases.length && scores.every(c => c.total > 0 && c.rows.every(r => r.verdict !== '?') && c.score >= minScore);
+  if (reportDir) writeFileSync(join(reportDir, 'report.json'), JSON.stringify({
+    provider, model: evalModel, contextMode, minScore, passed,
+    sources: cases.map(c => ({ name: c.name, sha256: createHash('sha256').update(c.text).digest('hex') })),
+    scores,
+  }, null, 2) + '\n');
+  if (!passed) process.exitCode = 1;
 })();

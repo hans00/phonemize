@@ -118,10 +118,6 @@ const ABBREVIATIONS: { [key: string]: string } = {
   sr: "senior",
   jr: "junior",
 
-  // Time
-  am: "a m",
-  pm: "p m",
-
   // Common abbreviations
   etc: "etcetera",
   vs: "versus",
@@ -139,6 +135,11 @@ const ABBREVIATIONS: { [key: string]: string } = {
   org: "organization",
   edu: "education",
   com: "commercial",
+};
+
+// Lexical abbreviation data for labels that also have ordinary word readings.
+// Require capitalization and a period instead of expanding prose occurrences.
+const LABEL_ABBREVIATIONS: Record<string, string> = {
   net: "network",
   info: "information",
 };
@@ -261,9 +262,16 @@ export function expandNumbers(text: string): string {
 }
 
 export function expandAbbreviations(text: string): string {
+  // A time marker needs a preceding clock value: ordinary "I am" is a verb,
+  // including at sentence end. Run before number expansion removes the digits.
+  text = text.replace(/(\b\d+(?::\d{2})?\s*)([ap])\.?m\b\.?/gi,
+    (_, clock, period) => `${clock.trimEnd()} ${period.toLowerCase()} m`);
   // Handle abbreviations with periods
   text = text.replace(/\b([a-z]+)\./gi, (match, abbr) => {
     const lower = abbr.toLowerCase();
+    if (LABEL_ABBREVIATIONS[lower]) {
+      return abbr !== lower ? LABEL_ABBREVIATIONS[lower] : match;
+    }
     if (ABBREVIATIONS[lower]) {
       return ABBREVIATIONS[lower];
     }

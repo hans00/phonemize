@@ -12,4 +12,6 @@ src/*.js
 
 # WikiPron eval benchmark (generated on demand; Wiktionary-derived)
 scripts/.wikipron-cache/
+scripts/.common-accuracy-cache/
+scripts/.article-eval-cache/
 scripts/eval-data-wikipron/

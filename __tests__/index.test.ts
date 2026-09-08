@@ -43,9 +43,7 @@ describe('Index', function() {
   })
 
   it('chinese', function() {
-    // TTS rendered by rules (no acronym letter-spelling without dict);
-    // future work via an acronym detector would restore ˈtiˈtiˈɛs.
-    expect(phonemize('中文 TTS')).toEqual('ʈʂʊŋ˥˥ wən˧˥ ˈts')
+    expect(phonemize('中文 TTS')).toEqual('ʈʂʊŋ˥˥ wən˧˥ ˈtiˈtiˈɛs')
     expect(phonemize('中文的抑揚頓挫')).toEqual('ʈʂʊŋ˥˥ wən˧˥ tə˧ i˥˩ jɑŋ˧˥ tuən˥˩ tsʰuɔ˥˩')
     expect(phonemize('還原 還你 還是 還不是')).toEqual('xuan˧˥ juan˧˥ xuan˧˥ ni˧˩˧ xaɪ˧˥ ʂɨ˥˩ xaɪ˧˥ pu˥˩ ʂɨ˥˩')
   })
@@ -144,9 +142,7 @@ describe('Index', function() {
   })
 
   it('Uppercase acronym processing', function() {
-    // Without a runtime acronym detector, "TTS" is just consonants.
-    // Acronym handling is a planned follow-up — see P5.3.
-    expect(phonemize('TTS')).toEqual('ˈts')
+    expect(phonemize('TTS')).toEqual('ˈtiˈtiˈɛs')
     expect(phonemize('AI')).toEqual('ˈeɪˈaɪ')
 
     expect(phonemize('Xyz')).not.toContain('ˌɛks')

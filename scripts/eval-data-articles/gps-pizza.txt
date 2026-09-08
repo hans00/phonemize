@@ -1,0 +1,27 @@
+# lang: en-US
+
+How Does GPS Work?
+
+It’s Friday night and you want some pizza. Fast. But somebody is going to have to pick that pizza up, and that means they need to know how to get to the closest pizzeria.
+
+In this modern world that is no problem! Just plug ‘pizza’ into a smartphone and it tells you exactly how to get there.
+
+But how exactly does the phone know where you are?
+
+Something called a Global Positioning System, or GPS, tells you, that’s how.
+
+When your phone tells you where you are, it may actually be listening to signals from satellites high up in space.  There are over 30 satellites used for GPS, orbiting over 16,000 miles (26,000km) above the Earth!
+
+Your phone just needs to figure out how far away you are from some of them.
+
+If your phone knows how far away it is from four satellites, then there is only one place on Earth you can be!
+
+Your phone, or any device with a GPS, is programmed to know where all the satellites are at any given time.
+
+The phone uses that information—along with the amount of time the signal took to reach it—to figure out how far away the satellites are. By doing that, it computes its location.
+
+So when you search for the nearest pizza place in your smartphone, this is what your phone is thinking:
+
+“What satellites are talking to me right now? Hey there, satellites! I know you guys! And I know where you are in the sky right now, too! Let me listen to your signal to figure out how far away I am from each of you… Oh! I must be right here! There’s no other place that is the right distance away from each of you! OK, let me check the internet to see what pizza places are near me…”
+
+And all that happens in an instant. Good thing, too. You’re only getting hungrier.

@@ -46,6 +46,7 @@ const vowelShape = () => ({
 
 const PLACEHOLDERS: Record<string, unknown> = {
   "./data/en/exceptions.json": {},
+  "./data/en/initialisms.json": {},
   // lts.json is consumed only by the dead-code en-lts.ts (kept for the
   // validate-lts dev script); a placeholder keeps `tsc -b` happy on a
   // clean checkout without pulling the heavy aligner→compile-lts chain.

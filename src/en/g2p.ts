@@ -6,6 +6,7 @@
 // pipeline plus this table reproduces the dict's lenient accuracy at
 // ~26% of the size. See docs/g2p-redesign.md P5.
 import * as lookupTable from "../../data/en/exceptions.json";
+import * as initialismTable from "../../data/en/initialisms.json";
 import * as homographs from "../../data/en/homographs.json";
 import * as compoundParts from "../../data/en/compound-parts.json";
 import { arpabetToIpa, resolveJson } from "../utils";
@@ -56,6 +57,20 @@ const DICTIONARY: EnDict = Object.assign(
   Object.create(null),
   resolveJson<EnDict>(lookupTable),
 );
+// Spelled letter names are valid whole-token readings, not lexical stems
+// for morphology or compound decomposition (GA must not become gas).
+const INITIALISMS: EnDict = Object.assign(
+  Object.create(null),
+  resolveJson<EnDict>(initialismTable),
+);
+function spellInitialism(word: string): string | undefined {
+  if (!/^([A-Z]\.?){2,8}$/.test(word)) return undefined;
+  const letters = word.replace(/\./g, "").split("");
+  const pronunciations = letters.map((letter) => INITIALISMS[letter.toLowerCase()]);
+  if (!pronunciations.every(Boolean)) return undefined;
+  const stress = word.includes(".") ? "" : "ˈ";
+  return pronunciations.map((ipa) => stress + ipa.replace(/[ˈˌ]/g, "")).join("");
+}
 const HOMOGRAPHS: HomographDict = Object.assign(
   Object.create(null),
   resolveJson<HomographDict>(homographs),
@@ -385,7 +400,7 @@ export class EnglishG2P implements LanguageProcessor {
           path: "dictionary",
           steps: [{ grapheme: word, phoneme: ipa, rule: "custom-dict" }],
         };
-      if (this.dictionary[lowerWord])
+      if (this.dictionary[lowerWord] || INITIALISMS[lowerWord])
         return {
           word,
           ipa,
@@ -467,6 +482,7 @@ export class EnglishG2P implements LanguageProcessor {
       if (knownPronunciation) {
         return knownPronunciation;
       }
+      if (INITIALISMS[lowerWord]) return spellInitialism(word) ?? INITIALISMS[lowerWord];
     }
 
     // Priority 3: Morphological analysis - only for unknown words
@@ -516,25 +532,8 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     // Priority 6: Handle acronyms with or without periods, e.g., "TTS" or "M.L."
-    const acronymMatch = word.match(/^([A-Z]\.?){2,8}$/);
-    if (acronymMatch) {
-      const containsPeriods = word.includes(".");
-      const letters = word.replace(/\./g, "").split("");
-      const letterPronunciations = letters.map((letter) =>
-        this.wellKnown(letter.toLowerCase()),
-      );
-      if (letterPronunciations.every((p) => p)) {
-        if (containsPeriods) {
-          // No stress for acronyms with periods like M.L.
-          return letterPronunciations.map((p) => p?.replace(/ˈ/g, "")).join("");
-        } else {
-          // Add stress for acronyms without periods like TTS
-          return letterPronunciations
-            .map((p) => `ˈ${p?.replace(/ˈ/g, "")}`)
-            .join("");
-        }
-      }
-    }
+    const spelled = spellInitialism(word);
+    if (spelled) return spelled;
 
     // Priority 7: Improved syllabification and rule-based G2P
     const syllables = syllabify(lowerWord);
@@ -644,8 +643,15 @@ export class EnglishG2P implements LanguageProcessor {
       ruleFallback: boolean,
     ): string | undefined => {
       const base = lowerWord.slice(0, -sfxLen);
+      // Restoring silent e must not select a pronounced-e loanword
+      // (pass → passé). Such a stem cannot explain dropped-e spelling.
+      const silentE = () => {
+        if (/([bcdfgklmnprst])\1$/.test(base)) return undefined;
+        const p = this.wellKnown(base + "e");
+        return p && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(p) ? p : undefined;
+      };
       if (!/[aeiou]$/.test(base)) {
-        const m = this.wellKnown(base + "e");
+        const m = silentE();
         if (m) return join(m);
       } // magic-e: coded→code, baking→bake
       // skipMorphology: the base of an inflection must be a real lexicon
@@ -661,11 +667,26 @@ export class EnglishG2P implements LanguageProcessor {
         lowerWord.slice(-(sfxLen + 2), -(sfxLen + 1)) ===
           lowerWord.slice(-(sfxLen + 1), -sfxLen)
       ) {
-        const p = this.wellKnown(lowerWord.slice(0, -(sfxLen + 1)));
+        const undoubled = lowerWord.slice(0, -(sfxLen + 1));
+        // A recovered -s must be lexical, not a newly inferred plural
+        // (finessed must not become fines + d). Derived stems such as
+        // pedal in pedalled still need the normal morphology lookup.
+        const p = this.wellKnown(undoubled, undefined, undoubled.endsWith("s"));
         if (p) return join(p);
       }
-      const magicPron = this.wellKnown(base + "e");
+      const magicPron = silentE();
       if (magicPron) return join(magicPron);
+      // Consonant + y retains its vowel before -ing (try/copy/study).
+      // Two-letter stems are excluded: dying/lying/tying restore -ie.
+      if (base.length > 2 && /[^aeiou]y$/.test(base)) {
+        return join(this.predictInternal(base, undefined, true));
+      }
+      // These final clusters already close the stem; adding a fictitious
+      // silent e changes its vowel (called), or decomposition splits a
+      // consonant digraph (reaching). Keep the bare rule-derived stem.
+      if (/[aeiou]/.test(base) && /(?:ll|ss|[cs]h|ck|ng|lk)$/.test(base)) {
+        return join(this.predictInternal(base, undefined, true));
+      }
       // Dict lookup failed for the stem because it is a regular word the
       // rules already handle, so it was never memorized as an exception
       // (ask, form, …). Rule-predict the stem and attach the allomorph —
@@ -704,6 +725,20 @@ export class EnglishG2P implements LanguageProcessor {
     ) {
       const basePron = this.wellKnown(lowerWord.slice(0, -1));
       if (basePron) return sPlural(basePron);
+      // Rule-derived stems are absent from the exception table. Preserve
+      // -tion/-sion palatalization and monosyllabic silent-e vowels
+      // when adding -s (solutions/names/bikes). Verify silent e by the
+      // consonant-final prediction. Exclude s/x, which instead introduce
+      // syllabic -es (buses/taxes), and multi-vowel stems (housewives).
+      if (/[ts]ions$|^[^aeiou]*[aeiou][bcdfghjklmnpqrtvz]es$/.test(lowerWord)) {
+        const stem = this.predictInternal(lowerWord.slice(0, -1), undefined, true);
+        if (!/[aeiouɑæɛɪɔʊʌəɝ]$/.test(stem)) return sPlural(stem);
+      }
+      // A final -s must not turn the stem's final ow/o into a closed
+      // syllable (shows, yellows, photos). Preserve the stem vowel.
+      if (/(?:ow|o)s$/.test(lowerWord)) {
+        return sPlural(this.predictInternal(lowerWord.slice(0, -1), undefined, true));
+      }
     }
     if (/['''']s$/.test(lowerWord) && lowerWord.length > 3) {
       const basePron = this.wellKnown(lowerWord.slice(0, -2));

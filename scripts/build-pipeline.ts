@@ -32,6 +32,9 @@ const STEPS: Step[] = [
   // Seed empty placeholders so the runtime pipeline can be imported by
   // the miners below before their real tables exist.
   { script: "seed-data.ts" },
+  // This depends only on dict.json. Build it before importing G2P in the
+  // exception miner so clean and incremental builds see identical parts.
+  { script: "mine-compound-parts.ts" },
   // Exception table: mined against the gram-free rule baseline for a
   // reproducible result regardless of any leftover gram tables.
   {
@@ -39,8 +42,6 @@ const STEPS: Step[] = [
     args: ["--native-min", "1"],
     env: { PHONEMIZE_NO_GRAMS: "1" },
   },
-  // Statistical compound head/tail table (helps decompose compounds).
-  { script: "mine-compound-parts.ts" },
   // The stress-gram and vowel-gram miners are intentionally NOT run. They
   // were tuned to maximize dictionary-MATCH (the old eval standard), but
   // AI-eval measurements showed they net-HURT pronunciation quality on the
