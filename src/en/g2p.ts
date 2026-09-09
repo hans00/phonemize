@@ -716,9 +716,10 @@ export class EnglishG2P implements LanguageProcessor {
       }
       const magicPron = silentE();
       if (magicPron) return join(magicPron);
-      // Consonant + y retains its vowel before -ing (try/copy/study).
-      // Two-letter stems are excluded: dying/lying/tying restore -ie.
-      if (base.length > 2 && /[^aeiou]y$/.test(base)) {
+      // A y-final stem keeps its vowel before -ing (try/copy/study,
+      // buy/play/enjoy). Two-letter stems are excluded: dying/lying/tying
+      // restore -ie.
+      if (base.length > 2 && base.endsWith("y")) {
         return join(this.predictInternal(base, undefined, true));
       }
       // These final clusters already close the stem; adding a fictitious
@@ -763,7 +764,11 @@ export class EnglishG2P implements LanguageProcessor {
       !lowerWord.endsWith("ss") &&
       lowerWord.length > 2
     ) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -1));
+      // A one-syllable consonant+vowel stem (thi+s, hi+s, ha+s, ye+s)
+      // is a lexical coincidence, not a plural: this/his/has/yes/gas
+      // are whole words. -o stems (photos, videos) are real plurals.
+      const stem = lowerWord.slice(0, -1);
+      const basePron = /^[^aeiouy]*[aeiuy]$/.test(stem) ? undefined : this.wellKnown(stem);
       if (basePron) return sPlural(basePron);
       // Rule-derived stems are absent from the exception table. Preserve
       // -tion/-sion palatalization and monosyllabic silent-e vowels
@@ -785,7 +790,15 @@ export class EnglishG2P implements LanguageProcessor {
       if (basePron) return sPlural(basePron);
     }
     if (lowerWord.endsWith("es") && lowerWord.length > 3) {
-      const basePron = this.wellKnown(lowerWord.slice(0, -2));
+      const base = lowerWord.slice(0, -2);
+      // A one-syllable base ending in a single s is almost always a
+      // magic-e stem plus -s (uses, cases, roses, houses, nurses), not
+      // an -es plural (buses, gases); read it through the silent-e form.
+      if (/^[^aeiouy]*[aeiouy]+[^aeiouys]*s$/.test(base)) {
+        const stem = this.predictInternal(base + "e", undefined, true);
+        if (stem && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(stem)) return sPlural(stem);
+      }
+      const basePron = this.wellKnown(base);
       if (basePron) return basePron + "ɪz";
     }
 
@@ -829,13 +842,18 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     if (lowerWord.endsWith("ing") && lowerWord.length > 4) {
-      const p = inflect(3, (b) => b + "ɪŋ", false);
+      const p = inflect(3, (b) => b + "ɪŋ", true);
       if (p) return p;
     }
 
     if (lowerWord.endsWith("ally") && lowerWord.length > 6) {
       const base2 = lowerWord.slice(0, -2);
       let basePron = this.wellKnown(base2, undefined, true);
+      // -al adjectives the rules already handle (final, total, general)
+      // are not in the lexicon; read them by rule before falling back to
+      // the -ic stem of -ically words (basically, typically).
+      if (!basePron && !base2.endsWith("ical"))
+        basePron = this.predictInternal(base2, undefined, false);
       if (!basePron) {
         const base4 = lowerWord.slice(0, -4);
         basePron =
@@ -995,8 +1013,14 @@ export class EnglishG2P implements LanguageProcessor {
     ] as [string, string][]) {
       if (!lowerWord.endsWith(sfx) || lowerWord.length <= sfx.length + 2)
         continue;
-      const b = lowerWord.slice(0, -sfx.length),
-        p =
+      const b = lowerWord.slice(0, -sfx.length);
+      // Stripping a vowel-initial -al from an unknown one-syllable base
+      // closes its syllable (fi|nal → fin, to|tal → tot) and loses the
+      // tense vowel; leave those to the whole-word rule path.
+      if (sfx === "al" && /^[^aeiouy]*[aeiouy]+[^aeiouy]+$/.test(b) &&
+          !this.wellKnown(b, undefined, true))
+        continue;
+      const p =
           this.wellKnown(b, undefined, true) ||
           this.predictInternal(b, undefined, false);
       if (p) return p + ipa;

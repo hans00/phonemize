@@ -82,13 +82,14 @@ function dropSilentH(ipa: string): string {
   //   - post-vocalic coda:   behl /ˈbɛɫ/, ahn /ˈæn/
   //   - word-final after V:  borah /ˈbɔɹə/, beulah /ˈbjuɫə/
   // A stress mark after /h/ counts as "not a vowel" too — /h/ never
-  // ends a syllable before the next syllable's onset.
+  // ends a syllable before the next syllable's onset. The one licit
+  // cluster is /hj/ (human, huge, hue).
   let out = "";
   let writeFrom = 0;
   for (let i = 0; i < ipa.length; i++) {
     if (ipa[i] !== "h") continue;
     const next = ipa[i + 1];
-    const nextIsVowel = next !== undefined && VOWELS.indexOf(next) >= 0;
+    const nextIsVowel = next !== undefined && (VOWELS.indexOf(next) >= 0 || next === "j");
     if (!nextIsVowel) {
       out += ipa.slice(writeFrom, i);
       writeFrom = i + 1;

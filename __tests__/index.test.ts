@@ -39,7 +39,8 @@ describe('Index', function() {
     // supercar decomposes into the verified compound parts super + car
     // (fore-stressed, as English noun compounds are): ˈsuper + ˌcar.
     expect(phonemize('supercar')).toEqual('ˈsupɝˌkɑɹ')
-    expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).toMatch(/njumən|njumoʊ/)
+    // AmE drops the yod after n (pneumonia nəˈmoʊnjə, pneumatic nuˈmætɪk; dict n+eu → u 87:7)
+    expect(phonemize('pneumonoultramicroscopicsilicovolcanoconiosis')).toMatch(/numən|numoʊ/)
   })
 
   it('chinese', function() {

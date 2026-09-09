@@ -214,6 +214,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ai/, "eɪ"], // rain, main, paid
   [/^eau[x]?/, "oʊ"], // plateau/beau + beaux/bordeaux: French eau(x) → /oʊ/ (x silent)
   [/^ealth/, "ɛlθ"], // health, wealth, stealth (ea+lth → /ɛ/)
+  [/^ear(?=[nlcr])/, "ɝ"], // learn, earn, early, pearl, search, earl (ear before n/l/c/r: 63:9 in dict; d/t/s stay ɪɹ/ɑɹ)
   [/^e[ae]/, "i"], // read, seat, beat; see, tree, free (default long)
   [/^iew/, "ju"],
   [/^ier$/, "iɝ"], // -iew (view/review) → ju; -ier word-final → iɝ (guard: isLastSyllable)
@@ -228,8 +229,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^oss/, "ɔs"], // cross, loss (short o)
   [/^eur/, "ɝ"], // connoisseur, entrepreneur (French -eur → /ɝ/)
   [/^eu/, "ju"], // feud, neuter, Europe
-  [/^ew/, "u"], // few, new, threw
   [/^ue/, "u"], // true, blue, glue (at end)
+  [/^uy$/, "aɪ"], // buy, guy
   [/^uil/, "ɪl"], // build, built, guild, guilt, guile (ɪ not u before l)
   [/^ui/, "u"], // fruit, suit, cruise
   // R-controlled magic-e rimes: must precede generic ^ar/^ir/^or/^ur rules.
@@ -242,6 +243,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // R-controlled vowels (rhotic)
   [/^ar/, "ɑɹ"], // car, far, start
   [/^er(?=[aeiouwy])/, "ɛɹ"], // berry/cherry/merry: er before vowel → /ɛɹ/ not /ɝ/
+  [/^tur$/, "tʃɝ"], // unstressed medial -tur-: natural, cultural, structural (guard: idx>0 && unstressed; 9:1 in dict)
   [/^[eiu]r/, "ɝ"], // her/bird/fur (er/ir/ur → /ɝ/)
   [/^or/, "ɔɹ"], // for, port, storm
   // Context-dependent consonants
@@ -305,6 +307,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^x/, "ks"], // word-initial x→z (xylophone) | x→ks (tax)
   [/^ym(?![aeiou])/, "ɪm"],
   [/^yn(?![aeiou])/, "ɪn"], // gym/symbol | syntax/synchronize
+  [/^y(?=$)/, "ɪ"], // open y before an st onset: system, mystery, crystal, hysteria (39:6 in dict; guard in loop)
   [/^y$/, "i"], // city, happy, country — final y after prior vowel (guard in loop)
   [/^y(?=[aeiou])/, "j"], // yes, you, year (consonantal before vowels)
   [/^y(?=[^aeiouy]+$)/, "ɪ"], // y in closed syllable → ɪ (myth, glyph, crypt, physics, system)
@@ -314,12 +317,12 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^a(?=[^aeioun]y$)/, "eɪ"], // baby, lazy, navy, gravy, shady — aCy → long a
   [/^a$/, "eɪ"], // nation/station/abrasion — open-syllable a before -tion/-sion (guard in loop)
   [/^a/, "æ"], // cat, hat, bad
+  [/^e$/, "i"], // be, me, we — open monosyllable (guard in loop)
   [/^e/, "ɛ"], // bed, red, get (but she -> ʃi handled above)
   [/^i$/, "aɪ"], // mine, vine, time, like — open-syllable i before magic-e (guard in loop)
   [/^i/, "ɪ"], // sit, hit, big
   [/^o$/, "oʊ"], // piano, hero, zero, echo, cargo — word-final bare o (guard in loop)
   [/^o/, "ɑ"], // cot, hot, dog (American English short o)
-  [/^u$/, "u"], // solution/confusion — open-syllable u before -tion/-sion (guard in loop)
   [/^u/, "ʌ"], // cut, but, run
 ];
 
@@ -327,9 +330,14 @@ export function syllabify(word: string): string[] {
   // A more linguistically informed syllabification algorithm based on Maximal Onset Principle.
   // This is a complex problem, and this implementation is a heuristic approach.
 
-  // 0. Pre-handle exceptions and very short words
+  // 0. Pre-handle exceptions and very short words. A three-letter
+  // vowel + consonant + e word (use, ace, ice, age, ate) is a magic-e
+  // rime: split it like its longer relatives (u|se, ca|se) so the
+  // open-syllable vowel and the -se/-ce/-ge suffix rules apply. r/l are
+  // excluded because -re/-le are re-merged rimes below (are, ale); e is
+  // excluded because open-syllable e has no tense rule (eve, eke).
   if (word.length <= 3) {
-    return [word];
+    return /^[aiou][bcdfgkmnpstvz]e$/.test(word) ? [word[0], word.slice(1)] : [word];
   }
 
   const chars = word.toLowerCase().split("");
@@ -349,6 +357,7 @@ export function syllabify(word: string): string[] {
     // Absorb trailing 'w' into nucleus when it precedes a vowel (ew digraph: brewer → brew.er)
     if (
       nucleus.length > 0 &&
+      nucleus[nucleus.length - 1] !== "y" &&
       i < chars.length &&
       chars[i] === "w" &&
       i + 1 < chars.length &&
@@ -358,9 +367,18 @@ export function syllabify(word: string): string[] {
       i++;
     }
 
-    // Find the following consonant cluster (coda + next onset)
+    // Find the following consonant cluster (coda + next onset). A y
+    // after a consonant and not before a vowel is a nucleus (sy|stem,
+    // ty|pi|cal, rhy|thm), not part of the cluster; y before a vowel
+    // (yes, can|yon, be|yond) and word-initial y stay consonantal.
     let consonants = "";
     while (i < chars.length && CONSONANTS.has(chars[i])) {
+      if (
+        chars[i] === "y" &&
+        consonants.length > 0 &&
+        !VOWELS.has(chars[i + 1] ?? "")
+      )
+        break;
       consonants += chars[i];
       i++;
     }
@@ -657,6 +675,28 @@ export function isLikelyCompound(word: string, syllables: string[]): boolean {
   return compoundPatterns.some((pattern) => pattern.test(word));
 }
 
+// Long u is /ju/ (music, cute, few, use) except after a coronal or liquid
+// onset, where American English drops the yod (tune, rule, new, blue, chew).
+// Before an r onset the nucleus is lax (curious kjʊɹ, during dʊɹ, rural).
+// `onset` is the last phoneme emitted before the vowel, if any.
+function longU(onset: string | undefined, beforeR = false): string {
+  const yod = onset === undefined || !/(?:[tdnlszɹθðʃʒ]|tʃ|dʒ)$/.test(onset);
+  return (yod ? "j" : "") + (beforeR ? "ʊ" : "u");
+}
+
+// In an unstressed -ue syllable the yod survives after a single l or n
+// (value, continue) and coalesces with t and s (statue tʃu, issue ʃu);
+// d keeps /du/ (residue, fondue). Returns the replacement onset, or null.
+const COALESCE: Record<string, string> = { t: "tʃ", s: "ʃ" };
+function coalesceOnset(onset: string): string | null {
+  return COALESCE[onset] ?? null;
+}
+
+// Second syllables that signal a magic-e base in a two-syllable word
+// (bake+r, take+n, make+ing, base+is, fine+al, silent, vacant, matrix).
+const TENSE_ENDINGS =
+  /^[^aeiouy]+(?:e[rdsn]|ers|est|ing|ings|or|ors|al|als|ent|ents|ant|ants|us|is|ix)$/;
+
 // Enhanced syllable to IPA conversion with stress-sensitive vowel reduction
 export function syllableToIPA(
   syllable: string,
@@ -689,7 +729,9 @@ export function syllableToIPA(
         pattern.source === "^que$" ||
         pattern.source === "^sten$" ||
         pattern.source === "^[cs]e$" ||
-        pattern.source === "^ge$") &&
+        pattern.source === "^ge$" ||
+        pattern.source === "^ty$" ||
+        pattern.source === "^ly$") &&
       !isLastSyllable
     )
       continue;
@@ -751,13 +793,28 @@ export function syllableToIPA(
     !syllable.endsWith("ire") &&
     !syllable.endsWith("ore") &&
     !syllable.endsWith("ure") &&
-    CONSONANTS.has(syllable[syllable.length - 2]);
+    CONSONANTS.has(syllable[syllable.length - 2]) &&
+    // be/me/we: in a one-syllable word the e is the nucleus, not silent
+    (syllableIndex > 0 || /[aeiouy]/.test(syllable.slice(0, -1)));
 
   if (endsWithSilentE) {
     remaining = syllable.slice(0, -1);
   }
 
   const nextIsCle = !!nextSyllable?.match(/^[bdfgkmnprstvz]le$/);
+  // Maximal onset opens the syllable before these (cu|stom, pu|blic,
+  // fi|sher) but English keeps the vowel lax there.
+  const nextIsLaxCluster = !!nextSyllable?.match(/^(?:s[bcdfgkmnpqtvz]|bl|sh|ch|th|x)/);
+  // Stressed open first syllable of a two-syllable word whose second
+  // syllable is an inflection-shaped ending (baker, paper, taken, making,
+  // basis, final, silent, tiger): the vowel is the tense magic-e vowel of
+  // the base. Other endings (magic, rapid, habit, cabin, panel, wagon,
+  // image, finish) keep the lax default. Onsetless a before any other
+  // ending is the unstressed prefix (about, alone); a before r and i
+  // before v or -en/-ion are lax (baron, river, given, vision).
+  const twoSylTense =
+    syllableIndex === 0 && isNextLastSyllable && isStressed && !nextIsLaxCluster &&
+    !!nextSyllable && TENSE_ENDINGS.test(nextSyllable);
   const nextIsMagicE =
     (isStressed || isNextLastSyllable) &&
     !!nextSyllable?.match(/^[^aeiou]e$/);
@@ -784,6 +841,55 @@ export function syllableToIPA(
       steps?.push({ grapheme: "le", phoneme: "l", rule: "phoneme:le" });
       break;
     }
+    // Long-u spellings whose yod depends on the onset (see longU):
+    //   open u in a stressed or onsetless non-final syllable (mu|sic,
+    //   stu|dent, u|nique) or before -tion/-sion/magic-e (so|lu|tion,
+    //   u|se), ue (cue/due), ew (few/new). Closed-syllable u stays /ʌ/
+    //   (cut, sun); unstressed open u after a consonant reduces (campus).
+    //   Word-final -gue/-que keep their silent ue (league, plaque), and
+    //   gu before e/i is hard g with a silent u (guess, guide, guitar).
+    //   Maximal onset opens the syllable before s+C and bl clusters
+    //   (cu|stom, pu|blic) but the vowel stays lax there.
+    const onset = phonemes[phonemes.length - 1];
+    if (
+      (/^gu(?:e|i(?!l))/.test(remaining) || (endsWithSilentE && /^gui/.test(remaining))) &&
+      !(remaining === "gue" && isLastSyllable) &&
+      !(phonemes.length === 0 && prevSyllable?.endsWith("n"))
+    ) {
+      phonemes.push("ɡ");
+      steps?.push({ grapheme: "gu", phoneme: "ɡ", rule: "phoneme:^gu(?=[ei])" });
+      remaining = remaining.substring(2);
+      continue;
+    }
+    if (
+      remaining === "u" &&
+      (nextSyllable === "tion" || nextSyllable === "sion" || nextIsMagicE ||
+        (!isLastSyllable && !endsWithSilentE && (isStressed || onset === undefined) &&
+          !nextIsLaxCluster))
+    ) {
+      const ipa = longU(onset, nextSyllable?.startsWith("r"));
+      phonemes.push(ipa);
+      steps?.push({ grapheme: "u", phoneme: ipa, rule: "phoneme:^u$" });
+      break;
+    }
+    if (
+      /^(?:ue|ew)/.test(remaining) &&
+      !(remaining === "ue" && isLastSyllable && onset !== undefined && /[ɡk]$/.test(onset) &&
+        /[aeiouyn]$/.test(prevSyllable ?? ""))
+    ) {
+      let ipa = longU(onset);
+      if (remaining.startsWith("ue") && !isStressed && onset !== undefined && phonemes.length === 1) {
+        const merged = coalesceOnset(onset);
+        if (merged) {
+          phonemes[0] = merged;
+          ipa = "u";
+        } else if (/^[ln]$/.test(onset)) ipa = "ju";
+      }
+      phonemes.push(ipa);
+      steps?.push({ grapheme: remaining.slice(0, 2), phoneme: ipa, rule: `phoneme:^${remaining.slice(0, 2)}` });
+      remaining = remaining.substring(2);
+      continue;
+    }
     if (remaining === "the" && phonemes.length > 0) {
       phonemes.push("ð");
       steps?.push({
@@ -798,9 +904,10 @@ export function syllableToIPA(
     // instead of 13+ string comparisons per rule. Built once per
     // syllable; for a 5-syllable word that's 5 small allocations
     // instead of 13 × 150 × 5 = ~10K string ops.
-    const aFire = (nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE);
-    const uFire = (nextSyllable === "tion" || nextSyllable === "sion" || nextIsMagicE);
-    const iFire = (nextIsMagicE || endsWithSilentE || (nextIsCle && isStressed));
+    const aFire = (nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE ||
+      (twoSylTense && /^[^aeiouy]*a$/.test(syllable) && !nextSyllable!.startsWith("r")));
+    const iFire = (nextIsMagicE || endsWithSilentE || (nextIsCle && isStressed) ||
+      (twoSylTense && /^[^aeiouy]*i$/.test(syllable) && !/^(?:v|en$)/.test(nextSyllable!)));
     const skip = new Set<string>();
     if (!hadDoubledL) skip.add("^al$");
     if (gFromDoubling) skip.add("^g(?=[eiy])");
@@ -809,10 +916,12 @@ export function syllableToIPA(
     if (!isLastSyllable || isStressed) skip.add("^ous$");
     if (!isStressed || hasDoubledConsonantBeforeY) skip.add("^a(?=[^aeioun]y$)");
     if (!aFire) skip.add("^a$");
-    if (!uFire) skip.add("^u$");
     if (!iFire) skip.add("^i$");
     if (!isLastSyllable) { skip.add("^le$"); skip.add("^ier$"); }
     if (isStressed) skip.add("^ey$");
+    if (syllableIndex > 0 || !isLastSyllable || !/^[^aeiouy]+e$/.test(syllable)) skip.add("^e$");
+    if (syllableIndex === 0 || isStressed) skip.add("^tur$");
+    if (isLastSyllable || !nextSyllable?.startsWith("st")) skip.add("^y(?=$)");
     if (syllableIndex > 0) { skip.add("^x(?=[aeiouy])"); skip.add("^gil"); }
     // Greek silent-h ^rh only fires word-initially or in -rrh- (the
     // prior syllable ends in r: diarrhea, hemorrhage). A plain medial
@@ -823,10 +932,21 @@ export function syllableToIPA(
     }
 
     let matchFound = false;
-    for (const [pattern, ipa] of PHONEME_RULES) {
+    for (const [pattern, ruleIpa] of PHONEME_RULES) {
       if (skip.has(pattern.source)) continue;
+      let ipa = ruleIpa;
       const match = remaining.match(pattern);
       if (match) {
+        // Fixed-yod rules (^ure$ jʊɹ, ^eu ju) drop the yod after a
+        // coronal onset like every other long u (sure, neuter, deuce).
+        // -ture/-dure keep it: the yod palatalizes (gesture tʃɝ) or the
+        // lexicon writes dj (endure).
+        const onset = phonemes[phonemes.length - 1];
+        if (
+          /^j[uʊ]/.test(ipa) && longU(onset) === "u" &&
+          !(pattern.source === "^ure$" && /[td]$/.test(onset ?? ""))
+        )
+          ipa = ipa.slice(1);
         phonemes.push(ipa);
         steps?.push({
           grapheme: match[0],
@@ -926,12 +1046,13 @@ export function syllableToIPA(
       ɛ: "i", // met -> mete
       ɪ: "aɪ", // bit -> bite
       ɑ: "oʊ", // hop -> hope
-      ʌ: "ju", // cut -> cute
+      ʌ: "ju", // cut -> cute (tun -> tune: yod dropped after coronals, see longU)
     };
 
     for (let i = phonemes.length - 1; i >= 0; i--) {
       if (shortToLong[phonemes[i]]) {
-        phonemes[i] = shortToLong[phonemes[i]];
+        phonemes[i] =
+          phonemes[i] === "ʌ" ? longU(phonemes[i - 1]) : shortToLong[phonemes[i]];
         break;
       }
     }
