@@ -144,3 +144,47 @@ describe("final -ger keeps the hard g after a tense vowel", () => {
     ["meager", "ˈmiɡɝ"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
+// assignStress: the 2-syllable prefix rule used to send every ab/ad/con/in
+// word to final stress. The dict majority for words whose first syllable is
+// exactly the prefix is initial stress for those four.
+describe("two-syllable prefixes with an initial-stress dict majority", () => {
+  it.each([
+    ["concept", "ˈkɑnsɛpt"],
+    ["concert", "ˈkɑnsɝt"],
+    ["conduct", "ˈkɑndəkt"],
+    ["conflict", "ˈkɑnfɫɪkt"],
+    ["context", "ˈkɑntɛkst"],
+    ["convert", "ˈkɑnvɝt"],
+    ["constant", "ˈkɑnstənt"],
+    ["instant", "ˈɪnstənt"],
+    ["industry", "ˈɪndəstɹi"],
+    ["admin", "ˈædmɪn"],
+    ["advert", "ˈædvɝt"],
+    ["absent", "ˈæbsənt"],
+    ["abject", "ˈæbdʒɛkt"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
+describe("prefixes whose dict majority is final stress keep it", () => {
+  it.each([
+    ["begin", "bɪˈɡɪn"],
+    ["believe", "bɪˈɫiv"],
+    ["depend", "dɪˈpɛnd"],
+    ["express", "ɪksˈpɹɛs"],
+    ["promote", "pɹəˈmoʊt"],
+    ["propose", "pɹəˈpoʊz"],
+    ["compare", "kəmˈpɛɹ"],
+    ["obtain", "əbˈteɪn"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
+describe("a root after a stress-bearing prefix keeps its vowel", () => {
+  it("does not reduce an obstruent-coda root", () => {
+    expect(rules("index")).toBe("ˈɪndɛks");
+    expect(rules("contest")).toBe("ˈkɑntɛst");
+  });
+  it("still reduces a sonorant or open coda", () => {
+    expect(rules("instant")).toBe("ˈɪnstənt");
+    expect(rules("constant")).toBe("ˈkɑnstənt");
+  });
+});

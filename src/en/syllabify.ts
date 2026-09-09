@@ -571,11 +571,15 @@ export function assignStress(syllables: string[], word: string): number {
   //      consonant at the morpheme boundary. Doubled consonants
   //      (abbey, adder, addict-noun-form, common) signal a single
   //      morpheme keeping first-syllable stress.
+  // Only prefixes whose dict majority is final stress belong here. ab
+  // (17/25 initial), ad (24/33), con (100/141) and in (92/134) are majority
+  // initial and are excluded; com (29/42) and pro (53/67) are majority
+  // initial in the dict too but measured net-negative on full IPA, so they
+  // stay.
   if (syllables.length === 2) {
     const firstSyl = syllables[0];
     const PREFIXES_2SYL = [
-      "ab", "ad", "be", "con", "com", "de", "dis", "ex", "in",
-      "ob", "pre", "pro", "re", "sub", "un",
+      "be", "com", "de", "dis", "ex", "ob", "pre", "pro", "re", "sub", "un",
     ];
     for (const prefix of PREFIXES_2SYL) {
       if (firstSyl !== prefix) continue;
@@ -1008,7 +1012,17 @@ export function syllableToIPA(
     !isStressed &&
     isLastSyllable &&
     syllableIndex > 0 &&
-    !/all$/i.test(syllable)
+    !/all$/i.test(syllable) &&
+    // A root after a stress-bearing prefix keeps its full vowel when its coda
+    // is a pure obstruent (index, contest, contact); sonorant or open codas do
+    // reduce (constant, condor, contra), so they stay in the reduction path.
+    !(
+      syllableIndex === 1 &&
+      /^(ab|ad|be|com|con|de|dis|ex|in|mis|ob|out|pre|pro|re|sub|un|under)$/.test(
+        prevSyllable ?? "",
+      ) &&
+      /[aeiouy][^aeiouylmnrw]+$/.test(syllable)
+    )
   ) {
     applyReduction({
       ɑɹ: "ɑɹ",
