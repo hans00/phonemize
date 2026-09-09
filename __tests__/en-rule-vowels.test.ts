@@ -123,7 +123,22 @@ describe("clusters that drop or devoice a segment", () => {
     ["bristle", "ˈbɹɪsəɫ"],
     ["bakowski", "bəˈkɔfski"],
     ["bobrowski", "bəˈbɹɔfski"],
+    ["bacchi", "ˈbæki"],
+    ["macchi", "ˈmæki"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
+describe("a front-vowel suffix keeps the base's final c/g soft", () => {
+  it.each([
+    ["criticize", "ˈkɹɪtɪˌsaɪz"],
+    ["classicism", "ˈkɫæsɪˌsɪzəm"],
+    ["specify", "ˈspɛsəˌfaɪ"],
+    ["energize", "ˈɛnɝˌdʒaɪz"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("leaves a doubled gg hard", () => {
+    expect(rules("druggist")).toMatch(/ɡ[ɪə]st$/);
+  });
 });
 
 describe("<wh> keeps its /hw/ onset word-initially", () => {

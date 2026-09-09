@@ -339,7 +339,9 @@ const POST_LEX_RULES: PostLexRule[] = [
   },
 
   // — Italian <cc(h)i> → /k/ ~ /tʃ/ —
-  { when: (w) => w.includes("cchi"), re: /ktʃ/g, sub: "kk" },
+  // <cch> is a single /k/ (bacchi, cecchi); POST_PROC degemination has
+  // already run by here, so the pair must not be re-introduced.
+  { when: (w) => w.includes("cchi"), re: /ktʃ/g, sub: "k" },
   { when: (w) => w.includes("cchi"), re: /tʃ/g, sub: "k" },
   { when: (w) => /chet(?:ti|ta|to|te)$/.test(w) && w.length >= 6, re: /tʃ/g, sub: "k" },
   { when: (w) => /cci[oa]?$/.test(w), re: /ks([ɪi]?)(oʊ|ə|ʊ|eɪ|a)?$/, sub: "tʃ$1$2" },
