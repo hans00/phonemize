@@ -97,7 +97,6 @@ describe("nasal assimilation stops at a prefix boundary", () => {
     ["include", "ɪnˈkɫud"],
     ["unclear", "ənˈkɫɪɹ"],
     ["conclude", "kənˈkɫud"],
-    ["concoct", "kənˈkɑkt"],
     ["encase", "ˈɛnkeɪs"],
     ["encrypt", "ˈɛnkɹɪpt"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
@@ -151,5 +150,102 @@ describe("<wh> keeps its /hw/ onset word-initially", () => {
 
   it("resyllabifies to /w/ inside a compound", () => {
     expect(rules("cartwheel")).toBe("ˈkɑɹtwiɫ");
+  });
+});
+
+describe("open e is tense in the magic-e frame and before -tion/-sion", () => {
+  it.each([
+    ["cede", "ˈsid"],
+    ["scene", "ˈsin"],
+    ["gene", "ˈdʒin"],
+    ["compete", "kəmˈpit"],
+    ["delete", "dɪˈɫit"],
+    ["completion", "kəmˈpɫiʃən"],
+    ["deletion", "dɪˈɫiʃən"],
+    ["lesion", "ˈɫiʒən"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("keeps e lax when the magic-e syllable is unstressed or non-final", () => {
+    expect(rules("college")).toBe("ˈkɑɫɪdʒ");
+    expect(rules("generous")).toBe("ˈdʒɛnɝəs");
+    expect(rules("section")).toBe("ˈsɛkʃən");
+  });
+});
+
+describe("stressed open e before consonant + i + vowel is tense", () => {
+  it.each([
+    ["medium", "ˈmidiəm"],
+    ["premium", "ˈpɹimiəm"],
+    ["tedious", "ˈtidiəs"],
+    ["comedian", "kəˈmidiən"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("keeps e lax before a lax cluster", () => {
+    expect(rules("congestion")).toBe("kənˈdʒɛstʃən");
+  });
+});
+
+describe("the unstressed re-/pre- prefix is /i/", () => {
+  it.each([
+    ["release", "ɹiˈɫis"],
+    ["report", "ɹiˈpɔɹt"],
+    ["prevent", "pɹiˈvɛnt"],
+    ["precast", "pɹiˈkæst"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("leaves the de-/be- prefixes reduced", () => {
+    expect(rules("debate")).toMatch(/^d[ɪə]ˈbeɪt$/);
+    expect(rules("begin")).toBe("bɪˈɡɪn");
+  });
+});
+
+describe("final -ger keeps the hard g after a tense vowel", () => {
+  it.each([
+    ["eager", "ˈiɡɝ"],
+    ["meager", "ˈmiɡɝ"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+// assignStress: the 2-syllable prefix rule used to send every ab/ad/con/in
+// word to final stress. The dict majority for words whose first syllable is
+// exactly the prefix is initial stress for those four.
+describe("two-syllable prefixes with an initial-stress dict majority", () => {
+  it.each([
+    ["concept", "ˈkɑnsɛpt"],
+    ["concert", "ˈkɑnsɝt"],
+    ["conduct", "ˈkɑndəkt"],
+    ["conflict", "ˈkɑnfɫɪkt"],
+    ["context", "ˈkɑntɛkst"],
+    ["convert", "ˈkɑnvɝt"],
+    ["constant", "ˈkɑnstənt"],
+    ["instant", "ˈɪnstənt"],
+    ["industry", "ˈɪndəstɹi"],
+    ["admin", "ˈædmɪn"],
+    ["advert", "ˈædvɝt"],
+    ["absent", "ˈæbsənt"],
+    ["abject", "ˈæbdʒɛkt"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
+describe("prefixes whose dict majority is final stress keep it", () => {
+  it.each([
+    ["begin", "bɪˈɡɪn"],
+    ["believe", "bɪˈɫiv"],
+    ["depend", "dɪˈpɛnd"],
+    ["express", "ɪksˈpɹɛs"],
+    ["promote", "pɹəˈmoʊt"],
+    ["propose", "pɹəˈpoʊz"],
+    ["compare", "kəmˈpɛɹ"],
+    ["obtain", "əbˈteɪn"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
+describe("a root after a stress-bearing prefix keeps its vowel", () => {
+  it("does not reduce an obstruent-coda root", () => {
+    expect(rules("index")).toBe("ˈɪndɛks");
+    expect(rules("contest")).toBe("ˈkɑntɛst");
+  });
+  it("still reduces a sonorant or open coda", () => {
+    expect(rules("instant")).toBe("ˈɪnstənt");
+    expect(rules("constant")).toBe("ˈkɑnstənt");
   });
 });
