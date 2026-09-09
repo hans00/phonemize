@@ -11,7 +11,7 @@ This project uses Heuristic Learning: the G2P rules are the learnable policy; Cl
 1. **Diagnose** — `yarn test:eval --cluster`: find top rule failure patterns
 2. **Trace** — `yarn trace <word> [word...]`: see which rule fired for specific words, pre- and post-dictionary
 3. **Fix** — edit `PHONEME_RULES`/`SUFFIX_RULES` (in `src/en/syllabify.ts`), the post-lexical tables (`src/en/postlex.ts`), or `tryMorphologicalAnalysis` (in `src/en/g2p.ts`)
-4. **Validate** — `yarn test` (zero regressions), `yarn test:eval` (rules-only lenient accuracy ≥ baseline), `yarn test:parity` (runtime strict parity ≥ baseline)
+4. **Validate** — `yarn test` (zero regressions), `yarn test:eval` (rules-only lenient accuracy does not decrease), `yarn test:parity` (runtime strict parity ≥ baseline). Measure a candidate rule as a win/loss list over the whole dict before adopting it (rules-only dump before/after; `yarn test:parity --dump` for the runtime path)
 5. **Commit** — if all gates pass; update baselines with `yarn test:eval --update-baseline` / `yarn test:parity --update-baseline`
 
 Check compression triggers (see Rule Compression section) before committing any fix.
@@ -26,17 +26,20 @@ Check compression triggers (see Rule Compression section) before committing any 
 
 `yarn test:eval` measures the rule path alone (`disableDict: true`). `yarn test:parity` measures what users get — exceptions table + morphology + fallbacks + rules — over every dict word, and exits non-zero when strict parity drops. Both of the v2.0.x bug reports (#27 `wind`/`solutions`, #28 `Seann`) were composition failures that the rules-only score cannot see, so a change to the table miner, a lookup fallback or a morphology handler is judged by parity, not by `test:eval`.
 
-The rules-only baseline (86.998% lenient, dated 2026-06-13) predates the exceptions-table redesign; the rule path alone has scored ~71–74% lenient since then, and no commit refreshed the file. Treat its delta as informational until the maintainer re-baselines.
+The rules-only baseline (86.998% lenient, dated 2026-06-13) was reached with the mined stress/vowel gram tables that `build-pipeline.ts` no longer runs (they scored dictionary match but hurt real pronunciation quality). The rule path alone has scored 71–74% lenient since; the baseline is kept as the target to recover by rule improvements, so its delta is negative until then — the gate on a change is "no decrease", not "≥ baseline".
 
 ### Improvement goal (set 2026-09-09)
 
-The runtime path on real text is what users report against, so the goal is measured there. Numbers on 2026-09-09 after #28 (`yarn test:parity`, `yarn test:common-accuracy`, `yarn test:eval`):
+The runtime path on real text is what users report against, so the goal is measured there. Numbers on 2026-09-09 (`yarn test:parity`, `yarn test:common-accuracy`, `yarn test:eval`), before → after the first rule pass:
 
-| Metric | Command | Today | Target |
+| Metric | Command | 2026-09-09 | Target |
 |---|---|---|---|
-| Runtime strict parity over dict | `yarn test:parity` | 89.54% | ≥ 92% |
-| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% | ≥ 93% |
-| Rules-only lenient accuracy | `yarn test:eval` | 71.48% | ≥ 75% |
+| Runtime strict parity over dict | `yarn test:parity` | 89.54% → 89.95% | ≥ 92% |
+| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 90.88% | ≥ 93% |
+| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 72.41% | ≥ 75%, then back to the 86.998% baseline by rules alone |
+| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 62.80% | ≥ 70% |
+
+The rules-only baseline is deliberately NOT lowered to today's number: the gap is the ground the rules must recover without the removed gram tables.
 
 Rules of the goal:
 
