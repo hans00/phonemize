@@ -707,6 +707,8 @@ export function syllableToIPA(
   steps?: TraceStep[],
   prevSyllable?: string,
   isNextLastSyllable = false,
+  // Orthographic remainder of the word after this syllable.
+  tail?: string,
 ): string {
   const stepsStart = steps?.length ?? 0;
   let phonemes: string[] = [];
@@ -818,6 +820,35 @@ export function syllableToIPA(
   const nextIsMagicE =
     (isStressed || isNextLastSyllable) &&
     !!nextSyllable?.match(/^[^aeiou]e$/);
+  // Trisyllabic laxing. A stressed open o/y keeps its tense vowel in the
+  // penult (motion, hero, cycle) but goes lax two or more syllables from
+  // the end (policy ɑ, monitor, comedy; pyramid ɪ, synergy) and before
+  // stress-attracting -ic (topic, sardonic, cynic). The orthographic
+  // syllabifier merges -Cy back into the previous syllable (po·licy), so
+  // the depth is counted from `tail`, not from the syllable array; a
+  // final silent e is not a syllable (do·na·te → "nat", 1).
+  // Endings that keep the tense vowel: an ɔɹ rime (historic, chloride),
+  // a final -o (lozano, molano), -ary/-ery (notary, grocery), -ency/-ence
+  // (potency, cogency), the German -berg/-burg name element and the over-
+  // prefix; y also stays tense before a Cl/Cr onset (hydrogen, cyclic).
+  // Measured rules-only over the dict: 153 strict wins : 60 losses, of
+  // which y contributes 10:7 and the -ic trigger 10:4.
+  const t = tail ?? "";
+  const tailSyls =
+    t.replace(/([^aeiouyl])e$/, "$1").match(/[aeiouy]+/g)?.length ?? 0;
+  const laxDomain =
+    isStressed &&
+    (/^[^aeiouy]+ics?$/.test(t) ||
+      (tailSyls >= 2 &&
+        !/o$/.test(t) &&
+        !/b[eu]rg$/.test(t) &&
+        !/^[^aeiouy]?[ae]r(?:y|ies)$/.test(t) &&
+        !/^[^aeiouy]+[ae]n(?:ce|cy)$/.test(t) &&
+        !(syllable === "o" && t.startsWith("ver"))));
+  const triLax =
+    laxDomain && !t.startsWith("r") && /^[^aeiouy]*o$/.test(syllable);
+  const triLaxY =
+    laxDomain && !/^[^aeiouy][lr]/.test(t) && /^[^aeiouy]*y$/.test(syllable);
   // Doubled-gg: either cross-syllable split (bigger/trigger) or within one syllable (baggy/foggy) → hard g
   const gFromDoubling =
     (prevSyllable?.endsWith("g") ?? false) || /gg[eiy]/i.test(syllable);
@@ -860,6 +891,11 @@ export function syllableToIPA(
       steps?.push({ grapheme: "gu", phoneme: "ɡ", rule: "phoneme:^gu(?=[ei])" });
       remaining = remaining.substring(2);
       continue;
+    }
+    if (remaining === "y" && triLaxY) {
+      phonemes.push("ɪ");
+      steps?.push({ grapheme: "y", phoneme: "ɪ", rule: "phoneme:^y$-lax" });
+      break;
     }
     if (
       remaining === "u" &&
@@ -913,6 +949,7 @@ export function syllableToIPA(
     if (gFromDoubling) skip.add("^g(?=[eiy])");
     if (!hasVowelBeforeTerminalY) skip.add("^y$");
     if (!isLastSyllable && !isStressed && !nextIsMagicE) skip.add("^o$");
+    if (triLax) skip.add("^o$");
     if (!isLastSyllable || isStressed) skip.add("^ous$");
     if (!isStressed || hasDoubledConsonantBeforeY) skip.add("^a(?=[^aeioun]y$)");
     if (!aFire) skip.add("^a$");

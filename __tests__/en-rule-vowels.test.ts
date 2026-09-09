@@ -91,3 +91,39 @@ describe("plural readings", () => {
     expect(rules("cases")).toMatch(/^ˈkeɪs/);
   });
 });
+
+describe("trisyllabic laxing of a stressed open o/y", () => {
+  it.each([
+    ["poverty", "ˈpɑvɝti"],
+    ["comedy", "ˈkɑmədi"],
+    ["democracy", "dɪˈmɑkɹəsi"],
+    ["holiday", "ˈhɑɫɪdeɪ"],
+    ["monitor", "ˈmɑnɪtɝ"],
+    ["tolerant", "ˈtɑɫɝənt"],
+    ["photograph", "ˈfɑtəɡɹəf"],
+    ["pyramid", "ˈpɪɹəmɪd"],
+    ["synergy", "ˈsɪnɝdʒi"],
+    ["typical", "ˈtɪpɪkəɫ"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it.each([
+    ["topic", "ˈtɑpɪk"],
+    ["sardonic", "sɑɹˈdɑnɪk"],
+    ["cynic", "ˈsɪnɪk"],
+  ])("stress-attracting -ic laxes the stem vowel: %s → %s", (word, ipa) =>
+    expect(rules(word)).toBe(ipa));
+
+  it.each([
+    ["motion", "ˈmoʊʃən"],
+    ["hero", "ˈhiɹoʊ"],
+    ["donate", "ˈdoʊneɪt"],
+    ["notary", "ˈnoʊtɝi"],
+    ["overrun", "ˈoʊvɝɹən"],
+    ["lozano", "ˈɫoʊzɑnoʊ"],
+    ["molano", "ˈmoʊɫɑnoʊ"],
+    ["historic", "hɪˈstɔɹɪk"],
+    ["hydrogen", "ˈhaɪdɹədʒən"],
+    ["cyclone", "ˈsaɪkɫoʊn"],
+  ])("keeps the tense vowel: %s → %s", (word, ipa) =>
+    expect(rules(word)).toBe(ipa));
+});
