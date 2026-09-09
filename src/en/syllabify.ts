@@ -998,7 +998,17 @@ export function syllableToIPA(
     !isStressed &&
     isLastSyllable &&
     syllableIndex > 0 &&
-    !/all$/i.test(syllable)
+    !/all$/i.test(syllable) &&
+    // A root after a stress-bearing prefix keeps its full vowel when its coda
+    // is a pure obstruent (index, contest, contact); sonorant or open codas do
+    // reduce (constant, condor, contra), so they stay in the reduction path.
+    !(
+      syllableIndex === 1 &&
+      /^(ab|ad|be|com|con|de|dis|ex|in|mis|ob|out|pre|pro|re|sub|un|under)$/.test(
+        prevSyllable ?? "",
+      ) &&
+      /[aeiouy][^aeiouylmnrw]+$/.test(syllable)
+    )
   ) {
     applyReduction({
       ɑɹ: "ɑɹ",

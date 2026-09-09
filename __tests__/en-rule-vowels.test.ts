@@ -125,3 +125,14 @@ describe("prefixes whose dict majority is final stress keep it", () => {
     ["obtain", "əbˈteɪn"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
+
+describe("a root after a stress-bearing prefix keeps its vowel", () => {
+  it("does not reduce an obstruent-coda root", () => {
+    expect(rules("index")).toBe("ˈɪndɛks");
+    expect(rules("contest")).toBe("ˈkɑntɛst");
+  });
+  it("still reduces a sonorant or open coda", () => {
+    expect(rules("instant")).toBe("ˈɪnstənt");
+    expect(rules("constant")).toBe("ˈkɑnstənt");
+  });
+});
