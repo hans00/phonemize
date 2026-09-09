@@ -98,6 +98,31 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (_w, syl) => syl >= 3, re: /eɪdʒ$/, sub: "ɪdʒ" },
   { when: (w) => w.includes("asiv"), re: /æsɪv/, sub: "eɪsɪv" },
   { when: (w) => w.endsWith("ator"), re: /([^w])ətɝ$/, sub: "$1eɪtɝ" },
+  // -ctory sits right after the primary, so its /ɔɹ/ reduces: factory
+  // ˈfæktɝi, directory dɪˈɹɛktɝi (12:1 in dict). Plain -story is 3:4 and
+  // stays; the 2-syllable cases (history) reduce in syllableToIPA.
+  { when: (w) => w.endsWith("ctory"), re: /ɔɹi$/, sub: "ɝi" },
+  // -iest superlative of a -y adjective: craziest ˈkɹeɪziəst (63:13).
+  // Guards keep the non-superlatives out: -priest is a noun stem, and
+  // the length bar drops the monosyllables (driest, wiest, fiest).
+  {
+    when: (w) => w.endsWith("iest") && w.length >= 7 && !w.endsWith("priest"),
+    re: /ist$/, sub: "iəst",
+  },
+  // -nsion: /s/ after a nasal stays voiceless (19:0 in dict) — extension,
+  // pension, dimension — unlike the intervocalic -sion of vision.
+  { when: (w) => w.endsWith("nsion"), re: /nʒən$/, sub: "nʃən" },
+  // -ience/-ient and -uence/-uent are two syllables (audience ˈɔdiəns,
+  // ambient ˈæmbiənt, influence ˈɪnfɫuəns — 20:3, 36:3 and 10:0 in
+  // dict); the vowel digraph otherwise collapses them to one. The qu-
+  // spellings already come out as /wən/ and don't match.
+  { when: (w) => /[iu]en(?:ce|t)$/.test(w), re: /([iu])n([st])$/, sub: "$1ən$2" },
+  // -easure: the ea before the -sure suffix is lax (7:0 in dict) —
+  // measure ˈmɛʒɝ, pleasure, treasure.
+  { when: (w) => w.endsWith("easure"), re: /iʒɝ$/, sub: "ɛʒɝ" },
+  // -gure: unstressed -ure after g is /jɝ/, not the CURE rime (4:0) —
+  // figure ˈfɪɡjɝ, configure.
+  { when: (w) => w.endsWith("gure"), re: /ɡjʊɹ$/, sub: "ɡjɝ" },
   { when: (w, syl) => w.endsWith("mony") && syl >= 3, re: /məni$/, sub: "moʊni" },
   { when: (w) => !w.endsWith("sense") && !w.endsWith("fense"), re: /([ɪɛ])ns$/, sub: "əns" },
   { when: (w) => w.endsWith("inger"), re: /ndʒɝ$/, sub: "ŋɝ" },
