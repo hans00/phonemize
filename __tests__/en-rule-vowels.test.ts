@@ -249,3 +249,54 @@ describe("a root after a stress-bearing prefix keeps its vowel", () => {
     expect(rules("constant")).toBe("ˈkɑnstənt");
   });
 });
+
+describe("s after an unstressed re-/pre- prefix is voiced", () => {
+  it.each([
+    ["presume", /^pɹ[iɪ]ˈzum$/],
+    ["resistor", /^ɹ[iɪ]ˈzɪstɝ$/],
+    ["reservist", /^ɹ[iɪ]ˈzɝvɪst$/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+});
+
+describe("th voicing follows the Greek/Latin vs native split", () => {
+  it.each([
+    ["author", "ˈɔθɝ"],
+    ["method", "ˈmɛθəd"],
+    ["agatha", "ˈæɡəθə"],
+    ["anthony", "ˈænθəni"],
+    ["marathon", "ˈmæɹəθən"],
+    ["panther", "ˈpænθɝ"],
+    ["synthetic", "sɪnˈθɛtɪk"],
+    ["strengthen", "ˈstɹɛŋθən"],
+    ["thalamus", "ˈθæɫəməs"],
+    ["thacker", "ˈθækɝ"],
+    ["whether", "ˈwɛðɝ"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("keeps th+e voiced in native words and in monosyllabic function words", () => {
+    for (const w of ["mother", "father", "weather", "another"])
+      expect(rules(w)).toContain("ð");
+    for (const w of ["this", "that", "than", "those"])
+      expect(rules(w)).toContain("ð");
+  });
+});
+
+describe("s voices in the contexts where the dict majority does", () => {
+  it.each([
+    ["user", "ˈjuzɝ"],
+    ["composer", "kəmˈpoʊzɝ"],
+    ["cause", "ˈkɔz"],
+    ["clause", "ˈkɫɔz"],
+    ["because", "bɪˈkɔz"],
+    ["pause", "ˈpɔz"],
+    ["easy", "ˈizi"],
+    ["daisy", "ˈdeɪzi"],
+    ["drowsy", "ˈdɹaʊzi"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("keeps /s/ where the context does not voice", () => {
+    expect(rules("house")).toBe("ˈhaʊs");
+    expect(rules("fantasy")).toBe("ˈfæntəsi");
+    expect(rules("basing")).toBe("ˈbeɪsɪŋ");
+  });
+});

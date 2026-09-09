@@ -299,6 +299,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^n/, "n"],
   [/^p/, "p"],
   [/^r/, "ɹ"], // American English rhotic r
+  [/^s(?=ed$|er$|ing$)/, "z"], // -sed/-ser/-sing on a dropped silent-e base: used/adviser/closing (guard in loop; 191:119 in dict)
   [/^s/, "s"],
   [/^t/, "t"],
   [/^v/, "v"],
@@ -721,7 +722,12 @@ export function syllableToIPA(
   if (remaining === "le" && isLastSyllable && prevSyllable?.endsWith("l"))
     return "l";
   // -se after vowel-i/e/o syllable → /z/ (advise/cheese/close); magic-e 'a' → /s/ via ^se$ rule.
-  if (remaining === "se" && isLastSyllable && prevSyllable?.match(/[ieo]$/i))
+  // -au also voices (cause/pause/applause, 7:3 in dict); -ou/-oo do not (house/goose).
+  if (
+    remaining === "se" &&
+    isLastSyllable &&
+    prevSyllable?.match(/[ieo]$|au$/i)
+  )
     return "z";
   for (const [pattern, ipa] of SUFFIX_RULES) {
     // Word-final-only suffixes: skip on non-final syllables (legionnaire/album/algebra).
@@ -836,6 +842,32 @@ export function syllableToIPA(
       steps?.push({ grapheme: "s", phoneme: "z", rule: "phoneme:^s" });
       break;
     }
+    // s after an unstressed Latin re-/de-/pre- prefix voices (result,
+    // present, design, reserve): 79:60 in dict.
+    if (
+      syllableIndex === 1 &&
+      /^p?re$/.test(prevSyllable ?? "") &&
+      /^s[aeiouy]/.test(remaining)
+    ) {
+      phonemes.push("z");
+      steps?.push({ grapheme: "s", phoneme: "z", rule: "phoneme:prefix-s" });
+      remaining = remaining.substring(1);
+      continue;
+    }
+    // -sy on a one-syllable vowel base voices (busy, easy, noisy, rosy):
+    // 14:7 in dict. Polysyllabic -sy (fantasy, heresy) keeps /s/.
+    if (
+      remaining === "sy" &&
+      isLastSyllable &&
+      syllableIndex === 0 &&
+      !syllable.includes("ss") &&
+      /[iɪeɛæɑɔoʊuʌəɝ]$/.test(phonemes[phonemes.length - 1] ?? "")
+    ) {
+      phonemes.push("z");
+      steps?.push({ grapheme: "s", phoneme: "z", rule: "phoneme:^s(?=y$)" });
+      remaining = "y";
+      continue;
+    }
     if (
       remaining === "le" &&
       phonemes.length > 0 &&
@@ -947,6 +979,35 @@ export function syllableToIPA(
     if (syllableIndex > 0 && !prevSyllable?.endsWith("r")) skip.add("^rh");
     if (syllableIndex > 0 || phonemes.length > 0) {
       skip.add("^pt"); skip.add("^ps"); skip.add("^pn");
+    }
+    // The -sed/-ser/-sing suffix voices only on a base whose last vowel is
+    // a plain i/e/o/u or ai/au (used, closing, appraiser). Other digraphs
+    // keep /s/: ou (houser), ei/ie (Germanic names beiser/rieser).
+    if (
+      !isLastSyllable ||
+      !/(?:[^aeiou][ieou]|^[ieou]|a[iu])$/.test(prevSyllable ?? "")
+    )
+      skip.add("^s(?=ed$|er$|ing$)");
+    // th before a/i/o/u is the Greek/Latin θ (author, method, marathon,
+    // thalamus): 300:30 medially, 268:15 word-initially in dict. The ð
+    // exceptions are all monosyllabic function words (this/that/thou), so
+    // a one-syllable first syllable keeps the voiced default.
+    if (
+      /^th[aiou]/.test(remaining) &&
+      (syllableIndex > 0 || (!isLastSyllable && !nextIsMagicE))
+    )
+      skip.add("^th(?=[aeiou])");
+    // th+e is voiceless too when the previous syllable closes in a
+    // consonant (anthem, esthete, mythic, naphtha): 226:32 in dict.
+    // r is excluded — that cluster is voiced (further, northern, worthy);
+    // w/y close a vowel digraph (lawther, blythe) and t a geminate (matthey).
+    if (
+      syllableIndex > 0 &&
+      /^the/.test(remaining) &&
+      /[^aeiouyrwt]$/.test(prevSyllable ?? "")
+    ) {
+      skip.add("^th(?=[aeiou])");
+      skip.add("^the$");
     }
 
     let matchFound = false;
