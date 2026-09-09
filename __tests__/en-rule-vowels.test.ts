@@ -270,7 +270,7 @@ describe("th voicing follows the Greek/Latin vs native split", () => {
     ["strengthen", "ˈstɹɛŋθən"],
     ["thalamus", "ˈθæɫəməs"],
     ["thacker", "ˈθækɝ"],
-    ["whether", "ˈwɛðɝ"],
+    ["whether", "ˈhwɛðɝ"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 
   it("keeps th+e voiced in native words and in monosyllabic function words", () => {
