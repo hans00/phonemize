@@ -331,8 +331,8 @@ const primaryCount = (s: string): number => (s.match(/ˈ/g) ?? []).length;
 // value; the rule's /nt/ form is the better pronunciation.
 const ntDropped = (c: Cand): boolean =>
   c.word.includes("nt") &&
-  c.predIpa.includes("nt") &&
-  !c.dictIpa.includes("nt") &&
+  norm(c.predIpa).includes("nt") &&
+  !norm(c.dictIpa).includes("nt") &&
   c.dictIpa.includes("n");
 const shippedCands = candidates.filter(
   (c: Cand) =>
