@@ -34,10 +34,13 @@ The runtime path on real text is what users report against, so the goal is measu
 
 | Metric | Command | 2026-09-09 | Target |
 |---|---|---|---|
-| Runtime strict parity over dict | `yarn test:parity` | 89.54% → 89.95% (+0.30 miner fix, +0.11 rules) | ≥ 92% |
-| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 90.88% | ≥ 93% |
-| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 72.41% | ≥ 75%, then back to the 86.998% baseline by rules alone |
-| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 62.80% | ≥ 70% |
+| Runtime strict parity over dict | `yarn test:parity` | 89.54% → 90.42% | ≥ 92% |
+| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 90.92% | ≥ 93% |
+| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 72.99% | ≥ 75%, then back to the 86.998% baseline by rules alone |
+| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 63.98% | ≥ 70% |
+| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 46.85% | ≥ 50% |
+
+The second pass (six parallel worktree agents, one rule family each, merged sequentially) measured strict +1547/−308 and top-5000 +101/−14 on the rule path; a rule change is only visible to parity after `yarn build-dict` re-mines the table, so parity is judged after the rebuild, never in a worktree.
 
 The rules-only baseline is deliberately NOT lowered to today's number: the gap is the ground the rules must recover without the removed gram tables.
 
@@ -49,7 +52,9 @@ Rules of the goal:
 
 Open classes: none.
 
-Deferred (2026-09-09): both compression triggers fired in the rule pass — the three rule modules total 2741 lines (ceiling 2600) and five `PHONEME_RULES` entries were added (two dead ones removed inline). The next loop session starts with the Rule Compression procedure, as its own commit, before adding rules.
+Deferred (2026-09-09): both compression triggers fired in the rule passes — the three rule modules exceed the 2600-line ceiling and `PHONEME_RULES`/`POST_LEX` entries were added. The Rule Compression procedure runs next, as its own snapshot-gated commit, before any further rules.
+
+Found, not fixed (2026-09-09): `syllabify` splits `e|xist`, so two-syllable ex- words get initial stress; 3+-syllable penult stress is a coin flip on syllable heaviness (needs suffix class or POS); no post-primary secondary-stress rule exists; `sch`+vowel → /sk/ loses on the name-heavy dict (school/scheme are lexical); `special` → ˈspiʃəɫ on the rule path.
 
 ## Commands
 
