@@ -125,3 +125,16 @@ describe("clusters that drop or devoice a segment", () => {
     ["bobrowski", "bəˈbɹɔfski"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
+
+describe("<wh> keeps its /hw/ onset word-initially", () => {
+  it.each([
+    ["which", "ˈhwɪtʃ"],
+    ["white", "ˈhwaɪt"],
+    ["whale", "ˈhweɪɫ"],
+    ["wheel", "ˈhwiɫ"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("resyllabifies to /w/ inside a compound", () => {
+    expect(rules("cartwheel")).toBe("ˈkɑɹtwiɫ");
+  });
+});

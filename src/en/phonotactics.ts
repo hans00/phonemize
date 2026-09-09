@@ -78,18 +78,25 @@ function dropSilentH(ipa: string): string {
   if (ipa.indexOf("h") < 0) return ipa;
   // Phonotactic fact: English /h/ only occurs immediately before a
   // vowel (onset position). Any /h/ NOT followed by a vowel is silent:
-  //   - consonant clusters:  akhtar /ˈæktɝ/, hw→w (westernize)
+  //   - consonant clusters:  akhtar /ˈæktɝ/
   //   - post-vocalic coda:   behl /ˈbɛɫ/, ahn /ˈæn/
   //   - word-final after V:  borah /ˈbɔɹə/, beulah /ˈbjuɫə/
   // A stress mark after /h/ counts as "not a vowel" too — /h/ never
-  // ends a syllable before the next syllable's onset. The one licit
-  // cluster is /hj/ (human, huge, hue).
+  // ends a syllable before the next syllable's onset. The licit
+  // clusters are /hj/ (human, huge, hue) and /hw/ — the lexicon writes
+  // <wh> as /hw/ in 248 words (what, which, where) against 13 as /w/.
   let out = "";
   let writeFrom = 0;
   for (let i = 0; i < ipa.length; i++) {
     if (ipa[i] !== "h") continue;
     const next = ipa[i + 1];
-    const nextIsVowel = next !== undefined && (VOWELS.indexOf(next) >= 0 || next === "j");
+    const nextIsVowel =
+      next !== undefined &&
+      (VOWELS.indexOf(next) >= 0 ||
+        next === "j" ||
+        // /hw/ only word-initially: <wh> is /hw/ (what, which) but a
+        // compound-internal wh- resyllabifies to /w/ (cartwheel).
+        (next === "w" && (i === 0 || (i === 1 && (ipa[0] === "ˈ" || ipa[0] === "ˌ")))));
     if (!nextIsVowel) {
       out += ipa.slice(writeFrom, i);
       writeFrom = i + 1;
