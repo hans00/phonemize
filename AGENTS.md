@@ -59,6 +59,7 @@ Deferred (2026-09-09): both compression triggers fired in the rule pass — the 
 - `yarn test:coverage` — Jest with nyc coverage
 - `yarn typecheck` — `tsc -b` (no emit)
 - `yarn test:eval` — `scripts/evaluate.ts`: Levenshtein distance of rule-based G2P vs. dictionary
+- `yarn rule-diff dump <out>` / `yarn rule-diff compare <before> <after>` — `scripts/rule-diff.ts`: rules-only per-word dump and win/loss report (strict, lenient, top-5000) between two dumps; the adoption test for a rule change
 - `yarn test:parity` — `scripts/evaluate-parity.ts`: shipped pipeline (dict enabled) vs. dictionary; `--dump <file>` writes per-word output for diffing two states
 - `yarn test:common-accuracy` — `scripts/evaluate-common-accuracy.ts`: top-5000 frequency words vs. CMUdict through the public API (`--rules` for rules-only). First run needs `--download` to fetch the pinned, hash-checked inputs into `scripts/.common-accuracy-cache/`
 - `yarn test:ai-eval` — `scripts/eval-with-ai.ts`: AI-scored eval over `scripts/eval-data/*.txt`. Flags: `--provider codex|openai`, `--model <name>`, `--lang <codes>`. Codex provider shells out to the `codex` CLI (no API key needed); openai provider needs `OPENAI_API_KEY`.
