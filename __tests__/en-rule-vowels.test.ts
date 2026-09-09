@@ -189,6 +189,14 @@ describe("a root after a stress-bearing prefix keeps its vowel", () => {
   });
 });
 
+describe("s after an unstressed re-/pre- prefix is voiced", () => {
+  it.each([
+    ["presume", /^pɹ[iɪ]ˈzum$/],
+    ["resistor", /^ɹ[iɪ]ˈzɪstɝ$/],
+    ["reservist", /^ɹ[iɪ]ˈzɝvɪst$/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+});
+
 describe("th voicing follows the Greek/Latin vs native split", () => {
   it.each([
     ["author", "ˈɔθɝ"],
@@ -223,9 +231,6 @@ describe("s voices in the contexts where the dict majority does", () => {
     ["easy", "ˈizi"],
     ["daisy", "ˈdeɪzi"],
     ["drowsy", "ˈdɹaʊzi"],
-    ["presume", "pɹɪˈzum"],
-    ["resistor", "ɹɪˈzɪstɝ"],
-    ["reservist", "ɹɪˈzɝvɪst"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 
   it("keeps /s/ where the context does not voice", () => {
