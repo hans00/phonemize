@@ -34,7 +34,7 @@ The runtime path on real text is what users report against, so the goal is measu
 
 | Metric | Command | 2026-09-09 | Target |
 |---|---|---|---|
-| Runtime strict parity over dict | `yarn test:parity` | 89.54% → 89.95% | ≥ 92% |
+| Runtime strict parity over dict | `yarn test:parity` | 89.54% → 89.95% (+0.30 miner fix, +0.11 rules) | ≥ 92% |
 | Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 90.88% | ≥ 93% |
 | Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 72.41% | ≥ 75%, then back to the 86.998% baseline by rules alone |
 | Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 62.80% | ≥ 70% |
@@ -48,6 +48,8 @@ Rules of the goal:
 - Rules-only accuracy is a means, not the end: a rule fix that raises `test:eval` but lowers parity is rejected.
 
 Open classes: none.
+
+Deferred (2026-09-09): both compression triggers fired in the rule pass — the three rule modules total 2741 lines (ceiling 2600) and five `PHONEME_RULES` entries were added (two dead ones removed inline). The next loop session starts with the Rule Compression procedure, as its own commit, before adding rules.
 
 ## Commands
 
