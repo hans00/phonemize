@@ -91,3 +91,37 @@ describe("plural readings", () => {
     expect(rules("cases")).toMatch(/^ˈkeɪs/);
   });
 });
+
+// assignStress: the 2-syllable prefix rule used to send every ab/ad/con/in
+// word to final stress. The dict majority for words whose first syllable is
+// exactly the prefix is initial stress for those four.
+describe("two-syllable prefixes with an initial-stress dict majority", () => {
+  it.each([
+    ["concept", "ˈkɑnsɛpt"],
+    ["concert", "ˈkɑnsɝt"],
+    ["conduct", "ˈkɑndəkt"],
+    ["conflict", "ˈkɑnfɫɪkt"],
+    ["context", "ˈkɑntɛkst"],
+    ["convert", "ˈkɑnvɝt"],
+    ["constant", "ˈkɑnstənt"],
+    ["instant", "ˈɪnstənt"],
+    ["industry", "ˈɪndəstɹi"],
+    ["admin", "ˈædmɪn"],
+    ["advert", "ˈædvɝt"],
+    ["absent", "ˈæbsənt"],
+    ["abject", "ˈæbdʒɛkt"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
+describe("prefixes whose dict majority is final stress keep it", () => {
+  it.each([
+    ["begin", "bɪˈɡɪn"],
+    ["believe", "bɪˈɫiv"],
+    ["depend", "dɪˈpɛnd"],
+    ["express", "ɪksˈpɹɛs"],
+    ["promote", "pɹəˈmoʊt"],
+    ["propose", "pɹəˈpoʊz"],
+    ["compare", "kəmˈpɛɹ"],
+    ["obtain", "əbˈteɪn"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});

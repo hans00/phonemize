@@ -571,11 +571,15 @@ export function assignStress(syllables: string[], word: string): number {
   //      consonant at the morpheme boundary. Doubled consonants
   //      (abbey, adder, addict-noun-form, common) signal a single
   //      morpheme keeping first-syllable stress.
+  // Only prefixes whose dict majority is final stress belong here. ab
+  // (17/25 initial), ad (24/33), con (100/141) and in (92/134) are majority
+  // initial and are excluded; com (29/42) and pro (53/67) are majority
+  // initial in the dict too but measured net-negative on full IPA, so they
+  // stay.
   if (syllables.length === 2) {
     const firstSyl = syllables[0];
     const PREFIXES_2SYL = [
-      "ab", "ad", "be", "con", "com", "de", "dis", "ex", "in",
-      "ob", "pre", "pro", "re", "sub", "un",
+      "be", "com", "de", "dis", "ex", "ob", "pre", "pro", "re", "sub", "un",
     ];
     for (const prefix of PREFIXES_2SYL) {
       if (firstSyl !== prefix) continue;
