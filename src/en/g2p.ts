@@ -464,6 +464,7 @@ export class EnglishG2P implements LanguageProcessor {
         traceSteps,
         i > 0 ? syllables[i - 1] : undefined,
         i === syllables.length - 2,
+        syllables.slice(i + 1).join(""),
       );
     });
 
@@ -591,6 +592,7 @@ export class EnglishG2P implements LanguageProcessor {
         undefined,
         i > 0 ? syllables[i - 1] : undefined,
         i === syllables.length - 2,
+        syllables.slice(i + 1).join(""),
       );
     });
 
