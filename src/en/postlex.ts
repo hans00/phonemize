@@ -27,7 +27,7 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/^mk/, "mək"],
   [/ɹɪtʃ$/, "ɹɪk"],
   [/ɡdʒ$/, "ɡ"],
-  [/(?<=[aɑɔɛɪouəɝ])dʒɝ$/, "ɡɝ"],
+  [/(?<=[aɑɔɛiɪouəɝ])dʒɝ$/, "ɡɝ"], // -ger names keep hard g after any vowel (i: eager/kreger 38 vs 3)
   [/ətʃ$/, "ək"],
   [/([bdfɡhklmnpɹstzv])ə(ʃ|dʒ)əs$/, "$1eɪ$2əs"],
   [/([^w])əʃən$/, "$1eɪʃən"],

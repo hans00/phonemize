@@ -919,7 +919,21 @@ export function syllableToIPA(
     if (!iFire) skip.add("^i$");
     if (!isLastSyllable) { skip.add("^le$"); skip.add("^ier$"); }
     if (isStressed) skip.add("^ey$");
-    if (syllableIndex > 0 || !isLastSyllable || !/^[^aeiouy]+e$/.test(syllable)) skip.add("^e$");
+    // Open "e" is tense in four frames (rule-path strict win:loss over the
+    // dict): a stressed magic-e syllable across the boundary (cede, scene,
+    // compete, 67:3; -ere excluded, it is ɪɹ/ɛɹ 76 vs i 11), before -tion/-sion
+    // (completion, deletion, 6:2), the unstressed re-/pre- prefix (release,
+    // prevent, 411:136; de-/be- measured negative), and before consonant + i +
+    // vowel (medium, tedious, 17:5). Elsewhere open e stays lax (seven, level).
+    const eFire =
+      (syllableIndex === 0 && isLastSyllable && /^[^aeiouy]+e$/.test(syllable)) ||
+      (isStressed && isNextLastSyllable && nextIsMagicE &&
+        /^[^aeiouy]*e$/.test(syllable) && !nextSyllable!.startsWith("r")) ||
+      nextSyllable === "tion" || nextSyllable === "sion" ||
+      (syllableIndex === 0 && !isStressed && !isLastSyllable && /^p?re$/.test(syllable)) ||
+      (isStressed && !nextIsLaxCluster && /^[^aeiouy]*e$/.test(syllable) &&
+        /^[^aeiouyr]+i[aeou][a-z]/.test(nextSyllable ?? ""));
+    if (!eFire) skip.add("^e$");
     if (syllableIndex === 0 || isStressed) skip.add("^tur$");
     if (isLastSyllable || !nextSyllable?.startsWith("st")) skip.add("^y(?=$)");
     if (syllableIndex > 0) { skip.add("^x(?=[aeiouy])"); skip.add("^gil"); }

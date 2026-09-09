@@ -91,3 +91,56 @@ describe("plural readings", () => {
     expect(rules("cases")).toMatch(/^ˈkeɪs/);
   });
 });
+
+describe("open e is tense in the magic-e frame and before -tion/-sion", () => {
+  it.each([
+    ["cede", "ˈsid"],
+    ["scene", "ˈsin"],
+    ["gene", "ˈdʒin"],
+    ["compete", "kəmˈpit"],
+    ["delete", "dɪˈɫit"],
+    ["completion", "kəmˈpɫiʃən"],
+    ["deletion", "dɪˈɫiʃən"],
+    ["lesion", "ˈɫiʒən"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("keeps e lax when the magic-e syllable is unstressed or non-final", () => {
+    expect(rules("college")).toBe("ˈkɑɫɪdʒ");
+    expect(rules("generous")).toBe("ˈdʒɛnɝəs");
+    expect(rules("section")).toBe("ˈsɛkʃən");
+  });
+});
+
+describe("stressed open e before consonant + i + vowel is tense", () => {
+  it.each([
+    ["medium", "ˈmidiəm"],
+    ["premium", "ˈpɹimiəm"],
+    ["tedious", "ˈtidiəs"],
+    ["comedian", "kəˈmidiən"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("keeps e lax before a lax cluster", () => {
+    expect(rules("congestion")).toBe("kənˈdʒɛstʃən");
+  });
+});
+
+describe("the unstressed re-/pre- prefix is /i/", () => {
+  it.each([
+    ["release", "ɹiˈɫis"],
+    ["report", "ɹiˈpɔɹt"],
+    ["prevent", "pɹiˈvɛnt"],
+    ["precast", "pɹiˈkæst"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("leaves the de-/be- prefixes reduced", () => {
+    expect(rules("debate")).toMatch(/^d[ɪə]ˈbeɪt$/);
+    expect(rules("begin")).toBe("bɪˈɡɪn");
+  });
+});
+
+describe("final -ger keeps the hard g after a tense vowel", () => {
+  it.each([
+    ["eager", "ˈiɡɝ"],
+    ["meager", "ˈmiɡɝ"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
