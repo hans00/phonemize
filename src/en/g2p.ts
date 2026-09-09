@@ -132,6 +132,15 @@ const EN_PREFIXES = new Set([
 const BCP47_REGION_RE = /^en(?:-[a-z]{4})?-([a-z]{2}|\d{3})(?:$|-)/;
 const PLAIN_L_RE = /l/g;
 const STRESS_PRIMARY = /ˈ/g;
+// Word-final doubled consonant whose single-consonant form is at least
+// four letters (Seann → sean, Jonn → jon). See geminateVariant for why
+// shorter stems are excluded.
+const FINAL_GEMINATE_RE = /^[a-z]{3,}([bdfgklmnprstz])\1$/;
+
+/** The degeminated form of a word ending in a doubled consonant, else null. */
+function geminateStem(word: string): string | null {
+  return FINAL_GEMINATE_RE.test(word) ? word.slice(0, -1) : null;
+}
 
 // Fast check for "does this string contain any uppercase ASCII char?".
 // Returns true iff toLowerCase would change the string. Avoids the
@@ -332,7 +341,9 @@ export class EnglishG2P implements LanguageProcessor {
       if (principled) return principled.ipa;
     }
 
-    const base = this.predictInternal(word, pos, this.disableDict);
+    const base =
+      this.geminateVariant(lowerWord, pos) ??
+      this.predictInternal(word, pos, this.disableDict);
     if (!base) return base;
 
     // Universal phonotactic post-processing (en-phonotactics.ts).
@@ -407,6 +418,13 @@ export class EnglishG2P implements LanguageProcessor {
           path: "dictionary",
           steps: [{ grapheme: word, phoneme: ipa, rule: "dict" }],
         };
+      if (this.geminateVariant(lowerWord, pos))
+        return {
+          word,
+          ipa,
+          path: "dictionary",
+          steps: [{ grapheme: word, phoneme: ipa, rule: `geminate-stem:${geminateStem(lowerWord)}` }],
+        };
     }
 
     if (this.tryMorphologicalAnalysis(lowerWord))
@@ -450,6 +468,28 @@ export class EnglishG2P implements LanguageProcessor {
     });
 
     return { word, ipa, path: "rules", syllables, steps: traceSteps };
+  }
+
+  /**
+   * Doubled-final-consonant variant of a lexical entry. Variant spellings
+   * (mostly names) double the final consonant without changing the
+   * pronunciation: Seann/Sean, Jonn/Jon, Robb/Rob. When the whole word is
+   * unknown but its degeminated stem is, the stem's pronunciation beats
+   * the rule path — on dict words with a lexical stem the stem wins
+   * 188:62. Whole-word only: a doubled consonant before a suffix
+   * (regrett-able, referr-al) is inflectional doubling, which the
+   * morphology handlers own. Stems under four letters are excluded: there
+   * the single form is usually a function word or abbreviation with its
+   * own irregular pronunciation (off/of, ass/as, app/ap). The exception
+   * miner's runtime-refinement pass pins every dict word whose stem
+   * disagrees with it, so this never overrides a known word.
+   */
+  private geminateVariant(lowerWord: string, pos?: string): string | undefined {
+    if (this.disableDict) return undefined;
+    const stem = geminateStem(lowerWord);
+    if (!stem) return undefined;
+    if (this.wellKnown(lowerWord, pos, true) || INITIALISMS[lowerWord]) return undefined;
+    return this.wellKnown(stem, undefined, true);
   }
 
   private predictInternal(
