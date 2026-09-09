@@ -81,6 +81,38 @@ describe("derived forms read their base by rule when it is not lexical", () => {
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
 
+describe("word-final suffix vowels", () => {
+  it.each([
+    ["distance", "ˈdɪstəns"],
+    ["balance", "ˈbæɫəns"],
+    ["absence", "ˈæbsəns"],
+    ["sentence", "ˈsɛntəns"],
+    ["persian", "ˈpɝʒən"],
+    ["malaysian", "məˈɫeɪʒən"],
+    ["martian", "ˈmɑɹʃən"],
+    ["haitian", "ˈheɪʃən"],
+    ["pension", "ˈpɛnʃən"],
+    ["dimension", "dɪˈmɛnʃən"],
+    ["audience", "ˈɔdiəns"],
+    ["ambient", "ˈæmbiənt"],
+    ["nutrient", "ˈnutɹiənt"],
+    ["influence", "ˈɪnfɫuəns"],
+    ["fluent", "ˈfɫuənt"],
+    ["factory", "ˈfæktɝi"],
+    ["trajectory", "tɹəˈdʒɛktɝi"],
+    ["happiest", "ˈhæpiəst"],
+    ["measure", "ˈmɛʒɝ"],
+    ["pleasure", "ˈpɫɛʒɝ"],
+    ["figure", "ˈfɪɡjɝ"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("leaves the non-suffix look-alikes alone", () => {
+    expect(rules("priest")).toBe("ˈpɹist");
+    expect(rules("nature")).toMatch(/tʃɝ$/);
+    expect(rules("secure")).toMatch(/jʊɹ$/);
+  });
+});
+
 describe("plural readings", () => {
   it("does not read this/his/has as plurals of a lexical stem", () => {
     expect(rules("this")).toBe("ˈðɪs");

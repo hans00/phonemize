@@ -90,8 +90,8 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
   [/^the$/, "ð", false],
   [/^sten$/, "sən", false],
   [/^stion$/, "stʃən", false],
-  [/^tion$/, "ʃən", false], // -tion is always unstressed
-  [/^sion$/, "ʒən", false], // -sion is always unstressed
+  [/^t(?:ion|ian)$/, "ʃən", false], // -tion/-tian are always unstressed
+  [/^s(?:ion|ian)$/, "ʒən", false], // -sion/-sian are always unstressed (asian/persian: 25 ʒ vs 9 i in dict; russian → sʒ → ʃ post-lexically)
   [/^c[ei]an$/, "ʃən", false], // -cian/-cean: technician/ocean
   [/^lion$/, "ljən", false], // -llion: million, billion, stallion (guard: syllableIndex > 0)
   [/^[ct]ial$/, "ʃəl", false], // -cial/-tial (commercial, social, potential, partial)
@@ -533,12 +533,16 @@ export function assignStress(syllables: string[], word: string): number {
     return Math.max(0, syllables.length - 2);
   }
 
-  // -ance/-ence words typically stress the antepenult (like dominance -> dəˈmɪnəns)
+  // -ance/-ence is unstressed (162:31 əns:æns in dict, and that æns set
+  // is final-stressed), and maximal onset splits it over two slots
+  // ("dis|tan|ce"), so a 3-slot array is a monosyllabic stem: stress it
+  // (distance ˈdɪstəns, balance ˈbæɫəns). Longer stems keep the
+  // root-initial default (dominance ˈdɑmənəns, equivalence ɪˈkwɪvəɫəns).
   if (
     (lowerWord.endsWith("ance") || lowerWord.endsWith("ence")) &&
     syllables.length >= 3
   ) {
-    return 1; // Usually second syllable for these patterns
+    return syllables.length === 3 ? 0 : 1;
   }
 
   if (lowerWord.endsWith("ic") && syllables.length > 1) {
