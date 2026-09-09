@@ -92,6 +92,67 @@ describe("plural readings", () => {
   });
 });
 
+describe("nasal assimilation stops at a prefix boundary", () => {
+  it.each([
+    ["include", "ɪnˈkɫud"],
+    ["unclear", "ənˈkɫɪɹ"],
+    ["conclude", "kənˈkɫud"],
+    ["encase", "ˈɛnkeɪs"],
+    ["encrypt", "ˈɛnkɹɪpt"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("still assimilates word-internally", () => {
+    expect(rules("think")).toBe("ˈθɪŋk");
+  });
+});
+
+describe("word-initial <ex> before a vowel is /ɡz/", () => {
+  it.each([
+    ["example", "ɪˈɡzæmpəɫ"],
+    ["exotic", "ɪˈɡzɑtɪk"],
+    ["exemption", "ɪˈɡzɛmpʃən"],
+    ["exude", "ɪˈɡzud"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
+describe("clusters that drop or devoice a segment", () => {
+  it.each([
+    ["castle", "ˈkæsəɫ"],
+    ["wrestle", "ˈɹɛsəɫ"],
+    ["bristle", "ˈbɹɪsəɫ"],
+    ["bakowski", "bəˈkɔfski"],
+    ["bobrowski", "bəˈbɹɔfski"],
+    ["bacchi", "ˈbæki"],
+    ["macchi", "ˈmæki"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
+describe("a front-vowel suffix keeps the base's final c/g soft", () => {
+  it.each([
+    ["criticize", "ˈkɹɪtɪˌsaɪz"],
+    ["classicism", "ˈkɫæsɪˌsɪzəm"],
+    ["specify", "ˈspɛsəˌfaɪ"],
+    ["energize", "ˈɛnɝˌdʒaɪz"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("leaves a doubled gg hard", () => {
+    expect(rules("druggist")).toMatch(/ɡ[ɪə]st$/);
+  });
+});
+
+describe("<wh> keeps its /hw/ onset word-initially", () => {
+  it.each([
+    ["which", "ˈhwɪtʃ"],
+    ["white", "ˈhwaɪt"],
+    ["whale", "ˈhweɪɫ"],
+    ["wheel", "ˈhwiɫ"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("resyllabifies to /w/ inside a compound", () => {
+    expect(rules("cartwheel")).toBe("ˈkɑɹtwiɫ");
+  });
+});
+
 describe("open e is tense in the magic-e frame and before -tion/-sion", () => {
   it.each([
     ["cede", "ˈsid"],
@@ -209,7 +270,7 @@ describe("th voicing follows the Greek/Latin vs native split", () => {
     ["strengthen", "ˈstɹɛŋθən"],
     ["thalamus", "ˈθæɫəməs"],
     ["thacker", "ˈθækɝ"],
-    ["whether", "ˈwɛðɝ"],
+    ["whether", "ˈhwɛðɝ"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 
   it("keeps th+e voiced in native words and in monosyllabic function words", () => {

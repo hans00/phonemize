@@ -142,6 +142,18 @@ function geminateStem(word: string): string | null {
   return FINAL_GEMINATE_RE.test(word) ? word.slice(0, -1) : null;
 }
 
+// A front-vowel-initial suffix softens the base's final <c>/<g>
+// (allerg+ist dʒ 62:4, critic+ize s). Priced alone the base ends the
+// letter word-finally, where it always reads hard, so the suffix
+// handlers have to put the softening back. Doubled gg/cc stays hard
+// (druggist).
+function softenBaseFinal(ipa: string, base: string, sfx: string): string {
+  if (!/^[eiy]/.test(sfx)) return ipa;
+  if (/(?:^|[^g])g$/.test(base)) return ipa.replace(/ɡ$/, "dʒ");
+  if (/(?:^|[^c])c$/.test(base)) return ipa.replace(/k$/, "s");
+  return ipa;
+}
+
 // Fast check for "does this string contain any uppercase ASCII char?".
 // Returns true iff toLowerCase would change the string. Avoids the
 // .toLowerCase() copy in the common all-lowercase case.
@@ -1025,7 +1037,7 @@ export class EnglishG2P implements LanguageProcessor {
       const p =
           this.wellKnown(b, undefined, true) ||
           this.predictInternal(b, undefined, false);
-      if (p) return p + ipa;
+      if (p) return softenBaseFinal(p, b, sfx) + ipa;
     }
 
     return undefined;
