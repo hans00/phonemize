@@ -56,6 +56,7 @@
     "test": "jest",
     "test:coverage": "nyc --reporter=text --reporter=html --reporter=lcov yarn test",
     "test:eval": "tsx scripts/evaluate.ts",
+    "test:parity": "tsx scripts/evaluate-parity.ts",
     "trace": "tsx scripts/trace.ts",
     "test:ai-eval": "tsx scripts/eval-with-ai.ts",
     "test:article-accuracy": "tsx scripts/eval-with-ai.ts --context --lang en-US --data-dir scripts/eval-data-articles --min-score 80 --report-dir scripts/.article-eval-cache",

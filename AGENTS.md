@@ -11,8 +11,8 @@ This project uses Heuristic Learning: the G2P rules are the learnable policy; Cl
 1. **Diagnose** — `yarn test:eval --cluster`: find top rule failure patterns
 2. **Trace** — `yarn trace <word> [word...]`: see which rule fired for specific words, pre- and post-dictionary
 3. **Fix** — edit `PHONEME_RULES`/`SUFFIX_RULES` (in `src/en/syllabify.ts`), the post-lexical tables (`src/en/postlex.ts`), or `tryMorphologicalAnalysis` (in `src/en/g2p.ts`)
-4. **Validate** — `yarn test` (zero regressions) then `yarn test:eval` (lenient accuracy ≥ baseline)
-5. **Commit** — if both gates pass; update baseline with `yarn test:eval --update-baseline`
+4. **Validate** — `yarn test` (zero regressions), `yarn test:eval` (rules-only lenient accuracy ≥ baseline), `yarn test:parity` (runtime strict parity ≥ baseline)
+5. **Commit** — if all gates pass; update baselines with `yarn test:eval --update-baseline` / `yarn test:parity --update-baseline`
 
 Check compression triggers (see Rule Compression section) before committing any fix.
 
@@ -20,9 +20,31 @@ Check compression triggers (see Rule Compression section) before committing any 
 
 `--cluster` groups mismatch words by the rule that fired at the first IPA divergence point. Clusters dominated by foreign proper nouns (long words, unusual consonant clusters) signal a coverage gap that is out of scope for English rules — skip those and focus on clusters with recognisable common English words.
 
-### Eval baseline
+### Eval baselines
 
-`scripts/eval-baseline.json` stores the last committed score. Each `yarn test:eval` run shows delta automatically. Update the baseline only after a confirmed improvement is committed.
+`scripts/eval-baseline.json` (rules-only, `yarn test:eval`) and `scripts/parity-baseline.json` (shipped pipeline, `yarn test:parity`) store the last committed scores; each run shows its delta automatically. Update a baseline only after a confirmed improvement is committed.
+
+`yarn test:eval` measures the rule path alone (`disableDict: true`). `yarn test:parity` measures what users get — exceptions table + morphology + fallbacks + rules — over every dict word, and exits non-zero when strict parity drops. Both of the v2.0.x bug reports (#27 `wind`/`solutions`, #28 `Seann`) were composition failures that the rules-only score cannot see, so a change to the table miner, a lookup fallback or a morphology handler is judged by parity, not by `test:eval`.
+
+The rules-only baseline (86.998% lenient, dated 2026-06-13) predates the exceptions-table redesign; the rule path alone has scored ~71–74% lenient since then, and no commit refreshed the file. Treat its delta as informational until the maintainer re-baselines.
+
+### Improvement goal (set 2026-09-09)
+
+The runtime path on real text is what users report against, so the goal is measured there. Numbers on 2026-09-09 after #28 (`yarn test:parity`, `yarn test:common-accuracy`, `yarn test:eval`):
+
+| Metric | Command | Today | Target |
+|---|---|---|---|
+| Runtime strict parity over dict | `yarn test:parity` | 89.54% | ≥ 92% |
+| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% | ≥ 93% |
+| Rules-only lenient accuracy | `yarn test:eval` | 71.48% | ≥ 75% |
+
+Rules of the goal:
+
+- Every user-reported word gets a regression test in `__tests__/issue-<n>.test.ts` and a fix for its *class* (e.g. #28 → doubled-final-consonant name variants), never a per-word entry. If no class fix passes the gates, the word goes to `src-data/en/custom.dict` and the class is recorded here as open.
+- Each loop session moves at least one metric up without moving any other down; both baselines are updated in the same commit as the improvement.
+- Rules-only accuracy is a means, not the end: a rule fix that raises `test:eval` but lowers parity is rejected.
+
+Open classes: none.
 
 ## Commands
 
@@ -32,6 +54,8 @@ Check compression triggers (see Rule Compression section) before committing any 
 - `yarn test:coverage` — Jest with nyc coverage
 - `yarn typecheck` — `tsc -b` (no emit)
 - `yarn test:eval` — `scripts/evaluate.ts`: Levenshtein distance of rule-based G2P vs. dictionary
+- `yarn test:parity` — `scripts/evaluate-parity.ts`: shipped pipeline (dict enabled) vs. dictionary; `--dump <file>` writes per-word output for diffing two states
+- `yarn test:common-accuracy` — `scripts/evaluate-common-accuracy.ts`: top-5000 frequency words vs. CMUdict through the public API (`--rules` for rules-only). First run needs `--download` to fetch the pinned, hash-checked inputs into `scripts/.common-accuracy-cache/`
 - `yarn test:ai-eval` — `scripts/eval-with-ai.ts`: AI-scored eval over `scripts/eval-data/*.txt`. Flags: `--provider codex|openai`, `--model <name>`, `--lang <codes>`. Codex provider shells out to the `codex` CLI (no API key needed); openai provider needs `OPENAI_API_KEY`.
 
 ## Architecture
