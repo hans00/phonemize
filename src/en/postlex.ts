@@ -371,6 +371,24 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => /ec[k]?$/.test(w), re: /ək$/, sub: "ɪk" },
   { when: (w) => /enb[eu]rg/.test(w), re: /ɪn(?=b)/, sub: "ən" },
 
+  // — Consonant clusters —
+  // Nasal assimilation stops at a prefix boundary: in-/en-/un-/conc-
+  // before <c/k/q> keeps /n/ (265:26 in dict — include, uncle is the
+  // rare monomorphemic exception). con+qu (conquer, conquest) assimilates.
+  {
+    when: (w) => w.length >= 5 && /^(?:in|en|un)[ckq]|^conc/.test(w),
+    re: /^(.{1,3}?)ŋk/, sub: "$1nk",
+  },
+  // Word-initial <ex> before a vowel voices to /ɡz/ when the stress
+  // falls after the x (76:6 in dict — exam, exact, exist); stressed
+  // ex- keeps /ks/ (execute, exercise) and so does medial x (55:24).
+  { when: (w) => /^ex[aeiou]/.test(w), re: /^([aeiouɪɛəʌ]+)ks/, sub: "$1ɡz" },
+  // -stle: the t is silent before syllabic l (23:1 in dict — castle,
+  // whistle, wrestle), same deletion the ^sten$ suffix rule makes.
+  { when: (w) => /stles?$/.test(w), re: /st(ə[lɫ]z?)$/, sub: "s$1" },
+  // Polish -owski: <w> devoices before the /sk/ cluster (232:45 in dict).
+  { when: (w) => /owsk[iy]$/.test(w), re: /oʊsk([ɪi])$/, sub: "ɔfsk$1" },
+
   // — Final-s voicing (plural/genitive-shaped spellings) —
   // After a sibilant, -es is the syllabic allomorph /əz/ (classes,
   // abridges). After a voiced consonant or a vowel, final s voices to

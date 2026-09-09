@@ -91,3 +91,37 @@ describe("plural readings", () => {
     expect(rules("cases")).toMatch(/^ˈkeɪs/);
   });
 });
+
+describe("nasal assimilation stops at a prefix boundary", () => {
+  it.each([
+    ["include", "ɪnˈkɫud"],
+    ["unclear", "ənˈkɫɪɹ"],
+    ["conclude", "kənˈkɫud"],
+    ["concoct", "kənˈkɑkt"],
+    ["encase", "ˈɛnkeɪs"],
+    ["encrypt", "ˈɛnkɹɪpt"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("still assimilates word-internally", () => {
+    expect(rules("think")).toBe("ˈθɪŋk");
+  });
+});
+
+describe("word-initial <ex> before a vowel is /ɡz/", () => {
+  it.each([
+    ["example", "ɪˈɡzæmpəɫ"],
+    ["exotic", "ɪˈɡzɑtɪk"],
+    ["exemption", "ɪˈɡzɛmpʃən"],
+    ["exude", "ɪˈɡzud"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
+describe("clusters that drop or devoice a segment", () => {
+  it.each([
+    ["castle", "ˈkæsəɫ"],
+    ["wrestle", "ˈɹɛsəɫ"],
+    ["bristle", "ˈbɹɪsəɫ"],
+    ["bakowski", "bəˈkɔfski"],
+    ["bobrowski", "bəˈbɹɔfski"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
