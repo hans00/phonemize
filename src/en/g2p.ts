@@ -847,9 +847,28 @@ export class EnglishG2P implements LanguageProcessor {
         if (yBase)
           return /[lɫ]$/.test(yBase) ? yBase + "i" : yBase + "li";
       }
+      // -bly is the -ble adjective with the syllabic l re-onset by the
+      // suffix (credible→credibly, notable→notably). Read the -ble base so
+      // its own reduction applies to the vowel before the cluster, then
+      // drop the syllabic schwa: -ibly is 26 ə : 4 ɪ in data/en/dict.json,
+      // and the bare stem ("credib") has no cluster for that rule to see.
+      if (lowerWord.endsWith("bly")) {
+        const ble = stemPron(stem + "le");
+        if (ble && /[lɫ]$/.test(ble)) return ble.replace(/ə([lɫ])$/, "$1") + "i";
+      }
       const basePron = stemPron(stem);
-      if (basePron)
-        return /[lɫ]$/.test(basePron) ? basePron + "i" : basePron + "li";
+      if (basePron) {
+        if (/[lɫ]$/.test(basePron)) return basePron + "i";
+        // A consonant+i stem is the -y adjective with its final letter
+        // rewritten by the suffix (angry→angrily, easy→easily) or a
+        // truncated Latinate stem (family, homily). Either way that /ɪ/ is
+        // the slot before the suffix, which reduces: -ily is 64 ə : 6 ɪ in
+        // data/en/dict.json. The stem is read without the suffix in view,
+        // so the reduction has to be applied on the join.
+        if (/[^aeiouy]i$/.test(stem))
+          return basePron.replace(/ɪ$/, "ə") + "li";
+        return basePron + "li";
+      }
     }
 
     // -able/-ible: magic-e derivation first (advisable→advise,
