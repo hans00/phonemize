@@ -1,3 +1,4 @@
+import { addInitialSecondary } from "./phonotactics";
 
 /**
  * Post-lexical corrections for the rule path.
@@ -616,7 +617,11 @@ export function applyPostStress(ipa: string, word: string): string {
     }
     if (!secondaried) out = addFullVowelSecondaries(out);
   }
-  return out;
+  // Initial secondary stress on long Latinate words. It lives in
+  // phonotactics.ts next to the other stress-mark rules but is called from
+  // here so it never sees lexical output: applied to dict/exception-table
+  // entries it added a ˌ the lexicon does not write on 1550 words.
+  return addInitialSecondary(out);
 }
 
 /**
