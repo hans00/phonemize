@@ -27,6 +27,9 @@
 // /oʊ/, /aʊ/, /aɪ/, /ɔɪ/) AND the IPA vowels æ ɛ ɪ ɔ ʊ ʌ ə ɝ ɑ.
 // ɑ (U+0251) is distinct from ASCII a (U+0061) — both must be present.
 const VOWELS = "aeiouɑæɛɪɔʊʌəɝ";
+// Chars that form a diphthong with a following ɪ (eɪ, aɪ, oɪ, ɔɪ). An ɪ after
+// one of these is an offglide, not a nucleus of its own.
+const DIPHTHONG_PRE_I = "eaoɔ";
 
 // ─── Rule: word-initial /ɑɑ/ → /ɑ/ ────────────────────────────────────────
 const INIT_AA_RE = /^([ˈˌ])?ɑɑ/;
@@ -56,6 +59,10 @@ function simplifyDtFinal(ipa: string): string {
 // after t,d. Dict backs this strongly (voiceless→/t/ 346:4).
 const ED_VOICELESS = "pkfθsʃ"; // tʃ ends in ʃ, so prev='ʃ' catches affricate
 const ED_VOICED_NON_TD = "bʒvzðmnŋɫlɹjɡɑæɛɪɔʊʌəɝaeiouy";
+// Obstruents. An obstruent + /ɹ/ + /d/ is not a possible English coda, so
+// the schwa in /Cɹəd/ is a nucleus, not the -ed allomorph's: the lexicon
+// spells that shape /Cɹəd/ 9 times (alfred, hatred, sacred) and /Cɹd/ 0.
+const ED_OBSTRUENTS = "bdɡkptfvszʃʒθð";
 function fixPastTenseED(ipa: string, word?: string): string {
   // Only a real orthographic -ed past tense takes the allomorph. Without
   // this guard the rule mangles any word ending in /Cəd/ (rapid→ɹæpt,
@@ -67,6 +74,7 @@ function fixPastTenseED(ipa: string, word?: string): string {
   if (ipa.charCodeAt(len - 2) !== 601 /* 'ə' (U+0259) */) return ipa;
   const prev = ipa[len - 3];
   if (prev === "t" || prev === "d") return ipa; // syllabic /əd/ stays
+  if (prev === "ɹ" && len >= 4 && ED_OBSTRUENTS.indexOf(ipa[len - 4]) >= 0) return ipa;
   if (ED_VOICELESS.indexOf(prev) >= 0) return ipa.slice(0, -2) + "t";
   if (ED_VOICED_NON_TD.indexOf(prev) >= 0) return ipa.slice(0, -2) + "d";
   return ipa;
@@ -85,18 +93,24 @@ function dropSilentH(ipa: string): string {
   // ends a syllable before the next syllable's onset. The licit
   // clusters are /hj/ (human, huge, hue) and /hw/ — the lexicon writes
   // <wh> as /hw/ in 248 words (what, which, where) against 13 as /w/.
+  // Word-initial /h/ + sonorant is the borrowed-name onset (hlavaty,
+  // hruska, hmong, hnat): the lexicon keeps it 24 times and drops it
+  // once, so it is licit too. Word-final /h/ is NOT — <-h> spellings
+  // end without /h/ 2754 times against 18 that keep it.
   let out = "";
   let writeFrom = 0;
   for (let i = 0; i < ipa.length; i++) {
     if (ipa[i] !== "h") continue;
     const next = ipa[i + 1];
+    const initial = i === 0 || (i === 1 && (ipa[0] === "ˈ" || ipa[0] === "ˌ"));
     const nextIsVowel =
       next !== undefined &&
       (VOWELS.indexOf(next) >= 0 ||
         next === "j" ||
-        // /hw/ only word-initially: <wh> is /hw/ (what, which) but a
-        // compound-internal wh- resyllabifies to /w/ (cartwheel).
-        (next === "w" && (i === 0 || (i === 1 && (ipa[0] === "ˈ" || ipa[0] === "ˌ")))));
+        // /hw/ and /hSonorant/ only word-initially: <wh> is /hw/ (what,
+        // which) but a compound-internal wh- resyllabifies to /w/
+        // (cartwheel).
+        (initial && "wɫlɹnm".indexOf(next) >= 0));
     if (!nextIsVowel) {
       out += ipa.slice(writeFrom, i);
       writeFrom = i + 1;
@@ -166,13 +180,20 @@ function laxFleeceBeforeCodaR(ipa: string): string {
 }
 
 // ─── Rule: unstressed /ɪɹ/ → /ɝ/ ──────────────────────────────────────────
+// After a consonant the lexicon coalesces: /Cɝ/ 20066 against /CɪɹV/ 932.
+// After a diphthong nucleus it does not — that /ɪ/ is the offglide of /aɪ/,
+// /eɪ/, /ɔɪ/ and the /ɹ/ is a separate onset: /[aeoɔ]ɪɹ/ 342 against
+// /[aeoɔ]ɝ/ 10 (byron, admire, cyrus, abshire). Skipping the offglide is the
+// same DIPHTHONG_PRE_I guard tenseHiatusI and applyHappyTensing use.
 const RHOTIC_IR_RE = /ɪɹ/g;
 function coalesceUnstressedIR(ipa: string): string {
   if (ipa.indexOf("ɪɹ") < 0) return ipa;
   return ipa.replace(RHOTIC_IR_RE, (_m, offset) => {
+    const pos = offset as number;
+    if (pos > 0 && DIPHTHONG_PRE_I.indexOf(ipa[pos - 1]) >= 0) return "ɪɹ";
     // Walk back for nearest stress mark vs vowel. Stress mark before
     // any other vowel → this ɪ is stressed → don't coalesce.
-    for (let i = (offset as number) - 1; i >= 0; i--) {
+    for (let i = pos - 1; i >= 0; i--) {
       const c = ipa[i];
       if (c === "ˈ" || c === "ˌ") return "ɪɹ";
       if (VOWELS.indexOf(c) >= 0) break;
@@ -217,9 +238,16 @@ function weakVowelInflection(ipa: string): string {
 // followed by a vowel there, not a consonant.
 //
 // Input may carry plain /l/ (rule path) or /ɫ/ (dict path); match both
-// and emit plain /l/ (final darkening normalizes). The left and right
-// neighbours must be consonants (non-vowel, non-stress-mark).
-const SYLLABIC_L_CONS = "bcdfgɡhjkmnpqstvwxzðθʃʒŋɹɫ"; // consonants (excl. l itself)
+// and emit plain /l/ (final darkening normalizes).
+//
+// The left neighbour must be an OBSTRUENT, not any consonant: after an
+// obstruent the lexicon epenthesizes without exception (/Cəɫ/+C 778 against
+// /Cɫ/+C 0), but after /ɹ/ it usually does not (carlson, marlboro, charlton —
+// /ɹɫ/+C 29 with /ɹəɫ/+C 39, and the rule scored 0 wins against 29 losses
+// there). The right neighbour must not be a glide: /ɫj/, /ɫw/ are onsets
+// (intaglio, ljubljana, blouin) — 306 against 16 for /əɫ/+glide.
+const SYLLABIC_L_LEFT = "bdɡgkptfvszʃʒθð"; // obstruents (l itself excluded)
+const SYLLABIC_L_RIGHT = "bdfɡghkmnpstvzðθʃʒŋɹɫ"; // consonants minus the glides j/w
 function epenthesizeSyllabicL(ipa: string): string {
   if (ipa.indexOf("l") < 0 && ipa.indexOf("ɫ") < 0) return ipa;
   let out = "";
@@ -229,7 +257,7 @@ function epenthesizeSyllabicL(ipa: string): string {
     if (c !== "l" && c !== "ɫ") continue;
     const prev = ipa[i - 1];
     const next = ipa[i + 1];
-    if (SYLLABIC_L_CONS.indexOf(prev) >= 0 && SYLLABIC_L_CONS.indexOf(next) >= 0) {
+    if (SYLLABIC_L_LEFT.indexOf(prev) >= 0 && SYLLABIC_L_RIGHT.indexOf(next) >= 0) {
       out += ipa.slice(writeFrom, i) + "ə";
       writeFrom = i;
     }
@@ -252,7 +280,6 @@ function epenthesizeSyllabicL(ipa: string): string {
 // suprasegmental — the vowels are still in hiatus, so tense through it
 // (dict: əˈbɹiviˌeɪt with tense i before the marked syllable).
 const HIATUS_IR_RE = /ɪ([ˈˌ]?)([aeiouɑæɛɔʊʌəɝ])/g;
-const DIPHTHONG_PRE_I = "eaoɔ"; // chars that form a diphthong with ɪ (eɪ, aɪ, oɪ, ɔɪ)
 function tenseHiatusI(ipa: string): string {
   if (ipa.indexOf("ɪ") < 0) return ipa;
   return ipa.replace(HIATUS_IR_RE, (match, mark, next, offset) => {
@@ -285,7 +312,12 @@ function elideIcallySchwa(ipa: string): string {
 }
 
 // ─── Rule: initial secondary stress on long Latinate words ────────────────
-function addInitialSecondary(ipa: string): string {
+// NOT part of applyPhonotactics: it is exported for applyPostStress, which
+// runs on the rule and morphology paths only. Applied to lexical output it
+// stamped a ˌ on 1550 exception-table words that the lexicon leaves unmarked
+// (+1571/−385 exact on the runtime path when it stopped seeing them), while
+// on the rule path it is worth +408/−43.
+export function addInitialSecondary(ipa: string): string {
   const primaryAt = ipa.indexOf("ˈ");
   if (primaryAt < 0) return ipa;
   // Count nuclei before the primary mark. Bail early if a ˌ exists.
@@ -295,15 +327,7 @@ function addInitialSecondary(ipa: string): string {
     const c = ipa[i];
     if (c === "ˌ") return ipa;
     if (VOWELS.indexOf(c) >= 0) {
-      if (!inV) {
-        beforePrimary++;
-        if (beforePrimary >= 2) {
-          // We have enough nuclei; just scan the rest for an existing ˌ.
-          // (We need to make sure no later ˌ exists either.) — actually
-          // the original guarantee was "ˌ before primaryAt"; since we
-          // exit the loop at primaryAt, that's already enforced.
-        }
-      }
+      if (!inV) beforePrimary++;
       inV = true;
     } else if (c !== "ˈ") inV = false;
   }
@@ -348,8 +372,8 @@ function applyHappyTensing(ipa: string): string {
  * any rule do roughly O(rule-count) substring scans + zero allocations.
  *
  * `word` is the lowercased orthographic form, used by rules that need
- * lexical context (e.g. the weak-schwa function-word exemption in
- * normalizeStrut).
+ * lexical context (the weak-schwa function-word exemption in normalizeStrut,
+ * the -ed suffix test in fixPastTenseED).
  */
 export function applyPhonotactics(ipa: string, word?: string): string {
   let cur = ipa;
@@ -365,7 +389,6 @@ export function applyPhonotactics(ipa: string, word?: string): string {
   cur = weakVowelInflection(cur);
   cur = epenthesizeSyllabicL(cur);
   cur = elideIcallySchwa(cur);
-  cur = addInitialSecondary(cur);
   cur = applyHappyTensing(cur);
   return cur;
 }
