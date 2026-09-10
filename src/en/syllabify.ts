@@ -162,7 +162,11 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ight/, "aɪt"], // night, right, knight (i+ght)
   [/^igh/, "aɪ"],  // high, sigh, thigh — igh without following t
   [/^oa/, "oʊ"], // boat, coat, road
-  [/^oss/, "ɔs"], // cross, loss (short o)
+  // LOT→THOUGHT frames. Doubled consonants are deduped before the rules
+  // run, so the coda spellings here are single: `of` covers -off/-offC.
+  // (That dedup is also why the ^oss rule these replace could never fire.)
+  [/^ong/, "ɔŋ"], // long, song, strong, along, belong (123:13 in dict)
+  [/^of$/, "ɔf"], // off, offer, office, often, software (242:60 in dict)
   [/^eur/, "ɝ"], // connoisseur, entrepreneur (French -eur → /ɝ/)
   [/^eu/, "ju"], // feud, neuter, Europe
   [/^ue/, "u"], // true, blue, glue (at end)
@@ -512,6 +516,25 @@ export function assignStress(syllables: string[], word: string): number {
       "be", "com", "de", "dis", "ex", "ob", "pre", "pro", "re", "sub", "un",
     ];
     if (PREFIXES_2SYL.includes(firstSyl)) return isPrefix(firstSyl) ? 1 : 0;
+    // The bare a- prefix is only weak when the root behind it is a tense
+    // rime: about, abroad, again, agree, aboard, around, amount, aloud.
+    // A light root keeps initial stress (acid, adam, atom, arab), so the
+    // orthographic vowel digraph is the discriminator — the flat split is
+    // 295 initial : 198 final in the dict, the digraph subset 37 : 66.
+    // A word-final -ey/-ie is the unstressed /i/ ending (abbey, amie), not
+    // a tense rime, so it is excluded.
+    const tenseRoot =
+      DIGRAPH_RIME.test(syllables[1]) && !/(?:ey|ie)$/.test(syllables[1]);
+    if (firstSyl === "a" && tenseRoot) return 1;
+    // Assimilated Latin ad-: account, approach, appear, allow. The doubled
+    // consonant at the boundary is the assimilation, so `isPrefix` has to be
+    // inverted here — it is a prefix precisely because the letter repeats.
+    if (
+      /^a[bcdfglmnprstvz]$/.test(firstSyl) &&
+      syllables[1][0] === firstSyl[1] &&
+      tenseRoot
+    )
+      return 1;
     return 0;
   }
 
@@ -535,6 +558,7 @@ export function assignStress(syllables: string[], word: string): number {
 
 // Vowel digraphs that make a syllable heavy (long nucleus).
 const VOWEL_DIGRAPHS = "aa ai au aw ay ea ee ei eu ey ie oa oo ou ow oy ue ui".split(" ");
+const DIGRAPH_RIME = new RegExp(VOWEL_DIGRAPHS.join("|"));
 
 export function isSyllableHeavy(syllable: string): boolean {
   // A syllable is heavy if it has:
@@ -806,6 +830,39 @@ export function syllableToIPA(
       emit("gu", "ɡ", "phoneme:^gu(?=[ei])");
       remaining = remaining.substring(2);
       continue;
+    }
+    // A /w/-final onset (w, wh, qu, squ, sw) rounds a following closed-
+    // syllable short a: want, wash, watch, swap, squad, wander, quantity.
+    // Dict, single-`a` words with a w-final onset: 211 ɑ/ɔ vs 14 æ before
+    // b/d/f/h/m/n/p/s/t. Before c and g the vowel stays æ (quack, whack,
+    // wag, swagger); the l rimes are ^al$/^alk (wall, walk) and ar is the
+    // NORTH branch just below.
+    if (onset?.endsWith("w") && /^a[bdfhmnpst]/.test(remaining)) {
+      emit("a", "ɑ", "phoneme:w+a");
+      remaining = remaining.substring(1);
+      continue;
+    }
+    // Same onset, r-controlled rime: NORTH, not START (war, warm, ward,
+    // quarter, dwarf, thwart) — 123 ɔɹ vs 6 ɑɹ in the dict. Two exclusions:
+    // the magic-e -are/-ary rimes are SQUARE (ware, square, wary), and an
+    // unstressed -ward/-wart is the reduced suffix (edward, outward, which
+    // maximal onset splits as e|dward, ou|tward, past the ^ward$ suffix).
+    if (isStressed && onset?.endsWith("w") && /^ar(?![ey]$)/.test(remaining)) {
+      emit("ar", "ɔɹ", "phoneme:w+ar");
+      remaining = remaining.substring(2);
+      continue;
+    }
+    // A stressed word-final bare `a` is the loan-word ɑ, not æ: la, ma, pa,
+    // spa, bra, aha (dict: 28 ɑ vs 1 æ over stressed final C(C)a syllables).
+    if (
+      remaining === "a" &&
+      isLastSyllable &&
+      isStressed &&
+      phonemes.length > 0 &&
+      /^[^aeiouy]*a$/.test(syllable)
+    ) {
+      emit("a", "ɑ", "phoneme:^a$-loan");
+      break;
     }
     if (remaining === "y" && triLaxY) {
       emit("y", "ɪ", "phoneme:^y$-lax");
