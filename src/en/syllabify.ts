@@ -623,10 +623,16 @@ export function assignStress(syllables: string[], word: string): number {
     // A light root keeps initial stress (acid, adam, atom, arab), so the
     // orthographic vowel digraph is the discriminator — the flat split is
     // 295 initial : 198 final in the dict, the digraph subset 37 : 66.
+    // `oi` is a tense rime that the shared VOWEL_DIGRAPHS list omits, and it
+    // votes the same way: a root containing it is 6 final : 1 initial
+    // (avoid, anoint, adroit, alois against aloi). It is added here rather
+    // than to VOWEL_DIGRAPHS so `isSyllableHeavy` and the com-/pro- laxRoot
+    // test keep their measured behaviour.
     // A word-final -ey/-ie is the unstressed /i/ ending (abbey, amie), not
     // a tense rime, so it is excluded.
     const tenseRoot =
-      DIGRAPH_RIME.test(syllables[1]) && !/(?:ey|ie)$/.test(syllables[1]);
+      (DIGRAPH_RIME.test(syllables[1]) || syllables[1].includes("oi")) &&
+      !/(?:ey|ie)$/.test(syllables[1]);
     if (firstSyl === "a" && tenseRoot) return 1;
     // Assimilated Latin ad-: account, approach, appear, allow. The doubled
     // consonant at the boundary is the assimilation, so `isPrefix` has to be
@@ -646,6 +652,22 @@ export function assignStress(syllables: string[], word: string): number {
     if (isLikelyCompound(lowerWord, syllables)) {
       return 0; // First syllable gets primary stress in compounds
     }
+
+    // The weak a- prefix again, over a magic-e root. The orthographic
+    // syllabifier splits the silent e off as its own syllable (a|lo|ne,
+    // a|ma|ze, as|su|me, ap|pro|ve), so the two-syllable branch never sees
+    // these and `DIGRAPH_RIME` has no rime left to test. Over the three-slot
+    // words this reaches, the dict puts the primary on slot 1 by 30:9 for a
+    // bare a- (alone, amaze, alive, arise) and 15:4 for the assimilated form
+    // (assume, approve, arrive, alliance).
+    if (
+      syllables.length === 3 &&
+      /^[^aeiouy]e$/.test(syllables[2]) &&
+      (syllables[0] === "a" ||
+        (/^a[bcdfglmnprstvz]$/.test(syllables[0]) &&
+          syllables[1][0] === syllables[0][1]))
+    )
+      return 1;
 
     // The heaviness test below is close to a coin flip on this population
     // (10587 of the 21827 dict words that reach it, against 9511 for a flat
@@ -740,6 +762,18 @@ function coalesceOnset(onset: string): string | null {
 // (bake+r, take+n, make+ing, base+is, fine+al, silent, vacant, matrix).
 const TENSE_ENDINGS =
   /^[^aeiouy]+(?:e[rdsn]|ers|est|ing|ings|or|ors|al|als|ent|ents|ant|ants|us|is|ix)$/;
+
+// The `a`-only half of that frame: second syllables that license a tense a
+// but that TENSE_ENDINGS either omits or cannot reach. Measured as dict
+// eɪ : everything else over the two-syllable words whose stressed open first
+// syllable is an a — -Cey 75:21 (haley, casey, bakey), -Cier(s) 23:10
+// (glacier, brazier, crazier), -Cer(y|ies) 10:4 (bakery, slavery, drapery),
+// -Cies 6:2 (ladies, babies, rabies), and s+stop+e 14:3 (haste, waste,
+// paste, chaste), which TENSE_ENDINGS does spell but `nextIsLaxCluster`
+// blocks. An r-initial ending is excluded for the same reason as in the
+// shared frame: carey and barey are ɛɹ, not eɪ. Two-consonant onsets are
+// excluded too — they drop -Cey to 55% (bagley, bakley) and -Can to 56%.
+const A_TENSE_ENDINGS = /^(?:[^aeiouyr](?:ey|iers?|er(?:y|ies)|ies)|s[ktp]e)$/;
 
 // Enhanced syllable to IPA conversion with stress-sensitive vowel reduction
 // Suffixes that only spell a suffix at the end of the word
@@ -868,6 +902,12 @@ export function syllableToIPA(
   const twoSylTense =
     syllableIndex === 0 && isNextLastSyllable && isStressed && !nextIsLaxCluster &&
     !!nextSyllable && TENSE_ENDINGS.test(nextSyllable);
+  // Same window, `a`-only endings, and exempt from nextIsLaxCluster — the
+  // s+stop onset it blocks is the silent-e coda of haste/waste, not the
+  // cu|stom cluster it was written for.
+  const aTwoSylTense =
+    syllableIndex === 0 && isNextLastSyllable && isStressed &&
+    !!nextSyllable && A_TENSE_ENDINGS.test(nextSyllable);
   const nextIsMagicE =
     (isStressed || isNextLastSyllable) &&
     !!nextSyllable?.match(/^[^aeiou]e$/);
@@ -1130,7 +1170,8 @@ export function syllableToIPA(
     // syllable; for a 5-syllable word that's 5 small allocations
     // instead of 13 × 150 × 5 = ~10K string ops.
     const aFire = (nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE ||
-      (twoSylTense && /^[^aeiouy]*a$/.test(syllable) && !nextSyllable!.startsWith("r")));
+      (twoSylTense && /^[^aeiouy]*a$/.test(syllable) && !nextSyllable!.startsWith("r")) ||
+      (aTwoSylTense && /^[^aeiouy]*a$/.test(syllable)));
     const iFire = (nextIsMagicE || endsWithSilentE || (nextIsCle && isStressed) ||
       (twoSylTense && /^[^aeiouy]*i$/.test(syllable) && !/^(?:v|en$)/.test(nextSyllable!)));
     const skip = new Set<string>();
