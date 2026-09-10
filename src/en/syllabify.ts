@@ -862,6 +862,26 @@ export function syllableToIPA(
       emit("ig", "aɪ", "phoneme:^ig(?=n-suffix)");
       break;
     }
+    // Stressed i in hiatus with the next vowel is the tense /aɪ/ of an
+    // open syllable, not the /i/ of the ie/ia digraphs. Frames measured
+    // over the dict (aɪ : i): io anything — lion, riot, prior, ion — 22:5;
+    // ia + a consonant that is not a bare final n — dial, giant, bias,
+    // triad, liable — 24:6, while ia$ (mia, tia) is 2:15 and ian$ (ian,
+    // cian) 3:7 and both stay lax; ie closing the syllable or before a
+    // single s/d/r — die, lie, cries, cried, crier, drier — 52:11, the
+    // -y verb inflections. Restricted to a stressed first syllable so
+    // the -ier/-ion/-ial suffixes of car|ri|er, re|gion, mil|lion,
+    // au|dio keep their unstressed /i/.
+    if (isStressed && syllableIndex === 0 && isLastSyllable && /^ie[sdr]?$/.test(remaining)) {
+      const coda = remaining.slice(2);
+      emit(remaining, "aɪ" + (coda === "r" ? "ɝ" : coda), "phoneme:^ie$-hiatus");
+      break;
+    }
+    if (isStressed && syllableIndex === 0 && /^i(?=o|a(?:[^aeiouyn]|n[^aeiouy]))/.test(remaining)) {
+      emit("i", "aɪ", "phoneme:^i-hiatus");
+      remaining = remaining.substring(1);
+      continue;
+    }
     // Precompute the set of pattern sources to skip for this syllable
     // context. The inner per-rule loop becomes a single Set.has() check
     // instead of 13+ string comparisons per rule. Built once per
