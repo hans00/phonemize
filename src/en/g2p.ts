@@ -125,6 +125,9 @@ const CLITICS: Record<string, string> = {
 
 const FINAL_GEMINATE_RE = /^[a-z]{3,}([bdfgklmnprstz])\1$/;
 
+// True when the primary stress sits on the last vowel nucleus of `ipa`.
+const FINAL_STRESS_RE = /ˈ[^aeiouɑæɛɪɔʊʌəɝ]*[aeiouɑæɛɪɔʊʌəɝ]+[^aeiouɑæɛɪɔʊʌəɝ]*$/;
+
 /** The degeminated form of a word ending in a doubled consonant, else null. */
 function geminateStem(word: string): string | null {
   return FINAL_GEMINATE_RE.test(word) ? word.slice(0, -1) : null;
@@ -934,6 +937,17 @@ export class EnglishG2P implements LanguageProcessor {
           lex(b) ||
           (b.endsWith("i") ? lex(b.slice(0, -1) + "y") : undefined) ||
           (b.endsWith("id") ? undefined : lex(b + "e"));
+      // An -er verb that carries its own primary on that final syllable
+      // keeps it in the noun only when the spelling doubles the boundary
+      // consonant (occurrence, deterrence); an undoubled one has retracted
+      // it (refer → ˈɹɛfɝəns, likewise confer/defer/infer/prefer — 5 of 5
+      // in the dict, against 0 of the 31 free stems ending in anything
+      // else). Fall through to the rules, which front the primary here.
+      // The final-stress test is what keeps ˈsɛvɝ/ˈʌtɝ (severance,
+      // utterance) on the lookup path.
+      const stem = lex(b);
+      if (stem && /[^aeiou]er$/.test(b) && FINAL_STRESS_RE.test(stem))
+        return undefined;
       if (p) return p + "əns";
     }
     if (
