@@ -52,7 +52,7 @@ Rules of the goal:
 
 Open classes: none.
 
-Deferred (2026-09-09): both compression triggers fired in the rule passes — the three rule modules exceed the 2600-line ceiling and `PHONEME_RULES`/`POST_LEX` entries were added. The Rule Compression procedure runs next, as its own snapshot-gated commit, before any further rules.
+Compression (2026-09-10): the pass ran snapshot-gated (empty diff over 1.3M predictions) and took the three modules from 2930 to 2685 lines. Still 85 over the ceiling; what remains is comment carrying the dict ratio behind each rule, which the procedure says to keep. The opt-in `predictPrincipled` path is the one block that may be vestigial — retiring it is a behaviour decision, not a compression.
 
 Found, not fixed (2026-09-09): `syllabify` splits `e|xist`, so two-syllable ex- words get initial stress; 3+-syllable penult stress is a coin flip on syllable heaviness (needs suffix class or POS); no post-primary secondary-stress rule exists; `sch`+vowel → /sk/ loses on the name-heavy dict (school/scheme are lexical); `special` → ˈspiʃəɫ on the rule path.
 
