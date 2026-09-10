@@ -188,7 +188,7 @@ for (const [word, dictIpa] of Object.entries(dict)) {
   originAll.set(origin, (originAll.get(origin) ?? 0) + 1);
   const pred = g2p.predict(word, "en");
   if (!pred) continue;
-  const d = levenshtein.get(canon(pred), canon(dictIpa));
+  const d = levenshtein.get(norm(pred), norm(dictIpa));
   // Primary-stress position (vowel-nuclei before the ˈ mark). canon()
   // strips stress, so a word the rules get segmentally right but mis-stress
   // (bouquet ˈbukeɪ vs buˈkeɪ) scores d=0 and would be skipped. Treat a
@@ -382,7 +382,7 @@ for (;;) {
     if (!/^[a-z]+$/.test(word) || Object.hasOwn(shippedMap, word) || initialisms[word]) continue;
     const predIpa = runtime.predict(word, "en");
     if (!predIpa) continue;
-    const distance = levenshtein.get(canon(predIpa), canon(dictIpa));
+    const distance = levenshtein.get(norm(predIpa), norm(dictIpa));
     const ed = primaryNucleusIdx(predIpa) !== primaryNucleusIdx(dictIpa)
       ? Math.max(distance, 1) : distance;
     const candidate: Cand = { word, dictIpa, predIpa, ed, origin: originOf(word) };
