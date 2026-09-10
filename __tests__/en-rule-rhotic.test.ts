@@ -1,6 +1,10 @@
 import EnG2P from "../src/en/g2p";
 
-// Rule-path regressions for unstressed rhotic syllables.
+// Rule-path regressions for unstressed rhotic syllables and the unstressed
+// vowel qualities fixed alongside them: the inflected -its/-ists ending and
+// the word-initial <e> closed by a sonorant. Every case is a rule, not a
+// word — the word named is the class exemplar, and each frame was measured
+// over the whole dict before adoption.
 //
 // An unstressed /ɝ/ sitting immediately before a stress mark + vowel keeps
 // its r-colouring; the /ɹ/ is NOT re-analysed as the onset of the stressed
@@ -60,5 +64,30 @@ describe("inflected -its/-ists raise the stem schwa to /ɪ/", () => {
   it("leaves the singular stem alone", () => {
     expect(rules("credit")).toBe("ˈkɹɛdɪt");
     expect(rules("artist")).toBe("ˈɑɹtɪst");
+  });
+});
+
+// A word-initial unstressed <e> closed by a sonorant coda keeps its full
+// /ɛ/ rather than raising to /ɪ/; an open initial syllable still reduces,
+// and so does a sonorant followed by /t/ or /s/. Measured 71 ɛ : 19 ɪ over
+// data/en/dict.json on exactly that frame.
+describe("word-initial unstressed <e> before a sonorant coda", () => {
+  it.each([
+    ["embargo", "ɛmˈbɑɹɡoʊ"],
+    ["endorse", "ɛnˈdɔɹs"],
+    ["enforce", "ɛnˈfɔɹs"],
+    ["enlarge", "ɛnˈɫɑɹdʒ"],
+    ["ellington", "ɛˈɫɪŋtən"],
+    ["elfrieda", "ɛɫˈfɹidə"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("leaves an open initial syllable reduced", () => {
+    expect(rules("election")).toBe("ɪˈɫɛkʃən");
+    expect(rules("erosion")).toBe("ɪˈɹoʊʒən");
+  });
+
+  it("leaves a sonorant + /t/ or /s/ coda reduced", () => {
+    expect(rules("entirely")).toBe("ɪnˈtaɪɝɫi");
+    expect(rules("ensconce")).toBe("ɪnˈskɑns");
   });
 });

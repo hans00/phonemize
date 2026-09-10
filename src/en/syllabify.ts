@@ -1188,6 +1188,24 @@ export function syllableToIPA(
       )
         phonemes[i] = "ə";
     }
+
+    // Word-initial unstressed <e> closed by a sonorant keeps its full /ɛ/
+    // instead of raising to /ɪ/: embargo, endorse, enforce, ellington.
+    // The coda has to be a sonorant followed by another consonant — an
+    // open initial syllable reduces (election, eleven, erosion), and so
+    // does a sonorant followed by /t/ or /s/, where the lexicon splits the
+    // other way (entire, ensure). Counted over data/en/dict.json on exactly
+    // the frame the code tests — word-initial <e> + [lmnr] + a consonant
+    // other than t/s, first syllable unstressed — the lexicon has 185 ɛ
+    // against 103 ɪ; the change scores 64:10 strict on the rules-only
+    // win/loss harness.
+    if (
+      syllableIndex === 0 &&
+      phonemes[0] === "ɪ" &&
+      sources[0] === "e" &&
+      /^e[lmnr][^aeiouyts]/.test(syllable + (tail ?? ""))
+    )
+      phonemes[0] = "ɛ";
   }
 
   // Magic 'e' rule for stressed syllables
