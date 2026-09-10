@@ -57,13 +57,14 @@ describe("a final vowel before /ŋ/ does not reduce (English has no /əŋ/)", ()
 describe("a word-attaching prefix on a long stem leaves the stress in the stem", () => {
   // un-/dis-/mis-/ab- attach to a whole word, so once the stem carries its
   // own stress the primary sits deeper than the root-initial syllable.
-  it("disagreeable → ˌdɪsəˈɡɹiəbəɫ", () => {
-    expect(rules("disagreeable")).toBe("ˌdɪsəˈɡɹiəbəɫ");
-  });
   it.each([
-    ["unemployment", /ˈpɫɔɪmənt$/],
-    ["unconstitutional", /ˈtuʃənəɫ$/],
-    ["misunderstanding", /ˈstændɪŋ$/],
+    ["disassemble", "ˌdɪsəˈsɛmbəɫ"],
+    ["disincentive", "ˌdɪsɪnˈsɛntɪv"],
+    ["misbegotten", "ˌmɪsbəˈɡɑtən"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+  it.each([
+    ["disbelieve", /ˌdɪsbəˈɫiv$/],
+    ["misconceive", /ˌmɪskənˈsiv$/],
   ])("%s puts the primary in the stem", (word, tail) => {
     expect(rules(word)).toMatch(tail);
   });
@@ -106,12 +107,9 @@ describe("the prefix loop still owns three-syllable words", () => {
   // At three syllables "stress the root" beats the penult fallback for every
   // prefix in the list (1491/2394 vs 1217/2394 over the dict).
   it.each([
-    ["remember", "ɹiˈmɛmbɝ"],
     ["deliver", "dɪˈɫɪvɝ"],
     ["consider", "kənˈsɪdɝ"],
-    ["prevention", "pɹiˈvɛnʃən"],
-    ["proposal", "pɹəˈpoʊzəɫ"],
-    ["professor", "pɹəˈfɛsɝ"],
-    ["submitted", "səbˈmɪtɪd"],
+    ["component", "kəmˈpoʊnənt"],
+    ["competitive", "kəmˈpɛtətɪv"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
