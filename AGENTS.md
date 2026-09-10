@@ -34,13 +34,15 @@ The runtime path on real text is what users report against, so the goal is measu
 
 | Metric | Command | 2026-09-09 | Target |
 |---|---|---|---|
-| Runtime strict parity over dict | `yarn test:parity` | 89.54% → 91.90% | ≥ 92% |
-| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 92.12% | ≥ 93% |
-| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 73.61% | ≥ 75%, then back to the 86.998% baseline by rules alone |
-| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 66.30% | ≥ 70% |
-| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 47.96% | ≥ 50% |
+| Runtime strict parity over dict | `yarn test:parity` | 89.54% → **92.26%** | ≥ 92% **met**; next ≥ 93%, capped near 93 by the STRUT convention below |
+| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 92.32% | ≥ 93% |
+| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 74.37% | ≥ 75%, then back to the 86.998% baseline by rules alone |
+| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 66.92% | ≥ 70% |
+| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 48.67% | ≥ 50% |
 
 Parallel worktree agents, one rule family each, merged sequentially, produced both passes: the first measured strict +1547/−308 on the rule path, the second (unstressed reduction, back vowels, tense i/e) a further +709/−179 with +68/−1 on the top-5000 list. A rule change is only visible to parity after `yarn build-dict` re-mines the table, so parity is judged after the rebuild, never in a worktree.
+
+The fourth pass also took primary stress: `com-` over a lax root keeps its stress, the long-prefix loop yields to the penult fallback at 4+ syllables, a final vowel before /ŋ/ is exempt from reduction (English has no /əŋ/), -ance/-ence at four slots splits on the second syllable's coda, and an undoubled `-er` stem with final stress falls through to the rules (reference, conference). It also added `FINAL_GRAM_STRESS`, a seven-entry word-final gram table consulted before `isSyllableHeavy` — which scores 10587/21827, barely over always-penult. That table is the mechanism this project removed once before for scoring dictionary match while hurting pronunciation, so it carries a third adoption test the old miners lacked: a gram needs ≥20 dict words, ≥75% modal agreement, **and ≥3 agreeing top-5000 words**. The guard held — top-5000 default accuracy rose with it. Without that third test, 114 four-letter grams qualify and they are all surname endings (`nger`, `rman`, `gton`, `wicz`, `oski`, `moto`).
 
 The fourth pass audited `src/en/phonotactics.ts` rule by rule — that file rewrites the output of BOTH paths, and nothing in it had ever been measured. Four rules were narrowed (the -ed allomorph was building impossible /Cɹd/ codas; silent-h deletion ate the licit borrowed /hl hr hm hn/ onsets; unstressed /ɪɹ/ coalescence ate the /aɪ eɪ ɔɪ/ offglide; syllabic-l epenthesis fired inside an /ɹl/ coda and before /lj lw/), and `addInitialSecondary` moved to `applyPostStress` so it no longer marks lexical output. A structural fact came out of it worth keeping: `data/en/exceptions.json` stores raw dict IPA, so any phonotactics rule applied to a table hit can only be a no-op or a corruption — 4467 of 53,759 entries were leaving the pass different from the entry they were read from, now 2526.
 
