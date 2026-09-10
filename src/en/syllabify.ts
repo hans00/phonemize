@@ -162,6 +162,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ey/, "eɪ"], // they, grey, obey (stressed -ey)
   [/^ight/, "aɪt"], // night, right, knight (i+ght)
   [/^igh/, "aɪ"],  // high, sigh, thigh — igh without following t
+  [/^ign(?=s?$)/, "aɪn"], // sign, design, align, assign, benign, resign: syllable-final -ign is the silent-g rime (14 aɪn vs 1 in dict; the ɪɡn words dig|nity, sig|nal, ig|nore all move the n onto a following vowel). aign/eign never reach it — ^ai/^ei eat the vowel first.
   [/^oa/, "oʊ"], // boat, coat, road
   [/^oss/, "ɔs"], // cross, loss (short o)
   [/^eur/, "ɝ"], // connoisseur, entrepreneur (French -eur → /ɝ/)
@@ -849,6 +850,16 @@ export function syllableToIPA(
     // -der (leader/reader 14:4), -ter (eater/theater 22:1).
     if (remaining === "ea" && /^(?:ther|san|lou)/.test(tail ?? "")) {
       emit("ea", "ɛ", "phoneme:^ea-lax");
+      break;
+    }
+    // The same silent-g rime as ^ign, seen across a syllable boundary:
+    // maximal onset moves the n onto a vowel-initial suffix (de|sig|ner,
+    // un|sig|ned, sig|ners), leaving a bare "ig". 12 aɪn : 4 in the dict
+    // — the losses are -igner names that keep the ɡ (brigner, tigner).
+    // A suffix-shaped next syllable is required: sig|nal, dig|ni|ty and
+    // sig|na|ture keep /ɪɡ/.
+    if (remaining === "ig" && /^n(?:e[drs]|ers|ing|ment|ments|s)$/.test(nextSyllable ?? "")) {
+      emit("ig", "aɪ", "phoneme:^ig(?=n-suffix)");
       break;
     }
     // Precompute the set of pattern sources to skip for this syllable
