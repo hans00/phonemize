@@ -806,6 +806,14 @@ const NON_INITIAL_SUFFIXES = new Set("^lion$ ^scien$ ^ford$ ^ward$".split(" "));
 // spelling implies, used by the depth tests below.
 const vowelGroups = (s: string): number => s.match(/[aeiouy]+/g)?.length ?? 0;
 
+// Final vowel group of a word whose penult <i> is the pretonic-to-the-suffix
+// slot: -y and its inflections. See the use site in `syllableToIPA`.
+const Y_FINAL_GROUP = /^(?:y|ies|ied)$/;
+
+// The same slot before an unstressed Latinate ending (criminal, animal,
+// capital, condiment, luminous, contaminant).
+const LATINATE_FINAL_GROUP = /^(?:als?|ous|ants?|ents?)$/;
+
 const reduceTable = (eps: string): Record<string, string> => ({
   ɑɹ: "ɑɹ", ɔɹ: "ɔɹ", ɔɪ: "ɔɪ", æ: "ə", ɛ: eps, ɑ: "ə", ʌ: "ə", ɔ: "ə",
 });
@@ -1401,7 +1409,16 @@ export function syllableToIPA(
     // unstressed it is 157 ɛ : 32 ə : 124 ɪ.
     !FINAL_OBSTRUENT_E.test(syllable)
   ) {
-    if (!isSecondary) applyReduction(reduceTable("ə"));
+    // A word-final <e> under a geminate t raises to /ɪ/ instead: over
+    // data/en/dict.json -ett is 239 ɪ : 22 ə (the other 41 are the
+    // stressed ɛ this branch never sees), against 153 ɪ : 154 ə for
+    // single-t -et. The geminate is a surname rime — bartlett, beckett,
+    // brackett — and does not flatten the way the native -et of planet
+    // and bracket does. The parallel -eth rime is 45 ɪ : 8 ə but its two
+    // exceptions are the only common words in the frame (elizabeth,
+    // fellmeth), so it stays on the schwa path.
+    if (!isSecondary)
+      applyReduction(reduceTable(/ett$/.test(syllable) ? "ɪ" : "ə"));
     const lastIdx = phonemes.length - 1;
     if (
       lastIdx >= 0 &&
@@ -1450,6 +1467,13 @@ export function syllableToIPA(
   //     below the support floor, so it is left out
   //   e two+ groups from the end, follow not r- or n+C (ceremony,
   //     secretary, disintegrate) 474 : 174
+  //   i in the penult group before a single consonant, where the final
+  //     group is -y or one of its inflections (ability, cavity, gravity,
+  //     amplify, gossipy) 520 : 245, and 51 : 10 over the top-5000
+  //     frequency slice — the suffix, not the consonant, is what conditions
+  //     this one: the <i> is the slot immediately before the -y suffix
+  //     wherever the word's primary stress sits. Per consonant t 291 : 202,
+  //     f 151 : 25, l 64 : 6; the rest are under the support floor.
   // Everything else keeps ɪ: ng (0 ə : 532), sh, ck, k, ns, st, v, c, and an
   // empty follow (-ial/-ion/-ious), where the ɪ feeds the later -i+vowel
   // rules. A word-initial group also keeps it (invite, imagine, believe).
@@ -1472,7 +1496,12 @@ export function syllableToIPA(
       if (
         /^(?:[bp]l|gr)$/.test(follow) ||
         (follow === "t" && groups >= 4 && !/^ti/.test(rest)) ||
-        (after >= 2 && groups >= 5 && /^[fgmnz]$/.test(follow))
+        (after >= 2 && groups >= 5 && /^[fgmnz]$/.test(follow)) ||
+        (after === 1 &&
+          follow.length === 1 &&
+          (Y_FINAL_GROUP.test(rest.slice(follow.length)) ||
+            (/^[tnmp]$/.test(follow) &&
+              LATINATE_FINAL_GROUP.test(rest.slice(follow.length)))))
       )
         phonemes[i] = "ə";
     }

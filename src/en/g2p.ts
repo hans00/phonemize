@@ -133,6 +133,18 @@ function geminateStem(word: string): string | null {
   return FINAL_GEMINATE_RE.test(word) ? word.slice(0, -1) : null;
 }
 
+// The vowel before an unstressed Latinate ending is the slot the suffix
+// reduces (anim+al, crimin+al, capit+al, condi+ment), but the suffix
+// handlers price the base without the suffix in view, so its last /ɪ/
+// stays full — the same join problem the -ily/-ibly adverbs have. On the
+// frame below data/en/dict.json has 78 ə : 22 ɪ, and 9 : 1 over the
+// top-5000 slice; the rule path reaches it in `syllableToIPA`.
+const PRE_SUFFIX_ORTHO_RE = /i[tnmp](?:als?|ous|ants?|ents?)$/;
+const preSuffixReduce = (ipa: string, word: string): string =>
+  PRE_SUFFIX_ORTHO_RE.test(word)
+    ? ipa.replace(/(?<![eaɔ])ɪ(?=[^ɑɔæɛɪiʊuʌəɝɚ]*$)/, "ə")
+    : ipa;
+
 // A front-vowel-initial suffix softens the base's final <c>/<g>
 // (allerg+ist dʒ 62:4, critic+ize s). Priced alone the base ends the
 // letter word-finally, where it always reads hard, so the suffix
@@ -847,9 +859,28 @@ export class EnglishG2P implements LanguageProcessor {
         if (yBase)
           return /[lɫ]$/.test(yBase) ? yBase + "i" : yBase + "li";
       }
+      // -bly is the -ble adjective with the syllabic l re-onset by the
+      // suffix (credible→credibly, notable→notably). Read the -ble base so
+      // its own reduction applies to the vowel before the cluster, then
+      // drop the syllabic schwa: -ibly is 26 ə : 4 ɪ in data/en/dict.json,
+      // and the bare stem ("credib") has no cluster for that rule to see.
+      if (lowerWord.endsWith("bly")) {
+        const ble = stemPron(stem + "le");
+        if (ble && /[lɫ]$/.test(ble)) return ble.replace(/ə([lɫ])$/, "$1") + "i";
+      }
       const basePron = stemPron(stem);
-      if (basePron)
-        return /[lɫ]$/.test(basePron) ? basePron + "i" : basePron + "li";
+      if (basePron) {
+        if (/[lɫ]$/.test(basePron)) return basePron + "i";
+        // A consonant+i stem is the -y adjective with its final letter
+        // rewritten by the suffix (angry→angrily, easy→easily) or a
+        // truncated Latinate stem (family, homily). Either way that /ɪ/ is
+        // the slot before the suffix, which reduces: -ily is 64 ə : 6 ɪ in
+        // data/en/dict.json. The stem is read without the suffix in view,
+        // so the reduction has to be applied on the join.
+        if (/[^aeiouy]i$/.test(stem))
+          return basePron.replace(/ɪ$/, "ə") + "li";
+        return basePron + "li";
+      }
     }
 
     // -able/-ible: magic-e derivation first (advisable→advise,
@@ -985,7 +1016,7 @@ export class EnglishG2P implements LanguageProcessor {
       if (sfx === "al" && /^[^aeiouy]*[aeiouy]+[^aeiouy]+$/.test(b) && !lex(b))
         continue;
       const p = stemPron(b);
-      if (p) return softenBaseFinal(p, b, sfx) + ipa;
+      if (p) return softenBaseFinal(preSuffixReduce(p, lowerWord), b, sfx) + ipa;
     }
 
     return undefined;
