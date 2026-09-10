@@ -71,7 +71,12 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/oʊleɪt$/, "ɑleɪt"],
   [/aʊɹ(?=[^aeiouæɛɪɑɔʌʊ])/g, "uɹ"], // French -our- before consonant (belcourt/bournonville)
   [/æ{2,}/g, "ɑ"], // double-a → ɑ (baalbek, baasch, baatz)
-  [/ɪæ$/, "iə"], // word-final -ia: sɪnðɪæ→sɪnðiə (cynthia/sylvia)
+  // word-final -ia: sɪnðɪæ→sɪnðiə (cynthia/sylvia). Two rules, because an
+  // ɪ after a/e/o/ɔ is the offglide of a diphthong, not a hiatus vowel:
+  // there only the final æ reduces (freya ˈfɹeɪə, caya ˈkeɪə), while the
+  // unguarded form read /aɪ/+/æ/ as hiatus and stripped the glide.
+  [/(?<![eaoɔ])ɪæ$/, "iə"],
+  [/(?<=[eaoɔ]ɪ)æ$/, "ə"],
   [/zjʊɹ$/, "ʒɝ"], // -zure: seizure/azure → ʒɝ
   [/nð$/, "nθ"], // word-final -nth: absinthe/labyrinth → nθ
   [/([lɹ])ð/g, "$1θ"], // -lth-/-rth- cluster: altherr/waltham/carthage → lθ/ɹθ
