@@ -758,6 +758,10 @@ const vowelGroups = (s: string): number => s.match(/[aeiouy]+/g)?.length ?? 0;
 // slot: -y and its inflections. See the use site in `syllableToIPA`.
 const Y_FINAL_GROUP = /^(?:y|ies|ied)$/;
 
+// The same slot before an unstressed Latinate ending (criminal, animal,
+// capital, condiment, luminous, contaminant).
+const LATINATE_FINAL_GROUP = /^(?:als?|ous|ants?|ents?)$/;
+
 const reduceTable = (eps: string): Record<string, string> => ({
   ɑɹ: "ɑɹ", ɔɹ: "ɔɹ", ɔɪ: "ɔɪ", æ: "ə", ɛ: eps, ɑ: "ə", ʌ: "ə", ɔ: "ə",
 });
@@ -1331,7 +1335,16 @@ export function syllableToIPA(
     // unstressed it is 157 ɛ : 32 ə : 124 ɪ.
     !FINAL_OBSTRUENT_E.test(syllable)
   ) {
-    if (!isSecondary) applyReduction(reduceTable("ə"));
+    // A word-final <e> under a geminate t raises to /ɪ/ instead: over
+    // data/en/dict.json -ett is 239 ɪ : 22 ə (the other 41 are the
+    // stressed ɛ this branch never sees), against 153 ɪ : 154 ə for
+    // single-t -et. The geminate is a surname rime — bartlett, beckett,
+    // brackett — and does not flatten the way the native -et of planet
+    // and bracket does. The parallel -eth rime is 45 ɪ : 8 ə but its two
+    // exceptions are the only common words in the frame (elizabeth,
+    // fellmeth), so it stays on the schwa path.
+    if (!isSecondary)
+      applyReduction(reduceTable(/ett$/.test(syllable) ? "ɪ" : "ə"));
     const lastIdx = phonemes.length - 1;
     if (
       lastIdx >= 0 &&
@@ -1412,7 +1425,9 @@ export function syllableToIPA(
         (after >= 2 && groups >= 5 && /^[fgmnz]$/.test(follow)) ||
         (after === 1 &&
           follow.length === 1 &&
-          Y_FINAL_GROUP.test(rest.slice(follow.length)))
+          (Y_FINAL_GROUP.test(rest.slice(follow.length)) ||
+            (/^[tnmp]$/.test(follow) &&
+              LATINATE_FINAL_GROUP.test(rest.slice(follow.length)))))
       )
         phonemes[i] = "ə";
     }

@@ -133,6 +133,18 @@ function geminateStem(word: string): string | null {
   return FINAL_GEMINATE_RE.test(word) ? word.slice(0, -1) : null;
 }
 
+// The vowel before an unstressed Latinate ending is the slot the suffix
+// reduces (anim+al, crimin+al, capit+al, condi+ment), but the suffix
+// handlers price the base without the suffix in view, so its last /ɪ/
+// stays full — the same join problem the -ily/-ibly adverbs have. On the
+// frame below data/en/dict.json has 78 ə : 22 ɪ, and 9 : 1 over the
+// top-5000 slice; the rule path reaches it in `syllableToIPA`.
+const PRE_SUFFIX_ORTHO_RE = /i[tnmp](?:als?|ous|ants?|ents?)$/;
+const preSuffixReduce = (ipa: string, word: string): string =>
+  PRE_SUFFIX_ORTHO_RE.test(word)
+    ? ipa.replace(/(?<![eaɔ])ɪ(?=[^ɑɔæɛɪiʊuʌəɝɚ]*$)/, "ə")
+    : ipa;
+
 // A front-vowel-initial suffix softens the base's final <c>/<g>
 // (allerg+ist dʒ 62:4, critic+ize s). Priced alone the base ends the
 // letter word-finally, where it always reads hard, so the suffix
@@ -1004,7 +1016,7 @@ export class EnglishG2P implements LanguageProcessor {
       if (sfx === "al" && /^[^aeiouy]*[aeiouy]+[^aeiouy]+$/.test(b) && !lex(b))
         continue;
       const p = stemPron(b);
-      if (p) return softenBaseFinal(p, b, sfx) + ipa;
+      if (p) return softenBaseFinal(preSuffixReduce(p, lowerWord), b, sfx) + ipa;
     }
 
     return undefined;
