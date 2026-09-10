@@ -44,7 +44,7 @@ describe("syllable-final -ign is the silent-g /aɪn/ rime", () => {
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 
   it("leaves ɡn intact when a vowel follows the n", () => {
-    expect(rules("dignity")).toBe("ˈdɪɡnɪti");
+    expect(rules("dignity")).toBe("ˈdɪɡnəti");
   });
 });
 
