@@ -241,7 +241,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^n/, "n"],
   [/^p/, "p"],
   [/^r/, "ɹ"], // American English rhotic r
-  [/^s(?=ed$|er$|ing$)/, "z"], // -sed/-ser/-sing on a dropped silent-e base: used/adviser/closing (guard in loop; 191:119 in dict)
+  [/^s(?=ed$|ers?$|ing$)/, "z"], // -sed/-ser/-sing on a dropped silent-e base: used/adviser/closing (guard in loop; 191:119 in dict)
   [/^s/, "s"],
   [/^t/, "t"],
   [/^v/, "v"],
@@ -674,10 +674,15 @@ export function syllableToIPA(
     return "l";
   // -se after vowel-i/e/o syllable → /z/ (advise/cheese/close); magic-e 'a' → /s/ via ^se$ rule.
   // -au also voices (cause/pause/applause, 7:3 in dict); -ou/-oo do not (house/goose).
+  // A consonant + open u voices only when u|se is the whole stem (fuse,
+  // muse, ruse — 13:0 in dict); in a longer word the -use noun/adjective
+  // keeps /s/ (abuse, excuse, profuse, abstruse) and onsetless u|se is
+  // the noun "use".
   if (
     remaining === "se" &&
     isLastSyllable &&
-    prevSyllable?.match(/[ieo]$|au$/i)
+    (prevSyllable?.match(/[ieo]$|au$/i) ||
+      (syllableIndex === 1 && /[^aeiou]u$/i.test(prevSyllable ?? "")))
   )
     return "z";
   for (const [pattern, ipa] of SUFFIX_RULES) {
@@ -790,13 +795,51 @@ export function syllableToIPA(
       break;
     }
     // s after an unstressed Latin re-/de-/pre- prefix voices (result,
-    // present, design, reserve): 79:60 in dict.
+    // present, design, reserve): 79:60 in dict. ab-/ob-/de- split overall
+    // (20:48 for ab-/ob-) but are unanimous before the -serv-/-sert-/-sorb-
+    // stem (deserve, desertion, observe, absorb): 20:0 in dict.
     if (
       syllableIndex === 1 &&
-      /^p?re$/.test(prevSyllable ?? "") &&
-      /^s[aeiouy]/.test(remaining)
+      ((/^p?re$/.test(prevSyllable ?? "") && /^s[aeiouy]/.test(remaining)) ||
+        (/^(?:[ao]b|de)$/.test(prevSyllable ?? "") &&
+          /^s(?:er|orb)/.test(remaining)))
     ) {
       emit("s", "z", "phoneme:prefix-s");
+      remaining = remaining.substring(1);
+      continue;
+    }
+    // An s opening a non-initial syllable after an open one voices in the
+    // frames where the dict votes for it. Measured z:s over the single-s
+    // dict words each condition matches:
+    //   Co|sen$/sey$/sie$  chosen, rosen, cosey, rosie       12:4
+    //   ea|sel$/sant/son$/si$  reason, easel, peasant,
+    //            feasible; the ea words that keep /s/ are the
+    //            -ease/-easing/-easter/-easure tails, none of which
+    //            reach this frame                              25:6
+    //   digraph|sley$/sler$  the linking s of a -sley/-sler name
+    //            after a front digraph (paisley, beasley, keesler)  20:2
+    //   Ci/Co|si- before a -t/-b tail (visit, visitor, visible,
+    //            depository)                                   14:2
+    //   Cu|sic-  music, cusick. The weakest of the six: the dict is
+    //            split (busic/musick keep /s/), but the rules-only
+    //            dump measured +4/-1 on it                       4:4
+    if (
+      syllableIndex > 0 &&
+      phonemes.length === 0 &&
+      ((isLastSyllable &&
+        /[^aeiou]o$/.test(prevSyllable ?? "") &&
+        /^s(?:en|ey|ie)$/.test(remaining)) ||
+        (/ea$/.test(prevSyllable ?? "") &&
+          /^s(?:el$|ant|on$|i(?:er)?$)/.test(remaining)) ||
+        (isLastSyllable &&
+          /(?:ea|ee|ie|ai|ui)$/.test(prevSyllable ?? "") &&
+          /^sl(?:ey|er|ing|y)$/.test(remaining)) ||
+        (/[^aeiou][io]$/.test(prevSyllable ?? "") &&
+          (remaining === "sit" ||
+            (remaining === "si" && /^(?:tor|b)/.test(nextSyllable ?? "")))) ||
+        (/[^aeiou]u$/.test(prevSyllable ?? "") && /^sic/.test(remaining)))
+    ) {
+      emit("s", "z", "phoneme:onset-s");
       remaining = remaining.substring(1);
       continue;
     }
@@ -1022,14 +1065,16 @@ export function syllableToIPA(
     if (syllableIndex > 0 || phonemes.length > 0) {
       skip.add("^pt"); skip.add("^ps"); skip.add("^pn");
     }
-    // The -sed/-ser/-sing suffix voices only on a base whose last vowel is
-    // a plain i/e/o/u or ai/au (used, closing, appraiser). Other digraphs
-    // keep /s/: ou (houser), ei/ie (Germanic names beiser/rieser).
+    // The -sed/-ser(s)/-sing suffix voices only on a base whose last vowel
+    // is a plain i/e/o/u, ai/au or the oe/ey/oo of a Dutch/German name
+    // (used, closing, appraiser, users, loeser, heyser, hooser — the
+    // oe/ey/oo class is 16:3 in dict). Other digraphs keep /s/: ou
+    // (houser), ei/ie (Germanic names beiser/rieser).
     if (
       !isLastSyllable ||
-      !/(?:[^aeiou][ieou]|^[ieou]|a[iu])$/.test(prevSyllable ?? "")
+      !/(?:[^aeiou][ieou]|^[ieou]|a[iu]|oe|ey|oo)$/.test(prevSyllable ?? "")
     )
-      skip.add("^s(?=ed$|er$|ing$)");
+      skip.add("^s(?=ed$|ers?$|ing$)");
     // th before a/i/o/u is the Greek/Latin θ (author, method, marathon,
     // thalamus): 300:30 medially, 268:15 word-initially in dict. The ð
     // exceptions are all monosyllabic function words (this/that/thou), so
