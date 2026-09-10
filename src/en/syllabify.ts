@@ -877,6 +877,24 @@ export function syllableToIPA(
       emit(remaining, "aɪ" + (coda === "r" ? "ɝ" : coda), "phoneme:^ie$-hiatus");
       break;
     }
+    // A single consonant before a syllabic -le belongs to the -le
+    // syllable phonologically (ti|tle, i|dle), but tl/dl are not valid
+    // onsets so the syllabifier leaves a closed tit/id and the vowel
+    // never reaches the open-syllable ^i$ rule. When the next syllable
+    // is a bare "le" the coda must also be a single consonant in the
+    // spelling — the doubled codas (litt|le, midd|le, drizz|le) dedupe
+    // to the same shape but stay lax. i is tense in the single-coda
+    // frame: 8 aɪ : 0 in the dict — title, entitle, subtitle, idle,
+    // bridle, sidle.
+    if (
+      isStressed && isNextLastSyllable && nextSyllable === "le" &&
+      /^i[^aeiouylr]$/.test(remaining) &&
+      !/([b-df-hj-np-tv-z])\1/.test(syllable)
+    ) {
+      emit("i", "aɪ", "phoneme:^i(?=Cle)");
+      remaining = remaining.substring(1);
+      continue;
+    }
     if (isStressed && syllableIndex === 0 && /^i(?=o|a(?:[^aeiouyn]|n[^aeiouy]))/.test(remaining)) {
       emit("i", "aɪ", "phoneme:^i-hiatus");
       remaining = remaining.substring(1);
