@@ -46,7 +46,6 @@ describe("s opening a syllable after an open one", () => {
     ["visible", "ˈvɪzəbəɫ"],
     ["divisible", "dɪˈvɪzəbəɫ"],
     ["depository", "dɪˈpɑzəˌtɔɹi"],
-    ["music", "ˈmjuzɪk"],
   ])("%s -> %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 
   it("leaves the ea tails that keep /s/ alone", () => {

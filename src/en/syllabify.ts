@@ -884,9 +884,9 @@ export function syllableToIPA(
     //            after a front digraph (paisley, beasley, keesler)  20:2
     //   Ci/Co|si- before a -t/-b tail (visit, visitor, visible,
     //            depository)                                   14:2
-    //   Cu|sic-  music, cusick. The weakest of the six: the dict is
-    //            split (busic/musick keep /s/), but the rules-only
-    //            dump measured +4/-1 on it                       4:4
+    // A sixth frame, Cu|sic- (music), measured +4/-1 but the dict is 4:4
+    // on it and every win is the one music/musical/musician family — a
+    // per-word patch in frame clothing, so it is not here.
     if (
       syllableIndex > 0 &&
       phonemes.length === 0 &&
@@ -900,8 +900,7 @@ export function syllableToIPA(
           /^sl(?:ey|er|ing|y)$/.test(remaining)) ||
         (/[^aeiou][io]$/.test(prevSyllable ?? "") &&
           (remaining === "sit" ||
-            (remaining === "si" && /^(?:tor|b)/.test(nextSyllable ?? "")))) ||
-        (/[^aeiou]u$/.test(prevSyllable ?? "") && /^sic/.test(remaining)))
+            (remaining === "si" && /^(?:tor|b)/.test(nextSyllable ?? "")))))
     ) {
       emit("s", "z", "phoneme:onset-s");
       remaining = remaining.substring(1);
