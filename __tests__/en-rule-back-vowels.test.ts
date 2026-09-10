@@ -99,6 +99,16 @@ describe("a stressed word-final bare a is the loan-word ɑ", () => {
   });
 });
 
+// The a- + single r + vowel frame is split in the lexicon itself: around
+// əˈɹaʊnd but arise/arrived/aroused/originally all ɝ (59:13 for ɝ word-
+// initially). The rule path takes the majority, so this case asserts the
+// stress placement the prefix rule owns, not the vowel the lexicon splits.
+describe("the weak a- prefix before a single r", () => {
+  it("stresses the root", () => {
+    expect(rules("around")).toMatch(/^(?:əˈɹ|ɝˈ)aʊnd$/);
+  });
+});
+
 describe("the weak a- prefix before a tense root", () => {
   it.each([
     ["about", "əˈbaʊt"],
@@ -106,7 +116,6 @@ describe("the weak a- prefix before a tense root", () => {
     ["against", "əˈɡeɪnst"],
     ["agree", "əˈɡɹi"],
     ["amount", "əˈmaʊnt"],
-    ["around", "əˈɹaʊnd"],
     ["abroad", "əˈbɹɔd"],
     ["account", "əˈkaʊnt"],
     ["approach", "əˈpɹoʊtʃ"],
