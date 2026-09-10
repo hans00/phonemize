@@ -147,16 +147,12 @@ function normalizeStrut(ipa: string, word?: string): string {
   return out;
 }
 
-// ─── Rule: de-rhotic /ɝ/ before a stressed vowel ─────────────────────────
-// When /ɝ/ sits immediately before a stress mark + vowel, the /ɹ/ is really
-// the onset of that stressed syllable, not an r-colouring of the schwa:
-// courageous /kɝˈeɪdʒəs/ → /kəˈɹeɪdʒəs/, collaboration /…bɝˈeɪʃən/ →
-// /…bəˈɹeɪʃən/. Split the rhotic schwa into /ə/ + onset /ɹ/.
-const DERHOTIC_RE = /ɝ([ˈˌ])([aeiouɑæɛɪɔʊʌəɝ])/g;
-function deRhoticBeforeStress(ipa: string): string {
-  if (ipa.indexOf("ɝ") < 0) return ipa;
-  return ipa.replace(DERHOTIC_RE, "ə$1ɹ$2");
-}
+// A de-rhoticizing rule used to sit here, splitting /ɝ/ before a stress
+// mark + vowel into /ə/ + onset /ɹ/ (operating ˈɑpɝˌeɪtɪŋ → ˈɑpəˌɹeɪtɪŋ).
+// The lexicon disagrees: 1659 dict entries spell that position /ɝ/ against
+// 101 that spell it /ə/+/ɹ/, so the split was mangling dict output as well
+// as the rule path (measured 360:9 strict on the rules-only dump). An
+// unstressed rhotic syllable before a stressed one keeps its r-colouring.
 
 // ─── Rule: FLEECE /i/ → NEAR /ɪ/ before a coda /ɹ/ ────────────────────────
 // General American has no /iːr/: near, dear, year, clear, fierce, weird all
@@ -363,7 +359,6 @@ export function applyPhonotactics(ipa: string, word?: string): string {
   cur = dropSilentH(cur);
   cur = normalizeStrut(cur, word);
   cur = laxFleeceBeforeCodaR(cur);
-  cur = deRhoticBeforeStress(cur);
   cur = coalesceUnstressedIR(cur);
   cur = tenseHiatusI(cur);
   cur = simplifyPluralAfterVowel(cur);

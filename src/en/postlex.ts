@@ -575,14 +575,25 @@ const LOAN_PENULT_RE = new RegExp(
   `ˈ([${IPA_C}]*)ɪ([${IPA_C.replace("ɹ", "")}])(oʊ|[əai])$`,
 );
 
+// Word-final <i> before a /ts/ or /sts/ cluster keeps /ɪ/ rather than the
+// bare schwa the bare stem carries: the lexicon writes credits ˈkɹɛdɪts
+// against credit ˈkɹɛdət, artists ˈɑɹtɪsts against artist ˈɑɹtəst
+// (-its 21 ɪ : 8 ə, -ists 30 : 14). The -s handlers inherit the stem's
+// vowel, so the raising has to happen on the joined form.
+const INFLECTED_ITS_ORTHO_RE = /i(?:st|t)s$/;
+const INFLECTED_ITS_RE = /ə(sts|ts)$/;
+
 /**
- * Stress-mark convention repair for the rule path, applied after
+ * Post-join repair for the rule and morphology paths, applied after
  * predictInternal inserts the primary mark: onset-maximize the mark
- * position, add suffix secondary stress, shift primary onto -ation.
+ * position, add suffix secondary stress, shift primary onto -ation, and
+ * fix the inflected -its/-ists vowel.
  */
 export function applyPostStress(ipa: string, word: string): string {
   let out = ipa;
   if (out.indexOf("ˈ") < 0) return out;
+  if (INFLECTED_ITS_ORTHO_RE.test(word))
+    out = out.replace(INFLECTED_ITS_RE, "ɪ$1");
   out = out.replace(ONSET_MAX_1_RE, (m, v, c) =>
     // Leave coalescing ɪɹ/əɹ pairs intact (→ ɝ in the phonotactic pass).
     c === "ɹ" && (v === "ɪ" || v === "ə") ? m : v + "ˈ" + c,
