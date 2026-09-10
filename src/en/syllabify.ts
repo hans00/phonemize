@@ -484,6 +484,14 @@ export function secondaryStressIndices(
 const FINAL_BEAT_RIME = /[aiouy][bcdfgkpstxz]$|e[bcdfgkptxz]$/;
 const SILENT_E_SLOT = /^[^aeiouy]*[^aeiouyl]e$/;
 
+// Word-final grams whose primary-stress slot, counted back from the last
+// slot, is near-categorical in data/en/dict.json. See the use site in
+// `assignStress` for the adoption test.
+const FINAL_GRAM_STRESS: Record<string, number> = {
+  ated: 3,
+  son: 2, ina: 1, ian: 1, ies: 2, ied: 2, day: 2,
+};
+
 // Improved stress assignment based on morphological and phonological rules
 export function assignStress(syllables: string[], word: string): number {
   if (syllables.length <= 1) return 0;
@@ -630,6 +638,20 @@ export function assignStress(syllables: string[], word: string): number {
     if (isLikelyCompound(lowerWord, syllables)) {
       return 0; // First syllable gets primary stress in compounds
     }
+
+    // The heaviness test below is close to a coin flip on this population
+    // (10587 of the 21827 dict words that reach it, against 9511 for a flat
+    // always-penult), so a word-final gram whose stress position is
+    // near-categorical is consulted first. Each entry is the distance of the
+    // primary from the LAST slot; every one has ≥20 dict words behind it,
+    // ≥75% agreement, and ≥3 top-5000 words agreeing too — that last test is
+    // what keeps surname endings (-nger, -rman, -wicz, -oski) out, since a
+    // gram carried only by names buys dictionary score and not English.
+    const gram =
+      FINAL_GRAM_STRESS[lowerWord.slice(-4)] ??
+      FINAL_GRAM_STRESS[lowerWord.slice(-3)];
+    if (gram !== undefined && syllables.length - 1 - gram >= 0)
+      return syllables.length - 1 - gram;
 
     const penult = syllables[syllables.length - 2];
     if (isSyllableHeavy(penult)) {

@@ -69,6 +69,20 @@ describe("a word-attaching prefix on a long stem leaves the stress in the stem",
   });
 });
 
+describe("a near-categorical word-final gram beats the heaviness fallback", () => {
+  // FINAL_GRAM_STRESS: the primary's distance from the last slot. Each gram
+  // has >=20 dict words, >=75% agreement, and >=3 agreeing top-5000 words.
+  it.each([
+    ["yesterday", "ˈjɛstɝdeɪ"],
+    ["anderson", "ˈændɝsən"],
+    ["jefferson", "ˈdʒɛfɝsən"],
+    ["albertson", "ˈæɫbɝtsən"],
+    ["ericsson", "ˈɛɹɪksən"],
+    ["christina", "kɹɪˈstinə"],
+    ["armenian", "ɑɹˈminiən"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
 describe("the prefix loop still owns three-syllable words", () => {
   // At three syllables "stress the root" beats the penult fallback for every
   // prefix in the list (1491/2394 vs 1217/2394 over the dict).
