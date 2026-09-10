@@ -482,6 +482,7 @@ export function secondaryStressIndices(
 }
 
 const FINAL_BEAT_RIME = /[aiouy][bcdfgkpstxz]$|e[bcdfgkptxz]$/;
+const FINAL_OBSTRUENT_E = /e[^aeiouylmnrwh]*[bcfgjkpqvz][^aeiouylmnrwh]*$|e[ln]d$/;
 const SILENT_E_SLOT = /^[^aeiouy]*[^aeiouyl]e$/;
 
 // Improved stress assignment based on morphological and phonological rules
@@ -1203,7 +1204,47 @@ export function syllableToIPA(
     }
   };
 
-  if (!isStressed && !isSecondary && !isLastSyllable)
+  // A word-initial unstressed syllable closed by a single consonant keeps its
+  // full vowel — the pretonic position English does not reduce (an·tenna,
+  // ad·mission, mag·netic, trans·mission, at·lanta, fan·tastic). The doubled
+  // consonant of an assimilated Latin prefix is the exception: there the
+  // syllable is the prefix itself and it does reduce (ac·cession, ap·peal,
+  // as·sail), so a coda letter repeated as the next syllable's onset is
+  // excluded. Counted over data/en/dict.json on exactly the frame below the
+  // lexicon has 633 æ (plus 55 ɔ from al-, which the ɔ row would flatten too)
+  // against 82 ə; the doubled half of the frame is only 203 æ : 167 ə, which
+  // is why it stays in the reduction path.
+  const initialClosedA =
+    syllableIndex === 0 &&
+    /^[^aeiouy]*a[^aeiouy]+$/.test(syllable) &&
+    syllable[syllable.length - 1] !== nextSyllable?.[0] &&
+    // Latin abs-/ads- before the /s/ onset is the one sub-frame with no
+    // majority — 7 æ (absentee, absolute) against 7 ə (absorbent, absurdity) —
+    // so it stays in the reduction path.
+    !(syllable.endsWith("b") && nextSyllable?.[0] === "s");
+
+  // Same frame for <e>, which raises to /ɪ/ rather than reducing to /ə/:
+  // sep·tember, bec·kerman, cen·tennial, en·tangle, em·bankment, del·gado.
+  // Here the doubled coda is the strongest half, not the weakest (ɛ 231 : ɪ 8),
+  // so it stays in. The one excluded coda is <x>, where the syllable is the
+  // ex- prefix and the lexicon splits by what follows it (ex·pand 57 ɪ : 26 ɛ,
+  // ex·ceed 30 : 28, ex·tant 46 ɛ : 22 ɪ) — 109 ɪ : 102 ɛ overall, no rule.
+  // The rest of the frame is 645 ɛ : 52 ɪ over data/en/dict.json. An onsetless
+  // <e> + sonorant before an /s/ onset is excluded as well: the aligned frame
+  // holds only 4 ɛ, with ensconce's ɪ falling outside it — too thin to
+  // override the raising.
+  const initialClosedE =
+    syllableIndex === 0 &&
+    /^[^aeiouy]*e[^aeiouyx]+$/.test(syllable) &&
+    !(/^e[lmnr]$/.test(syllable) && nextSyllable?.[0] === "s");
+
+  if (
+    !isStressed &&
+    !isSecondary &&
+    !isLastSyllable &&
+    !initialClosedA &&
+    !initialClosedE
+  )
     applyReduction(reduceTable("ɪ"));
 
   if (
@@ -1220,7 +1261,17 @@ export function syllableToIPA(
         prevSyllable ?? "",
       ) &&
       /[aeiouy][^aeiouylmnrw]+$/.test(syllable)
-    )
+    ) &&
+    // Independently of any prefix, a final <e> under an obstruent coda that is
+    // not the inflectional one keeps /ɛ/: as·pect, ac·cept, am·dek, bob·eck,
+    // ab·end, hirsch·feld. The coda has to carry a letter outside {d,s,t} —
+    // one built only from those is the -ed/-es/-est/-ness ending, where the
+    // same position is /ə/ or /ɪ/ (ab·led, ac·kles, aim·less, bas·ket) — or be
+    // the -eld/-end rime, which is 82 ɛ : 8 on its own. Over data/en/dict.json
+    // on exactly this frame the lexicon has 436 ɛ against 33 ə, and 125 ɪ that
+    // the reduction misses either way; on the subset the dict also leaves
+    // unstressed it is 157 ɛ : 32 ə : 124 ɪ.
+    !FINAL_OBSTRUENT_E.test(syllable)
   ) {
     if (!isSecondary) applyReduction(reduceTable("ə"));
     const lastIdx = phonemes.length - 1;
@@ -1298,16 +1349,11 @@ export function syllableToIPA(
         phonemes[i] = "ə";
     }
 
-    // Word-initial unstressed <e> closed by a sonorant keeps its full /ɛ/
-    // instead of raising to /ɪ/: embargo, endorse, enforce, ellington.
-    // The coda has to be a sonorant followed by another consonant — an
-    // open initial syllable reduces (election, eleven, erosion), and so
-    // does a sonorant followed by /t/ or /s/, where the lexicon splits the
-    // other way (entire, ensure). Counted over data/en/dict.json on exactly
-    // the frame the code tests — word-initial <e> + [lmnr] + a consonant
-    // other than t/s, first syllable unstressed — the lexicon has 185 ɛ
-    // against 103 ɪ; the change scores 64:10 strict on the rules-only
-    // win/loss harness.
+    // The same retention for an initial <e> the syllabifier left open, with
+    // the sonorant in the next onset (e|ncyclopedia, e|nzymatic): the closed
+    // spelling of this frame is handled before the reduction runs, so what
+    // reaches here is only the open split. A sonorant followed by /t/ or /s/
+    // is excluded — there the lexicon splits the other way (entire, ensconce).
     if (
       syllableIndex === 0 &&
       phonemes[0] === "ɪ" &&
