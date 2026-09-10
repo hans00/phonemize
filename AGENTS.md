@@ -34,13 +34,17 @@ The runtime path on real text is what users report against, so the goal is measu
 
 | Metric | Command | 2026-09-09 | Target |
 |---|---|---|---|
-| Runtime strict parity over dict | `yarn test:parity` | 89.54% → 90.52% | ≥ 92% |
-| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 91.20% | ≥ 93% |
-| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 73.13% | ≥ 75%, then back to the 86.998% baseline by rules alone |
-| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 65.32% | ≥ 70% |
-| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 47.27% | ≥ 50% |
+| Runtime strict parity over dict | `yarn test:parity` | 89.54% → 91.90% | ≥ 92% |
+| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 92.12% | ≥ 93% |
+| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 73.61% | ≥ 75%, then back to the 86.998% baseline by rules alone |
+| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 66.30% | ≥ 70% |
+| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 47.96% | ≥ 50% |
 
 Parallel worktree agents, one rule family each, merged sequentially, produced both passes: the first measured strict +1547/−308 on the rule path, the second (unstressed reduction, back vowels, tense i/e) a further +709/−179 with +68/−1 on the top-5000 list. A rule change is only visible to parity after `yarn build-dict` re-mines the table, so parity is judged after the rebuild, never in a worktree.
+
+The third pass (alternating secondary stress, `s`-voicing depth, unstressed rhotics) added strict +964/−102 on the rule path and found a shipped bug: `deRhoticBeforeStress` in phonotactics rewrote /ɝ/ to /ə/+/ɹ/ before a stressed vowel on BOTH paths, against a lexicon that spells that position /ɝ/ 1659:101. Removing it moved runtime parity +1.38 on its own. The lesson generalises: a phonotactics rule applies to dictionary output too, so it needs the same win/loss evidence as a rule-path rule, and none of that file's rules were measured that way.
+
+A rules-only prediction is NOT independent of the mined table: with `disableDict: true` the morphology handlers still look their stems up in it, so a test that pins a full IPA string for a derived word can move when `build-dict` re-mines. Pin the segment the rule owns instead.
 
 Diagnosis that fed the second pass: group the rules-only mismatches in `scripts/.common-accuracy-cache/rules-report.json` by their single-edit signature (normalise ɫ→l first, and drop the 36 closed-class function words, which are lexical by design). That ranks the remaining classes by how many common words each would fix.
 
