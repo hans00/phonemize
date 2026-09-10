@@ -628,9 +628,13 @@ export function syllableToIPA(
 ): string {
   const stepsStart = steps?.length ?? 0;
   let phonemes: string[] = [];
+  // Source grapheme of each emitted phoneme, kept parallel to `phonemes`
+  // so a reduction can key on the letter that produced a vowel.
+  const sources: string[] = [];
   let remaining = syllable;
   const emit = (grapheme: string, ipa: string, rule: string): void => {
     phonemes.push(ipa);
+    sources.push(grapheme);
     steps?.push({ grapheme, phoneme: ipa, rule });
   };
 
@@ -1009,6 +1013,49 @@ export function syllableToIPA(
       (phonemes[len - 2] === "ɔɹ" || phonemes[len - 2] === "ɑɹ")
     ) {
       phonemes[len - 2] = "ɝ";
+    }
+  }
+
+  // Unstressed <i>/<e> that still has a vowel group after it lowers to /ə/.
+  // Ratios come from aligning every dict word's orthographic vowel groups to
+  // its IPA nuclei (85.8k words align 1:1); the frames below are the ones
+  // that also measured net-positive on the rules-only win/loss harness.
+  // Each ratio below is counted over exactly the frame the code tests:
+  //   i before bl/pl/gr (accessible, principle, emigrant) 129 ə : 27 ɪ
+  //   i before a single t in a 4+-group word, next letters not "ti"
+  //     (ability, military, capacitance) 341 : 242 — the guard drops the
+  //     -itious/-iti- words, where the i is the stressed one
+  //   i two+ groups from the end of a 5+-group word before f/g/m/n/z
+  //     (organization, abomination, investigate) 236 : 93, per consonant
+  //     n 105 : 24, f 46 : 11, z 46 : 38, m 23 : 10, g 14 : 7; s is 2 : 3,
+  //     below the support floor, so it is left out
+  //   e two+ groups from the end, follow not r- or n+C (ceremony,
+  //     secretary, disintegrate) 474 : 174
+  // Everything else keeps ɪ: ng (0 ə : 532), sh, ck, k, ns, st, v, c, and an
+  // empty follow (-ial/-ion/-ious), where the ɪ feeds the later -i+vowel
+  // rules. A word-initial group also keeps it (invite, imagine, believe).
+  if (!isStressed) {
+    for (let i = 0; i < phonemes.length; i++) {
+      if (phonemes[i] !== "ɪ" || !/^[ie]$/.test(sources[i])) continue;
+      if (syllableIndex === 0 && !/[aeiouy]/.test(sources.slice(0, i).join("")))
+        continue;
+      const rest = sources.slice(i + 1).join("") + (tail ?? "");
+      const follow = rest.match(/^[^aeiouy]*/)![0];
+      if (follow.length === 0) continue;
+      const after = rest.slice(follow.length).match(/[aeiouy]+/g)?.length ?? 0;
+      if (sources[i] === "e") {
+        if (after >= 2 && !/^r|^n./.test(follow)) phonemes[i] = "ə";
+        continue;
+      }
+      // Vowel-group depth of the word, approximating one group per preceding
+      // syllable.
+      const groups = syllableIndex + 1 + after;
+      if (
+        /^(?:[bp]l|gr)$/.test(follow) ||
+        (follow === "t" && groups >= 4 && !/^ti/.test(rest)) ||
+        (after >= 2 && groups >= 5 && /^[fgmnz]$/.test(follow))
+      )
+        phonemes[i] = "ə";
     }
   }
 
