@@ -97,32 +97,9 @@ const COMPOUND_GEMINATE_RE = /([pbtdkɡfvszʃʒθðmnŋɫɹ])(ˌ?)\1/g;
 // Inseparable Latin/Anglo-Saxon prefixes: carry secondary stress, not primary.
 // Excludes compound-head prefixes (super-, hyper-, ultra-, inter-, multi-, etc.)
 // which keep primary stress on the leading element (ˈSUPERcar, ˈHYPERloop).
-const EN_PREFIXES = new Set([
-  "a",
-  "ab",
-  "ad",
-  "anti",
-  "be",
-  "com",
-  "con",
-  "contra",
-  "counter",
-  "de",
-  "dis",
-  "em",
-  "en",
-  "ex",
-  "il",
-  "im",
-  "in",
-  "ir",
-  "mis",
-  "non",
-  "pre",
-  "pro",
-  "re",
-  "un",
-]);
+const EN_PREFIXES = new Set(
+  "a ab ad anti be com con contra counter de dis em en ex il im in ir mis non pre pro re un".split(" "),
+);
 
 // --- EnglishG2P Class ---
 
@@ -135,6 +112,12 @@ const STRESS_PRIMARY = /ˈ/g;
 // Word-final doubled consonant whose single-consonant form is at least
 // four letters (Seann → sean, Jonn → jon). See geminateVariant for why
 // shorter stems are excluded.
+// Clitic spellings and the segment each appends to the stem; -'s takes
+// the plural allomorph instead of a fixed segment.
+const CLITICS: Record<string, string> = {
+  m: "m", ll: "l", ve: "v", d: "d", re: "ɝ", s: "", "": "",
+};
+
 const FINAL_GEMINATE_RE = /^[a-z]{3,}([bdfgklmnprstz])\1$/;
 
 /** The degeminated form of a word ending in a doubled consonant, else null. */
@@ -310,38 +293,16 @@ export class EnglishG2P implements LanguageProcessor {
     // every lookup and the rules mangle it (island's → /ɪˈsɫænds/,
     // I'm → /ɪm/, we'll → /wɛɫ/). The apostrophe (straight ' or curly ’)
     // must sit near the end, so word-internal ones (o'clock, y'all) are
-    // left for the normal path.
-    //   -'s → -s allomorph (possessive / is / has)   island's → …ndz
-    //   -'m → /m/ (am)        I'm   → /aɪm/
-    //   -'ll → /l/ (will)     we'll → /wil/
-    //   -'ve → /v/ (have)     I've  → /aɪv/
-    //   -'d → /d/ (would/had) I'd   → /aɪd/
-    //   -'re → /ɝ/ (are)      you're → /juɝ/
+    // left for the normal path. See CLITICS for the segments.
     const aposAt = lowerWord.search(/['’]/);
     if (aposAt > 0 && aposAt >= lowerWord.length - 3) {
       const tail = lowerWord.slice(aposAt + 1);
-      const stem = lowerWord.slice(0, aposAt);
-      const clitic =
-        tail === "m" ? "m" :
-        tail === "ll" ? "l" :
-        tail === "ve" ? "v" :
-        tail === "d" ? "d" :
-        tail === "re" ? "ɝ" :
-        undefined;
+      // A bare trailing apostrophe is the plural possessive (accountants',
+      // dogs'): the stem already carries its -s and nothing is added.
+      const clitic = CLITICS[tail];
       if (clitic !== undefined) {
-        const stemIpa = this.predict(stem, language, pos);
-        if (stemIpa) return stemIpa + clitic;
-      }
-      if (tail === "s") {
-        const stemIpa = this.predict(stem, language, pos);
-        if (stemIpa) return stemIpa + sAllomorph(stemIpa);
-      }
-      // Bare trailing apostrophe = plural possessive (accountants',
-      // dogs'): the stem already carries its plural -s, and the
-      // possessive adds no segment.
-      if (tail === "") {
-        const stemIpa = this.predict(stem, language, pos);
-        if (stemIpa) return stemIpa;
+        const stemIpa = this.predict(lowerWord.slice(0, aposAt), language, pos);
+        if (stemIpa) return stemIpa + (tail === "s" ? sAllomorph(stemIpa) : clitic);
       }
     }
 
@@ -401,6 +362,14 @@ export class EnglishG2P implements LanguageProcessor {
   public trace(word: string, language?: string, pos?: string): TraceResult {
     const lowerWord = word.toLowerCase();
     const ipa = this.predict(word, language, pos) ?? lowerWord;
+    // Every non-rule path reports the whole word as one step, named by
+    // the lookup that produced it.
+    const via = (path: TraceResult["path"], rule: string): TraceResult => ({
+      word,
+      ipa,
+      path,
+      steps: [{ grapheme: word, phoneme: ipa, rule }],
+    });
 
     if (!this.disableDict) {
       if (pos && Array.isArray(this.homographs[lowerWord])) {
@@ -409,43 +378,16 @@ export class EnglishG2P implements LanguageProcessor {
             this.matchPos(entry, pos),
           )
         )
-          return {
-            word,
-            ipa,
-            path: "dictionary",
-            steps: [{ grapheme: word, phoneme: ipa, rule: "homograph" }],
-          };
+          return via("dictionary", "homograph");
       }
-      if (this.customDict[lowerWord])
-        return {
-          word,
-          ipa,
-          path: "dictionary",
-          steps: [{ grapheme: word, phoneme: ipa, rule: "custom-dict" }],
-        };
+      if (this.customDict[lowerWord]) return via("dictionary", "custom-dict");
       if (this.dictionary[lowerWord] || INITIALISMS[lowerWord])
-        return {
-          word,
-          ipa,
-          path: "dictionary",
-          steps: [{ grapheme: word, phoneme: ipa, rule: "dict" }],
-        };
+        return via("dictionary", "dict");
       if (this.geminateVariant(lowerWord, pos))
-        return {
-          word,
-          ipa,
-          path: "dictionary",
-          steps: [{ grapheme: word, phoneme: ipa, rule: `geminate-stem:${geminateStem(lowerWord)}` }],
-        };
+        return via("dictionary", `geminate-stem:${geminateStem(lowerWord)}`);
     }
 
-    if (this.tryMorphologicalAnalysis(lowerWord))
-      return {
-        word,
-        ipa,
-        path: "morphology",
-        steps: [{ grapheme: word, phoneme: ipa, rule: "morphology" }],
-      };
+    if (this.tryMorphologicalAnalysis(lowerWord)) return via("morphology", "morphology");
 
     const decomp = this.tryDecomposition(lowerWord);
     if (decomp && decomp.length > 1) {
@@ -674,6 +616,12 @@ export class EnglishG2P implements LanguageProcessor {
 
   private tryMorphologicalAnalysis(word: string): string | undefined {
     const lowerWord = word.toLowerCase();
+    // A stripped base is read from the lexicon (never re-decomposed, or
+    // "chas" would morphologise to cha+s), and for most suffixes falls
+    // back to its whole-word prediction.
+    const lex = (b: string): string | undefined => this.wellKnown(b, undefined, true);
+    const stemPron = (b: string): string | undefined =>
+      lex(b) || this.predictInternal(b, undefined, false);
     const sPlural = (p: string): string => p + sAllomorph(p);
     const edPast = (p: string): string => {
       const last = p.slice(-1);
@@ -712,7 +660,7 @@ export class EnglishG2P implements LanguageProcessor {
       // word, not a re-decomposition. Without this, wellKnown("chas")
       // morphologises to "cha"+s → /tʃɑz/, intercepting the magic-e
       // recovery and yielding chased→/tʃɑzd/ instead of /tʃeɪst/.
-      const basePron = this.wellKnown(base, undefined, true);
+      const basePron = lex(base);
       if (basePron) return join(basePron);
       // Doubled-consonant base: the two chars before the suffix are
       // identical (stopped → stop, planned → plan).
@@ -862,18 +810,11 @@ export class EnglishG2P implements LanguageProcessor {
 
     if (lowerWord.endsWith("ally") && lowerWord.length > 6) {
       const base2 = lowerWord.slice(0, -2);
-      let basePron = this.wellKnown(base2, undefined, true);
       // -al adjectives the rules already handle (final, total, general)
       // are not in the lexicon; read them by rule before falling back to
       // the -ic stem of -ically words (basically, typically).
-      if (!basePron && !base2.endsWith("ical"))
-        basePron = this.predictInternal(base2, undefined, false);
-      if (!basePron) {
-        const base4 = lowerWord.slice(0, -4);
-        basePron =
-          this.wellKnown(base4, undefined, true) ||
-          this.predictInternal(base4, undefined, false);
-      }
+      let basePron = base2.endsWith("ical") ? lex(base2) : stemPron(base2);
+      if (!basePron) basePron = stemPron(lowerWord.slice(0, -4));
       if (basePron) {
         if (/[lɫ]$/.test(basePron)) return basePron + "i";
         return basePron.replace(/ə$/, "") + "əli";
@@ -890,46 +831,33 @@ export class EnglishG2P implements LanguageProcessor {
       // vowel+i so consonant+i roots (family, homily, happily, bodily) are
       // NOT mis-restored. Try the -y base first.
       if (/[aeiou]i$/.test(stem)) {
-        const yBase =
-          this.wellKnown(stem.slice(0, -1) + "y", undefined, true) ||
-          this.predictInternal(stem.slice(0, -1) + "y", undefined, false);
+        const yBase = stemPron(stem.slice(0, -1) + "y");
         if (yBase)
           return /[lɫ]$/.test(yBase) ? yBase + "i" : yBase + "li";
       }
-      const basePron =
-        this.wellKnown(stem, undefined, true) ||
-        this.predictInternal(stem, undefined, false);
+      const basePron = stemPron(stem);
       if (basePron)
         return /[lɫ]$/.test(basePron) ? basePron + "i" : basePron + "li";
     }
 
-    if (lowerWord.endsWith("able") && lowerWord.length > 6) {
-      let base = lowerWord.slice(0, -4);
-      if (!/[aeiour]$/.test(base) && !this.wellKnown(base, undefined, true)) {
-        const m = this.wellKnown(base + "e", undefined, true);
-        if (m) return m.replace(/ə$/, "") + "əbəl";
-      } // magic-e: advisable→advise
-      let basePron =
-        this.wellKnown(base, undefined, true) ||
-        this.predictInternal(base, undefined, false);
-      if (basePron) return basePron.replace(/ə$/, "") + "əbəl";
-      base = lowerWord.slice(0, -3);
-      basePron =
-        this.wellKnown(base, undefined, true) ||
-        this.predictInternal(base, undefined, false);
-      if (basePron) return basePron + "əbəl";
-    }
-
-    // -ible magic-e derivations (reproducible→reproduce, reducible→reduce,
-    // responsible→response). Require a LONG base (≥5) so short coincidental
-    // stems (poss→posse, vis→vise, leg→lege) don't misfire — those roots
-    // (possible, visible, legible) stay on the normal path — and require
-    // the +e stem to be a real known word.
-    if (lowerWord.endsWith("ible") && lowerWord.length > 7) {
+    // -able/-ible: magic-e derivation first (advisable→advise,
+    // reproducible→reproduce), then the bare base. -ible needs a LONG
+    // base (≥5) so short coincidental stems (poss→posse, vis→vise,
+    // leg→lege) don't misfire — possible/visible/legible stay on the
+    // normal path.
+    const able = lowerWord.endsWith("able") && lowerWord.length > 6;
+    const ible = lowerWord.endsWith("ible") && lowerWord.length > 7;
+    if (able || ible) {
       const base = lowerWord.slice(0, -4);
-      if (base.length >= 5 && !/[aeiour]$/.test(base) && !this.wellKnown(base, undefined, true)) {
-        const m = this.wellKnown(base + "e", undefined, true);
+      if ((able || base.length >= 5) && !/[aeiour]$/.test(base) && !lex(base)) {
+        const m = lex(base + "e");
         if (m) return m.replace(/ə$/, "") + "əbəl";
+      }
+      if (able) {
+        const bare = stemPron(base);
+        if (bare) return bare.replace(/ə$/, "") + "əbəl";
+        const short = stemPron(lowerWord.slice(0, -3));
+        if (short) return short + "əbəl";
       }
     }
 
@@ -937,18 +865,19 @@ export class EnglishG2P implements LanguageProcessor {
     // primary stress onto its own /ˈzeɪʃən/; the stem's former primary
     // demotes to secondary, and the -ize /aɪz/ becomes /əˈzeɪʃən/.
     if (lowerWord.endsWith("ization") && lowerWord.length > 9) {
-      const bp = this.wellKnown(lowerWord.slice(0, -7) + "ize", undefined, true);
-      if (bp && /aɪz$/.test(bp))
-        // demote the stem's primary to secondary, then turn the -ize
-        // syllable (its onset's secondary mark + /aɪz/) into unstressed
-        // /əˈzeɪʃən/ — the suffix carries the new primary.
-        return bp.replace(/[ˈˌ]/g, "ˌ").replace(/ˌ?([^ˈˌ]*)aɪz$/, "$1əˈzeɪʃən");
+      const stem = lowerWord.slice(0, -7);
+      const ize = lex(stem + "ize");
+      // demote the stem's primary to secondary, then turn the -ize
+      // syllable (its onset's secondary mark + /aɪz/) into unstressed
+      // /əˈzeɪʃən/ — the suffix carries the new primary.
+      if (ize && /aɪz$/.test(ize))
+        return ize.replace(/[ˈˌ]/g, "ˌ").replace(/ˌ?([^ˈˌ]*)aɪz$/, "$1əˈzeɪʃən");
+      const b = lex(stem);
+      if (b) return b.replace(/ˈ/g, "ˌ") + "əˌzeɪʃən";
     }
 
     if (lowerWord.endsWith("logy") && lowerWord.length > 6) {
-      const bp =
-        this.wellKnown(lowerWord.slice(0, -4), undefined, true) ||
-        this.predictInternal(lowerWord.slice(0, -4), undefined, false);
+      const bp = stemPron(lowerWord.slice(0, -4));
       if (bp)
         return lowerWord.slice(-5, -4) === "o"
           ? bp.replace(/ˈ/g, "ˌ").replace(/oʊ$/, "").replace(/[ˈˌ]$/, "") +
@@ -960,20 +889,13 @@ export class EnglishG2P implements LanguageProcessor {
         (!lowerWord.endsWith("stial") && lowerWord.endsWith("tial"))) &&
       lowerWord.length > 5
     ) {
-      const bp = lowerWord.slice(0, -4),
-        pp =
-          this.wellKnown(bp, undefined, true) ||
-          this.predictInternal(bp, undefined, false);
+      const pp = stemPron(lowerWord.slice(0, -4));
       if (pp && /[aeiouæɑɔɛɪʊʌɝə]/.test(pp)) return pp + "ʃəl";
-    }
-    if (lowerWord.endsWith("ization") && lowerWord.length > 9) {
-      const b = this.wellKnown(lowerWord.slice(0, -7), undefined, true);
-      if (b) return b.replace(/ˈ/g, "ˌ") + "əˌzeɪʃən";
     }
     if (lowerWord.endsWith("ation") && lowerWord.length > 7) {
       const b = lowerWord.slice(0, -5),
-        ate = this.wellKnown(b + "ate", undefined, true),
-        src = this.wellKnown(b, undefined, true);
+        ate = lex(b + "ate"),
+        src = lex(b);
       if (ate)
         return (
           (ate.match(/eɪt$/) ? ate.slice(0, -1) : ate.replace(/[ɪə]t$/, "eɪ")) +
@@ -987,13 +909,9 @@ export class EnglishG2P implements LanguageProcessor {
     ) {
       const b = lowerWord.slice(0, -4),
         p =
-          this.wellKnown(b, undefined, true) ||
-          (b.endsWith("i")
-            ? this.wellKnown(b.slice(0, -1) + "y", undefined, true)
-            : undefined) ||
-          (!b.endsWith("id")
-            ? this.wellKnown(b + "e", undefined, true)
-            : undefined);
+          lex(b) ||
+          (b.endsWith("i") ? lex(b.slice(0, -1) + "y") : undefined) ||
+          (b.endsWith("id") ? undefined : lex(b + "e"));
       if (p) return p + "əns";
     }
     if (
@@ -1002,10 +920,7 @@ export class EnglishG2P implements LanguageProcessor {
       lowerWord.length > 5 &&
       !(lowerWord.endsWith("tual") && lowerWord.length > 6)
     ) {
-      const b = lowerWord.slice(0, -3),
-        p =
-          this.wellKnown(b, undefined, true) ||
-          this.predictInternal(b, undefined, false);
+      const p = stemPron(lowerWord.slice(0, -3));
       if (p) return p.replace(/[uʊ]$/, "") + "uəl";
     }
     for (const [sfx, ipa] of [
@@ -1031,12 +946,9 @@ export class EnglishG2P implements LanguageProcessor {
       // Stripping a vowel-initial -al from an unknown one-syllable base
       // closes its syllable (fi|nal → fin, to|tal → tot) and loses the
       // tense vowel; leave those to the whole-word rule path.
-      if (sfx === "al" && /^[^aeiouy]*[aeiouy]+[^aeiouy]+$/.test(b) &&
-          !this.wellKnown(b, undefined, true))
+      if (sfx === "al" && /^[^aeiouy]*[aeiouy]+[^aeiouy]+$/.test(b) && !lex(b))
         continue;
-      const p =
-          this.wellKnown(b, undefined, true) ||
-          this.predictInternal(b, undefined, false);
+      const p = stemPron(b);
       if (p) return softenBaseFinal(p, b, sfx) + ipa;
     }
 

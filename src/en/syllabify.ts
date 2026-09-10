@@ -12,73 +12,9 @@ const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
 const CONSONANTS = new Set("bcdfghjklmnpqrstvwxyz".split(""));
 
 // Valid English onsets (consonant clusters that can start a syllable)
-const VALID_ONSETS = new Set([
-  "b",
-  "bl",
-  "br",
-  "c",
-  "ch",
-  "cl",
-  "cr",
-  "d",
-  "dr",
-  "dw",
-  "f",
-  "fl",
-  "fr",
-  "g",
-  "gl",
-  "gr",
-  "gu",
-  "h",
-  "j",
-  "k",
-  "kl",
-  "kn",
-  "kr",
-  "l",
-  "m",
-  "n",
-  "p",
-  "ph",
-  "pl",
-  "pr",
-  "ps",
-  "q",
-  "qu",
-  "r",
-  "rh",
-  "s",
-  "sc",
-  "sch",
-  "scr",
-  "sh",
-  "sk",
-  "sl",
-  "sm",
-  "sn",
-  "sp",
-  "sph",
-  "spl",
-  "spr",
-  "st",
-  "str",
-  "sv",
-  "sw",
-  "t",
-  "th",
-  "thr",
-  "tr",
-  "ts",
-  "tw",
-  "v",
-  "w",
-  "wh",
-  "wr",
-  "x",
-  "y",
-  "z",
-]);
+const VALID_ONSETS = new Set(
+  "b bl br c ch cl cr d dr dw f fl fr g gl gr gu h j k kl kn kr l m n p ph pl pr ps q qu r rh s sc sch scr sh sk sl sm sn sp sph spl spr st str sv sw t th thr tr ts tw v w wh wr x y z".split(" "),
+);
 
 // --- Phoneme Rules ---
 
@@ -453,30 +389,18 @@ export function syllabify(word: string): string[] {
     }
   }
 
-  // Post-processing: r-controlled magic-e rimes. Maximal-onset syllabifies
-  // "fire" as ["fi", "re"] because the lone consonant 'r' starts a new
-  // onset; but linguistically -Vre is one r-controlled rime, and the
-  // ^are/^ire/^ore/^ure/^ere rules in PHONEME_RULES need to see the
-  // full pattern in one syllable. Merge when the last syllable is "re"
-  // and the previous ends with a vowel.
-  if (syllables.length > 1 && syllables[syllables.length - 1] === "re") {
+  // Post-processing: -Vre and -Vle magic-e rimes. Maximal onset splits
+  // "fire" as ["fi", "re"] and "hole" as ["ho", "le"] because the lone
+  // consonant starts a new onset, but each is one rime: the ^are/^ire/
+  // ^ore/^ure/^ere rules need the whole pattern in one syllable, and the
+  // 'l' of -Vle is a plain consonant, not the syllabic -Cle. Merge only
+  // after a vowel, so syllabic "ble/ple/tle" (3+ chars) is unaffected.
+  const last = syllables[syllables.length - 1];
+  if (syllables.length > 1 && (last === "re" || last === "le")) {
     const prev = syllables[syllables.length - 2];
     if (prev && VOWELS.has(prev[prev.length - 1])) {
       syllables.pop();
-      syllables[syllables.length - 1] += "re";
-    }
-  }
-
-  // Post-processing: vowel-l-e magic-e rime. Maximal-onset splits "hole"
-  // as ["ho", "le"], but the 'le' here is magic-e (the 'l' is a normal
-  // consonant, not syllabic), not the syllabic-L pattern (-Cle).
-  // Merge when last syllable is "le" and the previous syllable ends in a vowel.
-  // (Syllabic-L syllables "ble/ple/tle" are 3+ chars and are unaffected.)
-  if (syllables.length > 1 && syllables[syllables.length - 1] === "le") {
-    const prev = syllables[syllables.length - 2];
-    if (prev && VOWELS.has(prev[prev.length - 1])) {
-      syllables.pop();
-      syllables[syllables.length - 1] += "le";
+      syllables[syllables.length - 1] += last;
     }
   }
 
@@ -558,13 +482,14 @@ export function assignStress(syllables: string[], word: string): number {
     "ab", "ad", "con", "com", "de", "dis", "ex", "in", "mis",
     "ob", "out", "pre", "pro", "re", "sub", "un", "under",
   ];
-  for (const prefix of unstressedPrefixes) {
-    if (!lowerWord.startsWith(prefix) || syllables.length <= 2) continue;
-    const next = lowerWord[prefix.length];
-    const last = prefix[prefix.length - 1];
-    if (next === last) continue; // doubled boundary → single morpheme
-    return 1; // Stress usually falls on the root, not the prefix
-  }
+  // A doubled consonant at the boundary (abbey, adder, common) means one
+  // morpheme, not prefix + root.
+  const isPrefix = (prefix: string): boolean =>
+    lowerWord[prefix.length] !== prefix[prefix.length - 1];
+  for (const prefix of unstressedPrefixes)
+    // Stress falls on the root, not the prefix.
+    if (lowerWord.startsWith(prefix) && syllables.length > 2 && isPrefix(prefix))
+      return 1;
 
   // For 2-syllable words, generally stress the first syllable unless
   // it's a weak Latin/Anglo-Saxon prefix on a productive root. Two
@@ -586,13 +511,7 @@ export function assignStress(syllables: string[], word: string): number {
     const PREFIXES_2SYL = [
       "be", "com", "de", "dis", "ex", "ob", "pre", "pro", "re", "sub", "un",
     ];
-    for (const prefix of PREFIXES_2SYL) {
-      if (firstSyl !== prefix) continue;
-      const next = lowerWord[prefix.length];
-      const last = prefix[prefix.length - 1];
-      if (next === last) break; // doubled consonant → not a prefix
-      return 1;
-    }
+    if (PREFIXES_2SYL.includes(firstSyl)) return isPrefix(firstSyl) ? 1 : 0;
     return 0;
   }
 
@@ -614,34 +533,18 @@ export function assignStress(syllables: string[], word: string): number {
   return 0; // Default fallback
 }
 
+// Vowel digraphs that make a syllable heavy (long nucleus).
+const VOWEL_DIGRAPHS = "aa ai au aw ay ea ee ei eu ey ie oa oo ou ow oy ue ui".split(" ");
+
 export function isSyllableHeavy(syllable: string): boolean {
   // A syllable is heavy if it has:
   // 1. A long vowel (vowel digraph)
   // 2. A vowel followed by two or more consonants
   // 3. Ends in a consonant (closed syllable)
 
-  const vowelDigraphs = [
-    "aa",
-    "ai",
-    "au",
-    "aw",
-    "ay",
-    "ea",
-    "ee",
-    "ei",
-    "eu",
-    "ey",
-    "ie",
-    "oa",
-    "oo",
-    "ou",
-    "ow",
-    "oy",
-    "ue",
-    "ui",
-  ];
+;
 
-  for (const digraph of vowelDigraphs) {
+  for (const digraph of VOWEL_DIGRAPHS) {
     if (syllable.includes(digraph)) return true;
   }
 
@@ -661,27 +564,19 @@ export function isSyllableHeavy(syllable: string): boolean {
   return consonantCount >= 1; // Closed syllable
 }
 
+// Second elements that mark a compound (worldwide, homeland, network,
+// highway, forward, outside, somewhere), the over- prefix, and the
+// Germanic -berg/-burg name elements. "hundred" is unanchored: it is
+// almost always compounded (two hundred, hundredth).
+const COMPOUND_RE =
+  /\w{4,}wide$|\w{3,}(?:land|work|time|way|ward|side|where|berg|burg)$|hundred|^over[a-z]{2,}/;
+
 export function isLikelyCompound(word: string, syllables: string[]): boolean {
   // Detect potential compound words based on patterns
   if (syllables.length < 2) return false;
 
   // Common compound patterns
-  const compoundPatterns = [
-    /\w{4,}wide$/, // worldwide, nationwide
-    /\w{3,}land$/, // homeland, woodland
-    /\w{3,}work$/, // homework, network
-    /\w{3,}time$/, // sometime, longtime
-    /\w{3,}way$/, // highway, railway
-    /\w{3,}ward$/, // forward, backward
-    /hundred/, // hundred (often in compounds)
-    /\w{3,}side$/, // outside, inside
-    /\w{3,}where$/, // somewhere, anywhere
-    /^over[a-z]{2,}/, // overboard, overlay, overbuilt (over- prefix compounds)
-    /\w{3,}berg$/, // goldberg, sandberg, gutenberg (Germanic -berg compounds)
-    /\w{3,}burg$/, // hamburg, salzburg, gettysburg (Germanic -burg compounds)
-  ];
-
-  return compoundPatterns.some((pattern) => pattern.test(word));
+  return COMPOUND_RE.test(word);
 }
 
 // Long u is /ju/ (music, cute, few, use) except after a coronal or liquid
@@ -707,6 +602,18 @@ const TENSE_ENDINGS =
   /^[^aeiouy]+(?:e[rdsn]|ers|est|ing|ings|or|ors|al|als|ent|ents|ant|ants|us|is|ix)$/;
 
 // Enhanced syllable to IPA conversion with stress-sensitive vowel reduction
+// Suffixes that only spell a suffix at the end of the word
+// (legionnaire/album/algebra keep the plain letter values) and ones that
+// are never word-initial (a lone "lion"/"ford"/"ward" is the noun).
+const FINAL_ONLY_SUFFIXES = new Set(
+  "^le$ ^cle$ ^twood$ ^al$ ^que$ ^sten$ ^[cs]e$ ^ge$ ^ty$ ^ly$".split(" "),
+);
+const NON_INITIAL_SUFFIXES = new Set("^lion$ ^scien$ ^ford$ ^ward$".split(" "));
+
+const reduceTable = (eps: string): Record<string, string> => ({
+  ɑɹ: "ɑɹ", ɔɹ: "ɔɹ", ɔɪ: "ɔɪ", æ: "ə", ɛ: eps, ɑ: "ə", ʌ: "ə", ɔ: "ə",
+});
+
 export function syllableToIPA(
   syllable: string,
   syllableIndex: number,
@@ -722,6 +629,10 @@ export function syllableToIPA(
   const stepsStart = steps?.length ?? 0;
   let phonemes: string[] = [];
   let remaining = syllable;
+  const emit = (grapheme: string, ipa: string, rule: string): void => {
+    phonemes.push(ipa);
+    steps?.push({ grapheme, phoneme: ipa, rule });
+  };
 
   // Check for suffix rules first
   // belle→bel|le double-l split: /l/ so post-dedup collapses to bɛl.
@@ -736,32 +647,11 @@ export function syllableToIPA(
   )
     return "z";
   for (const [pattern, ipa] of SUFFIX_RULES) {
-    // Word-final-only suffixes: skip on non-final syllables (legionnaire/album/algebra).
-    if (
-      (pattern.source === "^le$" ||
-        pattern.source === "^cle$" ||
-        pattern.source === "^twood$" ||
-        pattern.source === "^al$" ||
-        pattern.source === "^que$" ||
-        pattern.source === "^sten$" ||
-        pattern.source === "^[cs]e$" ||
-        pattern.source === "^ge$" ||
-        pattern.source === "^ty$" ||
-        pattern.source === "^ly$") &&
-      !isLastSyllable
-    )
-      continue;
-    if (pattern.source === "^sto$" && nextSyllable !== "ne") continue;
-    if (
-      (pattern.source === "^lion$" ||
-        pattern.source === "^scien$" ||
-        pattern.source === "^ford$" ||
-        pattern.source === "^ward$") &&
-      syllableIndex === 0
-    )
-      continue;
-    if (pattern.source === "^the$" && (syllableIndex === 0 || !isLastSyllable))
-      continue;
+    const src = pattern.source;
+    if (!isLastSyllable && FINAL_ONLY_SUFFIXES.has(src)) continue;
+    if (NON_INITIAL_SUFFIXES.has(src) && syllableIndex === 0) continue;
+    if (src === "^sto$" && nextSyllable !== "ne") continue;
+    if (src === "^the$" && (syllableIndex === 0 || !isLastSyllable)) continue;
     if (remaining.match(pattern)) {
       steps?.push({
         grapheme: remaining,
@@ -798,17 +688,7 @@ export function syllableToIPA(
     isLastSyllable &&
     syllable.length > 1 &&
     syllable.endsWith("e") &&
-    !syllable.endsWith("ee") &&
-    !/[^aeiou]le$/.test(syllable) &&
-    !syllable.endsWith("he") &&
-    !syllable.endsWith("tte") &&
-    !syllable.endsWith("ght") &&
-    !syllable.endsWith("se") &&
-    !syllable.endsWith("are") &&
-    !syllable.endsWith("ere") &&
-    !syllable.endsWith("ire") &&
-    !syllable.endsWith("ore") &&
-    !syllable.endsWith("ure") &&
+    !/(?:ee|[^aeiou]le|he|tte|se|[aeiou]re)$/.test(syllable) &&
     CONSONANTS.has(syllable[syllable.length - 2]) &&
     // be/me/we: in a one-syllable word the e is the nucleus, not silent
     (syllableIndex > 0 || /[aeiouy]/.test(syllable.slice(0, -1)));
@@ -873,8 +753,7 @@ export function syllableToIPA(
       isLastSyllable &&
       /[iɝ]$/.test(phonemes[phonemes.length - 1])
     ) {
-      phonemes.push("z");
-      steps?.push({ grapheme: "s", phoneme: "z", rule: "phoneme:^s" });
+      emit("s", "z", "phoneme:^s");
       break;
     }
     // s after an unstressed Latin re-/de-/pre- prefix voices (result,
@@ -884,8 +763,7 @@ export function syllableToIPA(
       /^p?re$/.test(prevSyllable ?? "") &&
       /^s[aeiouy]/.test(remaining)
     ) {
-      phonemes.push("z");
-      steps?.push({ grapheme: "s", phoneme: "z", rule: "phoneme:prefix-s" });
+      emit("s", "z", "phoneme:prefix-s");
       remaining = remaining.substring(1);
       continue;
     }
@@ -898,8 +776,7 @@ export function syllableToIPA(
       !syllable.includes("ss") &&
       /[iɪeɛæɑɔoʊuʌəɝ]$/.test(phonemes[phonemes.length - 1] ?? "")
     ) {
-      phonemes.push("z");
-      steps?.push({ grapheme: "s", phoneme: "z", rule: "phoneme:^s(?=y$)" });
+      emit("s", "z", "phoneme:^s(?=y$)");
       remaining = "y";
       continue;
     }
@@ -908,8 +785,7 @@ export function syllableToIPA(
       phonemes.length > 0 &&
       /[iɪuʊɛæɑɔʌəɝ]$/.test(phonemes[phonemes.length - 1])
     ) {
-      phonemes.push("l");
-      steps?.push({ grapheme: "le", phoneme: "l", rule: "phoneme:le" });
+      emit("le", "l", "phoneme:le");
       break;
     }
     // Long-u spellings whose yod depends on the onset (see longU):
@@ -927,14 +803,12 @@ export function syllableToIPA(
       !(remaining === "gue" && isLastSyllable) &&
       !(phonemes.length === 0 && prevSyllable?.endsWith("n"))
     ) {
-      phonemes.push("ɡ");
-      steps?.push({ grapheme: "gu", phoneme: "ɡ", rule: "phoneme:^gu(?=[ei])" });
+      emit("gu", "ɡ", "phoneme:^gu(?=[ei])");
       remaining = remaining.substring(2);
       continue;
     }
     if (remaining === "y" && triLaxY) {
-      phonemes.push("ɪ");
-      steps?.push({ grapheme: "y", phoneme: "ɪ", rule: "phoneme:^y$-lax" });
+      emit("y", "ɪ", "phoneme:^y$-lax");
       break;
     }
     if (
@@ -943,9 +817,7 @@ export function syllableToIPA(
         (!isLastSyllable && !endsWithSilentE && (isStressed || onset === undefined) &&
           !nextIsLaxCluster))
     ) {
-      const ipa = longU(onset, nextSyllable?.startsWith("r"));
-      phonemes.push(ipa);
-      steps?.push({ grapheme: "u", phoneme: ipa, rule: "phoneme:^u$" });
+      emit("u", longU(onset, nextSyllable?.startsWith("r")), "phoneme:^u$");
       break;
     }
     if (
@@ -961,18 +833,12 @@ export function syllableToIPA(
           ipa = "u";
         } else if (/^[ln]$/.test(onset)) ipa = "ju";
       }
-      phonemes.push(ipa);
-      steps?.push({ grapheme: remaining.slice(0, 2), phoneme: ipa, rule: `phoneme:^${remaining.slice(0, 2)}` });
+      emit(remaining.slice(0, 2), ipa, `phoneme:^${remaining.slice(0, 2)}`);
       remaining = remaining.substring(2);
       continue;
     }
     if (remaining === "the" && phonemes.length > 0) {
-      phonemes.push("ð");
-      steps?.push({
-        grapheme: "the",
-        phoneme: "ð",
-        rule: "phoneme:the-final",
-      });
+      emit("the", "ð", "phoneme:the-final");
       break;
     }
     // Precompute the set of pattern sources to skip for this syllable
@@ -1067,12 +933,7 @@ export function syllableToIPA(
           !(pattern.source === "^ure$" && /[td]$/.test(onset ?? ""))
         )
           ipa = ipa.slice(1);
-        phonemes.push(ipa);
-        steps?.push({
-          grapheme: match[0],
-          phoneme: ipa,
-          rule: `phoneme:${pattern.source}`,
-        });
+        emit(match[0], ipa, `phoneme:${pattern.source}`);
         remaining = remaining.substring(match[0].length);
         matchFound = true;
         break;
@@ -1086,6 +947,8 @@ export function syllableToIPA(
 
   // Unstressed-vowel reduction; startsWith handles rime-conditioned composites ("ɔl", "aɪnd", …).
   // Applies at all positions including position-0 (about/today/potato).
+  // The ɑɹ/ɔɹ/ɔɪ rows are identity guards so the bare ɑ/ɔ rows below them
+  // can't strip the r/glide off a composite rime.
   const applyReduction = (table: Record<string, string>) => {
     for (let i = 0; i < phonemes.length; i++) {
       for (const from of Object.keys(table)) {
@@ -1097,18 +960,7 @@ export function syllableToIPA(
     }
   };
 
-  if (!isStressed && !isLastSyllable) {
-    applyReduction({
-      ɑɹ: "ɑɹ",
-      ɔɹ: "ɔɹ",
-      ɔɪ: "ɔɪ",
-      æ: "ə",
-      ɛ: "ɪ",
-      ɑ: "ə",
-      ʌ: "ə",
-      ɔ: "ə",
-    });
-  }
+  if (!isStressed && !isLastSyllable) applyReduction(reduceTable("ɪ"));
 
   if (
     !isStressed &&
@@ -1126,16 +978,7 @@ export function syllableToIPA(
       /[aeiouy][^aeiouylmnrw]+$/.test(syllable)
     )
   ) {
-    applyReduction({
-      ɑɹ: "ɑɹ",
-      ɔɹ: "ɔɹ",
-      ɔɪ: "ɔɪ",
-      æ: "ə",
-      ɛ: "ə",
-      ɑ: "ə",
-      ʌ: "ə",
-      ɔ: "ə",
-    });
+    applyReduction(reduceTable("ə"));
     const lastIdx = phonemes.length - 1;
     if (
       lastIdx >= 0 &&
