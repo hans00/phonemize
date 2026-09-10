@@ -934,7 +934,19 @@ export function syllableToIPA(
       nextSyllable === "tion" || nextSyllable === "sion" ||
       (syllableIndex === 0 && !isStressed && !isLastSyllable && /^p?re$/.test(syllable)) ||
       (isStressed && !nextIsLaxCluster && /^[^aeiouy]*e$/.test(syllable) &&
-        /^[^aeiouyr]+i[aeou][a-z]/.test(nextSyllable ?? ""));
+        /^[^aeiouyr]+i[aeou][a-z]/.test(nextSyllable ?? "")) ||
+      // The two-syllable magic-e frame that already tenses a and i, for
+      // the subset of inflection endings where the dict backs it (i : ɛ):
+      // -es 18:5 (thebes, ceres, feces), -us 14:6 (fetus, genus, jesus),
+      // -al 11:6 (legal, penal, renal), -ing 8:3 (ceding), -ed 4:1,
+      // -est 2:2. The endings left out measure even or negative and are
+      // deliberately excluded: -er is 44:35 but costs ever/never/clever/
+      // lever, -en 14:16 (seven), -is 6:15, -ent 7:10, -or 1:15, -ant 1:4.
+      // Within the subset, a t/d before -al is lax (metal, medal, pedal,
+      // petal 5 ɛ : 1) and so is an r-initial ending (feral, cerus); the
+      // onset must be a single consonant, the shape of an open syllable.
+      (twoSylTense && /^[^aeiouy]*e$/.test(syllable) &&
+        /^(?:[^aeiouyrtd]als?|[^aeiouyr](?:es|us|ing|ed|est))$/.test(nextSyllable!));
     if (!eFire) skip.add("^e$");
     if (syllableIndex === 0 || isStressed) skip.add("^tur$");
     if (isLastSyllable || !nextSyllable?.startsWith("st")) skip.add("^y(?=$)");
