@@ -305,3 +305,49 @@ the CJS bundle's output, and all 5,000 common-word predictions match between
 source and bundle. Two full dictionary builds reproduced identical exception,
 initialism and compound-part hashes. No expected IPA in existing tests was
 changed during this article-improvement round.
+
+## 9. Rule-path improvement rounds (2026-09-09 / 09-10)
+
+Two bug reports against v2.0.x (#27 `wind`/`solutions`, #28 `Seann`) were
+failures of the shipped *composition* — exception table, morphology,
+fallbacks, rules — not of the rule tables the older `yarn test:eval` score
+measures. Two gates were added to make that path visible:
+
+- `yarn test:parity` (`scripts/evaluate-parity.ts`) scores the default
+  `EnglishG2P` over every dictionary word and exits non-zero when strict
+  parity drops. A rule change only reaches this number after
+  `yarn build-dict` re-mines the exception table, so parity is judged after
+  a rebuild, never inside a worktree.
+- `yarn rule-diff` (`scripts/rule-diff.ts`) dumps the rules-only prediction
+  for every dictionary word and reports the win/loss list between two dumps,
+  split by strict, lenient, and top-5,000 frequency. A candidate rule is
+  adopted only when strict wins exceed strict losses **and** it does not lose
+  ground on the top-5,000 list.
+
+Every rule below was adopted on that measured basis, in families rather than
+per word: onset-conditioned long `u` (music/tune), `y` as a syllable nucleus
+(system), tense vowels in two-syllable words with an inflection-shaped second
+syllable (paper/taken), trisyllabic laxing (policy/comedy), the Greek/Latin
+`th` split (author vs other), `s`-voicing frames (cause/easy), `/hw/`
+(what/which), `n` before a velar across a prefix boundary (include), initial
+`ex` + vowel → /ɡz/ (example), stress on two-syllable Latin prefixes
+(contact/index), and word-final suffix reduction (balance/audience/figure).
+
+| Metric | 2026-09-08 | 2026-09-10 |
+|---|---:|---:|
+| Runtime strict parity over the dictionary | 89.54% | **90.42%** |
+| Top-5,000 segment accuracy (default) | 90.74% | **90.92%** |
+| Top-5,000 segment accuracy (`--rules`) | 60.98% | **63.98%** |
+| Whole-dictionary lenient rule accuracy | 71.48% | **72.99%** |
+| `evaluate-strict` en-US phonemic headline | 43.85% | **46.85%** |
+| Jest tests | 335 | **518** |
+
+The historical 86.998% whole-dictionary lenient baseline is unchanged and
+still not met. It was reached with mined stress/vowel n-gram tables that the
+build pipeline no longer runs, because AI-judged evaluation showed they
+scored dictionary match while hurting pronunciation quality. It is kept as
+the target for the rule path to recover on its own.
+
+The rule modules were then compressed back from 2,930 to 2,685 lines, gated
+by `scripts/snapshot-dump.ts`: an empty diff over 1,297,074 predictions, so
+both eval scores are frozen by construction.
