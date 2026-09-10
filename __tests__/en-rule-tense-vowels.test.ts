@@ -72,7 +72,7 @@ describe("i is tense before a single-consonant coda plus syllabic -le", () => {
     ["title", "ˈtaɪtəɫ"],
     ["idle", "ˈaɪdəɫ"],
     ["bridle", "ˈbɹaɪdəɫ"],
-    ["entitle", "ɪnˈtaɪtəɫ"],
+    ["entitle", "ɛnˈtaɪtəɫ"], // the dict's own reading; the rules now match it
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 
   it("keeps a doubled coda lax", () => {

@@ -1230,9 +1230,9 @@ export function syllableToIPA(
   // ex- prefix and the lexicon splits by what follows it (ex·pand 57 ɪ : 26 ɛ,
   // ex·ceed 30 : 28, ex·tant 46 ɛ : 22 ɪ) — 109 ɪ : 102 ɛ overall, no rule.
   // The rest of the frame is 645 ɛ : 52 ɪ over data/en/dict.json. An onsetless
-  // <e> + sonorant before an /s/ onset is excluded as well: the aligned frame
-  // holds only 4 ɛ, with ensconce's ɪ falling outside it — too thin to
-  // override the raising.
+  // <e> + sonorant before an /s/ onset is excluded too, but on thin evidence:
+  // the whole frame is three words, ensconce/ensconced (ɪ) against enskilda
+  // (ɛ). Keeping the exclusion holds the two and costs the one.
   const initialClosedE =
     syllableIndex === 0 &&
     /^[^aeiouy]*e[^aeiouyx]+$/.test(syllable) &&
