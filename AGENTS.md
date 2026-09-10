@@ -34,11 +34,11 @@ The runtime path on real text is what users report against, so the goal is measu
 
 | Metric | Command | 2026-09-09 | Target |
 |---|---|---|---|
-| Runtime strict parity over dict | `yarn test:parity` | 89.54% → **92.26%** | ≥ 92% **met**; next ≥ 93%, capped near 93 by the STRUT convention below |
-| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 92.32% | ≥ 93% |
-| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 74.37% | ≥ 75%, then back to the 86.998% baseline by rules alone |
-| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 66.92% | ≥ 70% |
-| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 48.67% | ≥ 50% |
+| Runtime strict parity over dict | `yarn test:parity` | 89.54% → **93.37%** | ≥ 92% **met**; next ≥ 94% |
+| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → **93.06%** | ≥ 93% **met**; next ≥ 94% |
+| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 74.63% | ≥ 75%, then back to the 86.998% baseline by rules alone |
+| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 67.52% | ≥ 70% |
+| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 48.98% | ≥ 50% |
 
 Parallel worktree agents, one rule family each, merged sequentially, produced both passes: the first measured strict +1547/−308 on the rule path, the second (unstressed reduction, back vowels, tense i/e) a further +709/−179 with +68/−1 on the top-5000 list. A rule change is only visible to parity after `yarn build-dict` re-mines the table, so parity is judged after the rebuild, never in a worktree.
 
@@ -73,6 +73,12 @@ A stressed open `a` behaves like `o` and `y` under trisyllabic laxing, not the o
 Do NOT extend the last-syllable prefix guard to an `n` coda for format/impact/content: measured on the genuinely-unstressed subset, final `a` with an `n` coda is 1809 ə : 190 æ and final `e` with `nt` is 324 ə : 40 ɛ. Those three are stress errors, not guard omissions.
 
 Line-count trigger (2026-09-10): it now counts code lines, not total lines. Measured at 2789 total the split was 2002 code / 706 comment / 165 blank, i.e. the ceiling was being tripped by the measured-ratio comment this loop requires on every rule, not by code growth. Counting code keeps the trigger honest in both directions: it still fires on real accumulation, and it stops rewarding the deletion of the evidence behind a rule.
+
+### Two traps in the measurement itself
+
+**Ranking error classes by single-edit signature overstates the opportunity.** The diagnosis recipe above counts the words a flip would fix but not the already-exact words it would break. Measured properly, the biggest-looking class in the benchmark — unstressed /ɪ/ where the dict has /ə/ — is not winnable by more ɪ/ə rules: `-ed` after t/d would fix 225 and break 473, final `-in` would fix 51 and break 1018, `-ical` would fix 0 and break 94. The dict is genuinely split on all of them and the rules already sit on the majority. Always simulate a candidate flip in both directions before briefing work on a class.
+
+**A rules-only score is not independent of the mined table**, and the two interact in a way that can hide a regression: the morphology handlers look their stems up in the table even under `disableDict`, so improving a rule can evict a stem and change an unrelated derived word. That is why `scripts/mine-exceptions.ts` now evicts only on an exact stress-stripped match; the earlier canon-based test collapsed i/ɪ, ɑ/ɔ, ə/ʌ, ɛ/eɪ and æ/eɪ, so better rules quietly shipped the collapsed reading. Restoring the strict test was worth +1.11 parity and +0.80 on the top-5000 benchmark by itself.
 
 ### The STRUT convention, and why parity has a ceiling
 
