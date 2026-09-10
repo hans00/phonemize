@@ -150,6 +150,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ai/, "eɪ"], // rain, main, paid
   [/^eau[x]?/, "oʊ"], // plateau/beau + beaux/bordeaux: French eau(x) → /oʊ/ (x silent)
   [/^ealth/, "ɛlθ"], // health, wealth, stealth (ea+lth → /ɛ/)
+  [/^ead/, "ɛd"], // head, bread, dead, spread, instead, deadline (ea+d closing the syllable: 106 ɛ vs 16 i in dict; the /i/ bases lea|der/rea|ding move the d to the next syllable and never reach here)
   [/^ear(?=[nlcr])/, "ɝ"], // learn, earn, early, pearl, search, earl (ear before n/l/c/r: 63:9 in dict; d/t/s stay ɪɹ/ɑɹ)
   [/^e[ae]/, "i"], // read, seat, beat; see, tree, free (default long)
   [/^iew/, "ju"],
@@ -161,6 +162,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ey/, "eɪ"], // they, grey, obey (stressed -ey)
   [/^ight/, "aɪt"], // night, right, knight (i+ght)
   [/^igh/, "aɪ"],  // high, sigh, thigh — igh without following t
+  [/^ign(?=s?$)/, "aɪn"], // sign, design, align, assign, benign, resign: syllable-final -ign is the silent-g rime (14 aɪn vs 1 in dict; the ɪɡn words dig|nity, sig|nal, ig|nore all move the n onto a following vowel). aign/eign never reach it — ^ai/^ei eat the vowel first.
   [/^oa/, "oʊ"], // boat, coat, road
   // LOT→THOUGHT frames. Doubled consonants are deduped before the rules
   // run, so the coda spellings here are single: `of` covers -off/-offC.
@@ -902,6 +904,63 @@ export function syllableToIPA(
       emit("the", "ð", "phoneme:the-final");
       break;
     }
+    // An open "ea" syllable is lax before these orthographic tails
+    // (dict ɛ:i) — -ther feather/leather/weather 49:8, -san
+    // pleasant/peasant 12:2, -lou jealous/zealous 9:0. The tails that
+    // keep the tense default stay out: -son (season/reason 29:0),
+    // -der (leader/reader 14:4), -ter (eater/theater 22:1).
+    if (remaining === "ea" && /^(?:ther|san|lou)/.test(tail ?? "")) {
+      emit("ea", "ɛ", "phoneme:^ea-lax");
+      break;
+    }
+    // The same silent-g rime as ^ign, seen across a syllable boundary:
+    // maximal onset moves the n onto a vowel-initial suffix (de|sig|ner,
+    // un|sig|ned, sig|ners), leaving a bare "ig". 12 aɪn : 4 in the dict
+    // — the losses are -igner names that keep the ɡ (brigner, tigner).
+    // A suffix-shaped next syllable is required: sig|nal, dig|ni|ty and
+    // sig|na|ture keep /ɪɡ/.
+    if (remaining === "ig" && /^n(?:e[drs]|ers|ing|ment|ments|s)$/.test(nextSyllable ?? "")) {
+      emit("ig", "aɪ", "phoneme:^ig(?=n-suffix)");
+      break;
+    }
+    // Stressed i in hiatus with the next vowel is the tense /aɪ/ of an
+    // open syllable, not the /i/ of the ie/ia digraphs. Frames measured
+    // over the dict (aɪ : i): io anything — lion, riot, prior, ion — 22:5;
+    // ia + a consonant that is not a bare final n — dial, giant, bias,
+    // triad, liable — 24:6, while ia$ (mia, tia) is 2:15 and ian$ (ian,
+    // cian) 3:7 and both stay lax; ie closing the syllable or before a
+    // single s/d/r — die, lie, cries, cried, crier, drier — 52:11, the
+    // -y verb inflections. Restricted to a stressed first syllable so
+    // the -ier/-ion/-ial suffixes of car|ri|er, re|gion, mil|lion,
+    // au|dio keep their unstressed /i/.
+    if (isStressed && syllableIndex === 0 && isLastSyllable && /^ie[sdr]?$/.test(remaining)) {
+      const coda = remaining.slice(2);
+      emit(remaining, "aɪ" + (coda === "r" ? "ɝ" : coda), "phoneme:^ie$-hiatus");
+      break;
+    }
+    // A single consonant before a syllabic -le belongs to the -le
+    // syllable phonologically (ti|tle, i|dle), but tl/dl are not valid
+    // onsets so the syllabifier leaves a closed tit/id and the vowel
+    // never reaches the open-syllable ^i$ rule. When the next syllable
+    // is a bare "le" the coda must also be a single consonant in the
+    // spelling — the doubled codas (litt|le, midd|le, drizz|le) dedupe
+    // to the same shape but stay lax. i is tense in the single-coda
+    // frame: 8 aɪ : 0 in the dict — title, entitle, subtitle, idle,
+    // bridle, sidle.
+    if (
+      isStressed && isNextLastSyllable && nextSyllable === "le" &&
+      /^i[^aeiouylr]$/.test(remaining) &&
+      !/([b-df-hj-np-tv-z])\1/.test(syllable)
+    ) {
+      emit("i", "aɪ", "phoneme:^i(?=Cle)");
+      remaining = remaining.substring(1);
+      continue;
+    }
+    if (isStressed && syllableIndex === 0 && /^i(?=o|a(?:[^aeiouyn]|n[^aeiouy]))/.test(remaining)) {
+      emit("i", "aɪ", "phoneme:^i-hiatus");
+      remaining = remaining.substring(1);
+      continue;
+    }
     // Precompute the set of pattern sources to skip for this syllable
     // context. The inner per-rule loop becomes a single Set.has() check
     // instead of 13+ string comparisons per rule. Built once per
@@ -936,7 +995,19 @@ export function syllableToIPA(
       nextSyllable === "tion" || nextSyllable === "sion" ||
       (syllableIndex === 0 && !isStressed && !isLastSyllable && /^p?re$/.test(syllable)) ||
       (isStressed && !nextIsLaxCluster && /^[^aeiouy]*e$/.test(syllable) &&
-        /^[^aeiouyr]+i[aeou][a-z]/.test(nextSyllable ?? ""));
+        /^[^aeiouyr]+i[aeou][a-z]/.test(nextSyllable ?? "")) ||
+      // The two-syllable magic-e frame that already tenses a and i, for
+      // the subset of inflection endings where the dict backs it (i : ɛ):
+      // -es 18:5 (thebes, ceres, feces), -us 14:6 (fetus, genus, jesus),
+      // -al 11:6 (legal, penal, renal), -ing 8:3 (ceding), -ed 4:1,
+      // -est 2:2. The endings left out measure even or negative and are
+      // deliberately excluded: -er is 44:35 but costs ever/never/clever/
+      // lever, -en 14:16 (seven), -is 6:15, -ent 7:10, -or 1:15, -ant 1:4.
+      // Within the subset, a t/d before -al is lax (metal, medal, pedal,
+      // petal 5 ɛ : 1) and so is an r-initial ending (feral, cerus); the
+      // onset must be a single consonant, the shape of an open syllable.
+      (twoSylTense && /^[^aeiouy]*e$/.test(syllable) &&
+        /^(?:[^aeiouyrtd]als?|[^aeiouyr](?:es|us|ing|ed|est))$/.test(nextSyllable!));
     if (!eFire) skip.add("^e$");
     if (syllableIndex === 0 || isStressed) skip.add("^tur$");
     if (isLastSyllable || !nextSyllable?.startsWith("st")) skip.add("^y(?=$)");

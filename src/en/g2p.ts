@@ -889,8 +889,21 @@ export class EnglishG2P implements LanguageProcessor {
         (!lowerWord.endsWith("stial") && lowerWord.endsWith("tial"))) &&
       lowerWord.length > 5
     ) {
-      const pp = stemPron(lowerWord.slice(0, -4));
-      if (pp && /[aeiouæɑɔɛɪʊʌɝə]/.test(pp)) return pp + "ʃəl";
+      const stem = lowerWord.slice(0, -4);
+      const pp = stemPron(stem);
+      // The stem is scored as a standalone open monosyllable, which
+      // takes the wrong default for a bare final a or e (ra → ɹɑ,
+      // spe → spi). Before -cial/-tial the dict is unanimous: an open
+      // a is tense (racial, facial, glacial, spatial, palatial — 11
+      // eɪ : 0) and an open e is lax (special, especial — 2 ɛ : 0).
+      if (pp && /[aeiouæɑɔɛɪʊʌɝə]/.test(pp))
+        return (
+          (stem.endsWith("a")
+            ? pp.replace(/[ɑæ]$/, "eɪ")
+            : stem.endsWith("e")
+              ? pp.replace(/i$/, "ɛ")
+              : pp) + "ʃəl"
+        );
     }
     if (lowerWord.endsWith("ation") && lowerWord.length > 7) {
       const b = lowerWord.slice(0, -5),
