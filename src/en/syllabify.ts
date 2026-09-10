@@ -636,6 +636,10 @@ const FINAL_ONLY_SUFFIXES = new Set(
 );
 const NON_INITIAL_SUFFIXES = new Set("^lion$ ^scien$ ^ford$ ^ward$".split(" "));
 
+// Orthographic vowel groups in a string — the syllable count the
+// spelling implies, used by the depth tests below.
+const vowelGroups = (s: string): number => s.match(/[aeiouy]+/g)?.length ?? 0;
+
 const reduceTable = (eps: string): Record<string, string> => ({
   ɑɹ: "ɑɹ", ɔɹ: "ɔɹ", ɔɪ: "ɔɪ", æ: "ə", ɛ: eps, ɑ: "ə", ʌ: "ə", ɔ: "ə",
 });
@@ -758,8 +762,7 @@ export function syllableToIPA(
   // Measured rules-only over the dict: 153 strict wins : 60 losses, of
   // which y contributes 10:7 and the -ic trigger 10:4.
   const t = tail ?? "";
-  const tailSyls =
-    t.replace(/([^aeiouyl])e$/, "$1").match(/[aeiouy]+/g)?.length ?? 0;
+  const tailSyls = vowelGroups(t.replace(/([^aeiouyl])e$/, "$1"));
   const laxDomain =
     isStressed &&
     (/^[^aeiouy]+ics?$/.test(t) ||
@@ -1170,7 +1173,7 @@ export function syllableToIPA(
       const rest = sources.slice(i + 1).join("") + (tail ?? "");
       const follow = rest.match(/^[^aeiouy]*/)![0];
       if (follow.length === 0) continue;
-      const after = rest.slice(follow.length).match(/[aeiouy]+/g)?.length ?? 0;
+      const after = vowelGroups(rest.slice(follow.length));
       if (sources[i] === "e") {
         if (after >= 2 && !/^r|^n./.test(follow)) phonemes[i] = "ə";
         continue;

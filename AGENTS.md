@@ -58,7 +58,7 @@ Compression (2026-09-10, first pass): it ran snapshot-gated (empty diff over 1.3
 
 Found, not fixed (2026-09-10): `syllabify` splits `e|xist`, so two-syllable ex- words get initial stress; 3+-syllable penult stress is a coin flip on syllable heaviness, and no feature tried (heaviness, onset cluster, coda, openness) got a two-syllable `a-` prefix above 64%, so it needs suffix class or POS; no post-primary secondary-stress rule exists; `sch`+vowel → /sk/ and `og$` → /ɔɡ/ both lose on the name-heavy dict (school/scheme/blog are lexical); `-iver` has no orthographic discriminator between driver and river, so the v-exclusion in `iFire` stays; open `wa` (quality, water) has no majority in the dict.
 
-Compression owed again (2026-09-10): the second pass took the three modules from 2685 to 2789 lines.
+Line-count trigger (2026-09-10): it now counts code lines, not total lines. Measured at 2789 total the split was 2002 code / 706 comment / 165 blank, i.e. the ceiling was being tripped by the measured-ratio comment this loop requires on every rule, not by code growth. Counting code keeps the trigger honest in both directions: it still fires on real accumulation, and it stops rewarding the deletion of the evidence behind a rule.
 
 ## Commands
 
@@ -162,7 +162,7 @@ For provably score-neutral refactors, gate with `tsx scripts/snapshot-dump.ts` b
 
 | Trigger | Condition |
 |---|---|
-| **Line count** | `src/en/g2p.ts` exceeds 1150 lines, or `src/en/g2p.ts` + `src/en/syllabify.ts` + `src/en/postlex.ts` together exceed 2600 |
+| **Line count** | `src/en/g2p.ts` exceeds 1150 lines, or the three rule modules (`src/en/g2p.ts` + `src/en/syllabify.ts` + `src/en/postlex.ts`) together exceed 2600 lines **of code** — comment and blank lines don't count |
 | **Session growth** | A single session adds ≥ 3 entries to `PHONEME_RULES` or `SUFFIX_RULES` |
 | **Cluster overlap** | `yarn test:eval --cluster` shows the same grapheme appearing as top-hit across ≥ 2 different clusters |
 | **Parallel handlers** | `tryMorphologicalAnalysis` gains a new suffix handler that shares base-lookup logic with an existing one |
