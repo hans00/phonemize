@@ -541,7 +541,14 @@ export function assignStress(syllables: string[], word: string): number {
     (lowerWord.endsWith("ance") || lowerWord.endsWith("ence")) &&
     syllables.length >= 3
   ) {
-    return syllables.length === 3 ? 0 : 1;
+    if (syllables.length === 3) return 0;
+    // At four slots the stem is one syllable longer and the split is
+    // carried by that syllable's weight: a closed second slot means a
+    // stressed stem (acceptance, abundance, admittance — 39 of 45 want
+    // slot 1), an open one a Latin bound root that leaves the primary at
+    // the front (conference, difference, competence, evidence — 68 of 124).
+    if (syllables.length === 4 && /[aeiouy]$/.test(syllables[1])) return 0;
+    return 1;
   }
 
   if (lowerWord.endsWith("ic") && syllables.length > 1) {
@@ -608,7 +615,7 @@ export function assignStress(syllables: string[], word: string): number {
     // pre- (40%) and ex- (33%) are genuinely final-stressed on lax roots.
     const laxRoot =
       !DIGRAPH_RIME.test(syllables[1]) && !/[^aeiouy]e$/.test(syllables[1]);
-    if (/^(?:com)$/.test(firstSyl) && laxRoot) return 0;
+    if (firstSyl === "com" && laxRoot) return 0;
     if (PREFIXES_2SYL.includes(firstSyl)) return isPrefix(firstSyl) ? 1 : 0;
     // The bare a- prefix is only weak when the root behind it is a tense
     // rime: about, abroad, again, agree, aboard, around, amount, aloud.

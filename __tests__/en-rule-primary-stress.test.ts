@@ -69,6 +69,25 @@ describe("a word-attaching prefix on a long stem leaves the stress in the stem",
   });
 });
 
+describe("-ance/-ence: a four-slot stem is split by its second slot", () => {
+  // Closed second slot = a stressed stem (acceptance, assistance); open =
+  // a Latin bound root that leaves the primary at the front. The -er verbs
+  // retract too, because the undoubled consonant is the spelling's own
+  // stress mark (occurrence keeps it, reference does not).
+  it.each([
+    ["difference", "ˈdɪfɝəns"],
+    ["deference", "ˈdɛfɝəns"],
+    ["residence", "ˈɹɛzɪdəns"],
+    ["maintenance", "ˈmeɪntənəns"],
+    ["consequence", "ˈkɑnsəkwəns"],
+    ["reference", "ˈɹɛfɝəns"],
+    ["conference", "ˈkɑnfɝəns"],
+    ["preference", "ˈpɹɛfɝəns"],
+    ["acceptance", "ækˈsɛptəns"],
+    ["assistance", "əˈsɪstəns"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
 describe("a near-categorical word-final gram beats the heaviness fallback", () => {
   // FINAL_GRAM_STRESS: the primary's distance from the last slot. Each gram
   // has >=20 dict words, >=75% agreement, and >=3 agreeing top-5000 words.
