@@ -34,13 +34,15 @@ The runtime path on real text is what users report against, so the goal is measu
 
 | Metric | Command | 2026-09-09 | Target |
 |---|---|---|---|
-| Runtime strict parity over dict | `yarn test:parity` | 89.54% → 90.42% | ≥ 92% |
-| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 90.92% | ≥ 93% |
-| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 72.99% | ≥ 75%, then back to the 86.998% baseline by rules alone |
-| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 63.98% | ≥ 70% |
-| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 46.85% | ≥ 50% |
+| Runtime strict parity over dict | `yarn test:parity` | 89.54% → 90.52% | ≥ 92% |
+| Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 91.20% | ≥ 93% |
+| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 73.13% | ≥ 75%, then back to the 86.998% baseline by rules alone |
+| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 65.32% | ≥ 70% |
+| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 47.27% | ≥ 50% |
 
-The second pass (six parallel worktree agents, one rule family each, merged sequentially) measured strict +1547/−308 and top-5000 +101/−14 on the rule path; a rule change is only visible to parity after `yarn build-dict` re-mines the table, so parity is judged after the rebuild, never in a worktree.
+Parallel worktree agents, one rule family each, merged sequentially, produced both passes: the first measured strict +1547/−308 on the rule path, the second (unstressed reduction, back vowels, tense i/e) a further +709/−179 with +68/−1 on the top-5000 list. A rule change is only visible to parity after `yarn build-dict` re-mines the table, so parity is judged after the rebuild, never in a worktree.
+
+Diagnosis that fed the second pass: group the rules-only mismatches in `scripts/.common-accuracy-cache/rules-report.json` by their single-edit signature (normalise ɫ→l first, and drop the 36 closed-class function words, which are lexical by design). That ranks the remaining classes by how many common words each would fix.
 
 The rules-only baseline is deliberately NOT lowered to today's number: the gap is the ground the rules must recover without the removed gram tables.
 
@@ -52,9 +54,11 @@ Rules of the goal:
 
 Open classes: none.
 
-Compression (2026-09-10): the pass ran snapshot-gated (empty diff over 1.3M predictions) and took the three modules from 2930 to 2685 lines. Still 85 over the ceiling; what remains is comment carrying the dict ratio behind each rule, which the procedure says to keep. The opt-in `predictPrincipled` path is the one block that may be vestigial — retiring it is a behaviour decision, not a compression.
+Compression (2026-09-10, first pass): it ran snapshot-gated (empty diff over 1.3M predictions) and took the three modules from 2930 to 2685 lines. Still 85 over the ceiling; what remains is comment carrying the dict ratio behind each rule, which the procedure says to keep. The opt-in `predictPrincipled` path is the one block that may be vestigial — retiring it is a behaviour decision, not a compression.
 
-Found, not fixed (2026-09-09): `syllabify` splits `e|xist`, so two-syllable ex- words get initial stress; 3+-syllable penult stress is a coin flip on syllable heaviness (needs suffix class or POS); no post-primary secondary-stress rule exists; `sch`+vowel → /sk/ loses on the name-heavy dict (school/scheme are lexical); `special` → ˈspiʃəɫ on the rule path.
+Found, not fixed (2026-09-10): `syllabify` splits `e|xist`, so two-syllable ex- words get initial stress; 3+-syllable penult stress is a coin flip on syllable heaviness, and no feature tried (heaviness, onset cluster, coda, openness) got a two-syllable `a-` prefix above 64%, so it needs suffix class or POS; no post-primary secondary-stress rule exists; `sch`+vowel → /sk/ and `og$` → /ɔɡ/ both lose on the name-heavy dict (school/scheme/blog are lexical); `-iver` has no orthographic discriminator between driver and river, so the v-exclusion in `iFire` stays; open `wa` (quality, water) has no majority in the dict.
+
+Compression owed again (2026-09-10): the second pass took the three modules from 2685 to 2789 lines.
 
 ## Commands
 
