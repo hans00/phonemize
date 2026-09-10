@@ -42,6 +42,8 @@ The runtime path on real text is what users report against, so the goal is measu
 
 Parallel worktree agents, one rule family each, merged sequentially, produced both passes: the first measured strict +1547/−308 on the rule path, the second (unstressed reduction, back vowels, tense i/e) a further +709/−179 with +68/−1 on the top-5000 list. A rule change is only visible to parity after `yarn build-dict` re-mines the table, so parity is judged after the rebuild, never in a worktree.
 
+The fourth pass audited `src/en/phonotactics.ts` rule by rule — that file rewrites the output of BOTH paths, and nothing in it had ever been measured. Four rules were narrowed (the -ed allomorph was building impossible /Cɹd/ codas; silent-h deletion ate the licit borrowed /hl hr hm hn/ onsets; unstressed /ɪɹ/ coalescence ate the /aɪ eɪ ɔɪ/ offglide; syllabic-l epenthesis fired inside an /ɹl/ coda and before /lj lw/), and `addInitialSecondary` moved to `applyPostStress` so it no longer marks lexical output. A structural fact came out of it worth keeping: `data/en/exceptions.json` stores raw dict IPA, so any phonotactics rule applied to a table hit can only be a no-op or a corruption — 4467 of 53,759 entries were leaving the pass different from the entry they were read from, now 2526.
+
 The third pass (alternating secondary stress, `s`-voicing depth, unstressed rhotics) added strict +964/−102 on the rule path and found a shipped bug: `deRhoticBeforeStress` in phonotactics rewrote /ɝ/ to /ə/+/ɹ/ before a stressed vowel on BOTH paths, against a lexicon that spells that position /ɝ/ 1659:101. Removing it moved runtime parity +1.38 on its own. The lesson generalises: a phonotactics rule applies to dictionary output too, so it needs the same win/loss evidence as a rule-path rule, and none of that file's rules were measured that way.
 
 A rules-only prediction is NOT independent of the mined table: with `disableDict: true` the morphology handlers still look their stems up in it, so a test that pins a full IPA string for a derived word can move when `build-dict` re-mines. Pin the segment the rule owns instead.
@@ -67,6 +69,14 @@ Next, measured and waiting (2026-09-10): `assignStress`'s prefix rules put the p
 Do NOT extend the last-syllable prefix guard to an `n` coda for format/impact/content: measured on the genuinely-unstressed subset, final `a` with an `n` coda is 1809 ə : 190 æ and final `e` with `nt` is 324 ə : 40 ɛ. Those three are stress errors, not guard omissions.
 
 Line-count trigger (2026-09-10): it now counts code lines, not total lines. Measured at 2789 total the split was 2002 code / 706 comment / 165 blank, i.e. the ceiling was being tripped by the measured-ratio comment this loop requires on every rule, not by code growth. Counting code keeps the trigger honest in both directions: it still fires on real accumulation, and it stops rewarding the deletion of the evidence behind a rule.
+
+### The STRUT convention, and why parity has a ceiling
+
+`normalizeStrut` in `src/en/phonotactics.ts` promotes a stressed /ə/ to /ʌ/. Removing it measures **+2823/−55 on the dictionary path and takes `yarn test:parity` to 95.10%** — the single largest parity number available anywhere in this codebase. Do not take it.
+
+The promotion is an adapter between two references that disagree. `data/en/dict.json` is built from open-dict-data ipa-dict `en_US`, which writes STRUT as /ə/ even under stress: **zero /ʌ/ in 100,871 entries**. CMUdict, which `yarn test:common-accuracy` scores against, maps AH1/AH2 to /ʌ/ and AH0 to /ə/, and so does every mainstream American IPA transcription — *cut* is /kʌt/, not /kət/. Deleting the promotion would raise parity by making the output match a source with a known transcription quirk, while dropping top-5000 segment accuracy from 92.26% to 89.62% and shipping less standard pronunciations. 136 of the remaining top-5000 mismatches differ from CMUdict by ə/ʌ alone.
+
+So parity is capped by that convention gap, and a parity number above roughly 93% should be read as suspicion that something re-adopted the base lexicon's convention rather than as progress. The same reasoning rejects skipping `applyPhonotactics` on verbatim lexical hits: it would remove ~2500 table rewrites at a stroke, but at the cost of freezing ipa-dict's conventions into shipped output and making dictionary words and rule-derived words disagree with each other.
 
 ## Commands
 
