@@ -552,9 +552,23 @@ export function assignStress(syllables: string[], word: string): number {
   // morpheme, not prefix + root.
   const isPrefix = (prefix: string): boolean =>
     lowerWord[prefix.length] !== prefix[prefix.length - 1];
+  // Privative un-/in-/dis-/mis-/ab- attach to a whole word, so once the stem
+  // is long enough to carry its own stress the primary sits deeper than the
+  // root-initial slot (unbelievable, indispensable, misunderstanding). The
+  // root-attaching Latin prefixes put it on slot 1 at every length. Over the
+  // dict words that actually reach this loop: at 3 slots "slot 1" beats the
+  // penult fallback for every prefix (1491/2394 vs 1217/2394); at 4+ slots
+  // the word-attaching five lose to it (320/840 vs 466/840) while the rest
+  // still win.
+  const WORD_ATTACHING = /^(?:ab|dis|mis|un|under)$/;
   for (const prefix of unstressedPrefixes)
     // Stress falls on the root, not the prefix.
-    if (lowerWord.startsWith(prefix) && syllables.length > 2 && isPrefix(prefix))
+    if (
+      lowerWord.startsWith(prefix) &&
+      syllables.length > 2 &&
+      isPrefix(prefix) &&
+      !(syllables.length >= 4 && WORD_ATTACHING.test(prefix))
+    )
       return 1;
 
   // For 2-syllable words, generally stress the first syllable unless
@@ -577,6 +591,16 @@ export function assignStress(syllables: string[], word: string): number {
     const PREFIXES_2SYL = [
       "be", "com", "de", "dis", "ex", "ob", "pre", "pro", "re", "sub", "un",
     ];
+    // com-/pro- only give the stress away to a *tense* root — one with a
+    // vowel digraph (proceed, procure, compound) or a silent-e (promote,
+    // compose). Over a lax root they keep the stress themselves: 89% of the
+    // 64 lax pro- words in the dict are initial (13 of the 14 in the
+    // top-5000 list), 82% of the 34 com- ones. The other prefixes stay
+    // unconditional — be- (17% initial among common words), re- (35%),
+    // pre- (40%) and ex- (33%) are genuinely final-stressed on lax roots.
+    const laxRoot =
+      !DIGRAPH_RIME.test(syllables[1]) && !/[^aeiouy]e$/.test(syllables[1]);
+    if (/^(?:com)$/.test(firstSyl) && laxRoot) return 0;
     if (PREFIXES_2SYL.includes(firstSyl)) return isPrefix(firstSyl) ? 1 : 0;
     // The bare a- prefix is only weak when the root behind it is a tense
     // rime: about, abroad, again, agree, aboard, around, amount, aloud.
@@ -1211,12 +1235,13 @@ export function syllableToIPA(
     isLastSyllable &&
     syllableIndex > 0 &&
     !/all$/i.test(syllable) &&
+    !/[aeiouy]n[gk]s?$/i.test(syllable) &&
     // A root after a stress-bearing prefix keeps its full vowel when its coda
     // is a pure obstruent (index, contest, contact); sonorant or open codas do
     // reduce (constant, condor, contra), so they stay in the reduction path.
     !(
       syllableIndex === 1 &&
-      /^(ab|ad|be|com|con|de|dis|ex|in|mis|ob|out|pre|pro|re|sub|un|under)$/.test(
+      /^(ab|ad|be|com|con|de|dis|ex|im|in|mis|ob|out|pre|pro|re|sub|un|under)$/.test(
         prevSyllable ?? "",
       ) &&
       /[aeiouy][^aeiouylmnrw]+$/.test(syllable)
