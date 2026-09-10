@@ -754,6 +754,10 @@ const NON_INITIAL_SUFFIXES = new Set("^lion$ ^scien$ ^ford$ ^ward$".split(" "));
 // spelling implies, used by the depth tests below.
 const vowelGroups = (s: string): number => s.match(/[aeiouy]+/g)?.length ?? 0;
 
+// Final vowel group of a word whose penult <i> is the pretonic-to-the-suffix
+// slot: -y and its inflections. See the use site in `syllableToIPA`.
+const Y_FINAL_GROUP = /^(?:y|ies|ied)$/;
+
 const reduceTable = (eps: string): Record<string, string> => ({
   ɑɹ: "ɑɹ", ɔɹ: "ɔɹ", ɔɪ: "ɔɪ", æ: "ə", ɛ: eps, ɑ: "ə", ʌ: "ə", ɔ: "ə",
 });
@@ -1376,6 +1380,13 @@ export function syllableToIPA(
   //     below the support floor, so it is left out
   //   e two+ groups from the end, follow not r- or n+C (ceremony,
   //     secretary, disintegrate) 474 : 174
+  //   i in the penult group before a single consonant, where the final
+  //     group is -y or one of its inflections (ability, cavity, gravity,
+  //     amplify, gossipy) 520 : 245, and 51 : 10 over the top-5000
+  //     frequency slice — the suffix, not the consonant, is what conditions
+  //     this one: the <i> is the slot immediately before the -y suffix
+  //     wherever the word's primary stress sits. Per consonant t 291 : 202,
+  //     f 151 : 25, l 64 : 6; the rest are under the support floor.
   // Everything else keeps ɪ: ng (0 ə : 532), sh, ck, k, ns, st, v, c, and an
   // empty follow (-ial/-ion/-ious), where the ɪ feeds the later -i+vowel
   // rules. A word-initial group also keeps it (invite, imagine, believe).
@@ -1398,7 +1409,10 @@ export function syllableToIPA(
       if (
         /^(?:[bp]l|gr)$/.test(follow) ||
         (follow === "t" && groups >= 4 && !/^ti/.test(rest)) ||
-        (after >= 2 && groups >= 5 && /^[fgmnz]$/.test(follow))
+        (after >= 2 && groups >= 5 && /^[fgmnz]$/.test(follow)) ||
+        (after === 1 &&
+          follow.length === 1 &&
+          Y_FINAL_GROUP.test(rest.slice(follow.length)))
       )
         phonemes[i] = "ə";
     }
