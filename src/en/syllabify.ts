@@ -908,7 +908,7 @@ export function syllableToIPA(
     const aFire = (nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE ||
       (twoSylTense && /^[^aeiouy]*a$/.test(syllable) && !nextSyllable!.startsWith("r")));
     const iFire = (nextIsMagicE || endsWithSilentE || (nextIsCle && isStressed) ||
-      (twoSylTense && /^[^aeiouy]*i$/.test(syllable) && !/^v?en$/.test(nextSyllable!)));
+      (twoSylTense && /^[^aeiouy]*i$/.test(syllable) && !/^(?:v|en$)/.test(nextSyllable!)));
     const skip = new Set<string>();
     if (!hadDoubledL) skip.add("^al$");
     if (gFromDoubling) skip.add("^g(?=[eiy])");
