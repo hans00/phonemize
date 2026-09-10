@@ -150,6 +150,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ai/, "eɪ"], // rain, main, paid
   [/^eau[x]?/, "oʊ"], // plateau/beau + beaux/bordeaux: French eau(x) → /oʊ/ (x silent)
   [/^ealth/, "ɛlθ"], // health, wealth, stealth (ea+lth → /ɛ/)
+  [/^ead/, "ɛd"], // head, bread, dead, spread, instead, deadline (ea+d closing the syllable: 106 ɛ vs 16 i in dict; the /i/ bases lea|der/rea|ding move the d to the next syllable and never reach here)
   [/^ear(?=[nlcr])/, "ɝ"], // learn, earn, early, pearl, search, earl (ear before n/l/c/r: 63:9 in dict; d/t/s stay ɪɹ/ɑɹ)
   [/^e[ae]/, "i"], // read, seat, beat; see, tree, free (default long)
   [/^iew/, "ju"],
@@ -839,6 +840,15 @@ export function syllableToIPA(
     }
     if (remaining === "the" && phonemes.length > 0) {
       emit("the", "ð", "phoneme:the-final");
+      break;
+    }
+    // An open "ea" syllable is lax before these orthographic tails
+    // (dict ɛ:i) — -ther feather/leather/weather 49:8, -san
+    // pleasant/peasant 12:2, -lou jealous/zealous 9:0. The tails that
+    // keep the tense default stay out: -son (season/reason 29:0),
+    // -der (leader/reader 14:4), -ter (eater/theater 22:1).
+    if (remaining === "ea" && /^(?:ther|san|lou)/.test(tail ?? "")) {
+      emit("ea", "ɛ", "phoneme:^ea-lax");
       break;
     }
     // Precompute the set of pattern sources to skip for this syllable
