@@ -17,7 +17,12 @@ import { transformAmericanToRP } from "./gb";
 import { predictPrincipled } from "./principled";
 import { applyPhonotactics } from "./phonotactics";
 import { applyPostLexical, applyPostStress } from "./postlex";
-import { assignStress, syllabify, syllableToIPA } from "./syllabify";
+import {
+  assignStress,
+  secondaryStressIndices,
+  syllabify,
+  syllableToIPA,
+} from "./syllabify";
 
 export type EnglishDialect = "en-US" | "en-GB";
 
@@ -407,6 +412,7 @@ export class EnglishG2P implements LanguageProcessor {
 
     const syllables = syllabify(lowerWord);
     const stressedIdx = assignStress(syllables, lowerWord);
+    const secondary = secondaryStressIndices(syllables, stressedIdx);
     const traceSteps: TraceStep[] = [];
     syllables.forEach((syl, i) => {
       syllableToIPA(
@@ -419,6 +425,7 @@ export class EnglishG2P implements LanguageProcessor {
         i > 0 ? syllables[i - 1] : undefined,
         i === syllables.length - 2,
         syllables.slice(i + 1).join(""),
+        secondary.has(i),
       );
     });
 
@@ -533,6 +540,7 @@ export class EnglishG2P implements LanguageProcessor {
     // Priority 7: Improved syllabification and rule-based G2P
     const syllables = syllabify(lowerWord);
     const stressedSyllableIndex = assignStress(syllables, lowerWord);
+    const secondary = secondaryStressIndices(syllables, stressedSyllableIndex);
 
     const syllableIPA = syllables.map((s, i) => {
       const isStressed = i === stressedSyllableIndex;
@@ -547,6 +555,7 @@ export class EnglishG2P implements LanguageProcessor {
         i > 0 ? syllables[i - 1] : undefined,
         i === syllables.length - 2,
         syllables.slice(i + 1).join(""),
+        secondary.has(i),
       );
     });
 

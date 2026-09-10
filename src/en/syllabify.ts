@@ -424,6 +424,66 @@ export function syllabify(word: string): string[] {
   return syllables.filter((s) => s && s.length > 0);
 }
 
+/**
+ * Alternating (rhythmic) secondary stress: the beat two syllables away
+ * from the primary keeps its full vowel, which is exactly the vowel the
+ * reduction pass in `syllableToIPA` was flattening (ˌæpɫəˈkeɪʃən, not
+ * əpɫəˈkeɪʃən).
+ *
+ * Measured over the 100871 alphabetic single-primary entries of
+ * data/en/dict.json, tabulating each nucleus by its distance from the
+ * primary syllable:
+ *
+ *   d=-2  n=7202   full 70.5%  schwa 11.1%  ɪ 16.2%
+ *   d=-1  n=28870  full 43.2%  schwa 32.8%  ɪ 17.2%
+ *   d=+1  n=19731 (non-final)  full 15.8%  schwa 50.7%  ɪ 21.5%
+ *   d=+2  n=2973  (non-final)  full 63.4%  schwa 19.6%  ɪ 12.3%
+ *   d=+2  n=16758 (final)      full 48.7%  schwa 25.7%  ɪ 11.0%  ɝ 14.6%
+ *
+ * The ±2 beats are full-vowelled 3-6× more often than schwa while the
+ * adjacent ±1 beats are not, so distance parity — not the ending — is
+ * the rule. Two frames inside it are not beats:
+ *
+ *   - A pretonic open syllable whose follower is also open, word-medially:
+ *     that is the thematic linking vowel of a stacked Latinate suffix
+ *     (for·ti·fi·ca·tion, or·ga·ni·za·tion), which never carries a beat.
+ *     The initial syllable is exempt from the exclusion — it is the
+ *     default secondary site in English (ˌækəˈdɛmɪk) — and word-medially
+ *     the d=-2 column splits 55.5% full : 24.9% schwa (n=1201) against
+ *     73.6% : 8.3% (n=6001) word-initially.
+ *   - A word-final beat without a single obstruent coda. Split by the coda
+ *     of that final syllable, d=+2 final is 59.4% full : 17.6% schwa for a
+ *     one-consonant obstruent (n=4046) but only 29.9% : 53.8% for a
+ *     sonorant (n=5104), and the open 58.3% is really the 36.4% of -or/-ar
+ *     rimes that the final syllable's own branch already turns into /ɝ/.
+ *     Spelled <e> before s/d is the inflectional vowel (cam·pu·ses,
+ *     -ed/-es), never a beat, so the obstruent set excludes s/d after <e>.
+ */
+export function secondaryStressIndices(
+  syllables: string[],
+  primary: number,
+): Set<number> {
+  const out = new Set<number>();
+  if (primary < 0) return out;
+  const isOpen = (i: number): boolean =>
+    !!syllables[i] && VOWELS.has(syllables[i][syllables[i].length - 1]);
+  const before = primary - 2;
+  if (before >= 0 && !(before > 0 && isOpen(before) && isOpen(before + 1)))
+    out.add(before);
+  // A silent-e coda gets its own orthographic slot (ca·pa·ci·tan·ce) but
+  // is not a syllable, so the last slot that bears a nucleus is the one
+  // the word-final test has to apply to. Syllabic -Cle (ta·ble) is one.
+  let last = syllables.length - 1;
+  if (last > 0 && SILENT_E_SLOT.test(syllables[last])) last--;
+  const after = primary + 2;
+  if (after <= last && (after < last || FINAL_BEAT_RIME.test(syllables[after])))
+    out.add(after);
+  return out;
+}
+
+const FINAL_BEAT_RIME = /[aiouy][bcdfgkpstxz]$|e[bcdfgkptxz]$/;
+const SILENT_E_SLOT = /^[^aeiouy]*[^aeiouyl]e$/;
+
 // Improved stress assignment based on morphological and phonological rules
 export function assignStress(syllables: string[], word: string): number {
   if (syllables.length <= 1) return 0;
@@ -655,6 +715,10 @@ export function syllableToIPA(
   isNextLastSyllable = false,
   // Orthographic remainder of the word after this syllable.
   tail?: string,
+  // Rhythmic secondary stress (see secondaryStressIndices): the syllable
+  // is unstressed for every vowel-choice rule below but keeps its full
+  // vowel through the reduction pass.
+  isSecondary = false,
 ): string {
   const stepsStart = steps?.length ?? 0;
   let phonemes: string[] = [];
@@ -1095,7 +1159,8 @@ export function syllableToIPA(
     }
   };
 
-  if (!isStressed && !isLastSyllable) applyReduction(reduceTable("ɪ"));
+  if (!isStressed && !isSecondary && !isLastSyllable)
+    applyReduction(reduceTable("ɪ"));
 
   if (
     !isStressed &&
@@ -1113,7 +1178,7 @@ export function syllableToIPA(
       /[aeiouy][^aeiouylmnrw]+$/.test(syllable)
     )
   ) {
-    applyReduction(reduceTable("ə"));
+    if (!isSecondary) applyReduction(reduceTable("ə"));
     const lastIdx = phonemes.length - 1;
     if (
       lastIdx >= 0 &&
@@ -1165,7 +1230,7 @@ export function syllableToIPA(
   // Everything else keeps ɪ: ng (0 ə : 532), sh, ck, k, ns, st, v, c, and an
   // empty follow (-ial/-ion/-ious), where the ɪ feeds the later -i+vowel
   // rules. A word-initial group also keeps it (invite, imagine, believe).
-  if (!isStressed) {
+  if (!isStressed && !isSecondary) {
     for (let i = 0; i < phonemes.length; i++) {
       if (phonemes[i] !== "ɪ" || !/^[ie]$/.test(sources[i])) continue;
       if (syllableIndex === 0 && !/[aeiouy]/.test(sources.slice(0, i).join("")))
