@@ -153,6 +153,12 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ead/, "ɛd"], // head, bread, dead, spread, instead, deadline (ea+d closing the syllable: 106 ɛ vs 16 i in dict; the /i/ bases lea|der/rea|ding move the d to the next syllable and never reach here)
   [/^ear(?=[nlcr])/, "ɝ"], // learn, earn, early, pearl, search, earl (ear before n/l/c/r: 63:9 in dict; d/t/s stay ɪɹ/ɑɹ)
   [/^e[ae]/, "i"], // read, seat, beat; see, tree, free (default long)
+  // e before o is hiatus: the e is its own tense nucleus and the o keeps its
+  // own value (geography, neoclassic, theocracy, creosote, cleo, rodeo).
+  // 179 i : 43 other over the dict words whose first syllable spells it,
+  // with -eor- already excluded — that exclusion drops the 21 ɔɹ of
+  // george/georgia and costs the 6 i of reorganize-.
+  [/^e(?=o(?!r))/, "i"],
   [/^iew/, "ju"],
   [/^ier$/, "iɝ"], // -iew (view/review) → ju; -ier word-final → iɝ (guard: isLastSyllable)
   [/^ie/, "i"], // piece, field, believe
@@ -758,6 +764,18 @@ function coalesceOnset(onset: string): string | null {
   return COALESCE[onset] ?? null;
 }
 
+// Greek/Latin combining forms whose i is lexically tense and stays tense
+// when the word's stress moves off it (microbiology, biochemical,
+// diagnostic, isolation). Measured as the first dict nucleus: micro 67 aɪ
+// : 1, bio 41 : 1, dia 44 : 0, iso 22 : 4. Every general frame these might
+// have fallen out of loses on the dict's Italian and Slavic names —
+// an i + one or two consonants + o opening a word is 1238 ɪ : 235 aɪ
+// (255 : 62 with no onset at all), an open stressed i before a
+// Cl/Cr onset 149 ɪ : 93 aɪ, and a syllable-final `ia` 61 aɪ : 54 i — so
+// the morpheme is the discriminator. bi- (39 ɪ : 30 aɪ), di- (492 : 58),
+// tri- (18 : 17) and nitro- (4 : 5) are not tense forms and are not here.
+const TENSE_I_FORMS = /^(?:micro|bio|dia|iso)/;
+
 // Second syllables that signal a magic-e base in a two-syllable word
 // (bake+r, take+n, make+ing, base+is, fine+al, silent, vacant, matrix).
 const TENSE_ENDINGS =
@@ -939,6 +957,9 @@ export function syllableToIPA(
     laxDomain && !t.startsWith("r") && /^[^aeiouy]*o$/.test(syllable);
   const triLaxY =
     laxDomain && !/^[^aeiouy][lr]/.test(t) && /^[^aeiouy]*y$/.test(syllable);
+  // The word opens with a tense-i combining form (see TENSE_I_FORMS).
+  const isTenseIForm =
+    syllableIndex === 0 && TENSE_I_FORMS.test(syllable + t);
   // Doubled-gg: either cross-syllable split (bigger/trigger) or within one syllable (baggy/foggy) → hard g
   const gFromDoubling =
     (prevSyllable?.endsWith("g") ?? false) || /gg[eiy]/i.test(syllable);
@@ -1109,12 +1130,20 @@ export function syllableToIPA(
     }
     // An open "ea" syllable is lax before these orthographic tails
     // (dict ɛ:i) — -ther feather/leather/weather 49:8, -san
-    // pleasant/peasant 12:2, -lou jealous/zealous 9:0. The tails that
-    // keep the tense default stay out: -son (season/reason 29:0),
-    // -der (leader/reader 14:4), -ter (eater/theater 22:1).
-    if (remaining === "ea" && /^(?:ther|san|lou)/.test(tail ?? "")) {
+    // pleasant/peasant 12:2, -lou jealous/zealous 9:0, -su measure/
+    // treasure/pleasure/countermeasure 20:1. An "eal" left open before
+    // -th is the same boundary case for ^ealth, which needs the five
+    // letters in one syllable and so misses heal|thier, weal|thiest,
+    // steal|thier (8:1). The tails that keep the tense default stay out:
+    // -son (season/reason 29:0), -der (leader/reader 14:4), -ter
+    // (eater/theater 22:1).
+    if (
+      (remaining === "ea" && /^(?:ther|san|lou|su)/.test(tail ?? "")) ||
+      (remaining === "eal" && /^th/.test(tail ?? ""))
+    ) {
       emit("ea", "ɛ", "phoneme:^ea-lax");
-      break;
+      remaining = remaining.substring(2);
+      continue;
     }
     // The same silent-g rime as ^ign, seen across a syllable boundary:
     // maximal onset moves the n onto a vowel-initial suffix (de|sig|ner,
@@ -1159,7 +1188,11 @@ export function syllableToIPA(
       remaining = remaining.substring(1);
       continue;
     }
-    if (isStressed && syllableIndex === 0 && /^i(?=o|a(?:[^aeiouyn]|n[^aeiouy]))/.test(remaining)) {
+    if (
+      syllableIndex === 0 &&
+      ((isStressed && /^i(?=o|a(?:[^aeiouyn]|n[^aeiouy]))/.test(remaining)) ||
+        (isTenseIForm && /^i[ao]/.test(remaining)))
+    ) {
       emit("i", "aɪ", "phoneme:^i-hiatus");
       remaining = remaining.substring(1);
       continue;
@@ -1172,7 +1205,7 @@ export function syllableToIPA(
     const aFire = (nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE ||
       (twoSylTense && /^[^aeiouy]*a$/.test(syllable) && !nextSyllable!.startsWith("r")) ||
       (aTwoSylTense && /^[^aeiouy]*a$/.test(syllable)));
-    const iFire = (nextIsMagicE || endsWithSilentE || (nextIsCle && isStressed) ||
+    const iFire = (nextIsMagicE || endsWithSilentE || (nextIsCle && isStressed) || isTenseIForm ||
       (twoSylTense && /^[^aeiouy]*i$/.test(syllable) && !/^(?:v|en$)/.test(nextSyllable!)));
     const skip = new Set<string>();
     if (!hadDoubledL) skip.add("^al$");
