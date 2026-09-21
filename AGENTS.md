@@ -36,9 +36,9 @@ The runtime path on real text is what users report against, so the goal is measu
 |---|---|---|---|
 | Runtime strict parity over dict | `yarn test:parity` | 89.54% → **93.37%** | ≥ 92% **met**; next ≥ 94% |
 | Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → **93.06%** | ≥ 93% **met**; next ≥ 94% |
-| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 74.63% | ≥ 75%, then back to the 86.998% baseline by rules alone |
-| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 67.52% | ≥ 70% |
-| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 48.98% | ≥ 50% |
+| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 74.64% | ≥ 75% (0.36pp away), then back to the 86.998% baseline by rules alone |
+| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 67.58% | ≥ 70% |
+| evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 49.02% | ≥ 50% (close) |
 
 Parallel worktree agents, one rule family each, merged sequentially, produced both passes: the first measured strict +1547/−308 on the rule path, the second (unstressed reduction, back vowels, tense i/e) a further +709/−179 with +68/−1 on the top-5000 list. A rule change is only visible to parity after `yarn build-dict` re-mines the table, so parity is judged after the rebuild, never in a worktree.
 
@@ -73,6 +73,8 @@ A stressed open `a` behaves like `o` and `y` under trisyllabic laxing, not the o
 Do NOT extend the last-syllable prefix guard to an `n` coda for format/impact/content: measured on the genuinely-unstressed subset, final `a` with an `n` coda is 1809 ə : 190 æ and final `e` with `nt` is 324 ə : 40 ɛ. Those three are stress errors, not guard omissions.
 
 Line-count trigger (2026-09-10): it now counts code lines, not total lines. Measured at 2789 total the split was 2002 code / 706 comment / 165 blank, i.e. the ceiling was being tripped by the measured-ratio comment this loop requires on every rule, not by code growth. Counting code keeps the trigger honest in both directions: it still fires on real accumulation, and it stops rewarding the deletion of the evidence behind a rule.
+
+A sixth, smaller pass (2026-09-22) closed a real dead-code bug: `syllabify()` always attaches word-initial `x` to the FIRST syllable (`exist` → `["e","xist"]`, never `["ex","ist"]`), so the `"ex"` entry already sitting in `PREFIXES_2SYL` could only ever fire for ex+consonant words (export, expect — 25:17 final), never ex+vowel, where the prefix is hidden inside `syllables[0]`. `assignStress` now aliases `firstSyl` to `"ex"` when it is `"e"` immediately followed by `x`, without touching `syllabify()` itself (worked around it, the same way the pre-existing `a-` prefix special-case does). True 2-syllable ex+vowel words: 11:5 final in the dict — matching a stale, never-actually-verified comment that had been sitting next to the dead entry. Same pass fixed two related bugs found while chasing it: /ɡz/ (not a licit onset) was landing the stress mark on the wrong side of the cluster in 112/112 dict entries containing it, and `exh-` before a reduced vowel (exhibit, exhaust) wasn't voicing to /ɡz/ the way `ex` + a full vowel already did. `exit` is the one measured regression — no orthographic signal separates it from exist/exert, and it is the minority side of the split.
 
 ### Two traps in the measurement itself
 
