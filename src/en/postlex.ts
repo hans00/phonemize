@@ -416,6 +416,11 @@ const POST_LEX_RULES: PostLexRule[] = [
   // falls after the x (76:6 in dict — exam, exact, exist); stressed
   // ex- keeps /ks/ (execute, exercise) and so does medial x (55:24).
   { when: (w) => /^ex[aeiou]/.test(w), re: /^([aeiouɪɛəʌ]+)ks/, sub: "$1ɡz" },
+  // <exh> + vowel voices on the same terms and swallows the h. The dict
+  // splits it on the prefix vowel, not the spelling: a reduced prefix is
+  // /ɡz/ 14:0 (exhibit ɪɡˈzɪbɪt, exhaust, exhort, exhilarate), a full /ɛ/
+  // keeps /ks/ + /h/ 8:1 (exhale ɛksˈheɪɫ, exhibition ˌɛksəˈbɪʃən).
+  { when: (w) => /^exh[aeiou]/.test(w), re: /^([ɪə])ksh/, sub: "$1ɡz" },
   // -stle: the t is silent before syllabic l (23:1 in dict — castle,
   // whistle, wrestle), same deletion the ^sten$ suffix rule makes.
   { when: (w) => /stles?$/.test(w), re: /st(ə[lɫ]z?)$/, sub: "s$1" },
@@ -460,6 +465,17 @@ const ONSET_CLUSTERS = new Set([
   "pɫ", "bɫ", "kɫ", "ɡɫ", "fɫ",
   "tw", "kw", "dw", "ɡw", "hw",
 ]);
+// The mirror repair: /ɡz/ is not a licit English onset, so the mark can
+// never sit in front of it. The orthographic syllabifier gives the whole
+// <x> of ex|ist, ex|ample to the following onset, which puts the mark one
+// segment too far left; the dict writes that ɡ in the preceding coda
+// 112:0 (ɪɡˈzɪst, ɪɡˈzæmpəɫ, ɑɡˈzɪɫiɛɹi, ˌæɫəɡˈzændɝ — zero ˈɡz or ˌɡz).
+// Which side of the mark the whole cluster lands on depends on where the
+// orthographic syllabifier put the <x>: ex|ample gives it to the onset
+// (ɪˈɡzæmpəɫ), exh|aust to the coda once the h is gone (ɪɡzˈɔst). Both
+// want the same repair.
+const GZ_ONSET_RE = new RegExp(`([${IPA_V}])([ˈˌ])ɡz`, "g");
+const GZ_CODA_RE = new RegExp(`ɡz([ˈˌ])(?=[${IPA_V}])`, "g");
 
 /** Count distinct vowel nuclei (vowel-char runs) in ipa[from..to). */
 function nucleiBetween(ipa: string, from: number, to: number): number {
@@ -607,6 +623,7 @@ export function applyPostStress(ipa: string, word: string): string {
   out = out.replace(ONSET_MAX_2_RE, (m, v, c1, c2) =>
     ONSET_CLUSTERS.has(c1 + c2) ? v + "ˈ" + c1 + c2 : m,
   );
+  out = out.replace(GZ_ONSET_RE, "$1ɡ$2z").replace(GZ_CODA_RE, "ɡ$1z");
   if (LOAN_PENULT_ORTHO_RE.test(word))
     out = out.replace(LOAN_PENULT_RE, "ˈ$1i$2$3");
   if (word.endsWith("ation")) {

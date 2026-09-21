@@ -623,7 +623,16 @@ export function assignStress(syllables: string[], word: string): number {
     const laxRoot =
       !DIGRAPH_RIME.test(syllables[1]) && !/[^aeiouy]e$/.test(syllables[1]);
     if (firstSyl === "com" && laxRoot) return 0;
-    if (PREFIXES_2SYL.includes(firstSyl)) return isPrefix(firstSyl) ? 1 : 0;
+    // Onset maximisation hides the ex- prefix before a vowel: the <x> goes
+    // to the following onset, so `exist` arrives here as e|xist and the
+    // "ex" entry above can never match it (only ex+consonant words —
+    // ex|pect, ex|port — reach it spelt whole). Restore the prefix for the
+    // lookup; the dict wants final stress on 11 of the 16 true two-syllable
+    // ex+vowel words (exact, exam, exempt, exert, exist against exile,
+    // exit). `isPrefix` is vacuously true here — the letter after <ex> is
+    // the root vowel, never a second <x>.
+    const prefixSyl = firstSyl === "e" && lowerWord[1] === "x" ? "ex" : firstSyl;
+    if (PREFIXES_2SYL.includes(prefixSyl)) return isPrefix(prefixSyl) ? 1 : 0;
     // The bare a- prefix is only weak when the root behind it is a tense
     // rime: about, abroad, again, agree, aboard, around, amount, aloud.
     // A light root keeps initial stress (acid, adam, atom, arab), so the
