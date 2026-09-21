@@ -140,10 +140,10 @@ describe("nasal assimilation stops at a prefix boundary", () => {
 
 describe("word-initial <ex> before a vowel is /ɡz/", () => {
   it.each([
-    ["example", "ɪˈɡzæmpəɫ"],
-    ["exotic", "ɪˈɡzɑtɪk"],
-    ["exemption", "ɪˈɡzɛmpʃən"],
-    ["exude", "ɪˈɡzud"],
+    ["example", "ɪɡˈzæmpəɫ"],
+    ["exotic", "ɪɡˈzɑtɪk"],
+    ["exemption", "ɪɡˈzɛmpʃən"],
+    ["exude", "ɪɡˈzud"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
 
