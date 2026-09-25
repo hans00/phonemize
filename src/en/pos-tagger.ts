@@ -102,6 +102,8 @@ const AUX_VERBS = [
   "must",
 ];
 
+const PREVERBAL_ADVERBS = ["also", "often", "never", "always", "usually", "still", "sometimes", "rarely", "seldom", "then"];
+const DEMONSTRATIVES = ["this", "that", "these", "those"];
 const BE_FORMS = ["am", "is", "are", "was", "were", "be", "being", "been"];
 const HAVE_FORMS = ["have", "has", "had", "having"];
 
@@ -254,9 +256,11 @@ export class SimplePOSTagger {
 
       // Enhanced detection patterns - highest priority first
 
-      // Previous word is determiner -> likely noun (HIGHEST priority for structural patterns)
-      if (prevWord && DETERMINERS.includes(prevWord)) {
-        return { word, pos: "!V", confidence: 0.95 };
+      // Previous word is determiner -> likely noun (HIGHEST priority for structural patterns).
+      // A demonstrative is as often a pronoun subject (these consist of …),
+      // so it is not noun evidence.
+      if (prevWord && DETERMINERS.includes(prevWord) && !DEMONSTRATIVES.includes(prevWord)) {
+        return { word, pos: "N", confidence: 0.95 };
       }
 
       // Imperative patterns: Please/Don't + word -> likely verb
@@ -272,6 +276,12 @@ export class SimplePOSTagger {
       // Subject pronoun + word -> likely verb (I read, he leads, etc.)
       if (prevWord && SUBJECT_PRONOUNS.includes(prevWord)) {
         return { word, pos: "V", confidence: 0.85 };
+      }
+
+      // Pre-verbal adverb + word (he also conducts, never refuse). An -ly
+      // adverb is not evidence: it modifies an adjective as often (55%).
+      if (prevWord && PREVERBAL_ADVERBS.includes(prevWord)) {
+        return { word, pos: "V", confidence: 0.7 };
       }
 
       // Negated verb: not + word (did not read, cannot refuse)
@@ -297,6 +307,11 @@ export class SimplePOSTagger {
         return { word, pos: "V", confidence: 0.8 };
       }
 
+      // Subject position: word + be/have/modal (the record was, the transform is)
+      if (nextWord && (BE_FORMS.includes(nextWord) || HAVE_FORMS.includes(nextWord) || MODAL_VERBS.includes(nextWord))) {
+        return { word, pos: "N", confidence: 0.65 };
+      }
+
       // Word + determiner/article -> current word likely verb (read the, lead the, etc.)
       if (nextWord && DETERMINERS.includes(nextWord)) {
         return { word, pos: "V", confidence: 0.8 };
@@ -304,7 +319,7 @@ export class SimplePOSTagger {
 
       // Previous word is preposition -> likely noun
       if (prevWord && PREPOSITIONS.includes(prevWord)) {
-        return { word, pos: "!V", confidence: 0.7 };
+        return { word, pos: "N", confidence: 0.7 };
       }
     }
 

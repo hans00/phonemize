@@ -40,3 +40,7 @@ MISUSE|M IH0 S Y UW1 Z|M IH0 S Y UW1 S|V
 MOUTH|M AW1 DH|M AW1 TH|V
 PRECIPITATE|P R IH0 S IH1 P IH0 T EY2 T|P R IH0 S IH1 P IH0 T AH0 T|V
 PREDICATE|P R EH1 D AH0 K EY2 T|P R EH1 D IH0 K AH0 T|V
+#Upstream keys the agent noun "closer" (one who closes) to N; the tagger's N
+#fires on any determiner, which is far more often the comparative (the closer
+#the molecules). Keep the comparative on both sides.
+CLOSER|K L OW1 S ER0|K L OW1 S ER0|N

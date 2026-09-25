@@ -35,7 +35,7 @@ describe('POS Tagger', function() {
     describe('Context-based detection', function() {
       it('should detect verbs after determiners', function() {
         const result = tagger.tagWord('read', ['the'])
-        expect(result.pos).toEqual('!V') // Non-verb after determiner
+        expect(result.pos).toEqual('N') // Noun after determiner
         expect(result.confidence).toEqual(0.95)
       })
 
@@ -101,7 +101,7 @@ describe('POS Tagger', function() {
         const prepositions = ['in', 'on', 'at', 'by', 'for', 'with', 'from', 'of', 'about', 'under', 'over', 'through', 'between', 'among']
         for (const prep of prepositions) {
           const result = tagger.tagWord('book', [prep])
-          expect(result.pos).toEqual('!V')
+          expect(result.pos).toEqual('N')
           expect(result.confidence).toEqual(0.7)
         }
       })
@@ -207,7 +207,7 @@ describe('POS Tagger', function() {
       const results = tagger.tagWords(words)
       
       // 'cat' should be tagged as noun because it's after determiner 'the'
-      expect(results[1].pos).toEqual('!V')
+      expect(results[1].pos).toEqual('N')
       expect(results[1].confidence).toEqual(0.95)
     })
 

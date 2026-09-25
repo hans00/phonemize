@@ -171,6 +171,16 @@ describe('Utils', function() {
       expect(arpabetToIpa('HH AX L OW')).toEqual('həloʊ')
     })
 
+    // The mark goes before the longest licit onset, not right after the
+    // previous vowel (kəˈnsɪsts, ɪˈmpækt).
+    it('should place the stress mark at the maximal licit onset', function() {
+      expect(arpabetToIpa('K AH0 N S IH1 S T S')).toEqual('kənˈsɪsts')
+      expect(arpabetToIpa('IH2 M P AE1 K T')).toEqual('ˌɪmˈpækt')
+      expect(arpabetToIpa('AH0 B S T R AE1 K T')).toEqual('əbˈstɹækt')
+      expect(arpabetToIpa('R IH0 K AO1 R D')).toEqual('ɹɪˈkɔɹd')
+      expect(arpabetToIpa('S T R IY1 T')).toEqual('ˈstɹit')
+    })
+
     it('should handle multiple stress markers', function() {
       expect(arpabetToIpa('AH1 B AX2 K EY T')).toEqual('ˈəˌbəkeɪt')
     })

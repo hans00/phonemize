@@ -80,6 +80,24 @@ describe("Homographs", function() {
       expect(result).not.toContain("null");
     });
 
+    // Imported noun/default pairs (src-data/en/homographs-misaki.txt): the
+    // noun reading needs noun evidence, otherwise the word keeps its default.
+    it("should keep the default reading of a noun/default pair without noun evidence", function() {
+      expect(toIPA("The team consists of five people")).toContain("kənˈsɪsts");
+      expect(toIPA("They laminate the cards")).toContain("ˈɫæməˌneɪt");
+      expect(toIPA("Apply the laminate evenly")).toContain("ˈɫæmənət");
+      // A demonstrative is a pronoun subject here, not noun evidence.
+      expect(toIPA("These consist of three parts")).toContain("kənˈsɪst");
+      // A pre-verbal adverb is verb evidence.
+      expect(toIPA("He also conducts works by Bach")).toContain("kənˈdʌkts");
+    });
+
+    it("should read a verb/default pair by POS", function() {
+      expect(toIPA("The buffet was delicious")).toContain("bəˈfeɪ");
+      expect(toIPA("He will affiliate with them")).toContain("ˌeɪt");
+      expect(toIPA("She is an affiliate of the firm")).toContain("əˈfɪɫiət");
+    });
+
     it("should handle sentences with multiple homographs", function() {
       const result = toIPA("I read about the lead in the wind that can tear a bow");
       expect(result).toBeDefined();

@@ -78,6 +78,15 @@ export function ipaToArpabet(ipa: string): string {
   return result.join(" ").replace(/\s+/g, " ").trim();
 }
 
+// Licit English syllable onsets over the IPA the converter emits: every
+// single consonant but /ŋ/, and the attested two- and three-consonant clusters.
+const LICIT_ONSETS = new Set([
+  ..."b d ɡ k p t ð f h s ʃ θ v z ʒ tʃ dʒ m n l ɹ w j".split(" "),
+  ..."pɹ bɹ tɹ dɹ kɹ ɡɹ fɹ θɹ ʃɹ pl bl kl ɡl fl sl tw dw kw ɡw sw θw".split(" "),
+  ..."pj bj kj ɡj mj fj vj hj sp st sk sm sn sf".split(" "),
+  ..."spɹ stɹ skɹ spl skw skj spj".split(" "),
+]);
+
 /**
  * Convert ARPABET phonetic notation to IPA format
  * @param arpabet - ARPABET phonetic string
@@ -121,12 +130,21 @@ export function arpabetToIpa(arpabet: string): string {
     else if (stress === "2" && secondaryIdx < 0) secondaryIdx = result.length - 1;
   }
 
-  // Onset of the stressed vowel = walk left over consonants to just after the
-  // previous vowel (maximal-onset-ish; correct for the short custom entries
-  // this path serves). Returns the result[] index to insert the mark before.
+  // Onset of the stressed vowel = the longest run of consonants before it that
+  // is still a licit English onset (maximal onset). Walking over every
+  // consonant put the mark after the previous vowel (kəˈnsɪst, ɪˈmpækt).
+  // Word-initially any cluster is the onset. Returns the result[] index to
+  // insert the mark before.
   const onsetOf = (vowelIdx: number): number => {
     let p = vowelIdx;
-    while (p > 0 && !isVowel[p - 1]) p--;
+    while (p > 0 && !isVowel[p - 1]) {
+      if (p - 1 > 0 && !LICIT_ONSETS.has(result.slice(p - 1, vowelIdx).join(""))) {
+        let q = p - 1;
+        while (q > 0 && !isVowel[q - 1]) q--;
+        if (q > 0) break;
+      }
+      p--;
+    }
     return p;
   };
 

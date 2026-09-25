@@ -250,8 +250,15 @@ async function main(): Promise<void> {
       `Loaded ${Object.keys(customHomographs).length} entries from custom homographs`,
     );
 
-    // Merge homographs (custom overrides original)
-    const finalHomographs = { ...homographDict, ...customHomographs };
+    // misaki's POS-split readings fill words the upstream table lacks
+    // (see scripts/import-misaki-homographs.ts).
+    const misakiHomographsPath = new URL("../src-data/en/homographs-misaki.txt", import.meta.url)
+      .pathname;
+    const misakiHomographs = parseHomographs(fs.readFileSync(misakiHomographsPath, "utf-8"));
+    console.log(`Loaded ${Object.keys(misakiHomographs).length} entries from misaki homographs`);
+
+    // Merge homographs: misaki < upstream < custom
+    const finalHomographs = { ...misakiHomographs, ...homographDict, ...customHomographs };
     
     const homographsDestPath = path.join(enDir, "homographs.json");
     fs.writeFileSync(
