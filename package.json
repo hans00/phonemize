@@ -63,6 +63,7 @@
     "test:article-accuracy": "tsx scripts/eval-with-ai.ts --context --lang en-US --data-dir scripts/eval-data-articles --min-score 80 --report-dir scripts/.article-eval-cache",
     "test:common-coverage": "tsx scripts/evaluate-common-coverage.ts",
     "test:common-accuracy": "tsx scripts/evaluate-common-accuracy.ts",
+    "test:homographs": "tsx scripts/evaluate-homographs.ts",
     "typecheck": "tsc -b",
     "build": "rollup -c",
     "build:watch": "rollup -c --watch",
