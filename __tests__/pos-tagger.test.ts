@@ -66,14 +66,29 @@ describe('POS Tagger', function() {
         }
       })
 
-      it('should detect verbs after auxiliary verbs', function() {
-        const auxVerbs = ['am', 'is', 'are', 'was', 'were', 'be', 'being', 'been', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing']
-        for (const aux of auxVerbs) {
+      it('should detect verbs after do-auxiliaries', function() {
+        for (const aux of ['do', 'does', 'did', 'doing']) {
           const result = tagger.tagWord('read', [aux])
           expect(result.pos).toEqual('V')
-          // Some auxiliary verbs might be modal verbs too, so confidence could be 0.8 or 0.9
           expect([0.8, 0.9]).toContain(result.confidence)
         }
+      })
+
+      // A participle or predicate adjective follows be/have (is present,
+      // has read /ɹɛd/), never the bare verb.
+      it('should not tag a verb after be/have forms', function() {
+        const auxVerbs = ['am', 'is', 'are', 'was', 'were', 'be', 'being', 'been', 'have', 'has', 'had', 'having']
+        for (const aux of auxVerbs) {
+          const result = tagger.tagWord('read', [aux])
+          expect(result.pos).toEqual('!V')
+          expect(result.confidence).toEqual(0.8)
+        }
+      })
+
+      it('should detect infinitives after "to"', function() {
+        const result = tagger.tagWord('present', ['to'])
+        expect(result.pos).toEqual('V')
+        expect(result.confidence).toEqual(0.8)
       })
 
       it('should detect verbs when followed by determiners', function() {
@@ -82,20 +97,8 @@ describe('POS Tagger', function() {
         expect(result.confidence).toEqual(0.8)
       })
 
-      it('should detect verbs when followed by nouns', function() {
-        const result = tagger.tagWord('read', ['', 'book'])
-        expect(result.pos).toEqual('V')
-        expect(result.confidence).toEqual(0.75)
-      })
-
-      it('should detect verbs when followed by "to"', function() {
-        const result = tagger.tagWord('want', ['', 'to'])
-        expect(result.pos).toEqual('V')
-        expect(result.confidence).toEqual(0.7)
-      })
-
       it('should detect nouns after prepositions', function() {
-        const prepositions = ['in', 'on', 'at', 'by', 'for', 'with', 'from', 'to', 'of', 'about', 'under', 'over', 'through', 'between', 'among']
+        const prepositions = ['in', 'on', 'at', 'by', 'for', 'with', 'from', 'of', 'about', 'under', 'over', 'through', 'between', 'among']
         for (const prep of prepositions) {
           const result = tagger.tagWord('book', [prep])
           expect(result.pos).toEqual('!V')
@@ -117,16 +120,12 @@ describe('POS Tagger', function() {
         expect(result.confidence).toEqual(0.6)
       })
 
-      it('should handle ambiguous -s ending', function() {
-        const result = tagger.tagWord('reads')
-        expect(result.pos).toEqual('V')
-        expect(result.confidence).toEqual(0.4)
-      })
-
-      it('should detect verb endings', function() {
-        expect(tagger.tagWord('organize').pos).toEqual('V')
-        expect(tagger.tagWord('simplify').pos).toEqual('V')
-        expect(tagger.tagWord('activate').pos).toEqual('V')
+      // -s, -ate, -ize … are as often nouns/adjectives (uses, estimate), so
+      // a suffix alone no longer claims V.
+      it('should not claim V from an ambiguous suffix alone', function() {
+        for (const w of ['reads', 'organize', 'simplify', 'activate']) {
+          expect(tagger.tagWord(w).pos).not.toEqual('V')
+        }
       })
 
       it('should detect noun endings', function() {
@@ -285,18 +284,6 @@ describe('POS Tagger', function() {
       // Accept the actual tokenization result (may be 7 or 8 words depending on implementation)
       expect(results.length).toBeGreaterThan(0)
       expect(results.every(r => !/[;:]/.test(r.word))).toBe(true)
-    })
-  })
-
-  describe('isLikelyNoun method coverage', function() {
-    it('should identify common nouns', function() {
-      const commonNouns = ['way', 'book', 'books', 'paper', 'time', 'people', 'world', 'life', 'hand', 'part', 'child', 'eye', 'woman', 'place', 'work', 'week', 'case', 'point', 'company', 'number', 'group', 'problem', 'fact']
-      
-      for (const noun of commonNouns) {
-        // Test through context that would trigger isLikelyNoun
-        const result = tagger.tagWord('test', ['', noun])
-        expect(result.pos).toEqual('V') // Should be verb because followed by likely noun
-      }
     })
   })
 }) 

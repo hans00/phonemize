@@ -265,8 +265,9 @@ export class EnglishG2P implements LanguageProcessor {
     word: string,
     context?: { prev?: string; next?: string },
   ): { pos: string; confidence: number } {
-    const ctx = [context?.prev ?? "", context?.next ?? ""].filter((w) => w);
-    const result = simplePOSTagger.tagWord(word, ctx);
+    // Positional: [prev, next]. An empty prev must stay in its slot, or a
+    // sentence-initial word would read its NEXT word as its previous one.
+    const result = simplePOSTagger.tagWord(word, [context?.prev ?? "", context?.next ?? ""]);
     return { pos: result.pos, confidence: result.confidence };
   }
 
