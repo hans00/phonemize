@@ -307,13 +307,16 @@ export function syllabify(word: string): string[] {
       i++;
     }
     // Absorb trailing 'w' into nucleus when it precedes a vowel (ew digraph: brewer → brew.er)
+    // — except a + w + a/o, where the w is the next onset (a·ward, a·way,
+    // a·ware, dela·ware): 181 w-onset : 5 in the dict.
     if (
       nucleus.length > 0 &&
       nucleus[nucleus.length - 1] !== "y" &&
       i < chars.length &&
       chars[i] === "w" &&
       i + 1 < chars.length &&
-      VOWELS.has(chars[i + 1])
+      VOWELS.has(chars[i + 1]) &&
+      !(nucleus[nucleus.length - 1] === "a" && /[ao]/.test(chars[i + 1]))
     ) {
       nucleus += chars[i];
       i++;

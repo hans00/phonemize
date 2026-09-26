@@ -393,3 +393,9 @@ describe("indefinite compounds", () => {
     ["somewhere", /ˌwɛɹ$/],
   ])("%s", (w, re) => expect(g.predict(w, "en")).toMatch(re));
 });
+
+// a + w + a/o: the w is the next onset, not part of an aw digraph
+// (2026-09-26, 181 : 5 in the dict).
+describe("a·w·a splits before the w", () => {
+  it("away", () => expect(new EnG2P({ disableDict: true }).predict("away", "en")).toBe("əˈweɪ"));
+});
