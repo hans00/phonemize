@@ -1416,12 +1416,23 @@ export function syllableToIPA(
     /^[^aeiouy]*e[^aeiouyx]+$/.test(syllable) &&
     !(/^e[lmnr]$/.test(syllable) && nextSyllable?.[0] === "s");
 
+  // Same frame for <o> (bom·bastic, cog·nition, dog·matic), minus the
+  // Latin com-/con-/cor-/col-/ob- prefixes, which do reduce (community,
+  // objective). Rules-only over the dict: 87 strict wins : 14, the losses
+  // mostly Polish -owski surnames.
+  const initialClosedO =
+    syllableIndex === 0 &&
+    /^[^aeiouy]*o[^aeiouy]+$/.test(syllable) &&
+    !/^(?:co[mnlr]|o[bp]$)/.test(syllable) &&
+    syllable[syllable.length - 1] !== nextSyllable?.[0];
+
   if (
     !isStressed &&
     !isSecondary &&
     !isLastSyllable &&
     !initialClosedA &&
-    !initialClosedE
+    !initialClosedE &&
+    !initialClosedO
   )
     applyReduction(reduceTable("ɪ"));
 

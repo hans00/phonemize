@@ -103,3 +103,13 @@ describe("the unstressed vowel before -ce reduces", () => {
     expect(rules("notices")).toMatch(/^ˈnoʊ/);
   });
 });
+
+// A word-initial closed <o> before the stress keeps its full vowel, like
+// <a> and <e> (2026-09-26); the com-/con-/ob- prefixes still reduce.
+describe("the initial closed <o> frame", () => {
+  it("keeps /ɑ/ in dog·matic", () => expect(rules("dogmatic")).toMatch(/^dɑɡ/));
+  it("still reduces ob- and com-", () => {
+    expect(rules("objective")).toMatch(/^əb/);
+    expect(rules("community")).toMatch(/^kə/);
+  });
+});
