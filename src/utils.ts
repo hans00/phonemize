@@ -83,7 +83,7 @@ export function ipaToArpabet(ipa: string): string {
 const LICIT_ONSETS = new Set([
   ..."b d ɡ k p t ð f h s ʃ θ v z ʒ tʃ dʒ m n l ɹ w j".split(" "),
   ..."pɹ bɹ tɹ dɹ kɹ ɡɹ fɹ θɹ ʃɹ pl bl kl ɡl fl sl tw dw kw ɡw sw θw".split(" "),
-  ..."pj bj kj ɡj mj fj vj hj sp st sk sm sn sf".split(" "),
+  ..."pj bj kj ɡj mj fj vj hj sp st sk sm sn".split(" "),
   ..."spɹ stɹ skɹ spl skw skj spj".split(" "),
 ]);
 

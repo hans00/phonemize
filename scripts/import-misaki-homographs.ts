@@ -127,7 +127,7 @@ async function main() {
       // NOUN key that differs only by voicing is another lexeme (closer "one
       // who closes"), not the noun of this word, and would fire on every
       // determiner before the comparative.
-      if (pos === "N" && devoiced(ma) === devoiced(da)) continue;
+      if (pos === "N" && segments(key(ma)) !== segments(key(da)) && devoiced(ma) === devoiced(da)) continue;
       seen.add(word);
       lines.push(`${word.toUpperCase()}|${ma}|${da}|${pos}`);
     }
