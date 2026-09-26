@@ -547,6 +547,18 @@ export function assignStress(syllables: string[], word: string): number {
     if (syllables.length >= 4) return syllables.length - 4;
   }
 
+  // -ator stresses like -ate, its verb (generator, indicator,
+  // administrator): C+a · tor, so slot length - 4, or length - 3 over a hiatus.
+  if (/[^aeiouy]ator$/.test(lowerWord) && syllables.length >= 3) {
+    if (/[iu]a$/.test(syllables[syllables.length - 2])) return Math.max(0, syllables.length - 3);
+    if (syllables.length >= 4) return syllables.length - 4;
+  }
+
+  // -ia stresses the syllable before it (india, malaria, albania,
+  // cafeteria); the syllabifier keeps consonant + ia as the last slot.
+  if (/[^aeiouy][iy]a$/.test(lowerWord) && syllables.length >= 2 && /^[^aeiouy]+[iy]a$/.test(syllables[syllables.length - 1]))
+    return syllables.length - 2;
+
   // Italian name endings take the penult (albano, agostini, capelli,
   // baldacci): -ino/-ano/-ini/-oni/-elli/-etti/-ello/-etto/-ucci/-acci.
   if (ITALIAN_ENDING.test(lowerWord) && syllables.length >= 3)
@@ -1371,6 +1383,27 @@ export function syllableToIPA(
       steps?.push({ grapheme: remaining[0], phoneme: "", rule: "unmatched" });
       remaining = remaining.substring(1);
     }
+  }
+
+  // The <a> of -ator is /eɪ/ as in -ate, stressed or not (gene·RA·tor).
+  if (isNextLastSyllable && nextSyllable === "tor" && /^[^aeiouy]+a$/.test(syllable)) {
+    const i = sources.lastIndexOf("a");
+    if (i >= 0) phonemes[i] = "eɪ";
+  }
+
+  // An open stressed syllable before -ia is tense (al·BA·nia /eɪ/,
+  // ar·ME·nia /i/, mon·GO·lia /oʊ/): Latin lengthening before a hiatus.
+  // With the -ia stress rule, rules-only: 86 strict wins : 19; <u> is left
+  // out (furia, luria keep /ʊ/ in the dict).
+  if (
+    isStressed &&
+    isNextLastSyllable &&
+    /^[^aeiouy]+[iy]a$/.test(nextSyllable ?? "") &&
+    /^[^aeiouy]*[aeo]$/.test(syllable)
+  ) {
+    const v = syllable[syllable.length - 1];
+    const i = sources.lastIndexOf(v);
+    if (i >= 0) phonemes[i] = ({ a: "eɪ", e: "i", o: "oʊ" } as Record<string, string>)[v];
   }
 
   // The stressed penult before an Italian name ending (see assignStress)

@@ -187,3 +187,15 @@ describe("Italian name endings", () => {
     expect(rules("mini")).toMatch(/ɪ/);
   });
 });
+
+// -ia stresses the syllable before it and tenses an open a/e/o there;
+// -ator stresses like -ate and keeps its /eɪ/ (2026-09-26).
+describe("-ia and -ator", () => {
+  it.each([
+    ["albania", /ˈbeɪniə$/],
+    ["media", /^ˈmidiə$/],
+    ["mongolia", /ˈɡoʊɫiə$/],
+    ["generator", /^ˈdʒɛn.*eɪtɝ$/],
+    ["administrator", /ˈmɪn.*eɪtɝ$/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+});
