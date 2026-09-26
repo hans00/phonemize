@@ -231,3 +231,43 @@ describe("-ive stress ignores the silent-e slot", () => {
     ["elusive", /ˈɫu/],
   ])("%s", (word, re) => expect(rules(word)).toMatch(re));
 });
+
+describe("a two-vowel-letter hiatus slot puts the mark on its second nucleus", () => {
+  // syllabify keeps geo/bio/prio/etc in one orthographic slot, but
+  // syllableToIPA still emits two phonemes for it; hiatusMarkOffset moves
+  // the primary off the slot's onset and onto that second nucleus.
+  // Measured over data/en/dict.json: +52/−0 on the evaluate-strict
+  // headline (rules-only, en-US phonemic) vs leaving the mark at the onset.
+  it.each([
+    ["geography", "dʒiˈɑɡɹəfi"],
+    ["biography", "baɪˈɑɡɹəfi"],
+    ["geographer", "dʒiˈɑɡɹəfɝ"],
+    ["geology", "ˌdʒiˈɑɫədʒi"],
+    ["priority", "pɹaɪˈɔɹəti"],
+    ["briana", "bɹiˈænə"],
+    ["indiana", "ˌɪndiˈænə"],
+    ["idiotic", "ˌɪdiˈɑtɪk"],
+    ["fiasco", "fiˈæskoʊ"],
+    ["viagra", "viˈæɡɹə"],
+    ["symbiotic", "ˌsɪmbiˈɑtɪk"],
+    ["histrionic", "ˌhɪstɹiˈɑnɪk"],
+    ["iona", "aɪˈoʊnə"],
+    ["iola", "aɪˈoʊɫə"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
+describe("a hiatus slot keeps the onset — no shift", () => {
+  // Two exclusions to the rule above, both regression guards:
+  //  - a combining-form prefix (bio-/neo-/ke·o-) with an onset keeps its
+  //    OWN stress when the second nucleus is the tense /oʊ/, against the
+  //    onsetless -iona/-iola family above, where the shift is correct.
+  //  - "ae"/"oe" (aetna, boeckel — 201 dict words) already elide their
+  //    first vowel downstream; that pass keys off the mark sitting before
+  //    both letters, so this slot is never treated as a hiatus at all.
+  it.each([
+    ["biome", "ˈbaɪoʊm"],
+    ["keokuk", "ˈkioʊkək"],
+    ["aetna", "ˈɛtnə"],
+    ["boeckel", "ˈboʊkəɫ"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+});

@@ -16,12 +16,13 @@ import { simplePOSTagger, isFunctionWord, reduceToWeakForm } from "./pos-tagger"
 import { transformAmericanToRP } from "./gb";
 import { predictPrincipled } from "./principled";
 import { applyPhonotactics } from "./phonotactics";
-import { applyPostLexical, applyPostStress } from "./postlex";
+import { applyPostLexical, applyPostStress, hiatusMarkOffset } from "./postlex";
 import {
   assignStress,
   secondaryStressIndices,
   syllabify,
   syllableToIPA,
+  isHiatusSlot,
 } from "./syllabify";
 
 export type EnglishDialect = "en-US" | "en-GB";
@@ -629,6 +630,28 @@ export class EnglishG2P implements LanguageProcessor {
         }
         result =
           result.substring(0, charIndex) + "ˈ" + result.substring(charIndex);
+        // A stressed slot that is a two-vowel hiatus (geo·graphy, bio·graphy,
+        // prio·rity) puts the mark on its second nucleus, not its onset. A
+        // one-slot word is excluded: a short name ending in an unstressed
+        // hiatus (mia, tia, zia — dict ˈmiə, ˈtiə, ˈziə) stresses the FIRST
+        // vowel and reduces the second, the opposite pattern, and syllabify
+        // never splits a word that short into more than one slot to tell
+        // the two apart. Relocated on `result` itself (after the mark was
+        // just inserted there), not on the pre-postlexical syllableIPA
+        // strings the charIndex prefix sum above uses — a postlexical rule
+        // earlier in the word can change length and desync that sum from
+        // where the mark actually landed. See isHiatusSlot / hiatusMarkOffset.
+        if (syllables.length > 1 && isHiatusSlot(syllables[stressedSyllableIndex])) {
+          const tail = result.slice(charIndex + 1);
+          const shift = hiatusMarkOffset(tail);
+          if (shift > 0) {
+            result =
+              result.slice(0, charIndex) +
+              tail.slice(0, shift) +
+              "ˈ" +
+              tail.slice(shift);
+          }
+        }
       }
 
       // Stress-mark convention repair (onset maximization, suffix

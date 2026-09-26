@@ -446,6 +446,49 @@ const POST_LEX_RULES: PostLexRule[] = [
 const IPA_V = "aeiouɑæɛɪɔʊʌəɝ";
 const IPA_C = "pbtdkɡfvszʃʒθðmnŋɫlɹhjw";
 
+// Diphthongs read as ONE nucleus despite being two IPA characters, so the
+// hiatus offset below doesn't mistake an offglide for a second, separate
+// vowel.
+const KNOWN_DIPHTHONGS = new Set(["eɪ", "aɪ", "ɔɪ", "aʊ", "oʊ"]);
+
+// Where the primary-stress mark belongs within a single stressed
+// syllable's own IPA, given `tail` = the already-assembled `result`
+// string starting right after the mark's default (onset) position.
+// Normally 0 (mark stays put) — but the orthographic syllabifier keeps a
+// vowel hiatus in one slot (geography's "geo", biography's "bio",
+// priority's "prio"), so a slot that is phonetically two nuclei still
+// gets one isStressed flag, and the dict's primary sits on the SECOND
+// nucleus (dʒiˈɑɡɹəfi, baɪˈɑɡɹəfi, pɹaɪˈɔɹəti), not the syllable's onset.
+// Detected structurally, not by word: strip the onset, take one nucleus
+// (a recognised diphthong counts as one), and if a vowel immediately
+// follows with no consonant between — the signature of hiatus, as
+// opposed to a coda or the end of the syllable — the mark moves there. A
+// slot whose vowel pair collapsed into one phoneme (creator's "crea" →
+// /kri/, no separate nucleus left) has nothing following the first
+// nucleus, so this returns 0 and the mark stays at the onset. Operating
+// on the post-postlexical `result` (not the pre-postlexical per-syllable
+// strings) matters: a rule earlier in the word can change length
+// (messianic's geminate mɛs+sɪæ → mɛsɪæ, −1) between where the caller's
+// prefix sum was computed and where the mark actually lands, and an
+// offset added to that stale sum can drift into the wrong nucleus.
+// One exception: a combining-form prefix (bio-, neo-, geo-, ke·o·kuk)
+// with an onset keeps ITS OWN initial stress when the second nucleus is
+// the tense /oʊ/ — biome ˈbaɪˌoʊm, neolith ˈnioʊˌɫɪθ, keokuk ˈkioʊkək —
+// against the onsetless -iona/-iola family, where /oʊ/ is fine to shift
+// onto (iona aɪˈoʊnə). Measured over data/en/dict.json: restricting the
+// shift this way turned +43/−9 into +52/−0 on the evaluate-strict
+// headline (rules-only, en-US phonemic).
+export function hiatusMarkOffset(tail: string): number {
+  let i = 0;
+  while (i < tail.length && !IPA_V.includes(tail[i])) i++;
+  if (i >= tail.length) return 0;
+  const hasOnset = i > 0;
+  i += KNOWN_DIPHTHONGS.has(tail.slice(i, i + 2)) ? 2 : 1;
+  if (i >= tail.length || !IPA_V.includes(tail[i])) return 0;
+  if (hasOnset && tail.slice(i, i + 2) === "oʊ") return 0;
+  return i;
+}
+
 // Dict convention is maximal onset: the stress mark sits before the
 // stressed syllable's onset. The syllabifier sometimes leaves a coda
 // consonant behind (ad.dict → ədˈɪkt); pull it into the onset. The

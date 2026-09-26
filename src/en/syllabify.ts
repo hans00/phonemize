@@ -831,6 +831,45 @@ export function assignStress(syllables: string[], word: string): number {
 const VOWEL_DIGRAPHS = "aa ai au aw ay ea ee ei eu ey ie oa oo ou ow oy ue ui".split(" ");
 const DIGRAPH_RIME = new RegExp(VOWEL_DIGRAPHS.join("|"));
 
+// Vowel pairs that already reduce to ONE phoneme downstream — not a
+// hiatus. Most are PHONEME_RULES digraphs (a single glide/monophthong
+// rule consumes both letters). "ae" and "oe" are different: PHONEME_RULES
+// emits each letter as its own phoneme (æ+ɛ, oʊ+ɛ), but a later
+// unstressed-hiatus pass already elides the first vowel against a
+// lexicon that never keeps it — German-name "oe" for /ø/ (boeckel
+// ˈboʊkəɫ, goebel ˈɡoʊbəɫ, 201 dict words) as well as "ae" (aetna ˈɛtnə,
+// daedalus ˈdɛdəɫəs). That elision pass keys off the mark sitting before
+// both vowels, so treating either as hiatus here would move the mark in
+// a way that stops it from firing. "y" is excluded from the nucleus
+// match entirely: a vowel + y is a glide onset for a following syllable
+// (canyon, beyond) or the syllabic-y ending, never the geography-class
+// hiatus this targets.
+const HIATUS_DIGRAPHS = new Set([
+  "ae", "ai", "ay", "au", "aw", "ea", "ee", "ei", "eu", "ey", "ie",
+  "oa", "oe", "oo", "ou", "ow", "oy", "oi", "ue", "ui", "uy",
+]);
+
+/**
+ * True when `slot` is a genuine two-vowel-letter hiatus — the orthographic
+ * syllabifier's maximal-onset split keeps both vowels in one slot (geo,
+ * bio, prio, rio, lia) instead of splitting them, though syllableToIPA
+ * still emits two phonemes for them. Excludes known digraphs (one
+ * phoneme), a doubled letter (aa — name-heavy, and phonemically one long
+ * vowel, not two nuclei), and eo directly before r (george, georgia — the
+ * o keeps ^e(?=o(?!r)) from tensing the e, so it never becomes two
+ * nuclei there).
+ */
+export function isHiatusSlot(slot: string): boolean {
+  const m = slot.match(/^[^aeiou]*([aeiou]{2})[^aeiou]*$/);
+  if (!m) return false;
+  if (m[1][0] === m[1][1] || HIATUS_DIGRAPHS.has(m[1])) return false;
+  if (m[1] === "eo" && /^[^aeiou]*eor/.test(slot)) return false;
+  // After g/q the <u> is part of the consonant (gu·ar·dian, qua·lity), not
+  // a first vowel.
+  if (m[1][0] === "u" && /[gq]u[aeiou]/.test(slot)) return false;
+  return true;
+}
+
 export function isSyllableHeavy(syllable: string): boolean {
   // A syllable is heavy if it has:
   // 1. A long vowel (vowel digraph)
