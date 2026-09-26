@@ -98,6 +98,24 @@ describe("Homographs", function() {
       expect(toIPA("She is an affiliate of the firm")).toContain("əˈfɪɫiət");
     });
 
+    it("should read a relative-clause verb after that/which/who", function() {
+      expect(toIPA("A method that uses light")).toContain("ˈjuzəz");
+    });
+
+    it("should keep the -ed adjective reading for noun evidence only", function() {
+      expect(toIPA("He learned to swim")).toContain("ɫɝnd");
+      expect(toIPA("She is a learned scholar")).toContain("ˈɫɝnɪd");
+    });
+
+    it("should read wound as /waʊnd/ only as a verb", function() {
+      expect(toIPA("He had a deep wound")).toContain("wund");
+      expect(toIPA("He wound the clock")).toContain("waʊnd");
+    });
+
+    it("should keep lead /lid/ without noun evidence", function() {
+      expect(toIPA("He sang lead vocals")).toContain("ɫid");
+    });
+
     it("should handle sentences with multiple homographs", function() {
       const result = toIPA("I read about the lead in the wind that can tear a bow");
       expect(result).toBeDefined();

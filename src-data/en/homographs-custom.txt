@@ -5,13 +5,14 @@
 #Otherwise PRONUNCIATION2 is applied
 A|AX|EY1|!V
 READ|R IY1 D|R EH1 D|V
-LEAD|L IY1 D|L EH1 D|V
+LEAD|L EH1 D|L IY1 D|N
 TEAR|T EH1 R|T IH1 R|V
 WIND|W AY1 N D|W IH1 N D|V
 BOW|B AW1|B OW1|V
 CLOSE|K L OW1 Z|K L OW1 S|V
 LIVE|L IH1 V|L AY1 V|V
-WOUND|W UW1 N D|W AW1 N D|V
+#/waʊnd/ is only ever the verb (past of wind); the noun and the verb "to wound" are /wund/.
+WOUND|W AW1 N D|W UW1 N D|V
 PRESENT|P R IH0 Z EH1 N T|P R EH1 Z AH0 N T|V
 OBJECT|AH0 B JH EH1 K T|AA1 B JH EH0 K T|V
 PERMIT|P ER0 M IH1 T|P ER1 M IH0 T|V
@@ -44,3 +45,10 @@ PREDICATE|P R EH1 D AH0 K EY2 T|P R EH1 D IH0 K AH0 T|V
 #fires on any determiner, which is far more often the comparative (the closer
 #the molecules). Keep the comparative on both sides.
 CLOSER|K L OW1 S ER0|K L OW1 S ER0|N
+#-ed words whose adjective reading (-ɪd) upstream put under V, so "he learned"
+#took the adjective. learned/blessed are mostly participles: adjective only on
+#noun evidence (a learned man, the Blessed Virgin), N scheme. dogged is mostly
+#the adjective: verb only when tagged V, like crooked/jagged/ragged upstream.
+BLESSED|B L EH1 S IH0 D|B L EH1 S T|N
+LEARNED|L ER1 N IH0 D|L ER1 N D|N
+DOGGED|D AO1 G D|D AO1 G IH0 D|V

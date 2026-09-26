@@ -102,6 +102,7 @@ const AUX_VERBS = [
   "must",
 ];
 
+const RELATIVE_PRONOUNS = ["that", "which", "who"];
 const PREVERBAL_ADVERBS = ["also", "often", "never", "always", "usually", "still", "sometimes", "rarely", "seldom", "then"];
 const DEMONSTRATIVES = ["this", "that", "these", "those"];
 const BE_FORMS = ["am", "is", "are", "was", "were", "be", "being", "been"];
@@ -276,6 +277,13 @@ export class SimplePOSTagger {
       // Subject pronoun + word -> likely verb (I read, he leads, etc.)
       if (prevWord && SUBJECT_PRONOUNS.includes(prevWord)) {
         return { word, pos: "V", confidence: 0.85 };
+      }
+
+      // Relative pronoun + word -> verb of the relative clause (a method that
+      // uses, those who refuse). A demonstrative "that" is not noun evidence
+      // either way, so the relative reading decides.
+      if (prevWord && RELATIVE_PRONOUNS.includes(prevWord)) {
+        return { word, pos: "V", confidence: 0.72 };
       }
 
       // Pre-verbal adverb + word (he also conducts, never refuse). An -ly
