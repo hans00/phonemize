@@ -710,6 +710,17 @@ export class EnglishG2P implements LanguageProcessor {
     const stemPron = (b: string): string | undefined =>
       lex(b) || this.predictInternal(b, undefined, false);
     const sPlural = (p: string): string => p + sAllomorph(p);
+    // Indefinite pronouns and adverbs are a determiner + a free noun
+    // (anyone, everything, somebody, nowhere): read both parts from the
+    // lexicon and put a secondary on the second.
+    const indefinite = /^(any|every|some|no)(one|body|thing|where|how|way|time|place)(s?)$/.exec(lowerWord);
+    if (indefinite) {
+      const head = stemPron(indefinite[1]), tailPron = stemPron(indefinite[2]);
+      if (head && tailPron) {
+        const joined = head + tailPron.replace(/ˈ/g, "ˌ").replace(/^(?!ˌ)/, "ˌ");
+        return indefinite[3] ? sPlural(joined) : joined;
+      }
+    }
     // The agent noun of a Greek -y noun keeps its stress: biology →
     // biologist, photography → photographer, economy → economist. Read
     // the -y form and swap its final /i/ for the agent suffix.

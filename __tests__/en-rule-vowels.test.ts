@@ -383,3 +383,13 @@ describe("word-initial gua-", () => {
   it("guard has a silent u", () => expect(g.predict("guard", "en")).toBe("ˈɡɑɹd"));
   it("guam is /ɡw/", () => expect(g.predict("guam", "en")).toMatch(/^ˈɡw/));
 });
+
+// Indefinite pronouns/adverbs are determiner + free noun (2026-09-26).
+describe("indefinite compounds", () => {
+  const g = new EnG2P({ disableDict: true });
+  it.each([
+    ["anything", /^ˈɛniˌθɪŋ$/],
+    ["someone", /^ˈsʌmˌwʌn$/],
+    ["somewhere", /ˌwɛɹ$/],
+  ])("%s", (w, re) => expect(g.predict(w, "en")).toMatch(re));
+});
