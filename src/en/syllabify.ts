@@ -523,6 +523,16 @@ export function assignStress(syllables: string[], word: string): number {
     return Math.max(0, syllables.length - 2);
   }
 
+  // -ity pulls the primary onto the syllable right before it (activity,
+  // abnormality, accessibility). The syllabifier keeps consonant + ity as
+  // one final slot (ac·ti·vity), so that syllable is length - 2. -iety
+  // (society, anxiety) is a different frame and is left out.
+  if (/[^aeiouy]ity$/.test(lowerWord)) return Math.max(0, syllables.length - 2);
+  // -ial does the same at 3+ slots (adversarial, editorial, material); at
+  // two the <i> is itself the stressed vowel (denial, trial).
+  if (/[^aeiouy]ial$/.test(lowerWord) && syllables.length >= 3)
+    return syllables.length - 2;
+
   // Greek/Latin scientific suffixes with fixed stress: uranium, samarium,
   // osmosis, diagnosis, arthritis, analysis, psoriasis. They pull the
   // primary onto the syllable before the suffix. The orthographic

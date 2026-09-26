@@ -1039,6 +1039,11 @@ export class EnglishG2P implements LanguageProcessor {
       // tense vowel; leave those to the whole-word rule path.
       if (sfx === "al" && /^[^aeiouy]*[aeiouy]+[^aeiouy]+$/.test(b) && !lex(b))
         continue;
+      // -ial is not stress-neutral like -al: it pulls the primary onto the
+      // syllable before it (adversary → adversarial, editor → editorial),
+      // which the whole-word stress rule places.
+      // A one-syllable stem is the stressed <i> itself (trial, dial).
+      if (sfx === "al" && b.endsWith("i") && (b.match(/[aeiouy]+/g)?.length ?? 0) >= 2) continue;
       const p = stemPron(b);
       if (p) return softenBaseFinal(preSuffixReduce(p, lowerWord), b, sfx) + ipa;
     }

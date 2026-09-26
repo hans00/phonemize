@@ -124,3 +124,19 @@ describe("-ation carries the primary on its own /eɪ/", () => {
     ["adaptation", "ˈteɪʃən"],
   ])("%s ends in %s", (word, tail) => expect(rules(word)).toMatch(new RegExp(`${tail}$`)));
 });
+
+// -ity and -ial (3+ slots) pull the primary onto the syllable right before
+// them; -ial words skip the stress-neutral -al morphology (2026-09-26).
+describe("-ity and -ial stress the syllable before them", () => {
+  it.each([
+    ["activity", /^ækˈtɪ/],
+    ["abnormality", /ˈmæ/],
+    ["accessibility", /ˈbɪ/],
+    ["editorial", /ˈtɔɹ/],
+    ["adversarial", /ˈsɛɹ/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+
+  it("keeps a one-syllable -ial stem on its own <i>", () => {
+    expect(rules("trial")).toMatch(/^ˈtɹaɪ/);
+  });
+});
