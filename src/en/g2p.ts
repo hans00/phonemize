@@ -9,7 +9,7 @@ import * as lookupTable from "../../data/en/exceptions.json";
 import * as initialismTable from "../../data/en/initialisms.json";
 import * as homographs from "../../data/en/homographs.json";
 import * as compoundParts from "../../data/en/compound-parts.json";
-import { arpabetToIpa, resolveJson } from "../utils";
+import { arpabetToIpa, resolveJson, LICIT_ONSETS } from "../utils";
 import { LanguageProcessor } from "../g2p";
 import { expandText } from "./expand";
 import { simplePOSTagger, isFunctionWord, reduceToWeakForm } from "./pos-tagger";
@@ -51,6 +51,23 @@ export interface TraceResult {
   path: "dictionary" | "morphology" | "decomposition" | "rules";
   syllables?: string[];
   steps: TraceStep[];
+}
+
+// Move the primary onto a word-final /eɪ/ (the -ation suffix syllable):
+// every existing primary demotes to secondary, marks inside the consonant
+// run before /eɪ/ are dropped, and the new mark goes before the longest
+// licit onset of that run.
+const VOWEL_CHAR = /[aeiouæɑɔəɛɪʊʌɝ]/;
+function suffixPrimary(ipa: string): string {
+  const s = ipa.replace(/ˈ/g, "ˌ");
+  const v = s.length - 2;
+  let k = v;
+  while (k > 0 && !VOWEL_CHAR.test(s[k - 1])) k--;
+  const run = s.slice(k, v).replace(/[ˈˌ]/g, "").match(/tʃ|dʒ|./g) ?? [];
+  let split = run.length;
+  while (split > 0 && LICIT_ONSETS.has(run.slice(split - 1).join("").replace(/ɫ/g, "l"))) split--;
+  if (k === 0) split = 0;
+  return s.slice(0, k) + run.slice(0, split).join("") + "ˈ" + run.slice(split).join("") + s.slice(v);
 }
 
 // Shared lookup tables, re-keyed once onto null-prototype objects so
@@ -951,16 +968,20 @@ export class EnglishG2P implements LanguageProcessor {
               : pp) + "ʃəl"
         );
     }
+    // -ation ← -ate verb or bare stem (abdication, adaptation). Like
+    // -ization, the suffix takes the primary on its /eɪ/ and the stem's
+    // primary demotes: keeping the stem's stress gave ˈæbdəˌkeɪʃən for
+    // ˌæbdɪˈkeɪʃən (316 dict words with penult stress read otherwise).
     if (lowerWord.endsWith("ation") && lowerWord.length > 7) {
       const b = lowerWord.slice(0, -5),
         ate = lex(b + "ate"),
         src = lex(b);
       if (ate)
         return (
-          (ate.match(/eɪt$/) ? ate.slice(0, -1) : ate.replace(/[ɪə]t$/, "eɪ")) +
+          suffixPrimary(ate.match(/eɪt$/) ? ate.slice(0, -1) : ate.replace(/[ɪə]t$/, "eɪ")) +
           "ʃən"
         );
-      if (src) return src + "eɪʃən";
+      if (src) return suffixPrimary(src + "eɪ") + "ʃən";
     }
     if (
       (lowerWord.endsWith("ance") || lowerWord.endsWith("ence")) &&

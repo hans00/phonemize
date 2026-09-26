@@ -113,3 +113,14 @@ describe("the prefix loop still owns three-syllable words", () => {
     ["competitive", "kəmˈpɛtətɪv"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
+
+// -ation built from an -ate verb or a bare stem takes the primary on its
+// /eɪ/; the stem's primary demotes to secondary (2026-09-26).
+describe("-ation carries the primary on its own /eɪ/", () => {
+  it.each([
+    ["abdication", "ˈkeɪʃən"],
+    ["activation", "ˈveɪʃən"],
+    ["accommodation", "ˈdeɪʃən"],
+    ["adaptation", "ˈteɪʃən"],
+  ])("%s ends in %s", (word, tail) => expect(rules(word)).toMatch(new RegExp(`${tail}$`)));
+});
