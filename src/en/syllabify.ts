@@ -81,6 +81,9 @@ const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
 
 // Context-sensitive phoneme rules with improved accuracy
 const PHONEME_RULES: Array<[RegExp, string]> = [
+  // German -auer is /aʊɝ/ (bauer, neubauer, schauer): 66 of 71 dict words
+  // failed lenient on the English readings of <au>.
+  [/^au(?=er$)/, "aʊ"],
   // Silent letter combinations
   [/^pn/, "n"],
   [/^ps/, "s"],

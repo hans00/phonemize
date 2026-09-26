@@ -687,6 +687,14 @@ export class EnglishG2P implements LanguageProcessor {
     const stemPron = (b: string): string | undefined =>
       lex(b) || this.predictInternal(b, undefined, false);
     const sPlural = (p: string): string => p + sAllomorph(p);
+    // The agent noun of a Greek -y noun keeps its stress: biology →
+    // biologist, photography → photographer, economy → economist. Read
+    // the -y form and swap its final /i/ for the agent suffix.
+    const greekAgent = /(?:log|graph|nom|soph)(ist|er)$/.exec(lowerWord);
+    if (greekAgent) {
+      const yForm = stemPron(lowerWord.slice(0, -greekAgent[1].length) + "y");
+      if (yForm && /i$/.test(yForm)) return yForm.slice(0, -1) + (greekAgent[1] === "ist" ? "ɪst" : "ɝ");
+    }
     const edPast = (p: string): string => {
       const last = p.slice(-1);
       return ["t", "d"].includes(last)

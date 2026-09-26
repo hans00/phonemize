@@ -209,3 +209,14 @@ describe("Germanic surname endings", () => {
     ["oppenheimer", /^ˈɑp/],
   ])("%s", (word, re) => expect(rules(word)).toMatch(re));
 });
+
+// Greek agent nouns keep the stress of their -y noun; German -auer is /aʊɝ/
+// (2026-09-26).
+describe("Greek agent nouns and -auer", () => {
+  it.each([
+    ["biologist", /ˈɑɫədʒɪst$/],
+    ["photographer", /ˈtɑɡɹəfɝ$/],
+    ["economist", /ˈkɑnəmɪst$/],
+    ["neubauer", /baʊɝ$/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+});
