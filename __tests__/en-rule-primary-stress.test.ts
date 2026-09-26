@@ -271,3 +271,12 @@ describe("a hiatus slot keeps the onset — no shift", () => {
     ["boeckel", "ˈboʊkəɫ"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
+
+// -ation from a rule-exact two-syllable -ate verb keeps the verb's full
+// first vowel (2026-09-26).
+describe("-ation over a two-syllable -ate verb", () => {
+  it.each([
+    ["location", /^ˌ?ɫoʊˈkeɪʃən$/],
+    ["rotation", /^ˌ?ɹoʊˈteɪʃən$/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+});

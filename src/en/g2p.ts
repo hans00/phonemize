@@ -1050,6 +1050,14 @@ export class EnglishG2P implements LanguageProcessor {
           "ʃən"
         );
       if (src) return suffixPrimary(src + "eɪ") + "ʃən";
+      // A two-syllable -ate verb that the rules get right is not in the
+      // exception table, so read it from the rules (locate → location
+      // keeps its /oʊ/). Longer ones are left to the whole-word path: read
+      // from the rules they lose more than they win (generation).
+      if (syllabify(b + "ate").length <= 3) {
+        const ruleAte = this.predictInternal(b + "ate", undefined, false);
+        if (ruleAte && /eɪt$/.test(ruleAte)) return suffixPrimary(ruleAte.slice(0, -1)) + "ʃən";
+      }
     }
     if (
       (lowerWord.endsWith("ance") || lowerWord.endsWith("ence")) &&
