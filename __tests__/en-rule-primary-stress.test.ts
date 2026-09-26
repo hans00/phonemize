@@ -181,6 +181,8 @@ describe("Italian name endings", () => {
     ["barbano", /ˈbɑnoʊ$/],
     ["casino", /ˈsinoʊ$/],
     ["lozano", /^ɫoʊˈ/],
+    ["dicola", /ˈkoʊɫə$/],
+    ["gucci", /^ˈɡutʃi$/],
   ])("%s", (word, re) => expect(rules(word)).toMatch(re));
 
   it("leaves a two-syllable English -ini alone", () => {

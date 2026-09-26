@@ -491,7 +491,7 @@ export function secondaryStressIndices(
 }
 
 const GERMANIC_NAME_ENDING = /(?:berger|inger|ermann?|heimer|meyer|meier|hofer|felder)$/;
-const ITALIAN_ENDING = /(?:ino|ano|ini|oni|elli|etti|ello|etto|ucci|acci)$/;
+const ITALIAN_ENDING = /(?:ino|ano|ini|oni|elli|etti|ello|etto|ucci|acci|ola)$/;
 const FINAL_BEAT_RIME = /[aiouy][bcdfgkpstxz]$|e[bcdfgkptxz]$/;
 const FINAL_OBSTRUENT_E = /e[^aeiouylmnrwh]*[bcfgjkpqvz][^aeiouylmnrwh]*$|e[ln]d$/;
 const SILENT_E_SLOT = /^[^aeiouy]*[^aeiouyl]e$/;
@@ -1423,8 +1423,9 @@ export function syllableToIPA(
   if (
     isStressed &&
     isNextLastSyllable &&
-    // A two-syllable -ini is English (mini); -ino/-ano there are names (gino).
-    (head !== "" || !/ini$/.test(syllable + (tail ?? ""))) &&
+    // At two syllables -ini/-ola are English or anglicised (mini, nola);
+    // the other endings are names there too (gino, gucci).
+    (head !== "" || !/(?:ini|ola)$/.test(syllable + (tail ?? ""))) &&
     ITALIAN_ENDING.test(head + syllable + (tail ?? ""))
   ) {
     const v = /[aeiou](?=[^aeiou]*$)/.exec(syllable)?.[0];
