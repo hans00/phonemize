@@ -116,6 +116,11 @@ describe("Homographs", function() {
       expect(toIPA("He sang lead vocals")).toContain("ɫid");
     });
 
+    it("should read a noun after an attributive adjective or a possessive", function() {
+      expect(toIPA("It was a time of political intrigue")).toContain("ˈɪntɹiɡ");
+      expect(toIPA("According to Hammond's postulate")).toContain("ˈpɑstʃəɫət");
+    });
+
     it("should handle sentences with multiple homographs", function() {
       const result = toIPA("I read about the lead in the wind that can tear a bow");
       expect(result).toBeDefined();

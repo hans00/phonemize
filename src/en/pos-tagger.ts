@@ -102,6 +102,7 @@ const AUX_VERBS = [
   "must",
 ];
 
+const ATTRIBUTIVE_SUFFIX = /(ical|ial|ous|ful|less|ible|able|ular|ic|al)$/;
 const RELATIVE_PRONOUNS = ["that", "which", "who"];
 const PREVERBAL_ADVERBS = ["also", "often", "never", "always", "usually", "still", "sometimes", "rarely", "seldom", "then"];
 const DEMONSTRATIVES = ["this", "that", "these", "those"];
@@ -256,6 +257,17 @@ export class SimplePOSTagger {
         context.length >= 2 ? context[1]?.toLowerCase() : undefined; // Second element is next word
 
       // Enhanced detection patterns - highest priority first
+
+      // Possessive before the word -> noun (Hammond's postulate, Mengistu's overthrow)
+      if (prevWord && /['’]s$|s['’]$/.test(prevWord)) {
+        return { word, pos: "N", confidence: 0.9 };
+      }
+
+      // Attributive adjective before the word -> noun (political intrigue,
+      // violent overthrow). Only unambiguous adjective suffixes.
+      if (prevWord && prevWord.length > 4 && ATTRIBUTIVE_SUFFIX.test(prevWord)) {
+        return { word, pos: "N", confidence: 0.6 };
+      }
 
       // Previous word is determiner -> likely noun (HIGHEST priority for structural patterns).
       // A demonstrative is as often a pronoun subject (these consist of …),
