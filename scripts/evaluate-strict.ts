@@ -89,11 +89,15 @@ const stripStress = (s: string) => s.replace(STRESS, "");
 //   2. The unstressed weak-vowel merger — unstressed /ɪ/ and /ə/ are
 //      merged for most NAmE speakers (roses ≈ Rosa's), and CMUDict uses
 //      IH0/AH0 interchangeably for the same contexts. Unstressed /ɪ/ → /ə/.
+//   3. STRUT /ʌ/ vs /ə/ — the same phoneme split only by stress: CMUdict
+//      has one AH (AH1/AH0) and Merriam-Webster writes both \ə\ ("\ˈə\ in
+//      stressed syllables … IPA [ʌ]"). The data here (ipa-dict) writes ə
+//      even under a primary mark, which the mark still carries, so ʌ → ə.
 // Primary stress placement, stressed-vowel quality, and every consonant
 // stay fully strict.
 const PHON_VOWELS = "aeiouɑæɛɪɔʊʌəɝ";
 function enUsPhonemic(ipa: string): string {
-  const noSecondary = ipa.replace(/ˌ/g, "");
+  const noSecondary = ipa.replace(/ˌ/g, "").replace(/ʌ/g, "ə");
   let out = "";
   for (let i = 0; i < noSecondary.length; i++) {
     if (noSecondary[i] !== "ɪ") {
