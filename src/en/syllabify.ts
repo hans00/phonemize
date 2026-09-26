@@ -492,6 +492,14 @@ export function secondaryStressIndices(
 
 const GERMANIC_NAME_ENDING = /(?:berger|inger|ermann?|heimer|meyer|meier|hofer|felder)$/;
 const ITALIAN_ENDING = /(?:ino|ano|ini|oni|elli|etti|ello|etto|ucci|acci|ola)$/;
+// Latin hiatus endings that pull the primary onto the syllable right
+// before them and (see the syllableToIPA use site) tense an open vowel
+// there: -ia (malaria), -ian (canadian), -ious (curious), -eous
+// (spontaneous). -ia/-ian take an optional plural -s (cafeterias,
+// canadians, jordanians): the maximal-onset syllabifier glues it onto the
+// same last slot, so a trailing-s word never reaches this rule without it.
+// Shared between assignStress and the tensing rule so the two stay in sync.
+const LATIN_HIATUS_ENDING = /^[^aeiouy]+(?:[iy]an?s?|eous|ious)$/;
 const FINAL_BEAT_RIME = /[aiouy][bcdfgkpstxz]$|e[bcdfgkptxz]$/;
 const FINAL_OBSTRUENT_E = /e[^aeiouylmnrwh]*[bcfgjkpqvz][^aeiouylmnrwh]*$|e[ln]d$/;
 const SILENT_E_SLOT = /^[^aeiouy]*[^aeiouyl]e$/;
@@ -558,9 +566,10 @@ export function assignStress(syllables: string[], word: string): number {
     if (syllables.length >= 4) return syllables.length - 4;
   }
 
-  // -ia stresses the syllable before it (india, malaria, albania,
-  // cafeteria); the syllabifier keeps consonant + ia as the last slot.
-  if (/[^aeiouy][iy]a$/.test(lowerWord) && syllables.length >= 2 && /^[^aeiouy]+[iy]a$/.test(syllables[syllables.length - 1]))
+  // -ia/-ian/-ious/-eous stress the syllable before them (india, malaria,
+  // cafeteria, canadian, barbarian, various, curious, spontaneous); the
+  // syllabifier keeps consonant + suffix as the last slot.
+  if (syllables.length >= 2 && LATIN_HIATUS_ENDING.test(syllables[syllables.length - 1]))
     return syllables.length - 2;
 
   // Germanic compound surname elements leave the primary on the first
@@ -1402,19 +1411,34 @@ export function syllableToIPA(
     if (i >= 0) phonemes[i] = "eɪ";
   }
 
-  // An open stressed syllable before -ia is tense (al·BA·nia /eɪ/,
-  // ar·ME·nia /i/, mon·GO·lia /oʊ/): Latin lengthening before a hiatus.
-  // With the -ia stress rule, rules-only: 86 strict wins : 19; <u> is left
-  // out (furia, luria keep /ʊ/ in the dict).
+  // An open stressed syllable before -ia/-ian/-ious/-eous is tense
+  // (al·BA·nia /eɪ/, ar·ME·nia /i/, mon·GO·lia /oʊ/, ca·NA·dian /eɪ/,
+  // spon·TA·neous /eɪ/): Latin lengthening before a hiatus. With the -ia
+  // stress rule, rules-only: 86 strict wins : 19; <u> is left out (furia,
+  // luria keep /ʊ/ in the dict).
+  //
+  // When the hiatus syllable's onset is /r/ the same lengthening gives the
+  // r-colored SQUARE/NEAR vowel instead of the plain diphthong: the r
+  // resyllabifies onto the suffix (bar·BAR·ian, vi·CAR·ious, al·GER·ian),
+  // the same alternation the word-final ^are$/^ere$ rime rules already
+  // spell out. <o> needs no branch here: the default open stressed o is
+  // already /oʊ/, and postlex's oʊɹ→ɔɹ narrowing handles glo·ri·ous the
+  // same way it narrows for/adore.
   if (
     isStressed &&
     isNextLastSyllable &&
-    /^[^aeiouy]+[iy]a$/.test(nextSyllable ?? "") &&
+    LATIN_HIATUS_ENDING.test(nextSyllable ?? "") &&
     /^[^aeiouy]*[aeo]$/.test(syllable)
   ) {
     const v = syllable[syllable.length - 1];
-    const i = sources.lastIndexOf(v);
-    if (i >= 0) phonemes[i] = ({ a: "eɪ", e: "i", o: "oʊ" } as Record<string, string>)[v];
+    const table: Record<string, string> = nextSyllable!.startsWith("r")
+      ? { a: "ɛ", e: "ɪ" }
+      : { a: "eɪ", e: "i", o: "oʊ" };
+    const replacement = table[v];
+    if (replacement) {
+      const i = sources.lastIndexOf(v);
+      if (i >= 0) phonemes[i] = replacement;
+    }
   }
 
   // The stressed penult before an Italian name ending (see assignStress)
