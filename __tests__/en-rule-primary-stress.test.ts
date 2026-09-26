@@ -222,3 +222,12 @@ describe("Greek agent nouns and -auer", () => {
     ["neubauer", /baʊɝ$/],
   ])("%s", (word, re) => expect(rules(word)).toMatch(re));
 });
+
+// -ive: the silent-e slot no longer shifts stress one syllable late
+// (2026-09-26); a compound on "motive" keeps its own stress.
+describe("-ive stress ignores the silent-e slot", () => {
+  it.each([
+    ["negative", /^ˈnɛɡ/],
+    ["elusive", /ˈɫu/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+});

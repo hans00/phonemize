@@ -750,6 +750,45 @@ export function assignStress(syllables: string[], word: string): number {
     )
       return 1;
 
+    // -ive (active, negative, cumulative, alternative, reproductive...)
+    // spells its final syllable with a silent e, and the maximal-onset
+    // syllabifier still gives that e its own slot ("ac·ti·ve", not
+    // "ac·tive"), so the word is one syllable shorter than the array below
+    // says: negative's real stress is on "neg", the first of its three
+    // syllables (neg-a-tive), but the raw array has four slots
+    // (ne·ga·ti·ve) and both the gram lookup and the penult/antepenult
+    // test undercount by one for the whole family. Fold the trailing
+    // "Ci"+"ve" pair back into the syllable it actually is — the same
+    // silent-e-slot adjustment `secondaryStressIndices` already makes —
+    // before applying the fallback rules below; every earlier return in
+    // this function (compounds, the a-/assimilated-prefix magic-e case
+    // just above, the unstressed-prefix loop) already lands on the right
+    // slot on its own and is unaffected; this only touches words that
+    // reach the gram/heaviness fallback. Measured over the whole rules-only
+    // dict dump (`yarn rule-diff compare`): strict +21/-2, lenient +31/-4,
+    // top-5000 +2/-1 — the two strict losses are a "non+motive" compound
+    // (automotive, which keeps "motive"'s own stress) and a knock-on vowel-
+    // reduction mismatch on an unrelated secondary syllable (distributive),
+    // not a stress-position regression. The guard requires a plain
+    // consonant+i syllable (ti/si/ci/xi...), not a digraph nucleus like
+    // -cei- (conceive, perceive): that "ei" already makes the raw syllable
+    // heavy on its own and self-stresses correctly through the ordinary
+    // heaviness test below, so folding it in here would instead test the
+    // heaviness of the WRONG (earlier) syllable and break it.
+    const ivePattern =
+      lowerWord.endsWith("ive") &&
+      // A compound on the free word "motive" keeps its stress there
+      // (automotive, locomotive).
+      !/.motive$/.test(lowerWord) &&
+      syllables[syllables.length - 1] === "ve" &&
+      /[^aeiouy]i$/.test(syllables[syllables.length - 2]);
+    const stressSyllables = ivePattern
+      ? [
+          ...syllables.slice(0, -2),
+          syllables[syllables.length - 2] + syllables[syllables.length - 1],
+        ]
+      : syllables;
+
     // The heaviness test below is close to a coin flip on this population
     // (10587 of the 21827 dict words that reach it, against 9511 for a flat
     // always-penult), so a word-final gram whose stress position is
@@ -761,14 +800,27 @@ export function assignStress(syllables: string[], word: string): number {
     const gram =
       FINAL_GRAM_STRESS[lowerWord.slice(-4)] ??
       FINAL_GRAM_STRESS[lowerWord.slice(-3)];
-    if (gram !== undefined && syllables.length - 1 - gram >= 0)
-      return syllables.length - 1 - gram;
+    if (gram !== undefined && stressSyllables.length - 1 - gram >= 0)
+      return stressSyllables.length - 1 - gram;
 
-    const penult = syllables[syllables.length - 2];
-    if (isSyllableHeavy(penult)) {
-      return syllables.length - 2; // Stress the penult if heavy
+    const penult = stressSyllables[stressSyllables.length - 2];
+    // Once collapsed, a light -ive penult is still a coin flip: -ative/
+    // -itive words retract further (alternative, negative, sensitive —
+    // the reduced "a"/"i" of an -ate/-it- stem never carries its own
+    // stress), but -sive/-cive/-xive stay on the penult even when it's
+    // orthographically light (elusive, erosive, pervasive, collusive —
+    // this is the same "-d/-t+ive" Latin participle family as the heavy
+    // set below, not the trisyllabic-laxing -ative one, and covers the
+    // bare/assimilated a- prefix case too — abrasive, abusive, allusive
+    // are all -sive). Light-penult -sive/-cive/-xive words split 24
+    // penult : 1 antepenult (effusive) in the dict, and folding this in on
+    // top of the plain collapse fix recovers 10 more strict wins with 0
+    // added losses on the full rules-only dump.
+    const sivePenult = ivePattern && /(?:sive|cive|xive)$/.test(lowerWord);
+    if (isSyllableHeavy(penult) || sivePenult) {
+      return stressSyllables.length - 2; // Stress the penult if heavy
     } else {
-      return Math.max(0, syllables.length - 3); // Stress the antepenult if penult is light
+      return Math.max(0, stressSyllables.length - 3); // Stress the antepenult if penult is light
     }
   }
 
