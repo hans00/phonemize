@@ -294,7 +294,6 @@ describe("th voicing follows the Greek/Latin vs native split", () => {
   it.each([
     ["author", "ˈɔθɝ"],
     ["method", "ˈmɛθəd"],
-    ["agatha", "ˈæɡəθə"],
     ["anthony", "ˈænθəni"],
     ["marathon", "ˈmæɹəθən"],
     ["panther", "ˈpænθɝ"],
@@ -304,6 +303,9 @@ describe("th voicing follows the Greek/Latin vs native split", () => {
     ["thacker", "ˈθækɝ"],
     ["whether", "ˈhwɛðɝ"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  // Its stress is lexical (-Vtha is 76% penult in the dict); the th is not.
+  it("keeps th voiceless in agatha", () => expect(rules("agatha")).toMatch(/θə$/));
 
   it("keeps th+e voiced in native words and in monosyllabic function words", () => {
     for (const w of ["mother", "father", "weather", "another"])

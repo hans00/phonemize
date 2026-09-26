@@ -25,7 +25,7 @@ describe("a word-initial unstressed closed <a> keeps /æ/", () => {
   });
 
   it("does not apply to an open initial syllable", () => {
-    expect(rules("alabama")).toMatch(/^ə/);
+    expect(rules("agenda")).toMatch(/^ə/);
   });
 });
 

@@ -592,6 +592,20 @@ export function assignStress(syllables: string[], word: string): number {
   if (ITALIAN_ENDING.test(lowerWord) && syllables.length >= 3)
     return syllables.length - 2;
 
+  // A word ending in a single vowel letter a/o/i after a consonant is a
+  // Romance/Japanese-type loan or name with penult stress (banana, tornado,
+  // kawasaki, lasagna): over 3-slot words the dict has the penult 90% (-a),
+  // 93% (-o) and 96% (-i) of the time, and 88-96% at 4 slots.
+  // Latin/Greek -ica/-ula/-ema/-ico and a few more grams stay antepenult
+  // (africa, america, formula, cinema, mexico): each is under 70% penult.
+  if (
+    /[^aeiouy][aoi]$/.test(lowerWord) &&
+    !/(?:ic|ul|em|or|ac|om|ig)[aoi]$/.test(lowerWord) &&
+    syllables.length >= 3 &&
+    /^[^aeiouy]+[aoi]$/.test(syllables[syllables.length - 1])
+  )
+    return syllables.length - 2;
+
   // Greek -graphy/-nomy/-sophy/-scopy/-pathy/-gamy/-cracy likewise
   // (photography, economy, philosophy, democracy): the ending is one slot.
   if (/(?:graph|nom|soph|scop|path|gam|crac)y$/.test(lowerWord) && syllables.length >= 3)
@@ -1615,6 +1629,26 @@ export function syllableToIPA(
     const v = /[aeiou](?=[^aeiou]*$)/.exec(syllable)?.[0];
     const i = v ? sources.lastIndexOf(v) : -1;
     if (i >= 0) phonemes[i] = ({ a: "ɑ", e: "ɛ", i: "i", o: "oʊ", u: "u" } as Record<string, string>)[v!];
+  }
+
+  // The stressed penult of any 3+-slot word ending in consonant + a/o/i (see
+  // assignStress) takes the continental e /ɛ/, open o /oʊ/ (528 : 86) and u
+  // /u/. <a> keeps the English value although the dict is /ɑ/ 1101 : 142
+  // open: continental a won 166 more strict words but turned the top-5000
+  // American place names alabama/alaska/colorado/montana (/æ/) into losses.
+  // Open i is left English for the same reason (jessica, francisco).
+  else if (
+    isStressed &&
+    isNextLastSyllable &&
+    head !== "" &&
+    /^[^aeiouy]+[aoi]$/.test(nextSyllable ?? "") &&
+    !/[aeiou]{2}/.test(syllable)
+  ) {
+    const m = /([aeiou])([^aeiou]*)$/.exec(syllable);
+    const closed = !!m?.[2];
+    const table: Record<string, string> = closed ? { e: "ɛ", u: "u" } : { e: "ɛ", o: "oʊ", u: "u" };
+    const i = m ? sources.lastIndexOf(m[1]) : -1;
+    if (i >= 0 && table[m![1]]) phonemes[i] = table[m![1]];
   }
 
   // The rest of an Italian-ending name keeps full e/o/u (lo·ZA·no /loʊ/,
