@@ -36,9 +36,9 @@ The runtime path on real text is what users report against, so the goal is measu
 |---|---|---|---|
 | Runtime strict parity over dict | `yarn test:parity` | 89.54% → 93.37% → **93.38%** | ≥ 92% **met**; next ≥ 94% |
 | Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 93.06% → **93.08%** | ≥ 93% **met**; next ≥ 94% |
-| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 74.64% → 74.65% → 74.76% → 74.79% → 74.88% → 74.94% → 75.12% → 75.25% → 75.27% → 75.35% → 75.40% → 75.50% → 75.53% → 75.54% → 75.56% → 75.57% → 75.59% → 75.61% | checkpoint **≥ 80%**; long-term ≥ 90% (set 2026-09-26) |
-| Rules-only strict accuracy | `yarn test:eval` | 48.50% (2026-09-26) → 49.11% → 52.94% (ʌ/ə scoring fix, same code) → 53.20% → 53.30% → 53.37% → 53.42% → 53.45% → 53.54% → 53.55% → 53.56% → 53.57% → 53.62% → 53.63% → 53.65% → 53.67% | checkpoint **≥ 55%**; long-term ≥ 60% (set 2026-09-26) |
-| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 67.58% → 67.62% → 67.74% → 67.78% → 67.86% → 67.88% → 67.92% → 68.08% → 68.14% → 68.18% → 68.22% → 68.26% → 68.40% → 68.42% | ≥ 70% |
+| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 74.64% → 74.65% → 74.76% → 74.79% → 74.88% → 74.94% → 75.12% → 75.25% → 75.27% → 75.35% → 75.40% → 75.50% → 75.53% → 75.54% → 75.56% → 75.57% → 75.59% → 75.61% → 75.63% | checkpoint **≥ 80%**; long-term ≥ 90% (set 2026-09-26) |
+| Rules-only strict accuracy | `yarn test:eval` | 48.50% (2026-09-26) → 49.11% → 52.94% (ʌ/ə scoring fix, same code) → 53.20% → 53.30% → 53.37% → 53.42% → 53.45% → 53.54% → 53.55% → 53.56% → 53.57% → 53.62% → 53.63% → 53.65% → 53.67% → 53.69% | checkpoint **≥ 55%**; long-term ≥ 60% (set 2026-09-26) |
+| Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 67.58% → 67.62% → 67.74% → 67.78% → 67.86% → 67.88% → 67.92% → 68.08% → 68.14% → 68.18% → 68.22% → 68.26% → 68.40% → 68.42% → 68.54% | ≥ 70% |
 | evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 49.02% → 49.24% → 49.40% → 49.42% → 49.61% → 49.64% → 49.90% → 50.04% → 50.35% → 50.42% → 50.44% → 50.58% → 50.60% → 50.68% → 50.69% → 50.71% | ≥ 50% **met**; next ≥ 52% |
 | Heteronym reading in context (added 2026-09-26) | `yarn test:homographs` | 64.33% → 80.43% → 84.33% → 85.39% → 86.01% (scorer fix, same code) → 86.63% → **87.06%** | ≥ 87% **met** (train 86.53%); next ≥ 89% |
 
@@ -130,6 +130,8 @@ Word-final -ine took the magic-e /aɪ/ whenever the next slot was bare "ne", str
 The syllabifier keeps a two-vowel hiatus in one slot (geo·graphy, bio·graphy, prio·rity), so a slot-level stress put the mark on the first vowel. When the stressed slot is a genuine hiatus (`isHiatusSlot`), the mark now moves to its second nucleus (`hiatusMarkOffset`, on the post-lexical string). Excluded: vowel digraphs and doubled letters; eo before r; ae/oe, which a later pass elides; g/qu + vowel (gu·ar·dian); and a combining form with an onset before /oʊ/, which keeps its own stress (biome). Stress-position exact 65 : 0 and strict segments 44 : 0. The one lenient loss is inferiority: the corrected mark lets unstressed ɪɹ coalesce to ɝ before it, where the dict keeps ɪɹ. Rejected: making a hiatus penult "heavy" so assignStress picks it (curiosity, juliano), −10 net on the headline.
 
 Indefinite pronouns and adverbs are read as determiner (any/every/some/no) + free noun (one/body/thing/where/how/way/time/place), each part from the lexicon or rules, with a secondary on the second. That is a closed grammatical class, not a word list: 8 strict : 1, top-5000 7 : 0 (anyone, anything, someone, something, somewhere, nobody, anywhere). Measured and rejected: unstressed -ard → /ɝd/ (22 : 20 lenient; -art and -hard keep /ɑɹ/ in German names).
+
+STRUT spelt ou: before -ble/-ple (26 : 1 in the dict), -ntr (10 : 1) and -ng not -nge (19 : 0; lounge is /aʊ/). This is a PHONEME_RULES entry placed ahead of ^oup/^ou, plus a slot-level check for dou·ble/cou·ple, where -ble is the next slot. ear before th is /ɝ/ (earth, dearth: 19 : 2). Together: 17 strict : 1, top-5000 6 : 0.
 
 ### Two traps in the measurement itself
 

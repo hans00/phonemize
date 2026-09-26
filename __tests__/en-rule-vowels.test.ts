@@ -399,3 +399,16 @@ describe("indefinite compounds", () => {
 describe("a·w·a splits before the w", () => {
   it("away", () => expect(new EnG2P({ disableDict: true }).predict("away", "en")).toBe("əˈweɪ"));
 });
+
+// STRUT spelt ou (double, country, young) and NURSE before th (earth)
+// (2026-09-26).
+describe("ou as STRUT, ear before th", () => {
+  const g = new EnG2P({ disableDict: true });
+  it.each([
+    ["double", /^ˈdʌb/],
+    ["country", /^ˈkʌn/],
+    ["young", /^ˈjʌŋ$/],
+    ["earth", /^ˈɝθ$/],
+    ["lounge", /aʊ/],
+  ])("%s", (w, re) => expect(g.predict(w, "en")).toMatch(re));
+});

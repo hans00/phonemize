@@ -142,6 +142,10 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ood/, "ʊd"], // wood, hood, good, stood (oo before d → /ʊ/)
   [/^oo/, "u"], // boot, moon, cool, moose (long u; dict uses /u/ not /uː/)
   [/^ous$/, "əs"], // -ous suffix: famous/nervous/dangerous (guarded: last+unstressed in loop)
+  // STRUT spelt ou before -ble/-ple, -ntr and -ng not -nge (double,
+  // couple, country, young): 26 : 1, 10 : 1 and 19 : 0 in the dict; -ounge
+  // is /aʊ/ (lounge).
+  [/^ou(?=[bp]le|ntr|ng(?!e))/, "ʌ"],
   [/^oup/, "up"], // group, soup, coup, croup (ou+p → /u/)
   [/^ou/, "aʊ"], // house, about, cloud
   [/^ow(?=[snmk])/, "aʊ"], // cow, down, brown (before consonants)
@@ -154,7 +158,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^eau[x]?/, "oʊ"], // plateau/beau + beaux/bordeaux: French eau(x) → /oʊ/ (x silent)
   [/^ealth/, "ɛlθ"], // health, wealth, stealth (ea+lth → /ɛ/)
   [/^ead/, "ɛd"], // head, bread, dead, spread, instead, deadline (ea+d closing the syllable: 106 ɛ vs 16 i in dict; the /i/ bases lea|der/rea|ding move the d to the next syllable and never reach here)
-  [/^ear(?=[nlcr])/, "ɝ"], // learn, earn, early, pearl, search, earl (ear before n/l/c/r: 63:9 in dict; d/t/s stay ɪɹ/ɑɹ)
+  [/^ear(?=[nlcr]|th)/, "ɝ"], // learn, earn, earth, pearl, search, earl (ear before n/l/c/r: 63:9, before th 19:2 in dict; d/t/s stay ɪɹ/ɑɹ)
   [/^e[ae]/, "i"], // read, seat, beat; see, tree, free (default long)
   // e before o is hiatus: the e is its own tense nucleus and the o keeps its
   // own value (geography, neoclassic, theocracy, creosote, cleo, rodeo).
@@ -1534,6 +1538,13 @@ export function syllableToIPA(
       steps?.push({ grapheme: remaining[0], phoneme: "", rule: "unmatched" });
       remaining = remaining.substring(1);
     }
+  }
+
+  // STRUT <ou> before a -ble/-ple slot (dou·ble, cou·ple, trou·ble); the
+  // within-slot cases are PHONEME_RULES' ou(?=[bp]le|ntr|ng) entry.
+  if (/ou$/.test(syllable) && /^[bp]les?$/.test(nextSyllable ?? "")) {
+    const i = sources.lastIndexOf("ou");
+    if (i >= 0) phonemes[i] = "ʌ";
   }
 
   // Open <o> before final -ther(s) is the STRUT vowel spelt o (other, mother,
