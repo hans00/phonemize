@@ -487,6 +487,7 @@ export function secondaryStressIndices(
   return out;
 }
 
+const ITALIAN_ENDING = /(?:ino|ano|ini|oni|elli|etti|ello|etto|ucci|acci)$/;
 const FINAL_BEAT_RIME = /[aiouy][bcdfgkpstxz]$|e[bcdfgkptxz]$/;
 const FINAL_OBSTRUENT_E = /e[^aeiouylmnrwh]*[bcfgjkpqvz][^aeiouylmnrwh]*$|e[ln]d$/;
 const SILENT_E_SLOT = /^[^aeiouy]*[^aeiouyl]e$/;
@@ -545,6 +546,11 @@ export function assignStress(syllables: string[], word: string): number {
     if (hiatus) return Math.max(0, syllables.length - 3);
     if (syllables.length >= 4) return syllables.length - 4;
   }
+
+  // Italian name endings take the penult (albano, agostini, capelli,
+  // baldacci): -ino/-ano/-ini/-oni/-elli/-etti/-ello/-etto/-ucci/-acci.
+  if (ITALIAN_ENDING.test(lowerWord) && syllables.length >= 3)
+    return syllables.length - 2;
 
   // Greek -graphy/-nomy/-sophy/-scopy/-pathy/-gamy/-cracy likewise
   // (photography, economy, philosophy, democracy): the ending is one slot.
@@ -1367,6 +1373,31 @@ export function syllableToIPA(
     }
   }
 
+  // The stressed penult before an Italian name ending (see assignStress)
+  // takes its Italian vowel, not the English checked/free one: bar·BA·no
+  // /ɑ/, ca·SI·no /i/, capo·NE·tti /ɛ/.
+  if (
+    isStressed &&
+    isNextLastSyllable &&
+    // A two-syllable -ini is English (mini); -ino/-ano there are names (gino).
+    (head !== "" || !/ini$/.test(syllable + (tail ?? ""))) &&
+    ITALIAN_ENDING.test(head + syllable + (tail ?? ""))
+  ) {
+    const v = /[aeiou](?=[^aeiou]*$)/.exec(syllable)?.[0];
+    const i = v ? sources.lastIndexOf(v) : -1;
+    if (i >= 0) phonemes[i] = ({ a: "ɑ", e: "ɛ", i: "i", o: "oʊ", u: "u" } as Record<string, string>)[v!];
+  }
+
+  // The rest of an Italian-ending name keeps full e/o/u (lo·ZA·no /loʊ/,
+  // co·STA·no /koʊ/); <a> and <i> are anglicised there and reduce like any
+  // other (a·LE·tti /ə/, bi·KI·ni /ɪ/). Applied after the reduction below.
+  // Rules-only over the dict, against the stress rule alone: e/o/u 178
+  // strict wins : 36; adding <i> 216 : 82, <a> 430 : 147 but loses casino.
+  const italianWord =
+    !isStressed && !isLastSyllable && head + syllable !== "" &&
+    ITALIAN_ENDING.test(head + syllable + (tail ?? "")) &&
+    vowelGroups(head + syllable + (tail ?? "")) >= 3;
+
   // Unstressed-vowel reduction; startsWith handles rime-conditioned composites ("ɔl", "aɪnd", …).
   // Applies at all positions including position-0 (about/today/potato).
   // The ɑɹ/ɔɹ/ɔɪ rows are identity guards so the bare ɑ/ɔ rows below them
@@ -1435,6 +1466,12 @@ export function syllableToIPA(
     !initialClosedO
   )
     applyReduction(reduceTable("ɪ"));
+  if (italianWord) {
+    for (let i = 0; i < phonemes.length; i++) {
+      const it = ({ e: "ɛ", o: "oʊ", u: "u" } as Record<string, string>)[sources[i]];
+      if (it) phonemes[i] = it;
+    }
+  }
 
   // An unstressed vowel before word-final silent-e -ce and its inflections
   // (pa·la·ce, no·ti·ce, ser·vi·ces, prac·ti·cing) reduces to /ə/: the magic-e does not lengthen it off the

@@ -173,3 +173,17 @@ describe("-ate stresses two syllables before itself", () => {
     expect(rules("accommodation")).toMatch(/ˈdeɪʃən$/);
   });
 });
+
+// Italian name endings take the penult with its Italian vowel, and the
+// other e/o/u stay full (2026-09-26).
+describe("Italian name endings", () => {
+  it.each([
+    ["barbano", /ˈbɑnoʊ$/],
+    ["casino", /ˈsinoʊ$/],
+    ["lozano", /^ɫoʊˈ/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+
+  it("leaves a two-syllable English -ini alone", () => {
+    expect(rules("mini")).toMatch(/ɪ/);
+  });
+});
