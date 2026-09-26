@@ -1433,6 +1433,13 @@ export function syllableToIPA(
     }
   }
 
+  // Open <o> before final -ther(s) is the STRUT vowel spelt o (other, mother,
+  // brother, another, smother): 16 ʌ : 2 ɑ : 1 ɔ in the dict (bother).
+  if (/o$/.test(syllable) && /^thers?$/.test(nextSyllable ?? "") && isNextLastSyllable) {
+    const i = sources.lastIndexOf("o");
+    if (i >= 0) phonemes[i] = "ʌ";
+  }
+
   // The <a> of -ator is /eɪ/ as in -ate, stressed or not (gene·RA·tor).
   if (isNextLastSyllable && nextSyllable === "tor" && /^[^aeiouy]+a$/.test(syllable)) {
     const i = sources.lastIndexOf("a");

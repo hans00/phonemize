@@ -368,3 +368,10 @@ describe("trisyllabic laxing of a stressed open o/y", () => {
   ])("keeps the tense vowel: %s → %s", (word, ipa) =>
     expect(rules(word)).toBe(ipa));
 });
+
+// Open <o> before final -ther(s) is STRUT (other, mother, brother) —
+// 16 ʌ : 2 ɑ in the dict (2026-09-26).
+describe("-other spells STRUT", () => {
+  it.each(["other", "mother", "brother"])("%s", (w) =>
+    expect(new EnG2P({ disableDict: true }).predict(w, "en")).toMatch(/ʌðɝ$/));
+});
