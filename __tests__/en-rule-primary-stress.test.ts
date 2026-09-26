@@ -133,7 +133,7 @@ describe("-ity and -ial stress the syllable before them", () => {
     ["abnormality", /ˈmæ/],
     ["accessibility", /ˈbɪ/],
     ["editorial", /ˈtɔɹ/],
-    ["adversarial", /ˈsɛɹ/],
+    ["adversarial", /ɝˈs/],
   ])("%s", (word, re) => expect(rules(word)).toMatch(re));
 
   it("keeps a one-syllable -ial stem on its own <i>", () => {
