@@ -375,3 +375,11 @@ describe("-other spells STRUT", () => {
   it.each(["other", "mother", "brother"])("%s", (w) =>
     expect(new EnG2P({ disableDict: true }).predict(w, "en")).toMatch(/ʌðɝ$/));
 });
+
+// Word-initial gu + a: guar- has a silent u, other gua- is /ɡw/
+// (2026-09-26, 32 : 2 and 31 : 6 in the dict).
+describe("word-initial gua-", () => {
+  const g = new EnG2P({ disableDict: true });
+  it("guard has a silent u", () => expect(g.predict("guard", "en")).toBe("ˈɡɑɹd"));
+  it("guam is /ɡw/", () => expect(g.predict("guam", "en")).toMatch(/^ˈɡw/));
+});

@@ -1261,6 +1261,15 @@ export function syllableToIPA(
       remaining = remaining.substring(2);
       continue;
     }
+    // Word-initial gu + a: guar- keeps the u silent (guard, guarantee,
+    // guardian — 32 ɡ : 2 ɡw in the dict), any other gua- is the Spanish
+    // /ɡw/ (guam, guatemala, guacamole — 31 ɡw : 6 ɡ).
+    if (syllableIndex === 0 && phonemes.length === 0 && /^gua/.test(remaining)) {
+      const silentU = /^guar/.test(remaining + (tail ?? ""));
+      emit("gu", silentU ? "ɡ" : "ɡw", "phoneme:^gu(?=a)");
+      remaining = remaining.substring(2);
+      continue;
+    }
     // A /w/-final onset (w, wh, qu, squ, sw) rounds a following closed-
     // syllable short a: want, wash, watch, swap, squad, wander, quantity.
     // Dict, single-`a` words with a w-final onset: 211 ɑ/ɔ vs 14 æ before
