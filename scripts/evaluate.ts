@@ -27,7 +27,14 @@ const cliArgs = {
  * @returns A normalized string.
  */
 function normalizePhonemes(phonemes: string): string {
-  return phonemes.replace(/[ˈˌ]/g, '');
+  // Strict is "exact after stress removal", so it also removes the one vowel
+  // distinction American references condition on stress alone: STRUT /ʌ/ is
+  // the stressed form of schwa /ə/. CMUdict has a single AH phone for both
+  // (AH1 vs AH0, cmudict.phones), and Merriam-Webster writes both \ə\ (abut,
+  // humdrum: "\ˈə\ in stressed syllables … IPA [ʌ]"). ipa-dict, the reference
+  // here, writes ə under stress too, so /ʌ/ output would otherwise be a
+  // stress mismatch counted as a vowel error.
+  return phonemes.replace(/[ˈˌ]/g, '').replace(/ʌ/g, 'ə');
 }
 
 /**

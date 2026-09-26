@@ -21,7 +21,9 @@ const dict = dictionary as Record<string, string>;
 const SIMILAR: string[][] = [
   ["ə", "ʌ"], ["ɑ", "ɔ"], ["i", "ɪ"], ["ɛ", "eɪ"], ["ɫ", "l"], ["æ", "eɪ"],
 ];
-const strip = (s: string): string => s.replace(/[ˈˌ]/g, "");
+// Stress-stripped, and with it the stress-conditioned ʌ/ə split (CMUdict AH,
+// Merriam-Webster \ə\ — see normalizePhonemes in evaluate.ts).
+const strip = (s: string): string => s.replace(/[ˈˌ]/g, "").replace(/ʌ/g, "ə");
 function canon(s: string): string {
   let out = strip(s);
   for (const g of SIMILAR) for (let i = 1; i < g.length; i++) out = out.split(g[i]).join(g[0]);
