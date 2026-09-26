@@ -76,6 +76,7 @@ Rules of the goal:
 - Every user-reported word gets a regression test in `__tests__/issue-<n>.test.ts` and a fix for its *class* (e.g. #28 → doubled-final-consonant name variants), never a per-word entry. If no class fix passes the gates, the word goes to `src-data/en/custom.dict` and the class is recorded here as open.
 - Each loop session moves at least one metric up without moving any other down; both baselines are updated in the same commit as the improvement.
 - Rules-only accuracy is a means, not the end: a rule fix that raises `test:eval` but lowers parity is rejected.
+- Solve with rules, not data (set 2026-09-26). The misaki homograph import (~300 entries, `src-data/en/homographs-misaki.txt`) is the accepted order of magnitude for a vouched data supplement. Do not add datasets, trained models or name lexicons to raise a score. That rules out WikiPron capitalonyms (CC BY-SA as well) and a trained POS tagger. Where a rule can replace imported entries, prefer the rule.
 
 Open classes: heteronym ADJ-vs-N after a determiner (invalid) and sense-only heteronyms (bass, bow) — see the heteronym passes above.
 
