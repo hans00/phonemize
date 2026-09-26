@@ -102,6 +102,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
 
   // Rime-conditioned patterns (rime is more predictive than onset-only; must precede generic vowel rules).
   [/^[oa]ught/, "ɔt"], // thought, bought, fought; caught, taught, daughter
+  [/^o(?=nth)/, "ʌ"], // month, monthly: STRUT spelt o before -nth (9 : 1 in the dict)
   [/^ough$/, "ʌf"], // rough, tough, enough (default; misses though/cough/through/bough)
   [/^alm$/, "ɑm"], // calm, palm, psalm (silent l + a→ɑ)
   [/^alk(?=[^aeiou]|$)/, "ɔk"], // walk, talk, chalk, stalk, balky, chalker
@@ -1538,6 +1539,16 @@ export function syllableToIPA(
       steps?.push({ grapheme: remaining[0], phoneme: "", rule: "unmatched" });
       remaining = remaining.substring(1);
     }
+  }
+
+  // STRUT spelt o after l/b before a final -ve slot (lo·ve, a·bo·ve,
+  // glo·ve: 18 ʌ : 5 oʊ in the dict) and before -vern (go·vern: 26 : 3).
+  if (
+    (/[lb]o$/.test(syllable) && /^ve[sd]?$/.test(nextSyllable ?? "") && isNextLastSyllable) ||
+    (/^[^aeiouy]*o$/.test(syllable) && /^vern/.test(nextSyllable ?? ""))
+  ) {
+    const i = sources.lastIndexOf("o");
+    if (i >= 0) phonemes[i] = "ʌ";
   }
 
   // STRUT <ou> before a -ble/-ple slot (dou·ble, cou·ple, trou·ble); the

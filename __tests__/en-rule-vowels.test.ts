@@ -412,3 +412,14 @@ describe("ou as STRUT, ear before th", () => {
     ["lounge", /aʊ/],
   ])("%s", (w, re) => expect(g.predict(w, "en")).toMatch(re));
 });
+
+// STRUT spelt o: l/b + final -ve, -vern, -nth (2026-09-26).
+describe("o as STRUT before -ve/-vern/-nth", () => {
+  const g = new EnG2P({ disableDict: true });
+  it.each([
+    ["love", /^ˈɫʌv$/],
+    ["above", /ˈbʌv$/],
+    ["govern", /^ˈɡʌv/],
+    ["month", /^ˈmʌnθ$/],
+  ])("%s", (w, re) => expect(g.predict(w, "en")).toMatch(re));
+});
