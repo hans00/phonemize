@@ -532,6 +532,12 @@ export function assignStress(syllables: string[], word: string): number {
   // two the <i> is itself the stressed vowel (denial, trial).
   if (/[^aeiouy]ial$/.test(lowerWord) && syllables.length >= 3)
     return syllables.length - 2;
+  // -ental/-antal likewise (accidental, fundamental, environmental).
+  if (/[ae]ntal$/.test(lowerWord) && syllables.length >= 3) return syllables.length - 2;
+  // Greek -graphy/-nomy/-sophy/-scopy/-pathy/-gamy/-cracy likewise
+  // (photography, economy, philosophy, democracy): the ending is one slot.
+  if (/(?:graph|nom|soph|scop|path|gam|crac)y$/.test(lowerWord) && syllables.length >= 3)
+    return syllables.length - 2;
 
   // Greek/Latin scientific suffixes with fixed stress: uranium, samarium,
   // osmosis, diagnosis, arthritis, analysis, psoriasis. They pull the

@@ -140,3 +140,15 @@ describe("-ity and -ial stress the syllable before them", () => {
     expect(rules("trial")).toMatch(/^ˈtɹaɪ/);
   });
 });
+
+// -ental/-ential and the Greek -graphy/-nomy/-sophy/-cracy family stress
+// the syllable right before the ending (2026-09-26).
+describe("-ental, -ential and Greek -Cy endings stress the syllable before them", () => {
+  it.each([
+    ["accidental", /ˈdɛn/],
+    ["confidential", /ˈdɛn/],
+    ["photography", /ˈtɑ/],
+    ["philosophy", /ˈɫɑ/],
+    ["democracy", /ˈmɑ/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+});

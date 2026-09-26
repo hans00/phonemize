@@ -953,7 +953,13 @@ export class EnglishG2P implements LanguageProcessor {
       lowerWord.length > 5
     ) {
       const stem = lowerWord.slice(0, -4);
-      const pp = stemPron(stem);
+      // -ential/-antial move the primary onto the -en-/-an- before them
+      // (confidential, residential); the stem's stress would stay put here,
+      // so a 3+-syllable -en/-an stem goes to the whole-word rules.
+      const pp =
+        /[ae]n$/.test(stem) && (stem.match(/[aeiouy]+/g)?.length ?? 0) >= 3
+          ? undefined
+          : stemPron(stem);
       // The stem is scored as a standalone open monosyllable, which
       // takes the wrong default for a bare final a or e (ra → ɹɑ,
       // spe → spi). Before -cial/-tial the dict is unanimous: an open
@@ -1044,6 +1050,9 @@ export class EnglishG2P implements LanguageProcessor {
       // which the whole-word stress rule places.
       // A one-syllable stem is the stressed <i> itself (trial, dial).
       if (sfx === "al" && b.endsWith("i") && (b.match(/[aeiouy]+/g)?.length ?? 0) >= 2) continue;
+      // Same for -al after a polysyllabic -ent/-ant stem: environmental,
+      // accidental, fundamental stress the -en- the stem left unstressed.
+      if (sfx === "al" && /[ae]nt$/.test(b) && (b.match(/[aeiouy]+/g)?.length ?? 0) >= 2) continue;
       const p = stemPron(b);
       if (p) return softenBaseFinal(preSuffixReduce(p, lowerWord), b, sfx) + ipa;
     }
