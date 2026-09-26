@@ -90,10 +90,11 @@ function reading(ipa: string): { seg: string; stress: number } {
   const nuclei = [...seg.matchAll(NUCLEUS)];
   return { seg, stress: mark < 0 || nuclei.length < 2 ? -1 : nuclei.findIndex((m) => m.index! >= mark) };
 }
-// Reduced-vowel quality (ə~ɪ) and tense/lax before r (i~ɪ) cost half a segment;
+// Reduced-vowel quality (ə~ɪ, ə~u: the source writes docu- as /kjuː/ where
+// speech and CMUdict reduce it) and tense/lax before r (i~ɪ) cost half a segment;
 // a different primary-stress syllable costs one and a half — it is what tells
 // most noun/verb pairs apart, so it must outweigh vowel-quality noise.
-const CHEAP = new Set(["əɪ", "ɪə", "iɪ", "ɪi", "uʊ", "ʊu"]);
+const CHEAP = new Set(["əɪ", "ɪə", "əu", "uə", "iɪ", "ɪi", "uʊ", "ʊu"]);
 function lev(a: string, b: string): number {
   const x = [...a], y = [...b];
   let prev = Array.from({ length: y.length + 1 }, (_, j) => j);
