@@ -868,6 +868,26 @@ const TENSE_ENDINGS =
 // excluded too — they drop -Cey to 55% (bagley, bakley) and -Can to 56%.
 const A_TENSE_ENDINGS = /^(?:[^aeiouyr](?:ey|iers?|er(?:y|ies)|ies)|s[ktp]e)$/;
 
+// Word-final -ine, unstressed by the rule engine's own stress assignment
+// (isStressed/isSecondary both false on this syllable): the magic-e diphthong
+// default is right for the Germanic/Latin-adjective class (alpine, canine,
+// feline) but wrong for two other classes that share the same shape — a
+// truly reduced suffix (engine, examine, discipline, jasmine) and a French
+// loan that keeps a tense, undiphthongized vowel under stress the rule
+// engine places elsewhere (machine, magazine, marine, augustine). Both
+// want a short /ɪ/ here, not /aɪ/, so one exclusion serves both. Measured
+// over data/en/dict.json by the consonant(s) immediately before -ine
+// (not-aɪn : aɪn): a lone r 41:2 (marine, corzine — excludes -rline/-rdine/
+// -rmine/-rtine, tabulated separately), -stine 19:4, -chine 5:0 (machine,
+// vaccine's -ccine reaches -cine below), -cine 9:1, -sine 9:1, -rmine 7:1,
+// -rtine 7:0, -zine 6:2, a lone t 7:2 (routine; excludes -ntine/-ltine,
+// which measure under 60%). -line/-mine/-dine/-ntine/-vine/-pine were also
+// measured and left on the default aɪn path: each is majority-aɪn or a
+// near-even split (-line 30:40, -mine 20:11, -ntine 14:12), so no rule
+// wins there.
+const FRENCH_INE_GRAM =
+  /(?:cine|chine|sine|zine|rmine|rtine|stine)$|[aeiouy](?:rine|tine)$/;
+
 // Enhanced syllable to IPA conversion with stress-sensitive vowel reduction
 // Suffixes that only spell a suffix at the end of the word
 // (legionnaire/album/algebra keep the plain letter values) and ones that
@@ -1294,8 +1314,16 @@ export function syllableToIPA(
     const aFire = (nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE ||
       (twoSylTense && /^[^aeiouy]*a$/.test(syllable) && !nextSyllable!.startsWith("r")) ||
       (aTwoSylTense && /^[^aeiouy]*a$/.test(syllable)));
+    // See FRENCH_INE_GRAM: an unstressed word-final -ine syllable whose
+    // preceding consonant(s) mark it as reduced-suffix or French-loan,
+    // not the Germanic/Latin-adjective aɪn default.
+    const ineReduces =
+      !isStressed && !isSecondary && nextSyllable === "ne" &&
+      /^[^aeiouy]*i$/.test(syllable) &&
+      FRENCH_INE_GRAM.test((prevSyllable ?? "") + syllable + (tail ?? ""));
     const iFire = (nextIsMagicE || endsWithSilentE || (nextIsCle && isStressed) || isTenseIForm ||
-      (twoSylTense && /^[^aeiouy]*i$/.test(syllable) && !/^(?:v|en$)/.test(nextSyllable!)));
+      (twoSylTense && /^[^aeiouy]*i$/.test(syllable) && !/^(?:v|en$)/.test(nextSyllable!))) &&
+      !ineReduces;
     const skip = new Set<string>();
     if (!hadDoubledL) skip.add("^al$");
     if (gFromDoubling) skip.add("^g(?=[eiy])");

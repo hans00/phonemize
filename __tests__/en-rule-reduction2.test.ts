@@ -113,3 +113,10 @@ describe("the initial closed <o> frame", () => {
     expect(rules("community")).toMatch(/^kə/);
   });
 });
+
+// An unstressed word-final -ine after a reduced/French-loan gram does not
+// take the magic-e /aɪ/ (2026-09-26).
+describe("unstressed -ine after reduced/French grams", () => {
+  it.each(["clandestine", "termine"])("%s has no /aɪn/", (w) => expect(rules(w)).not.toMatch(/aɪn$/));
+  it("keeps alpine /aɪn/", () => expect(rules("alpine")).toMatch(/aɪn$/));
+});

@@ -36,8 +36,8 @@ The runtime path on real text is what users report against, so the goal is measu
 |---|---|---|---|
 | Runtime strict parity over dict | `yarn test:parity` | 89.54% → 93.37% → **93.38%** | ≥ 92% **met**; next ≥ 94% |
 | Top-5000 segment accuracy vs CMUdict | `yarn test:common-accuracy` | 90.74% → 93.06% → **93.08%** | ≥ 93% **met**; next ≥ 94% |
-| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 74.64% → 74.65% → 74.76% → 74.79% → 74.88% → 74.94% → 75.12% → 75.25% → 75.27% → 75.35% → 75.40% → 75.50% | checkpoint **≥ 80%**; long-term ≥ 90% (set 2026-09-26) |
-| Rules-only strict accuracy | `yarn test:eval` | 48.50% (2026-09-26) → 49.11% → 52.94% (ʌ/ə scoring fix, same code) → 53.20% → 53.30% → 53.37% → 53.42% → 53.45% → 53.54% | checkpoint **≥ 55%**; long-term ≥ 60% (set 2026-09-26) |
+| Rules-only lenient accuracy | `yarn test:eval` | 71.48% → 74.64% → 74.65% → 74.76% → 74.79% → 74.88% → 74.94% → 75.12% → 75.25% → 75.27% → 75.35% → 75.40% → 75.50% → 75.53% | checkpoint **≥ 80%**; long-term ≥ 90% (set 2026-09-26) |
+| Rules-only strict accuracy | `yarn test:eval` | 48.50% (2026-09-26) → 49.11% → 52.94% (ʌ/ə scoring fix, same code) → 53.20% → 53.30% → 53.37% → 53.42% → 53.45% → 53.54% → 53.55% | checkpoint **≥ 55%**; long-term ≥ 60% (set 2026-09-26) |
 | Rules-only top-5000 accuracy | `yarn test:common-accuracy --rules` | 60.98% → 67.58% → 67.62% → 67.74% → 67.78% → 67.86% → 67.88% → 67.92% → 68.08% | ≥ 70% |
 | evaluate-strict headline (en-US phonemic) | `tsx scripts/evaluate-strict.ts` | 43.85% → 49.02% → 49.24% → 49.40% → 49.42% → 49.61% → 49.64% → 49.90% → 50.04% → 50.35% → 50.42% → 50.44% → 50.58% | ≥ 50% **met**; next ≥ 52% |
 | Heteronym reading in context (added 2026-09-26) | `yarn test:homographs` | 64.33% → 80.43% → 84.33% → 85.39% → 86.01% (scorer fix, same code) → 86.63% → **87.06%** | ≥ 87% **met** (train 86.53%); next ≥ 89% |
@@ -122,6 +122,8 @@ The agent noun of a Greek -y noun (-log/-graph/-nom/-soph + -ist/-er) is now rea
 -ola joined the Italian endings (dicola, spinola, buccola): 28 strict : 8, lenient +58. The losses are Greek/older loans with antepenult stress (gondola, parabola, pergola). At two syllables the Italian vowel is withheld from -ini and -ola (mini, nola) but kept for the rest (gino, gucci). -ara was measured and dropped: barbara, ankara and clara are English/anglicised (0 : 1 on the top-5000). -era is not tried, because camera and opera are antepenult.
 
 The -ia rule now covers the whole Latin hiatus family through one `LATIN_HIATUS_ENDING` shared by assignStress and the tensing rule: -ia/-ian (with plural -s), -ious and -eous (canadian, various, spontaneous). The old -ia pattern matched only a bare final a, so these fell to the heaviness fallback. When the suffix syllable has an r onset, the lengthened vowel is the r-coloured SQUARE/NEAR one (bar·BAR·ian /ɛ/, al·GER·ian /ɪ/). Result: 119 strict : 19, top-5000 8 : 0. The losses are e+r names that the dict writes with tense i (valeria, tiberia against siberia), plus -cious/-tious words (judicious) whose newly unstressed first vowel reduces further than the dict does.
+
+Word-final -ine took the magic-e /aɪ/ whenever the next slot was bare "ne", stressed or not. When the rules leave it unstressed and the gram before -ine is a measured not-/aɪn/ one, the syllable now falls through to /ɪ/. The grams: `FRENCH_INE_GRAM`, cine/chine/sine/zine/rmine/rtine/stine, and a vowel + rine/tine. The measured not-aɪn : aɪn ratios are in the comment; -line/-mine/-dine/-ntine/-vine/-pine are majority /aɪn/ or split and are left alone. The result is 4 strict : 2 and lenient 25 : 1. The first version used a regex lookbehind, which Hermes (React Native) may not support; it was rewritten as an equivalent plain pattern, since the regex is only used with .test().
 
 ### Two traps in the measurement itself
 
