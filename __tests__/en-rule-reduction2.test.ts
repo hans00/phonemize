@@ -83,3 +83,23 @@ describe("a word-final <e> under a geminate t raises to /ɪ/", () => {
     expect(rules("bracket")).toBe("ˈbɹækət");
   });
 });
+
+// Unstressed vowel before a final silent-e -ce (2026-09-26): 26 strict wins,
+// 6 losses rules-only; notice/palace/practice/service in the top-5000.
+describe("the unstressed vowel before -ce reduces", () => {
+  it.each([
+    ["palace", "ɫəs"],
+    ["notice", "təs"],
+    ["purchase", "tʃeɪs"],
+    ["furnace", "nəs"],
+    ["services", "vəsəz"],
+  ])("%s ends in %s", (word, tail) => expect(rules(word)).toMatch(new RegExp(`${tail}$`)));
+
+  it("leaves a free root after a two-syllable compounding prefix", () => {
+    expect(rules("interface")).toMatch(/feɪs$/);
+  });
+
+  it("does not count an inflection toward trisyllabic laxing", () => {
+    expect(rules("notices")).toMatch(/^ˈnoʊ/);
+  });
+});

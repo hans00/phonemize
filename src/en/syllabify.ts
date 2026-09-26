@@ -842,6 +842,8 @@ export function syllableToIPA(
   // is unstressed for every vowel-choice rule below but keeps its full
   // vowel through the reduction pass.
   isSecondary = false,
+  // Orthographic head of the word before this syllable.
+  head = "",
 ): string {
   const stepsStart = steps?.length ?? 0;
   let phonemes: string[] = [];
@@ -960,7 +962,11 @@ export function syllableToIPA(
   // Measured rules-only over the dict: 153 strict wins : 60 losses, of
   // which y contributes 10:7 and the -ic trigger 10:4.
   const t = tail ?? "";
-  const tailSyls = vowelGroups(t.replace(/([^aeiouyl])e$/, "$1"));
+  // An inflection is not part of the base the depth is counted on
+  // (no·ti·ces, like notice, keeps its tense o).
+  const tailSyls = vowelGroups(
+    t.replace(/(?:es|ed|ing)$/, "e").replace(/([^aeiouyl])e$/, "$1"),
+  );
   const laxDomain =
     isStressed &&
     (/^[^aeiouy]+ics?$/.test(t) ||
@@ -1390,6 +1396,26 @@ export function syllableToIPA(
     !initialClosedE
   )
     applyReduction(reduceTable("ɪ"));
+
+  // An unstressed vowel before word-final silent-e -ce and its inflections
+  // (pa·la·ce, no·ti·ce, ser·vi·ces, prac·ti·cing) reduces to /ə/: the magic-e does not lengthen it off the
+  // stress. -se is left out: -ise/-ose/-use there are the stressed or
+  // secondary suffixes (advertise, franchise, diffuse). After a two-syllable
+  // compounding prefix the -Vce is a free root that keeps its vowel
+  // (inter·face, inter·lace). Over data/en/dict.json: 26 strict wins, 6
+  // losses, and 4 of the top-5000 fixed (notice, palace, practice, purchase).
+  if (
+    !isStressed &&
+    !isSecondary &&
+    syllableIndex > 0 &&
+    !/^(inter|over|under|counter|super)$/.test(head) &&
+    isNextLastSyllable &&
+    /^c(?:e[sd]?|ing)$/.test(nextSyllable ?? "") &&
+    /^[^aeiouy]*[aeiou]$/.test(syllable)
+  ) {
+    const i = phonemes.length - 1;
+    if (i >= 0 && /^(eɪ|aɪ|oʊ|ɪ)$/.test(phonemes[i])) phonemes[i] = "ə";
+  }
 
   if (
     !isStressed &&

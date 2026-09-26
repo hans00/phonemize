@@ -442,6 +442,7 @@ export class EnglishG2P implements LanguageProcessor {
         i === syllables.length - 2,
         syllables.slice(i + 1).join(""),
         secondary.has(i),
+        syllables.slice(0, i).join(""),
       );
     });
 
@@ -572,6 +573,7 @@ export class EnglishG2P implements LanguageProcessor {
         i === syllables.length - 2,
         syllables.slice(i + 1).join(""),
         secondary.has(i),
+        syllables.slice(0, i).join(""),
       );
     });
 
