@@ -595,8 +595,8 @@ export class EnglishG2P implements LanguageProcessor {
     });
 
     if (syllableIPA.length > 0) {
-      let result = syllableIPA.join("");
-      result = applyPostLexical(result, lowerWord, syllables.length);
+      const joined = syllableIPA.join("");
+      let result = applyPostLexical(joined, lowerWord, syllables.length);
 
       // Add primary-stress marker. Emit for monosyllables too — content
       // words like "world", "knight", "wood" have lexical stress (the
@@ -606,6 +606,26 @@ export class EnglishG2P implements LanguageProcessor {
         let charIndex = 0;
         for (let i = 0; i < stressedSyllableIndex; i++) {
           charIndex += syllableIPA[i].length;
+        }
+        // The index is into the pre-post-lexical string; a post-lexical
+        // edit before it (the degeminated kk of ac·com·mo·da·tion) would
+        // shift the mark into the stressed vowel (əkɑmədeˈɪʃən). Anchor on
+        // whichever side of the mark the post-lexical pass left intact.
+        // An onset consonant the pass merged away (bə|ɹeɪ → bɝeɪ) is dropped
+        // from the anchor until the rest matches.
+        // Only when the result has a vowel right before the match (the onset
+        // was absorbed, not rewritten: chord, gehrig keep their onset).
+        const full = joined.substring(charIndex);
+        let tail = full;
+        while (tail && !result.endsWith(tail) && !/^[aeiouæɑɔəɛɪʊʌɝ]/.test(tail)) tail = tail.substring(1);
+        const absorbed =
+          tail !== full && /[æɑɔəɛʌɝ]$/.test(result.substring(0, result.length - tail.length));
+        if (result !== joined && tail && result.endsWith(tail) && (tail === full || absorbed)) {
+          charIndex = result.length - tail.length;
+          // Keep an ɪɹ/əɹ pair ahead of the mark, as applyPostStress's onset
+          // pass does, so it can coalesce to ɝ (ballerina ˌbæɫɝˈinə).
+          if (/[ɪə]$/.test(result.substring(0, charIndex)) && /^ɹ[aeiouæɑɔəɛɪʊʌ]/.test(result.substring(charIndex)))
+            charIndex += 1;
         }
         result =
           result.substring(0, charIndex) + "ˈ" + result.substring(charIndex);

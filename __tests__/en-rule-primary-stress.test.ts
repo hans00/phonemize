@@ -152,3 +152,24 @@ describe("-ental, -ential and Greek -Cy endings stress the syllable before them"
     ["democracy", /ˈmɑ/],
   ])("%s", (word, re) => expect(rules(word)).toMatch(re));
 });
+
+// -ate puts the primary two syllables before its /eɪt/ (2026-09-26).
+describe("-ate stresses two syllables before itself", () => {
+  it.each([
+    ["abdicate", /^ˈæb/],
+    ["accelerate", /ˈsɛɫ/],
+    ["anticipate", /ˈtɪ/],
+    ["appreciate", /ˈpɹ/],
+    ["demonstrate", /^ˈdɛ/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+
+  it("leaves two-syllable -ate words alone", () => {
+    expect(rules("debate")).toMatch(/ˈbeɪt$/);
+  });
+
+  // The mark is placed on the post-lexical string: degemination before it
+  // (ac·com·mo·da·tion) must not shift it into the stressed vowel.
+  it("keeps the mark on the onset after a post-lexical edit", () => {
+    expect(rules("accommodation")).toMatch(/ˈdeɪʃən$/);
+  });
+});

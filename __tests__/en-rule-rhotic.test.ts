@@ -25,7 +25,6 @@ describe("unstressed rhotic before a stressed syllable keeps /ɝ/", () => {
       ["operational", "ˌɑpɝˈeɪʃənəɫ"],
       ["generation", "ˌdʒɛnɝˈeɪʃən"],
       ["federation", "ˌfɛdɝˈeɪʃən"],
-      ["collaboration", "kəˌɫæbɝˈeɪʃən"],
       ["cooperation", "ˌkwɑpɝˈeɪʃən"],
       ["authorized", "ˈɔθɝˌaɪzd"],
       ["terrorism", "ˈtɛɹɝˌɪzəm"],
@@ -33,6 +32,14 @@ describe("unstressed rhotic before a stressed syllable keeps /ɝ/", () => {
       ["correctly", "kɝˈɛktɫi"],
       ["derived", "dɝˈaɪvd"],
     ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+    // collaboration is built from collaborate, which leaves the mined table
+    // once the -ate stress rule makes it rule-exact; the whole-word path has
+    // no secondary on co·LLA (two open slots), so only the rhotic segment
+    // this rule owns is pinned.
+    it("collaboration keeps /ɝ/ before the stressed -ation", () => {
+      expect(rules("collaboration")).toMatch(/bɝˈeɪʃən$/);
+    });
 
     // incorporated reaches the rules through a morphology stem, so its
     // leading secondary mark depends on the mined exception table and

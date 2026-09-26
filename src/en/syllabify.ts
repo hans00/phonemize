@@ -534,6 +534,18 @@ export function assignStress(syllables: string[], word: string): number {
     return syllables.length - 2;
   // -ental/-antal likewise (accidental, fundamental, environmental).
   if (/[ae]ntal$/.test(lowerWord) && syllables.length >= 3) return syllables.length - 2;
+  // -ate puts the primary two syllables before its own /eɪt/ (abdicate,
+  // accelerate, anticipate, and the adjectives accurate, delicate). The
+  // syllabifier writes it as C+a · te, so that is slot length - 4, or
+  // length - 3 when the C+a slot is a hiatus that already holds two
+  // syllables (appre·cia·te, eva·lua·te, gra·dua·te). Two-syllable words
+  // (debate, rotate, create) have fewer than four slots and are left out.
+  if (/[^aeiouy]ate$/.test(lowerWord) && syllables.length >= 3) {
+    const hiatus = /[iu]a$/.test(syllables[syllables.length - 2]);
+    if (hiatus) return Math.max(0, syllables.length - 3);
+    if (syllables.length >= 4) return syllables.length - 4;
+  }
+
   // Greek -graphy/-nomy/-sophy/-scopy/-pathy/-gamy/-cracy likewise
   // (photography, economy, philosophy, democracy): the ending is one slot.
   if (/(?:graph|nom|soph|scop|path|gam|crac)y$/.test(lowerWord) && syllables.length >= 3)
