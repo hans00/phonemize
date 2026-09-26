@@ -199,3 +199,13 @@ describe("-ia and -ator", () => {
     ["administrator", /ˈmɪn.*eɪtɝ$/],
   ])("%s", (word, re) => expect(rules(word)).toMatch(re));
 });
+
+// Germanic compound surname elements keep initial stress; -ington is not
+// one of them (2026-09-26).
+describe("Germanic surname endings", () => {
+  it.each([
+    ["aldinger", /^ˈæɫ/],
+    ["bamberger", /^ˈbæm/],
+    ["oppenheimer", /^ˈɑp/],
+  ])("%s", (word, re) => expect(rules(word)).toMatch(re));
+});

@@ -487,6 +487,7 @@ export function secondaryStressIndices(
   return out;
 }
 
+const GERMANIC_NAME_ENDING = /(?:berger|inger|ermann?|heimer|meyer|meier|hofer|felder)$/;
 const ITALIAN_ENDING = /(?:ino|ano|ini|oni|elli|etti|ello|etto|ucci|acci)$/;
 const FINAL_BEAT_RIME = /[aiouy][bcdfgkpstxz]$|e[bcdfgkptxz]$/;
 const FINAL_OBSTRUENT_E = /e[^aeiouylmnrwh]*[bcfgjkpqvz][^aeiouylmnrwh]*$|e[ln]d$/;
@@ -558,6 +559,13 @@ export function assignStress(syllables: string[], word: string): number {
   // cafeteria); the syllabifier keeps consonant + ia as the last slot.
   if (/[^aeiouy][iy]a$/.test(lowerWord) && syllables.length >= 2 && /^[^aeiouy]+[iy]a$/.test(syllables[syllables.length - 1]))
     return syllables.length - 2;
+
+  // Germanic compound surname elements leave the primary on the first
+  // syllable (aldinger, ackerman, bamberger, oppenheimer), as English
+  // words that share them do (fisherman, harbinger). -ington is left out:
+  // it is an English place-name element, and American usage varies there
+  // (ellington is heard with the second syllable stressed).
+  if (GERMANIC_NAME_ENDING.test(lowerWord) && syllables.length >= 3) return 0;
 
   // Italian name endings take the penult (albano, agostini, capelli,
   // baldacci): -ino/-ano/-ini/-oni/-elli/-etti/-ello/-etto/-ucci/-acci.
