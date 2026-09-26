@@ -460,9 +460,18 @@ export class Tokenizer {
     //   4. primary                           — document-level dominant lang
     // Then Han chars get the hanIsJa flip (analyzeText already factored in
     // the user-supplied ja* override at _preprocess time).
-    const cleanWords = tokenMatches.filter(
-      ({ token }) => !isPunctuationToken(token),
-    );
+    // A sentence-final mark between two words cuts the POS context: the last
+    // word of one sentence is not the previous word of the next one.
+    const cleanWords: { token: string; position?: number; sentenceStart: boolean }[] = [];
+    let boundary = true;
+    for (const entry of tokenMatches) {
+      if (isPunctuationToken(entry.token)) {
+        if (/[.!?]/.test(entry.token)) boundary = true;
+        continue;
+      }
+      cleanWords.push({ ...entry, sentenceStart: boundary });
+      boundary = false;
+    }
     const resolveLang = (token: string): string | undefined => {
       let lang =
         languageMap[token.toLowerCase()] ??
@@ -484,9 +493,11 @@ export class Tokenizer {
       const lang = resolveLang(entry.token);
       if (!connectedContext) return { lang, pos: undefined };
       const proc = this.registry.findBestProcessor(entry.token, lang);
-      const prev = i > 0 ? cleanWords[i - 1].token : undefined;
+      const prev = i > 0 && !entry.sentenceStart ? cleanWords[i - 1].token : undefined;
       const next =
-        i + 1 < cleanWords.length ? cleanWords[i + 1].token : undefined;
+        i + 1 < cleanWords.length && !cleanWords[i + 1].sentenceStart
+          ? cleanWords[i + 1].token
+          : undefined;
       const posRes = proc?.tagWord?.(entry.token, { prev, next });
       return { lang, pos: posRes?.pos };
     });

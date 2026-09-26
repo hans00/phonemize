@@ -121,6 +121,11 @@ describe("Homographs", function() {
       expect(toIPA("According to Hammond's postulate")).toContain("ˈpɑstʃəɫət");
     });
 
+    // The next sentence's "The" is not a determiner following "winds".
+    it("should not take POS context across a sentence boundary", function() {
+      expect(toIPA("It brought strong winds. The storm passed.")).toContain("wɪndz");
+    });
+
     it("should handle sentences with multiple homographs", function() {
       const result = toIPA("I read about the lead in the wind that can tear a bow");
       expect(result).toBeDefined();
