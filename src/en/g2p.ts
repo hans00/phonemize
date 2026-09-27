@@ -1438,7 +1438,26 @@ export class EnglishG2P implements LanguageProcessor {
         }
       }
     }
-    return dp[word.length];
+    const result = dp[word.length];
+    // A 2-word split needs no further check: both halves cover most of
+    // the word, so a coincidental short match is unlikely (breakfast,
+    // shoebox). A 3+-word split with a bare 3-letter middle chunk is a
+    // different risk — `this.dictionary` (the exceptions table) is
+    // riddled with 3-4 letter fragments that are surname/word remnants
+    // rather than real standalone words (tal, ary, eba, ugh, oft), and
+    // the DP has no notion of morphology to prefer fund+ament+al over
+    // fund+amen+tal. Measured on data/en/dict.json: rejecting a 3+-word
+    // split with any chunk under 4 letters (falling through instead) is
+    // strict 1 win : 3 loss on its own — the DP still finds SOME other
+    // short-chunk decomposition for the words this would fix, so a
+    // blanket minimum on every chunk is net negative. Scoped to just
+    // the 3+-word case it is neutral on the measured dict (no strict or
+    // lenient change either way) while fixing the flagged case
+    // (fundamental/fundamentally: fund+amen+tal → the rule path's own
+    // correctly-stressed ˌfʌndəˈmɛntəɫ).
+    if (result && result.length >= 3 && result.some((p) => p.length < 4))
+      return undefined;
+    return result;
   }
 
   public addPronunciation(word: string, pronunciation: string): void {
