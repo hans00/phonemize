@@ -225,6 +225,20 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ue/, "u"], // true, blue, glue (at end)
   [/^uy$/, "aɪ"], // buy, guy
   [/^uil/, "ɪl"], // build, built, guild, guilt, guile (ɪ not u before l)
+  // "ui" before d or n keeps both vowels as a genuine two-nucleus hiatus
+  // (druid, fluid, fluidity, ruin, bruin, druidism), where -t/-s/-c leave
+  // it the single fused /u/ of fruit/suit/circuit/juice/bruise/altruism —
+  // those three consonants were measured too and are too mixed to rule
+  // on (circuit ˈsɝkət vs conduit ˈkɑnduɪt; juice ˈdʒus vs suicide
+  // ˈsuəˌsaɪd), often keyed to a suffix boundary (-ing, -ism) rather than
+  // the raw letters. Excludes q/gu, whose "u" is already consumed as part
+  // of the /kw ɡw/ onset before this rule is reached. Measured over the
+  // dict by the letter directly after "ui" (q/g-onset words excluded):
+  // d is 7 two-nucleus : 1 fused (cuidado, a Spanish loan); n, once the
+  // -ing suffix and French ou+in names (gouin, drouin) are set aside as
+  // their own environments, is 5 : 0. The lookahead leaves d/n unconsumed
+  // for the normal consonant rules to emit.
+  [/^ui(?=[dn])/, "uɪ"],
   [/^ui/, "u"], // fruit, suit, cruise
   // R-controlled magic-e rimes: must precede generic ^ar/^ir/^or/^ur rules.
   [/^are$/, "ɛɹ"], // care, bare, share, prepare
@@ -2115,7 +2129,28 @@ export function syllableToIPA(
       !isStressed && !isSecondary && nextSyllable === "ne" &&
       /^[^aeiouy]*i$/.test(syllable) &&
       FRENCH_INE_GRAM.test((prevSyllable ?? "") + syllable + (tail ?? ""));
+    // A stressed open i two orthographic slots before a bare "-ate" tail
+    // (climate, private, primate, pirate, migrate, nitrate, vibrate,
+    // tristate, digate, pilate) is tense, propagating the same signal
+    // nextIsMagicE gives a directly-adjacent magic-e syllable one slot
+    // further back across the reduced "Ca" link — `tail` is the
+    // untouched remainder from here, so requiring it equal
+    // nextSyllable + "te" pins the link to exactly one more syllable,
+    // literally spelled "te". Scoped to that literal tail: measured
+    // over the dict by the middle syllable's own spelling, a bare "Ca"
+    // link before "te" is 10 aɪ : 2 ɪ (fixate, frigate); the broader
+    // -ace/-age/-ase/-ane/-acre set inverts to 3 aɪ : 6 ɪ (grimace,
+    // image, visage, ivane, grinage, whitacre) and is left alone. An
+    // x-spelt link (fixate) is excluded, the same onset already carved
+    // out of the o-laxing rule elsewhere in this file, dropping that
+    // loss for free (11 aɪ : 1 ɪ over the rest); frigate is the one
+    // remaining loss, with no orthographic split from digate.
+    const precedesAteSlot =
+      syllableIndex === 0 && isStressed && /^[^aeiouy]*i$/.test(syllable) &&
+      /^[^aeiouy]*a$/.test(nextSyllable ?? "") && !nextSyllable!.startsWith("x") &&
+      tail === (nextSyllable ?? "") + "te";
     const iFire = (nextIsMagicE || endsWithSilentE || (nextIsCle && isStressed) || isTenseIForm ||
+      precedesAteSlot ||
       (twoSylTense && /^[^aeiouy]*i$/.test(syllable) && !/^(?:v|en$)/.test(nextSyllable!))) &&
       !ineReduces;
     const skip = new Set<string>();

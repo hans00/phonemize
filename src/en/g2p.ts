@@ -875,7 +875,73 @@ export class EnglishG2P implements LanguageProcessor {
           // silent-g word that goes rule-exact): its syllable-boundary
           // dependency is the same one MAGIC_E_CANDIDATE's "gn$" exclusion
           // guards below, so it gets the identical, narrowly-scoped test.
-          (/(?:r|gn)$/.test(stem) ? this.predictInternal(stem, undefined, true) : undefined);
+          (/(?:r|gn)$/.test(stem)
+            ? this.predictInternal(stem, undefined, true)
+            // A multi-syllable silent-e stem (device, virus is NOT this —
+            // it has no e at all) has the identical problem one syllable
+            // over: devices resyllabifies as de·vi·ces, and the extra
+            // trailing "s" hides the "ce" magic-e slot from the syllable
+            // before it, losing the tensing device/price/voice get on
+            // their own. Scoped to 2+ syllables (syllabify(stem).length):
+            // a 1-syllable stem is already covered by the dedicated
+            // single-consonant-plus-"es" branch below and by the
+            // sibilant-final-vowel branch two lines down, both of which
+            // key off the shorter, unambiguous shape — reusing this
+            // fallback there too risks the same gas/case ambiguity noted
+            // on the -es branch. Single onset consonant only (device,
+            // notice, license), excluding the same non-silent shapes
+            // `endsWithSilentE` (syllabify.ts) excludes for the identical
+            // reason — a digraph or geminate before "e" never marks a
+            // real silent e, and syllabify() cannot tell a fabricated
+            // stem from a real one (dishes → "di"+"she": "she" fits the
+            // bare regex but its "e" is pronounced, not silent, which
+            // `endsWithSilentE`'s own "he$" exclusion already knows).
+            // A word ending in "-uses/-ises/-ixes" (viruses) is excluded
+            // too — its base has no silent e (virus, not viruse), and
+            // the fabricated stem here mis-syllabifies the same way the
+            // whole word does; the dedicated -us/-is/-ix fallback on the
+            // -es branch below owns that shape instead. "-ves" is
+            // excluded outright: the irregular f→v plural (wife→wives,
+            // life→lives, house is NOT this class) means the real
+            // singular ends in f, not v, so this stem is never a real
+            // word and syllabifies unpredictably (housewives → fabricated
+            // "housewive" → "hou·sew·i·ve", not "house·wife"). Capped at
+            // 3 syllables: a 4-syllable fabricated stem (fugitive) can
+            // disagree with the word's own already-correct whole-word
+            // reading on trisyllabic-laxing depth, and every dict word
+            // this fallback is meant for is 2–3 syllables. An x onset
+            // (taxes, sexes) is excluded like the -ate frame above: /ks/
+            // wearing one letter, not a genuine single silent-e trigger.
+            // INTEGRATOR NARROWING (2026-09-28, merging worktree
+            // agent-a89f5e0091d44882c): a stem ending in "nge" (change,
+            // exchange, range, arrange, strange) is also excluded, though
+            // it would otherwise pass every test above — `syllabify()`
+            // gives ANY magic-e word its own trailing silent-e slot
+            // (change → chan·ge, 2 slots), so this fallback's syllable
+            // count can't actually tell a genuine 2-syllable stem
+            // (device → de·vi·ce, 3 slots, 2 real syllables) from a
+            // magic-e MONOSYLLABLE (change, 2 slots, 1 real syllable);
+            // `exchange` (ex·chan·ge, 3 slots, 2 real syllables) is even
+            // indistinguishable from `device` by count alone. The reason
+            // -nge specifically needs its own carve-out rather than a
+            // syllable-count fix: it's the class the "-nge inflections
+            // pass" (see AGENTS.md) already protects through a DIFFERENT,
+            // narrower mechanism — inflect()'s -ed/-ing handler restores
+            // a stem's dropped e only when `wellKnown(base + "es")` finds
+            // "changes" as a literal TABLE entry, and this fallback
+            // making "changes" rule-exact (correctly derivable without
+            // the table) evicts it from `exceptions.json` exactly like
+            // the eviction traps document elsewhere in this file,
+            // breaking that corroboration for changed/changing/exchanged/
+            // exchanging/ranged/ranging. No -nge word was among this
+            // package's own target examples (device/notice/license), so
+            // the exclusion costs nothing intended.
+            : /[^aeiouy]e$/.test(stem) &&
+              !/(?:ee|[^aeiou]le|he|tte|se|ves|xe|nge)$/.test(stem) &&
+              syllabify(stem).length > 1 && syllabify(stem).length <= 3 &&
+              !/(?:us|is|ix)es$/.test(lowerWord)
+              ? this.predictInternal(stem, undefined, true)
+              : undefined);
       if (basePron) return sPlural(basePron);
       // Rule-derived stems are absent from the exception table. Preserve
       // -tion/-sion palatalization and monosyllabic silent-e vowels
@@ -927,6 +993,25 @@ export class EnglishG2P implements LanguageProcessor {
       }
       const basePron = this.wellKnown(base);
       if (basePron) return basePron + "ɪz";
+      // A rule-exact base ending in the -us/-is/-ix TENSE_ENDINGS suffix
+      // (virus, iris, matrix) has also left the table, and resyllabifying
+      // the whole inflected form moves its final consonant into the new
+      // "-es" syllable's onset (vi·ru·ses, not vi·rus), losing exactly
+      // the ending shape that tensed the stressed vowel on its own —
+      // the same problem the r-final stem fix above solves for -s. Force
+      // the rule path on the untouched base, where TENSE_ENDINGS still
+      // sees it whole (viruses, irises; most -us/-is/-ix dict words are
+      // one-syllable stems and are already caught by the single-vowel-
+      // group branch just above, so this only adds the multi-syllable
+      // remainder). "-ouses" is excluded — house's "ou" digraph plus a
+      // bare "s" coincidentally spells the same four letters
+      // (blockhouses, farmhouses), but it
+      // is not the Latin -us suffix and is already handled above, at the
+      // single-vowel-group branch this compound's prefix keeps it out of.
+      if (/(?:us|is|ix)es$/.test(lowerWord) && !/ouses$/.test(lowerWord)) {
+        const p = this.predictInternal(base, undefined, true);
+        if (!ENDS_IN_VOWEL_RE.test(p)) return p + "ɪz";
+      }
     }
 
     // y-stem family: restore the -y the suffix replaced (tried → try,
