@@ -246,8 +246,8 @@ function weakVowelInflection(ipa: string): string {
 // /ɹɫ/+C 29 with /ɹəɫ/+C 39, and the rule scored 0 wins against 29 losses
 // there). The right neighbour must not be a glide: /ɫj/, /ɫw/ are onsets
 // (intaglio, ljubljana, blouin) — 306 against 16 for /əɫ/+glide.
-const SYLLABIC_L_LEFT = "bdɡgkptfvszʃʒθð"; // obstruents (l itself excluded)
-const SYLLABIC_L_RIGHT = "bdfɡghkmnpstvzðθʃʒŋɹɫ"; // consonants minus the glides j/w
+const SYLLABIC_L_LEFT = "bdɡkptfvszʃʒθð"; // obstruents (l itself excluded)
+const SYLLABIC_L_RIGHT = "bdfɡhkmnpstvzðθʃʒŋɹɫ"; // consonants minus the glides j/w
 function epenthesizeSyllabicL(ipa: string): string {
   if (ipa.indexOf("l") < 0 && ipa.indexOf("ɫ") < 0) return ipa;
   let out = "";

@@ -241,9 +241,9 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^or/, "ɔɹ"], // for, port, storm
   // Context-dependent consonants
   [/^c(?=[eiy])/, "s"], // soft c: cent, city, cycle
-  [/^giv/, "gɪv"],
-  [/^gif/, "gɪf"],
-  [/^gir/, "gɝ"],
+  [/^giv/, "ɡɪv"],
+  [/^gif/, "ɡɪf"],
+  [/^gir/, "ɡɝ"],
   [/^gil/, "ɡɪl"], // hard-g: give/gift/girl/gild (guard: skip non-first syllable in loop)
   [/^g(?=[eiy])/, "dʒ"], // soft g: gem, gin, gym (but not all cases)
   // Improved consonant clusters
