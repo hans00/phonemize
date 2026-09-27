@@ -67,6 +67,15 @@ function suffixPrimary(ipa: string): string {
   const run = s.slice(k, v).replace(/[ˈˌ]/g, "").match(/tʃ|dʒ|./g) ?? [];
   let split = run.length;
   while (split > 0 && LICIT_ONSETS.has(run.slice(split - 1).join("").replace(/ɫ/g, "l"))) split--;
+  // A bare /ɹ/ right after an unstressed /ɪ/ or /ə/ is a coalescing
+  // rhotic (generate → generation), not a real onset consonant to pull
+  // into the new syllable: maximizing it onto the suffix (…ɛnˈɹeɪʃən)
+  // strands the mark BETWEEN /ɪ/ and /ɹ/, which permanently blocks the
+  // later unstressed-/ɪɹ/→/ɝ/ phonotactic pass from ever rejoining them
+  // (dict: …ɛnɝˈeɪʃən). Leaving the pair adjacent is the same convention
+  // applyPostStress's own onset-maximization already keeps for the
+  // whole-word path (postlex's ONSET_MAX_1_RE exception).
+  if (split === 0 && k > 0 && run[0] === "ɹ" && /[ɪə]/.test(s[k - 1])) split = 1;
   if (k === 0) split = 0;
   return s.slice(0, k) + run.slice(0, split).join("") + "ˈ" + run.slice(split).join("") + s.slice(v);
 }
@@ -1040,13 +1049,19 @@ export class EnglishG2P implements LanguageProcessor {
     // demotes to secondary, and the -ize /aɪz/ becomes /əˈzeɪʃən/.
     if (lowerWord.endsWith("ization") && lowerWord.length > 9) {
       const stem = lowerWord.slice(0, -7);
-      const ize = lex(stem + "ize");
+      // stemPron (not lex): unlike -ification, "stem+ize" is ALWAYS the
+      // real verb an -ization noun derives from (organization←organize,
+      // specialization←specialize) — a rule-exact -ize verb leaving the
+      // table used to fall straight to the plain-stem branch below and
+      // lose the /aɪz/ syllable's own vowel (legalization → ˌɫɪɡəɫəˈzeɪʃən
+      // instead of ˌɫiɡəɫəˈzeɪʃən).
+      const ize = stemPron(stem + "ize");
       // demote the stem's primary to secondary, then turn the -ize
       // syllable (its onset's secondary mark + /aɪz/) into unstressed
       // /əˈzeɪʃən/ — the suffix carries the new primary.
       if (ize && /aɪz$/.test(ize))
         return ize.replace(/[ˈˌ]/g, "ˌ").replace(/ˌ?([^ˈˌ]*)aɪz$/, "$1əˈzeɪʃən");
-      const b = lex(stem);
+      const b = stemPron(stem);
       if (b) return b.replace(/ˈ/g, "ˌ") + "əˌzeɪʃən";
     }
 
@@ -1099,11 +1114,35 @@ export class EnglishG2P implements LanguageProcessor {
           "ʃən"
         );
       if (src) return suffixPrimary(src + "eɪ") + "ʃən";
-      // A two-syllable -ate verb that the rules get right is not in the
-      // exception table, so read it from the rules (locate → location
-      // keeps its /oʊ/). Longer ones are left to the whole-word path: read
-      // from the rules they lose more than they win (generation).
-      if (syllabify(b + "ate").length <= 3) {
+      // Neither the -ate verb nor the bare stem is a table hit: the -ate
+      // verb itself may simply be rule-exact (concatenate, generate,
+      // operate, obliterate) and have left the exception table, at any
+      // syllable count — the -ate stress rule (assignStress) already
+      // places its primary correctly regardless of length, so the old
+      // ≤3-syllable cap here was only ever a proxy for "is this really an
+      // -ate verb", not the real test. That real test is orthographic:
+      // -ification nouns (acidification, justification, qualification)
+      // also end in "ation" but derive from an -ify verb, not -ate
+      // ("acidificate" isn't a word), so they're excluded — the rule
+      // pipeline never refuses a fabricated form, it just mis-syllabifies
+      // it, and that garbage would otherwise outrank the correct
+      // whole-word reading. Measured together with the matching -ization
+      // fix below and the suffixPrimary rhotic-coalescing fix it depends
+      // on (a rule-exact stem's raw /ɪɹ/ needs that fix to reform /ɝ/
+      // once composed — see suffixPrimary's own comment): strict
+      // 84 : 8, lenient 39 : 4, top-5000 9 : 0. The 8 losses are bare
+      // stems that need a final silent -e this fallback doesn't try
+      // (compile → compilation, derive → derivation, deprive →
+      // deprivation, value → undervaluation), a genuine noun/verb
+      // ambiguity in the -ate reading itself (intimate), a rare real
+      // word whose isolated rule rendering picks a different doubled-r
+      // syllable split than the whole word does (aberrate → aberration),
+      // and two more -ify-shaped nouns -ification's suffix-final "if"
+      // check doesn't catch (jubilate is real but not what "jubilation"
+      // derives from; multiply → multiplication has no orthographic tie
+      // to "multiplicate"). Left open: no purely orthographic test
+      // separates these from the class this fix targets.
+      if (!/ific$/.test(b)) {
         const ruleAte = this.predictInternal(b + "ate", undefined, false);
         if (ruleAte && /eɪt$/.test(ruleAte)) return suffixPrimary(ruleAte.slice(0, -1)) + "ʃən";
       }
