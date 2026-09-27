@@ -92,7 +92,10 @@ function enUsPhonemic(ipa: string): string {
 }
 
 // Find the index of the primary-stressed nucleus (-1 if none).
-const VOWELS = new Set("aeiouæɛɪɔʊʌəɝ");
+// Was missing ɑ (present in PHON_VOWELS above but not here), so any word
+// with ɑ before or at the stressed syllable miscounted nuclei and could
+// return the wrong index — see AGENTS.md.
+const VOWELS = new Set("aeiouɑæɛɪɔʊʌəɝ");
 function primaryStressIdx(ipa: string): number {
   let nuclei = 0, inV = false, pending = false;
   for (const c of ipa) {
@@ -147,8 +150,8 @@ for (const [word, expected] of Object.entries(dict)) {
       buckets.stressOnly.sample.push(`${word}: ${pred}  ≠ ${expected}`);
     continue;
   }
-  const predNoVow = stripStress(pred).replace(/[æɛɪɔʊʌəɝaeiouy]/g, "·");
-  const expNoVow = stripStress(expected).replace(/[æɛɪɔʊʌəɝaeiouy]/g, "·");
+  const predNoVow = stripStress(pred).replace(/[æɛɪɔʊʌəɝɑaeiouy]/g, "·");
+  const expNoVow = stripStress(expected).replace(/[æɛɪɔʊʌəɝɑaeiouy]/g, "·");
   const samePrimary = primaryStressIdx(pred) === primaryStressIdx(expected);
   if (predNoVow === expNoVow && samePrimary) {
     buckets.vowelOnly.count++;
