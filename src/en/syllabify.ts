@@ -145,6 +145,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^cz/, "tʃ"], // czech, czechoslovak, czar (Polish/Czech cz)
   [/^chr/, "kɹ"], // chrome, chronic, Christ (Greek ch before r)
   [/^chl/, "kl"], // chlorine, chlorinated (Greek ch before l)
+  [/^ch/, "k"], // Greek ch in chem-/chor-/charact-/charis- (see GREEK_CH_ROOT; guarded in the loop below, off by default)
   [/^t?ch/, "tʃ"], // chair, church, much; watch, match, catch
   [/^ck/, "k"], // back, pick, truck
   [/^ph/, "f"], // phone, graph, elephant
@@ -538,6 +539,37 @@ const DOUBLED_ONE_ENDING = /([b-df-hj-np-tv-z])\1one$/;
 // Polish surname suffixes -wicz/-wich (markiewicz) and -czak (adamczak).
 // -czyk rarely reaches three slots, since y is no nucleus here.
 const PATRONYMIC_ENDING = /(?:[aeiouy]wi(?:cz|ch)|czak)$/;
+// Word-initial Greek ch = /k/ in three bound roots the syllabifier can't
+// see as a unit (the "ch" and its following letter share one slot — che,
+// cho, cha — so the discriminating material sits in the NEXT slot or
+// beyond; matched here against the whole word instead). Measured over
+// data/en/dict.json by the first IPA segment after word-initial ch/tch
+// (excluding the already-/k/ chr/chl clusters): chor- is 12 k : 5 tʃ once
+// the native "chore"/"chortle" family is carved back out — not by
+// re-listing chor- derivatives, but by two negative lookaheads that name
+// the two attested native English words sharing the prefix (chore/chores
+// are "a household task", chortle is chuckle+snort, neither Greek); the
+// one remaining loss, chorney, is a surname with no orthographic split
+// from chorus/choral/chord/choreograph. charact-/charis- (character,
+// characterize, characteristic, charisma, charismatic) is clean, 12 k :
+// 0. chem- is 15 k : 10 tʃ unrestricted (dump/compare: strict 9 win : 6
+// loss, lenient 16 : 8 — technically still net-positive, but real
+// words take real losses: chemfix, chemie, chemins, chemerinsky), so the
+// root is scoped to the three suffixes real chem- words actually take:
+// -ic (chemical), -ist (chemist), -o (chemo) — each a productive English
+// suffix attaching to many other roots, unlike the prefix here. A
+// bare-word anchor for "chem" and "chemi" alone was measured too (each
+// is exactly one dict word, unrestricted 9:6 above included both as
+// wins) and dropped: a $-anchored branch matching only its own literal
+// string is a whole-word entry wearing a regex, not a root, and house
+// style (the -graphy/-nomy set above) generalises a suffix across many
+// words rather than hardcoding one. Scoped to -ic/-ist/-o only: 7 k : 0.
+// chimerical was measured too and left out: the dict's own "chimera" is
+// tʃ, so there is no orthographic signal for the one word that differs
+// from its own root. Open: chorizo (Spanish, tʃ) is not in the dict to
+// measure but would wrongly reach /k/ here — no orthographic split from
+// choral/chorus without one.
+const GREEK_CH_ROOT = /^ch(?:em(?:ic|ist|o)|arac|aris|or(?!e$|es$|tl))/;
 // Latin hiatus endings that pull the primary onto the syllable right
 // before them and (see the syllableToIPA use site) tense an open vowel
 // there: -ia (malaria), -ian (canadian), -ious (curious), -eous
@@ -1739,6 +1771,11 @@ export function syllableToIPA(
     if (isLastSyllable || !nextSyllable?.startsWith("st")) skip.add("^y(?=$)");
     if (syllableIndex > 0) { skip.add("^x(?=[aeiouy])"); skip.add("^gil"); skip.add("^scien"); }
     if (syllableIndex === 0 && isLastSyllable) skip.add("^baum$");
+    // Greek ch → /k/ (see GREEK_CH_ROOT): off everywhere else, since plain
+    // word-initial ch defaults to tʃ (chair, church) far more often than
+    // not.
+    if (syllableIndex !== 0 || !GREEK_CH_ROOT.test(head + syllable + (tail ?? "")))
+      skip.add("^ch");
     // Greek silent-h ^rh only fires word-initially or in -rrh- (the
     // prior syllable ends in r: diarrhea, hemorrhage). A plain medial
     // r|h is a compound/name boundary where h is pronounced (barham).

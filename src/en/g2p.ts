@@ -1268,6 +1268,31 @@ export class EnglishG2P implements LanguageProcessor {
       const b = word.slice(i);
       if (COMPOUND_HEADS[a] === undefined || COMPOUND_TAILS[b] === undefined)
         continue;
+      // "logic" mines as a verified compound tail (it is a free word on
+      // its own), but the Greek -log-/-graph-/-nom-/-soph- family it
+      // belongs to (the same set greekAgent above reads -ist/-er from) is
+      // not a stress-neutral English compound: the suffix carries the
+      // primary across the WHOLE word, not just its own tail. Splitting
+      // still fires for any head that also happens to be a verified
+      // compound head elsewhere (psycho-, eco-, astro-, socio- — from
+      // psychopath, ecosystem, astronaut, sociopath), which wrongly
+      // promotes the head's own stress: psychological/ecological/
+      // astrological/sociological reach here as the "-al" handler's
+      // stripped "-ologic" stem and come out ˈsaɪkoʊˌɫɑdʒɪk instead of the
+      // dict's ˌsaɪkəˈɫɑdʒɪk. bio-, techno-, anthropo-, archaeo-, mytho-,
+      // geo- and toxico- are unaffected only because they are not ALSO
+      // mined compound heads, so the same words already land correctly
+      // through the plain suffix-stress rule (assignStress's
+      // endsWith("ic") case) — this exclusion just routes -logic there
+      // too. Matched by family, not the literal string, since a future
+      // build-dict re-mine could add -graphic/-nomic/-sophic as tails
+      // with the identical bug. Measured on data/en/dict.json: one
+      // stress-position win (analogic: ˈænəˌɫɑdʒɪk → ˌænəˈɫɑdʒɪk, already
+      // stress-stripped-equal to dict either way) and one strict loss
+      // (immulogic, a brand name whose head-stressed reading the dict
+      // actually keeps); the real payoff is the "-ological" family
+      // reached through the "-al" morphology handler.
+      if (/^(?:log|graph|nom|soph)ic$/.test(b)) continue;
       const score = Math.min(a.length, b.length);
       if (score > bestScore) {
         bestScore = score;
