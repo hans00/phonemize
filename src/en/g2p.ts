@@ -534,6 +534,7 @@ export class EnglishG2P implements LanguageProcessor {
         syllables.slice(i + 1).join(""),
         secondary.has(i),
         syllables.slice(0, i).join(""),
+        i > 0 && i - 1 === stressedIdx,
       );
     });
 
@@ -1254,6 +1255,7 @@ export class EnglishG2P implements LanguageProcessor {
         syllables.slice(i + 1).join(""),
         secondary.has(i),
         syllables.slice(0, i).join(""),
+        i > 0 && i - 1 === stressedSyllableIndex,
       );
     });
 

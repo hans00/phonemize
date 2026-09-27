@@ -518,7 +518,7 @@ export function secondaryStressIndices(
   return out;
 }
 
-const GERMANIC_NAME_ENDING = /(?:berger|inger|ermann?|heimer|meyer|meier|hofer|felder|baum)$/;
+const GERMANIC_NAME_ENDING = /(?:berger|inger|enger|ermann?|heimer|meyer|meier|hofer|felder|baum)$/;
 const ITALIAN_ENDING = /(?:ino|ano|ini|oni|elli|etti|ello|etto|ucci|acci|ola)$/;
 // French loanword/surname endings that keep the primary on the final
 // syllable at exactly two slots (chateau, giroux, voltaire): -eau/-eaux,
@@ -678,8 +678,23 @@ export function assignStress(syllables: string[], word: string): number {
   // (ellington is heard with the second syllable stressed). -baum joins
   // the set at 3+ syllables (rosenbaum, tannenbaum, mandelbaum): 28/28 in
   // the dict. Excluded at 2 syllables, where -baum itself keeps the beat
-  // (erlbaum) rather than the element before it.
-  if (GERMANIC_NAME_ENDING.test(lowerWord) && syllables.length >= 3) return 0;
+  // (erlbaum) rather than the element before it. -enger joins it too
+  // (ballenger, messenger, passenger, clevenger): 9/9 at 3+ syllables.
+  // This whole-word check only reaches surnames where the -er
+  // morphological handler in g2p.ts found no real "-enge" verb to build
+  // from (messeng+e is not a word); challenger/scavenger resolve there
+  // first, from the pinned exception-table stress of challenge/scavenge.
+  // avenger has no such pin (the rules already got it right without one)
+  // and would otherwise be the one loss: its "a-" is the genuine
+  // unstressed prefix of avenge (a·veng·er), not a Germanic surname
+  // element, so it is excluded the same way the weak-a-prefix rules
+  // elsewhere in this function key off a bare "a" first syllable.
+  if (
+    GERMANIC_NAME_ENDING.test(lowerWord) &&
+    syllables.length >= 3 &&
+    !(lowerWord.endsWith("enger") && syllables[0] === "a")
+  )
+    return 0;
 
   // Italian name endings take the penult (albano, agostini, capelli,
   // baldacci): -ino/-ano/-ini/-oni/-elli/-etti/-ello/-etto/-ucci/-acci.
@@ -798,6 +813,27 @@ export function assignStress(syllables: string[], word: string): number {
   // minority is short French-origin roots that keep their own stress
   // (Seville, Deville, Douville, Courville) and Mc-/Mac- surnames.
   if (syllables.length >= 3 && lowerWord.endsWith("ville")) return 0;
+
+  // A 3-syllable Latinate -ary word (secretary, legendary, commentary,
+  // corollary) keeps its primary word-initial even when a closed middle
+  // syllable would otherwise pull the heaviness fallback onto it
+  // (momentary, sedentary, commissary) or the word happens to start with
+  // a string the loop below treats as an unstressed prefix (adversary,
+  // dispensary): 57 initial : 7 elsewhere (89.1%) over the 3-slot dict
+  // population, checked ahead of both the prefix loop and the heaviness
+  // fallback so it isn't shadowed by either. The consonant-before-"ary"
+  // requirement already excludes the -iary/-uary hiatus variant (auxiliary,
+  // fiduciary, judiciary, pecuniary), where the extra vowel is itself the
+  // stressed syllable; the residual losses are proprietary/reactionary/
+  // exemplary/infirmary, whose own stem is independently stressed past the
+  // first syllable, and maxillary, a minority Latin loan. -ory/-ery are
+  // deliberately left to the existing fallback: unlike -ary, their
+  // closed-middle-syllable subset genuinely favors the adjacent stress the
+  // fallback already gives it (accessory, directory, artillery, dysentery
+  // — 7 initial : 17 elsewhere at 3 slots with a closed middle), so the
+  // same override would trade a real win for a real loss instead of only
+  // fixing one.
+  if (syllables.length === 3 && /[^aeiouy]ary$/.test(lowerWord)) return 0;
 
   // Common prefixes that don't usually take stress. For 3+ syllable
   // words we use the orthographic prefix as a signal but rely on the
@@ -1264,6 +1300,9 @@ export function syllableToIPA(
   isSecondary = false,
   // Orthographic head of the word before this syllable.
   head = "",
+  // True when the immediately preceding syllable carries the primary
+  // stress (accessory, directory: the syllable right after "cess"/"rec").
+  prevStressed = false,
 ): string {
   const stepsStart = steps?.length ?? 0;
   let phonemes: string[] = [];
@@ -2151,9 +2190,38 @@ export function syllableToIPA(
     ) {
       phonemes[len - 3] = "ə";
     }
-    // -ory/-ary 2-syl: /ɔɹ|ɑɹ/ before /i/ → /ɝ/ (memory/factory/salary); 3-syl+ secondary-stressed → skip.
+    // -ory right after the stressed syllable: /ɔɹ|ɑɹ/ before /i/ → /ɝ/
+    // (memory/factory/salary at 2 slots; accessory/directory/advisory at
+    // 3, where the primary is the stem's own, not the word-initial
+    // default). Gated on adjacency to the primary, not a fixed slot
+    // index, so it reaches both, where the old syllableIndex===1 check
+    // could only ever fire at 2 slots. Over the dict population whose
+    // ending is exactly one syllable after the primary (counted on the
+    // rendered IPA, so the merged "ɝi" reading itself counts as that one
+    // syllable), -ory reduction is the majority reading, 42 : 17. A
+    // syllable NOT adjacent to the primary (secretary, category) is
+    // untouched, matching the dict's kept /ˌɔɹi/. -ary and -ery don't
+    // reach this branch at all outside the 2-slot case the old check
+    // already covered (salary): their unstressed /ar/, /er/ already
+    // render ɛɹ before this point (postlex's addFullVowelSecondaries for
+    // a non-adjacent -ary, the plain `^er(?=[aeiouwy])` rule plus the
+    // general unstressed-vowel merge for -ery), never the ɔɹ/ɑɹ this
+    // test looks for; -ary 39 : 22 and -ery 155 : 6 are dict-wide
+    // evidence that reduction is the right default across the whole
+    // -Vry family, not word counts this branch moves. Checked over the
+    // whole dict (rule-diff before/after): zero -ary or -ery words
+    // change through this branch: only -ory does, plus the -iary/-uary
+    // hiatus exclusion below. The -iary/-uary hiatus (subsidiary,
+    // incendiary) is excluded: its extra vowel is a real syllable the
+    // maximal-onset syllabifier still folds into this same slot, so
+    // "adjacent to the primary" is true of the SLOT but not of the "ary"
+    // nucleus itself, which stays the dict's full /ɛɹi/ — without this
+    // exclusion the old 2-slot check already over-reduced actuary,
+    // aviary, estuary, january, mortuary, sanctuary, statuary and
+    // topiary; excluding it is the fix.
     if (
-      syllableIndex === 1 &&
+      prevStressed &&
+      !isHiatusSlot(syllable) &&
       len >= 2 &&
       phonemes[len - 1] === "i" &&
       (phonemes[len - 2] === "ɔɹ" || phonemes[len - 2] === "ɑɹ")
