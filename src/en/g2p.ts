@@ -289,16 +289,13 @@ function isMonosyllable(ipa: string): boolean {
 // Used for possessive/plural -'s. `ipa` may carry a trailing dark /ɫ/.
 function sAllomorph(ipa: string): string {
   const last = ipa[ipa.length - 1];
-  const prev = ipa[ipa.length - 2];
-  // Sibilant affricates surface as tʃ/dʒ — check the two-char tail.
-  if (last === "s" || last === "z" || last === "ʃ" || last === "ʒ" ||
-      (prev === "t" && last === "ʃ") || (prev === "d" && last === "ʒ")) {
-    return "ɪz";
-  }
-  if (last === "p" || last === "t" || last === "k" || last === "f" || last === "θ") {
-    return "s";
-  }
-  return "z";
+  // A sibilant affricate's last IPA char is already ʃ/ʒ, so no separate
+  // two-char check is needed for tʃ/dʒ.
+  return ["s", "z", "ʃ", "ʒ"].includes(last)
+    ? "ɪz"
+    : ["p", "t", "k", "f", "θ"].includes(last)
+      ? "s"
+      : "z";
 }
 
 export class EnglishG2P implements LanguageProcessor {
@@ -526,27 +523,8 @@ export class EnglishG2P implements LanguageProcessor {
         };
     }
 
-    const syllables = syllabify(lowerWord);
-    const stressedIdx = assignStress(syllables, lowerWord);
-    const secondary = secondaryStressIndices(syllables, stressedIdx);
     const traceSteps: TraceStep[] = [];
-    syllables.forEach((syl, i) => {
-      syllableToIPA(
-        syl,
-        i,
-        i === stressedIdx,
-        i === syllables.length - 1,
-        i < syllables.length - 1 ? syllables[i + 1] : undefined,
-        traceSteps,
-        i > 0 ? syllables[i - 1] : undefined,
-        i === syllables.length - 2,
-        syllables.slice(i + 1).join(""),
-        secondary.has(i),
-        syllables.slice(0, i).join(""),
-        i > 0 && i - 1 === stressedIdx,
-      );
-    });
-
+    const { syllables } = this.ruleSyllables(lowerWord, undefined, traceSteps);
     return { word, ipa, path: "rules", syllables, steps: traceSteps };
   }
 
@@ -660,13 +638,10 @@ export class EnglishG2P implements LanguageProcessor {
   }
 
   private matchPos(entry: HomographEntry, pos: string): boolean {
-    if (entry.pos === pos) {
-      return true;
-    }
-    if (entry.pos.startsWith("!") && entry.pos.substring(1) !== pos) {
-      return true;
-    }
-    return false;
+    return (
+      entry.pos === pos ||
+      (entry.pos.startsWith("!") && entry.pos.substring(1) !== pos)
+    );
   }
 
   private wellKnown(
@@ -678,22 +653,15 @@ export class EnglishG2P implements LanguageProcessor {
       const homograph = this.homographs[word].find((entry: HomographEntry) =>
         this.matchPos(entry, pos),
       );
-      if (homograph) {
-        return homograph.pronunciation;
-      }
+      if (homograph) return homograph.pronunciation;
     }
-    if (this.customDict[word]) {
-      return this.customDict[word];
-    }
-    if (this.dictionary[word]) {
-      return this.dictionary[word];
-    }
-
-    if (skipMorphology) {
-      return undefined;
-    }
-    // Morphological analysis for common endings
-    return this.tryMorphologicalAnalysis(word);
+    return (
+      this.customDict[word] ||
+      this.dictionary[word] ||
+      // Morphological analysis for common endings, unless the caller
+      // wants the lexicon only.
+      (skipMorphology ? undefined : this.tryMorphologicalAnalysis(word))
+    );
   }
 
   private tryMorphologicalAnalysis(word: string): string | undefined {
@@ -732,14 +700,8 @@ export class EnglishG2P implements LanguageProcessor {
       const yForm = stemPron(lowerWord.slice(0, -greekAgent[1].length) + "y");
       if (yForm && /i$/.test(yForm)) return yForm.slice(0, -1) + (greekAgent[1] === "ist" ? "ɪst" : "ɝ");
     }
-    const edPast = (p: string): string => {
-      const last = p.slice(-1);
-      return ["t", "d"].includes(last)
-        ? p + "ɪd"
-        : ["p", "k", "s", "ʃ", "f", "θ"].includes(last)
-          ? p + "t"
-          : p + "d";
-    };
+    const edPast = (p: string): string =>
+      /[td]$/.test(p) ? p + "ɪd" : /[pksʃfθ]$/.test(p) ? p + "t" : p + "d";
     /**
      * Shared lookup ladder for regular inflections (-ed/-ing): silent-e
      * stem (consonant-final bases only) → bare base → doubled-consonant
@@ -1324,34 +1286,50 @@ export class EnglishG2P implements LanguageProcessor {
   }
 
   /**
-   * Priority-7's syllabify → assignStress → syllableToIPA → mark-insertion
-   * pipeline, factored out so a morphology handler can render a bound stem
-   * with a forced stress index (see the -ular handler above) instead of
+   * syllabify → assignStress → per-syllable syllableToIPA, shared by
+   * renderRuleForm (which needs the joined IPA array) and trace() (which
+   * only needs the step log syllableToIPA writes via `steps`).
+   * `forcedStress` lets a morphology handler render a bound stem with a
+   * forced stress index (see the -ular handler above) instead of
    * `assignStress`'s free-word default.
    */
-  private renderRuleForm(lowerWord: string, forcedStress?: number): string {
+  private ruleSyllables(
+    lowerWord: string,
+    forcedStress?: number,
+    steps?: TraceStep[],
+  ): { syllables: string[]; stressedIdx: number; ipa: string[] } {
     const syllables = syllabify(lowerWord);
-    const stressedSyllableIndex = forcedStress ?? assignStress(syllables, lowerWord);
-    const secondary = secondaryStressIndices(syllables, stressedSyllableIndex);
-
-    const syllableIPA = syllables.map((s, i) => {
-      const isStressed = i === stressedSyllableIndex;
-      const isLastSyllable = i === syllables.length - 1;
-      return syllableToIPA(
+    const stressedIdx = forcedStress ?? assignStress(syllables, lowerWord);
+    const secondary = secondaryStressIndices(syllables, stressedIdx);
+    const ipa = syllables.map((s, i) =>
+      syllableToIPA(
         s,
         i,
-        isStressed,
-        isLastSyllable,
+        i === stressedIdx,
+        i === syllables.length - 1,
         i < syllables.length - 1 ? syllables[i + 1] : undefined,
-        undefined,
+        steps,
         i > 0 ? syllables[i - 1] : undefined,
         i === syllables.length - 2,
         syllables.slice(i + 1).join(""),
         secondary.has(i),
         syllables.slice(0, i).join(""),
-        i > 0 && i - 1 === stressedSyllableIndex,
-      );
-    });
+        i > 0 && i - 1 === stressedIdx,
+      ),
+    );
+    return { syllables, stressedIdx, ipa };
+  }
+
+  /**
+   * Priority-7's syllabify → assignStress → syllableToIPA → mark-insertion
+   * pipeline.
+   */
+  private renderRuleForm(lowerWord: string, forcedStress?: number): string {
+    const {
+      syllables,
+      stressedIdx: stressedSyllableIndex,
+      ipa: syllableIPA,
+    } = this.ruleSyllables(lowerWord, forcedStress);
 
     if (syllableIPA.length === 0) return lowerWord;
     const joined = syllableIPA.join("");

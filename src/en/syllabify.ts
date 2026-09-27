@@ -644,50 +644,40 @@ export function assignStress(syllables: string[], word: string): number {
 
   const lowerWord = word.toLowerCase();
 
-  // Specific suffix stress patterns
-  if (
-    lowerWord.endsWith("tion") ||
-    lowerWord.endsWith("sion") ||
-    lowerWord.endsWith("cial") ||
-    lowerWord.endsWith("tial")
-  ) {
-    return Math.max(0, syllables.length - 2);
-  }
+  // Specific suffix stress patterns (-tion/-sion/-cial/-tial). The
+  // `syllables.length <= 1` guard above means length is always >= 2 here,
+  // so `syllables.length - 2` can't go negative and needs no Math.max —
+  // true of every "penult" return in this function.
+  if (/(?:tion|sion|cial|tial)$/.test(lowerWord)) return syllables.length - 2;
 
   // -ity pulls the primary onto the syllable right before it (activity,
   // abnormality, accessibility). The syllabifier keeps consonant + ity as
   // one final slot (ac·ti·vity), so that syllable is length - 2. -iety
   // (society, anxiety) is a different frame and is left out.
-  if (/[^aeiouy]ity$/.test(lowerWord)) return Math.max(0, syllables.length - 2);
+  if (/[^aeiouy]ity$/.test(lowerWord)) return syllables.length - 2;
   // -ial does the same at 3+ slots (adversarial, editorial, material); at
   // two the <i> is itself the stressed vowel (denial, trial).
   if (/[^aeiouy]ial$/.test(lowerWord) && syllables.length >= 3)
     return syllables.length - 2;
   // -ental/-antal likewise (accidental, fundamental, environmental).
   if (/[ae]ntal$/.test(lowerWord) && syllables.length >= 3) return syllables.length - 2;
-  // -ate puts the primary two syllables before its own /eɪt/ (abdicate,
-  // accelerate, anticipate, and the adjectives accurate, delicate). The
-  // syllabifier writes it as C+a · te, so that is slot length - 4, or
-  // length - 3 when the C+a slot is a hiatus that already holds two
-  // syllables (appre·cia·te, eva·lua·te, gra·dua·te). Two-syllable words
-  // (debate, rotate, create) have fewer than four slots and are left out.
-  if (/[^aeiouy]ate$/.test(lowerWord) && syllables.length >= 3) {
-    const hiatus = /[iu]a$/.test(syllables[syllables.length - 2]);
-    if (hiatus) return Math.max(0, syllables.length - 3);
-    if (syllables.length >= 4) return syllables.length - 4;
-  }
-
-  // -ator stresses like -ate, its verb (generator, indicator,
-  // administrator): C+a · tor, so slot length - 4, or length - 3 over a hiatus.
-  if (/[^aeiouy]ator$/.test(lowerWord) && syllables.length >= 3) {
-    if (/[iu]a$/.test(syllables[syllables.length - 2])) return Math.max(0, syllables.length - 3);
+  // -ate/-ator put the primary two syllables before their own /eɪt/
+  // (abdicate, accelerate, anticipate, and the adjectives accurate,
+  // delicate; -ator stresses the same way: generator, indicator,
+  // administrator). The syllabifier writes it as C+a · te/tor, so that is
+  // slot length - 4, or length - 3 when the C+a slot is a hiatus that
+  // already holds two syllables (appre·cia·te, eva·lua·te, gra·dua·te).
+  // Two-syllable words (debate, rotate, create) have fewer than four
+  // slots and are left out.
+  if (/[^aeiouy]at(?:e|or)$/.test(lowerWord) && syllables.length >= 3) {
+    if (/[iu]a$/.test(syllables[syllables.length - 2])) return syllables.length - 3;
     if (syllables.length >= 4) return syllables.length - 4;
   }
 
   // -ia/-ian/-ious/-eous stress the syllable before them (india, malaria,
   // cafeteria, canadian, barbarian, various, curious, spontaneous); the
   // syllabifier keeps consonant + suffix as the last slot.
-  if (syllables.length >= 2 && LATIN_HIATUS_ENDING.test(syllables[syllables.length - 1]))
+  if (LATIN_HIATUS_ENDING.test(syllables[syllables.length - 1]))
     return syllables.length - 2;
 
   // A word-final "que" is the French spelling of a bare /k/ (antique,
@@ -803,16 +793,7 @@ export function assignStress(syllables: string[], word: string): number {
   // primary onto the syllable before the suffix. The orthographic
   // syllabifier groups the trailing "-rium/-nosis/-lysis" as one chunk, so
   // that target is the penult of the syllable array (length - 2).
-  if (
-    (lowerWord.endsWith("ium") ||
-      lowerWord.endsWith("osis") ||
-      lowerWord.endsWith("itis") ||
-      lowerWord.endsWith("ysis") ||
-      lowerWord.endsWith("iasis")) &&
-    syllables.length >= 2
-  ) {
-    return Math.max(0, syllables.length - 2);
-  }
+  if (/(?:ium|osis|itis|ysis|iasis)$/.test(lowerWord)) return syllables.length - 2;
 
   // -ance/-ence is unstressed (162:31 əns:æns in dict, and that æns set
   // is final-stressed), and maximal onset splits it over two slots
@@ -833,9 +814,7 @@ export function assignStress(syllables: string[], word: string): number {
     return 1;
   }
 
-  if (lowerWord.endsWith("ic") && syllables.length > 1) {
-    return Math.max(0, syllables.length - 2);
-  }
+  if (lowerWord.endsWith("ic")) return syllables.length - 2;
 
   // Name-forming -man/-son/-ton (Addleman, Abelson, Appleton): the suffix
   // is a reduced, unstressed /mən sən tən/ that keeps the root's own
@@ -1248,8 +1227,6 @@ export function isSyllableHeavy(syllable: string): boolean {
   // 2. A vowel followed by two or more consonants
   // 3. Ends in a consonant (closed syllable)
 
-;
-
   for (const digraph of VOWEL_DIGRAPHS) {
     if (syllable.includes(digraph)) return true;
   }
@@ -1277,12 +1254,9 @@ export function isSyllableHeavy(syllable: string): boolean {
 const COMPOUND_RE =
   /\w{4,}wide$|\w{3,}(?:land|work|time|way|ward|side|where|berg|burg)$|hundred|^over[a-z]{2,}/;
 
+// Detect potential compound words based on patterns.
 export function isLikelyCompound(word: string, syllables: string[]): boolean {
-  // Detect potential compound words based on patterns
-  if (syllables.length < 2) return false;
-
-  // Common compound patterns
-  return COMPOUND_RE.test(word);
+  return syllables.length >= 2 && COMPOUND_RE.test(word);
 }
 
 // Long u is /ju/ (music, cute, few, use) except after a coronal or liquid
@@ -1296,11 +1270,8 @@ function longU(onset: string | undefined, beforeR = false): string {
 
 // In an unstressed -ue syllable the yod survives after a single l or n
 // (value, continue) and coalesces with t and s (statue tʃu, issue ʃu);
-// d keeps /du/ (residue, fondue). Returns the replacement onset, or null.
+// d keeps /du/ (residue, fondue).
 const COALESCE: Record<string, string> = { t: "tʃ", s: "ʃ" };
-function coalesceOnset(onset: string): string | null {
-  return COALESCE[onset] ?? null;
-}
 
 // Greek/Latin combining forms whose i is lexically tense and stays tense
 // when the word's stress moves off it (microbiology, biochemical,
@@ -1850,7 +1821,7 @@ export function syllableToIPA(
     ) {
       let ipa = longU(onset);
       if (remaining.startsWith("ue") && !isStressed && onset !== undefined && phonemes.length === 1) {
-        const merged = coalesceOnset(onset);
+        const merged = COALESCE[onset];
         if (merged) {
           phonemes[0] = merged;
           ipa = "u";
