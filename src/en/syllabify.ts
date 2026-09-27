@@ -1628,6 +1628,67 @@ export function syllableToIPA(
       remaining = remaining.substring(1);
       continue;
     }
+    // A word-initial de+si- syllable voices its s when the syllable
+    // continues as "sig" (design, designate, designee: the silent-g "sign"
+    // root, whether or not the "n" stays in this syllable) or as "sir"
+    // immediately followed by a vowel, in this syllable or (once the r
+    // attracts to the next one, as in desirous/desirability) the next
+    // (desire, desired, desiring, desirous, desirability): dict 9 z : 2 s
+    // (designor, the bare archaic word "desir") among words sharing this
+    // exact shape. desiccate/desiderata/desiderio/desilets/desilva/
+    // desimone/desio/desist keep /s/ because their continuation is neither
+    // "sig" nor "sir"+vowel, and are excluded structurally, not by name.
+    if (
+      syllableIndex === 1 &&
+      prevSyllable === "de" &&
+      (/^si(?:g|r[aeiouy])/.test(remaining) ||
+        (remaining === "si" && /^r/.test(nextSyllable ?? "")))
+    ) {
+      emit("s", "z", "phoneme:desi-prefix-s");
+      remaining = remaining.substring(1);
+      continue;
+    }
+    // A syllable that closes bare on "ear" (nothing left in the syllable
+    // after it) takes /ɝ/ when the NEXT syllable opens with n/c —
+    // the same consonant set the in-syllable ^ear(?=[nlcr]|th) rule above
+    // already trusts, minus "l" and "r", split across the syllable
+    // boundary (searcher: sear|cher; earnest: ear|nest; kearney:
+    // kear|ney). "r" is excluded for the same reason the in-syllable rule
+    // excludes it here: every cross-boundary "ear"+r-initial-syllable case
+    // in the dict is a re-/pre- prefix landing on an r-initial root
+    // (rearrange: re|ar|range, its own "ar" reduplicated-r syllable, not
+    // an "-ear" root at all — `syllabify` just happens to hand the
+    // prefix's trailing r to the FIRST syllable, spelling it "rear"), so
+    // including "r" turns a prefix-boundary coincidence into a loss
+    // (rearrange, prearrange, rearrest) with no matching win anywhere in
+    // the dict to offset it. "l" is excluded too, though it wins 6 : 0 in
+    // the rules-only dict (brearley, cearley, earley, earlie, kearley,
+    // pearline — all proper names, already table hits either way, so
+    // zero runtime upside): an l-initial next syllable is also where a
+    // genuine free "year"/"ear" root collides with an l-initial compound
+    // tail the syllabifier can't see as a compound (yearlong; "year"
+    // isn't a verified head in compound-parts.json, so `yearlong`
+    // syllabifies as plain year|long and reaches this rule instead of
+    // being routed around it). `dict.json`'s ˈjɪɹˈɫɔŋ carries two primary
+    // stresses, and `mine-exceptions.ts`'s miner (line ~339) deliberately
+    // never memorizes a 2-primary dict entry into `exceptions.json` when
+    // the rule's own prediction has only one primary, treating it as a
+    // "corrupt / non-reduced compound" transcription — so `yearlong` was
+    // never going to be corrected by a table entry regardless of what
+    // this rule predicts, and the segmental choice here is the only thing
+    // standing between it and `yarn test:parity`. Measured over every
+    // word that reaches here with the n/c set alone: strict 10 : 1
+    // (pearce, a surname whose second syllable is an unrelated spelling
+    // wrinkle — a table hit at runtime either way).
+    if (
+      remaining === "ear" &&
+      !isLastSyllable &&
+      /^[nc]/.test(nextSyllable ?? "")
+    ) {
+      emit("ear", "ɝ", "phoneme:ear-boundary");
+      remaining = "";
+      continue;
+    }
     // An s opening a non-initial syllable after an open one voices in the
     // frames where the dict votes for it. Measured z:s over the single-s
     // dict words each condition matches:

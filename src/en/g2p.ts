@@ -226,8 +226,26 @@ const ENDS_IN_VOWEL_RE = /[aeiouɑæɛɪɔʊʌəɝ]$/;
 // same 3+-syllable un- shape as uncollected/unconfirmed, still correctly
 // excluded — its remaining stress error is unrelated, see assignStress's
 // prefix rules).
+// INTEGRATOR NARROWING (2026-09-28, merging worktree agent-aad1c09cb2c5d441b's
+// de+si- voicing rule): a base ending in the silent-g "-ign/-aign" digraph
+// (design, resign, align, campaign, benign) is excluded even when the
+// bisyllabic allowance would otherwise admit it. That digraph is read by
+// its own PHONEME_RULES entry (`^ign(?=s?$)`/`^[kg]n`), which depends on
+// the cluster sitting at the literal end of the syllable; syllabify()
+// resplits a fabricated "designe"/"campaigne" as de·sig·ne/cam·paig·ne,
+// handing the "n" to the new fake "ne" syllable and leaving a bare
+// "sig"/"paig" behind that reads with a hard /ɡ/ instead. This was
+// invisible while every -ign/-aign word stayed a table hit (campaigned/
+// campaigning still are: "campaign" itself remains in exceptions.json, so
+// this fabricated-e branch is never reached), but the de+si- voicing rule
+// makes bare "design" rule-exact for the first time, and its regular
+// -ed/-ing/-s forms hit exactly this dormant path (designed → dɪˈzɪɡnd,
+// not dɪˈzaɪnd). No real English word takes a genuine dropped-e spelling
+// after this digraph, so the exclusion costs nothing the allowance was
+// ever meant to cover.
 const MAGIC_E_CANDIDATE = (base: string): boolean =>
   !/([bcdfgklmnprst])\1$/.test(base) &&
+  !/gn$/.test(base) &&
   (/[aeiouy][bcdfghjklmnpqrstvwxz]$/.test(base) ||
     /[cgsvl]$/.test(base) ||
     /(?:st|th)$/.test(base) ||
@@ -843,8 +861,21 @@ export class EnglishG2P implements LanguageProcessor {
           // the rule path on just the stem sidesteps that: it's the one
           // shape whose SINGULAR the rules already predict correctly on
           // their own, and sPlural's sAllomorph voices correctly off its
-          // r-colored ɝ ending regardless.
-          (/r$/.test(stem) ? this.predictInternal(stem, undefined, true) : undefined);
+          // r-colored ɝ ending regardless. A bare "n" extension of this
+          // same idea was measured and rejected (2026-09-28, merging
+          // worktree agent-aad1c09cb2c5d441b): forcing the rule path on
+          // EVERY rule-exact n-final stem broke far more than it fixed
+          // (baboons, clarins, cosens, defenses, responses, valens, the
+          // rosecrans/rosencrans/rosenkrans family — 10 losses for the 1
+          // designs win), because most n-final stems that fail wellKnown()
+          // aren't cleanly rule-exact the way an r-final one always is;
+          // they fall through to the later -tion/-sion/-es checks or the
+          // whole-word fallback for good reason. The narrower fix is the
+          // "-ign/-aign" digraph specifically (design, and any other
+          // silent-g word that goes rule-exact): its syllable-boundary
+          // dependency is the same one MAGIC_E_CANDIDATE's "gn$" exclusion
+          // guards below, so it gets the identical, narrowly-scoped test.
+          (/(?:r|gn)$/.test(stem) ? this.predictInternal(stem, undefined, true) : undefined);
       if (basePron) return sPlural(basePron);
       // Rule-derived stems are absent from the exception table. Preserve
       // -tion/-sion palatalization and monosyllabic silent-e vowels
