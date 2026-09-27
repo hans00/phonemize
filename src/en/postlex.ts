@@ -131,7 +131,16 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.endsWith("gure"), re: /ɡjʊɹ$/, sub: "ɡjɝ" },
   { when: (w, syl) => w.endsWith("mony") && syl >= 3, re: /məni$/, sub: "moʊni" },
   { when: (w) => !w.endsWith("sense") && !w.endsWith("fense"), re: /([ɪɛ])ns$/, sub: "əns" },
-  { when: (w) => w.endsWith("inger"), re: /ndʒɝ$/, sub: "ŋɝ" },
+  // -inger collapses n+dʒ to the assimilated nasal (singer, ringer,
+  // stinger — from a real -ing stem) — 256:73 in dict overall. -singer
+  // specifically inverts that (bassinger, kissinger, dysinger, all the
+  // German -inger surnames): 48:18, so it's carved back out to the plain
+  // (uncollapsed) reading; the bare word "singer" itself is excluded so
+  // it keeps the assimilated nasal.
+  {
+    when: (w) => w.endsWith("inger") && !(w.endsWith("singer") && w !== "singer"),
+    re: /ndʒɝ$/, sub: "ŋɝ",
+  },
   { when: (w) => w.endsWith("unger") || w.endsWith("onger"), re: /ndʒɝ$/, sub: "ŋɡɝ" },
   { when: (w) => w === "ache" || (w.endsWith("ache") && w.length >= 7), re: /[æə]tʃ[əɪ]?$/, sub: "eɪk" },
   {

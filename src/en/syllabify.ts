@@ -1139,6 +1139,8 @@ const TENSE_ENDINGS =
 // blocks. An r-initial ending is excluded for the same reason as in the
 // shared frame: carey and barey are ɛɹ, not eɪ. Two-consonant onsets are
 // excluded too — they drop -Cey to 55% (bagley, bakley) and -Can to 56%.
+// A single-consonant -Can (caban, pagan, satan) is 44:2 tense, but it was
+// left out: one loss is alan, a top-5000 word, against no common win.
 const A_TENSE_ENDINGS = /^(?:[^aeiouyr](?:ey|iers?|er(?:y|ies)|ies)|s[ktp]e)$/;
 
 // Word-final -ine, unstressed by the rule engine's own stress assignment
@@ -1813,9 +1815,17 @@ export function syllableToIPA(
   // spell out. <o> needs no branch here: the default open stressed o is
   // already /oʊ/, and postlex's oʊɹ→ɔɹ narrowing handles glo·ri·ous the
   // same way it narrows for/adore.
+  //
+  // An s+stop or ch onset keeps the lax vowel instead (ca·spi·an,
+  // ba·sti·an, se·ba·sti·an, lan·ca·stri·an, appa·la·chia): 7:2 over the
+  // dict. sh and x are not part of this exclusion — kar·da·shian and
+  // a·ta·xia stay tense — nor is the general nextIsLaxCluster set, which
+  // would also catch those two.
+  const hiatusLaxOnset = /^(?:s[ptkc]|ch)/.test(nextSyllable ?? "");
   if (
     isStressed &&
     isNextLastSyllable &&
+    !hiatusLaxOnset &&
     LATIN_HIATUS_ENDING.test(nextSyllable ?? "") &&
     /^[^aeiouy]*[aeo]$/.test(syllable)
   ) {
