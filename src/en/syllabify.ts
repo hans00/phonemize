@@ -1766,6 +1766,14 @@ export function syllableToIPA(
       isNextLastSyllable && nextSyllable!.endsWith("n")
     )
       skip.add("^o$");
+    // Unlike the rest of nextIsLaxCluster, a next syllable starting with x
+    // is lax regardless of what follows it (boxer, boxes, coxen, doxie,
+    // epoxy, hypoxia, obnoxious, biloxi) — no -er/-ar/full-vowel ending
+    // keeps it tense the way poster/kosher/costar do for the s+stop/sh/ch/
+    // th members above. /ks/ is a genuine coda cluster wearing a single
+    // letter, so it checks the vowel the way any other coda would: 111 : 0
+    // in the dict, no exceptions found.
+    if (nextSyllable?.startsWith("x")) skip.add("^o$");
     if (!isLastSyllable || isStressed) skip.add("^ous$");
     // The "leftover single-consonant" merge in `syllabify` also glues a
     // stressed a + single consonant + y into one chunk in the Greek
