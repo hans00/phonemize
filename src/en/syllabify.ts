@@ -84,6 +84,12 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // German -auer is /aʊɝ/ (bauer, neubauer, schauer): 66 of 71 dict words
   // failed lenient on the English readings of <au>.
   [/^au(?=er$)/, "aʊ"],
+  // German "haus" (house) is /haʊs/ wherever it's a whole syllable on its
+  // own, word-initial or final (Hausfeld, Haussmann, backhaus, feldhaus,
+  // neuhaus, steinhaus): rules-only dump, 14 strict wins : 0 losses. A
+  // bare "-aus" ending without the h has no majority (claus/glaus → ɔ,
+  // klaus/kraus → aʊ) and is left on the default `^a[uw]` → ɔ path.
+  [/^haus$/, "haʊs"],
   // Silent letter combinations
   [/^pn/, "n"],
   [/^ps/, "s"],
@@ -116,6 +122,12 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ould$/, "ʊd"], // would, could, should (silent l, lax u — closed function-word family)
   // Improved digraph handling
   [/^tsch/, "tʃ"], // German loanwords
+  // Word-initial "scien" is /saɪən/ (science, scientific, scientology), not
+  // the elsewhere-regular soft-c + ie-digraph reading /siən/: 8/8 dict
+  // words. Guarded to syllableIndex 0 (in the loop below) so it doesn't
+  // shadow the -scien$ SUFFIX_RULES entry conscience/conscious already use
+  // at idx>0, a different (ʃən) reading of the same letters after "con".
+  [/^scien/, "saɪən"],
   [/^s(?:ch|z)/, "ʃ"], // German sch (schmaltz/Schmidt) + Polish/Hungarian sz (szabo); school/schema live in dict
   [/^she$/, "ʃi"], // she (pronoun; anchored so it doesn't eat shed/shell)
   [/^he$/, "hi"], // he  (pronoun; anchored so it doesn't eat here/hen)
@@ -1598,7 +1610,17 @@ export function syllableToIPA(
     )
       skip.add("^o$");
     if (!isLastSyllable || isStressed) skip.add("^ous$");
-    if (!isStressed || hasDoubledConsonantBeforeY) skip.add("^a(?=[^aeioun]y$)");
+    // The "leftover single-consonant" merge in `syllabify` also glues a
+    // stressed a + single consonant + y into one chunk in the Greek
+    // -alysis/-olysis family (pa·raly·sis, ana·lysis, dia·ly·sis,
+    // hydro·lysis, thrombo·lysis) — there the -y is the suffix's own
+    // thematic vowel (/ɪ/), continuing into a following bare "sis"
+    // syllable, not this aCy → /eɪ/ frame (baby, lazy, navy, gravy, and a
+    // "baby"-shaped chunk recurring non-finally in a compound: babysit,
+    // babysitting). nextSyllable === "sis" is the discriminator, not
+    // position: the merge can land this chunk at index 0 (dialysis) or
+    // later (analysis, paralysis) depending on what precedes it.
+    if (!isStressed || nextSyllable === "sis" || hasDoubledConsonantBeforeY) skip.add("^a(?=[^aeioun]y$)");
     if (!aFire) skip.add("^a$");
     if (!iFire) skip.add("^i$");
     if (!isLastSyllable) { skip.add("^le$"); skip.add("^ier$"); }
@@ -1639,7 +1661,7 @@ export function syllableToIPA(
     if (!eFire) skip.add("^e$");
     if (syllableIndex === 0 || isStressed) skip.add("^tur$");
     if (isLastSyllable || !nextSyllable?.startsWith("st")) skip.add("^y(?=$)");
-    if (syllableIndex > 0) { skip.add("^x(?=[aeiouy])"); skip.add("^gil"); }
+    if (syllableIndex > 0) { skip.add("^x(?=[aeiouy])"); skip.add("^gil"); skip.add("^scien"); }
     // Greek silent-h ^rh only fires word-initially or in -rrh- (the
     // prior syllable ends in r: diarrhea, hemorrhage). A plain medial
     // r|h is a compound/name boundary where h is pronounced (barham).
@@ -1886,6 +1908,36 @@ export function syllableToIPA(
       const it = ({ e: "ɛ", o: "oʊ", u: "u" } as Record<string, string>)[sources[i]];
       if (it) phonemes[i] = it;
     }
+  }
+
+  // The Greek -lysis suffix's thematic -y- reduces to /ə/ before the bare
+  // "sis" continuation (paralysis, analysis, dialysis, hydrolysis,
+  // electrolysis, urinalysis, psychoanalysis): 7 ə : 1 ɪ over the dict
+  // (thrombolysis is the lone ɪ). `hasVowelBeforeTerminalY` is the
+  // discriminator, not isStressed: the merge step glues "a"/"o" + this -y-
+  // into ONE array slot (na·ly, dro·ly), so the slot as a whole carries the
+  // word's primary on that FIRST vowel while -y- is its own, separate,
+  // always-unstressed nucleus — unlike bare "lysis", where "ly" is the
+  // sole vowel of its slot and stays the stressed /aɪ/.
+  if (hasVowelBeforeTerminalY && nextSyllable === "sis" && /y$/.test(syllable)) {
+    const i = sources.lastIndexOf("y");
+    if (i >= 0) phonemes[i] = "ə";
+  }
+
+  // The final -is of the Greek -osis/-ysis suffix family reduces to /ə/ at
+  // 3-4 orthographic vowel groups (osmosis, stenosis, cirrhosis, dialysis,
+  // paralysis): -osis is 17 ə : 2 ɪ there, -ysis 4 : 1. Longer/compound
+  // derivatives (actinomycosis, urinalysis) keep ɪ — the family flips to
+  // majority ɪ at 5+ groups, so the depth cap matters, not just the ending.
+  if (
+    !isStressed &&
+    isLastSyllable &&
+    /(?:osis|ysis)$/.test(head + syllable) &&
+    vowelGroups(head + syllable) >= 3 &&
+    vowelGroups(head + syllable) <= 4
+  ) {
+    const i = phonemes.lastIndexOf("ɪ");
+    if (i >= 0) phonemes[i] = "ə";
   }
 
   // An unstressed vowel before word-final silent-e -ce and its inflections

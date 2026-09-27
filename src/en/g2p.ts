@@ -572,96 +572,8 @@ export class EnglishG2P implements LanguageProcessor {
     const spelled = spellInitialism(word);
     if (spelled) return spelled;
 
-    // Priority 7: Improved syllabification and rule-based G2P
-    const syllables = syllabify(lowerWord);
-    const stressedSyllableIndex = assignStress(syllables, lowerWord);
-    const secondary = secondaryStressIndices(syllables, stressedSyllableIndex);
-
-    const syllableIPA = syllables.map((s, i) => {
-      const isStressed = i === stressedSyllableIndex;
-      const isLastSyllable = i === syllables.length - 1;
-      return syllableToIPA(
-        s,
-        i,
-        isStressed,
-        isLastSyllable,
-        i < syllables.length - 1 ? syllables[i + 1] : undefined,
-        undefined,
-        i > 0 ? syllables[i - 1] : undefined,
-        i === syllables.length - 2,
-        syllables.slice(i + 1).join(""),
-        secondary.has(i),
-        syllables.slice(0, i).join(""),
-      );
-    });
-
-    if (syllableIPA.length > 0) {
-      const joined = syllableIPA.join("");
-      let result = applyPostLexical(joined, lowerWord, syllables.length);
-
-      // Add primary-stress marker. Emit for monosyllables too — content
-      // words like "world", "knight", "wood" have lexical stress (the
-      // dict marks it for citation form). Function-word demotion happens
-      // at the tokenizer level once we know we're in sentence context.
-      if (syllables.length > 0 && stressedSyllableIndex >= 0) {
-        let charIndex = 0;
-        for (let i = 0; i < stressedSyllableIndex; i++) {
-          charIndex += syllableIPA[i].length;
-        }
-        // The index is into the pre-post-lexical string; a post-lexical
-        // edit before it (the degeminated kk of ac·com·mo·da·tion) would
-        // shift the mark into the stressed vowel (əkɑmədeˈɪʃən). Anchor on
-        // whichever side of the mark the post-lexical pass left intact.
-        // An onset consonant the pass merged away (bə|ɹeɪ → bɝeɪ) is dropped
-        // from the anchor until the rest matches.
-        // Only when the result has a vowel right before the match (the onset
-        // was absorbed, not rewritten: chord, gehrig keep their onset).
-        const full = joined.substring(charIndex);
-        let tail = full;
-        while (tail && !result.endsWith(tail) && !/^[aeiouæɑɔəɛɪʊʌɝ]/.test(tail)) tail = tail.substring(1);
-        const absorbed =
-          tail !== full && /[æɑɔəɛʌɝ]$/.test(result.substring(0, result.length - tail.length));
-        if (result !== joined && tail && result.endsWith(tail) && (tail === full || absorbed)) {
-          charIndex = result.length - tail.length;
-          // Keep an ɪɹ/əɹ pair ahead of the mark, as applyPostStress's onset
-          // pass does, so it can coalesce to ɝ (ballerina ˌbæɫɝˈinə).
-          if (/[ɪə]$/.test(result.substring(0, charIndex)) && /^ɹ[aeiouæɑɔəɛɪʊʌ]/.test(result.substring(charIndex)))
-            charIndex += 1;
-        }
-        result =
-          result.substring(0, charIndex) + "ˈ" + result.substring(charIndex);
-        // A stressed slot that is a two-vowel hiatus (geo·graphy, bio·graphy,
-        // prio·rity) puts the mark on its second nucleus, not its onset. A
-        // one-slot word is excluded: a short name ending in an unstressed
-        // hiatus (mia, tia, zia — dict ˈmiə, ˈtiə, ˈziə) stresses the FIRST
-        // vowel and reduces the second, the opposite pattern, and syllabify
-        // never splits a word that short into more than one slot to tell
-        // the two apart. Relocated on `result` itself (after the mark was
-        // just inserted there), not on the pre-postlexical syllableIPA
-        // strings the charIndex prefix sum above uses — a postlexical rule
-        // earlier in the word can change length and desync that sum from
-        // where the mark actually landed. See isHiatusSlot / hiatusMarkOffset.
-        if (syllables.length > 1 && isHiatusSlot(syllables[stressedSyllableIndex])) {
-          const tail = result.slice(charIndex + 1);
-          const shift = hiatusMarkOffset(tail);
-          if (shift > 0) {
-            result =
-              result.slice(0, charIndex) +
-              tail.slice(0, shift) +
-              "ˈ" +
-              tail.slice(shift);
-          }
-        }
-      }
-
-      // Stress-mark convention repair (onset maximization, suffix
-      // secondary stress, -ation primary shift) — needs the mark, so
-      // it runs after insertion. Rule-path only by construction.
-      return applyPostStress(result, lowerWord);
-    }
-
-    // Final fallback: just spell it out (should be rare)
-    return lowerWord;
+    // Priority 7: Improved syllabification and rule-based G2P.
+    return this.renderRuleForm(lowerWord);
   }
 
   private matchPos(entry: HomographEntry, pos: string): boolean {
@@ -1195,11 +1107,137 @@ export class EnglishG2P implements LanguageProcessor {
             return softenBaseFinal(preSuffixReduce(magic, lowerWord), b, sfx) + ipa;
         }
       }
-      const p = stemPron(b);
+      // -ular pulls the primary onto the stem's OWN final syllable
+      // (moLECular, parTICular, arTICular, aVUNcular), not wherever
+      // `stemPron` would default an unknown bound root (molec, partic,
+      // artic) predicted as a free word — which lands stress one syllable
+      // too early whenever that root is 2+ syllables. Every -ular dict
+      // word whose stripped stem is 2+ syllables agrees: 30/30 (molecular,
+      // particular, avuncular, binocular, curricular, mandibular,
+      // peninsular, rectangular, spectacular, testicular, vehicular,
+      // ventricular, vernacular, vestibular, and every extra-/inter-/
+      // intra-/semi-/cardio-/gastro- compound of them). A one-syllable
+      // stem (vascular's "vasc", cellular's "cell") is unaffected — its
+      // only syllable is already both first and last. Measured over the
+      // rules-only dump: strict 7 wins : 1 loss. The loss is testicular:
+      // rendering only the bare 2-syllable stem gives `secondaryStressIndices`
+      // an array with the primary at index 1, so its `before` check
+      // (primary - 2) is negative and the initial "tɛs" gets no secondary
+      // — with none, it reduces like any other unstressed initial syllable,
+      // where the dict keeps it full. Fixing that would need the FULL
+      // word's syllable array for the secondary computation while still
+      // rendering only the stem — the suffix's own "u·lar" can't just be
+      // included in that render, since its /j/ glide is lexical to this
+      // suffix, not a free reading of "u" the rule engine produces.
+      const bSyllables = sfx === "ular" ? syllabify(b) : [];
+      let p =
+        sfx === "ular" && bSyllables.length >= 2
+          ? lex(b) ?? this.renderRuleForm(b, bSyllables.length - 1)
+          : stemPron(b);
+      // A stem spelled with a final "ng" (angular, singular, rectangular,
+      // triangular, equiangular) is silent-g word-finally, the reading
+      // `stemPron`/`renderRuleForm` give it read as a free word, but the
+      // /ɡ/ resurfaces once a vowel-initial suffix follows: 5/5 -ngular
+      // dict words keep it (ˈæŋɡjəɫɝ, ˈsɪŋɡjəɫɝ, …).
+      if (p && sfx === "ular" && b.endsWith("ng") && p.endsWith("ŋ")) p = p + "ɡ";
       if (p) return softenBaseFinal(preSuffixReduce(p, lowerWord), b, sfx) + ipa;
     }
 
     return undefined;
+  }
+
+  /**
+   * Priority-7's syllabify → assignStress → syllableToIPA → mark-insertion
+   * pipeline, factored out so a morphology handler can render a bound stem
+   * with a forced stress index (see the -ular handler above) instead of
+   * `assignStress`'s free-word default.
+   */
+  private renderRuleForm(lowerWord: string, forcedStress?: number): string {
+    const syllables = syllabify(lowerWord);
+    const stressedSyllableIndex = forcedStress ?? assignStress(syllables, lowerWord);
+    const secondary = secondaryStressIndices(syllables, stressedSyllableIndex);
+
+    const syllableIPA = syllables.map((s, i) => {
+      const isStressed = i === stressedSyllableIndex;
+      const isLastSyllable = i === syllables.length - 1;
+      return syllableToIPA(
+        s,
+        i,
+        isStressed,
+        isLastSyllable,
+        i < syllables.length - 1 ? syllables[i + 1] : undefined,
+        undefined,
+        i > 0 ? syllables[i - 1] : undefined,
+        i === syllables.length - 2,
+        syllables.slice(i + 1).join(""),
+        secondary.has(i),
+        syllables.slice(0, i).join(""),
+      );
+    });
+
+    if (syllableIPA.length === 0) return lowerWord;
+    const joined = syllableIPA.join("");
+    let result = applyPostLexical(joined, lowerWord, syllables.length);
+
+    // Add primary-stress marker. Emit for monosyllables too — content
+    // words like "world", "knight", "wood" have lexical stress (the
+    // dict marks it for citation form). Function-word demotion happens
+    // at the tokenizer level once we know we're in sentence context.
+    if (syllables.length > 0 && stressedSyllableIndex >= 0) {
+      let charIndex = 0;
+      for (let i = 0; i < stressedSyllableIndex; i++) {
+        charIndex += syllableIPA[i].length;
+      }
+      // The index is into the pre-post-lexical string; a post-lexical
+      // edit before it (the degeminated kk of ac·com·mo·da·tion) would
+      // shift the mark into the stressed vowel (əkɑmədeˈɪʃən). Anchor on
+      // whichever side of the mark the post-lexical pass left intact.
+      // An onset consonant the pass merged away (bə|ɹeɪ → bɝeɪ) is dropped
+      // from the anchor until the rest matches.
+      // Only when the result has a vowel right before the match (the onset
+      // was absorbed, not rewritten: chord, gehrig keep their onset).
+      const full = joined.substring(charIndex);
+      let tail = full;
+      while (tail && !result.endsWith(tail) && !/^[aeiouæɑɔəɛɪʊʌɝ]/.test(tail)) tail = tail.substring(1);
+      const absorbed =
+        tail !== full && /[æɑɔəɛʌɝ]$/.test(result.substring(0, result.length - tail.length));
+      if (result !== joined && tail && result.endsWith(tail) && (tail === full || absorbed)) {
+        charIndex = result.length - tail.length;
+        // Keep an ɪɹ/əɹ pair ahead of the mark, as applyPostStress's onset
+        // pass does, so it can coalesce to ɝ (ballerina ˌbæɫɝˈinə).
+        if (/[ɪə]$/.test(result.substring(0, charIndex)) && /^ɹ[aeiouæɑɔəɛɪʊʌ]/.test(result.substring(charIndex)))
+          charIndex += 1;
+      }
+      result =
+        result.substring(0, charIndex) + "ˈ" + result.substring(charIndex);
+      // A stressed slot that is a two-vowel hiatus (geo·graphy, bio·graphy,
+      // prio·rity) puts the mark on its second nucleus, not its onset. A
+      // one-slot word is excluded: a short name ending in an unstressed
+      // hiatus (mia, tia, zia — dict ˈmiə, ˈtiə, ˈziə) stresses the FIRST
+      // vowel and reduces the second, the opposite pattern, and syllabify
+      // never splits a word that short into more than one slot to tell
+      // the two apart. Relocated on `result` itself (after the mark was
+      // just inserted there), not on the pre-postlexical syllableIPA
+      // strings the charIndex prefix sum above uses — a postlexical rule
+      // earlier in the word can change length and desync that sum from
+      // where the mark actually landed. See isHiatusSlot / hiatusMarkOffset.
+      if (syllables.length > 1 && isHiatusSlot(syllables[stressedSyllableIndex])) {
+        const tail = result.slice(charIndex + 1);
+        const shift = hiatusMarkOffset(tail);
+        if (shift > 0) {
+          result =
+            result.slice(0, charIndex) +
+            tail.slice(0, shift) +
+            "ˈ" +
+            tail.slice(shift);
+        }
+      }
+    }
+
+    // Stress-mark convention repair (onset maximization, suffix
+    // secondary stress, -ation primary shift) — needs the mark, so
+    // it runs after insertion. Rule-path only by construction.
+    return applyPostStress(result, lowerWord);
   }
 
   /**
