@@ -151,6 +151,12 @@ function geminateStem(word: string): string | null {
   return FINAL_GEMINATE_RE.test(word) ? word.slice(0, -1) : null;
 }
 
+// A restored silent-e candidate is only a real silent e when the resulting
+// pronunciation still ends in a consonant; a vowel-final result means the
+// hit is a pronounced-e loanword instead (passé, café), not a magic-e stem.
+// Shared by every morphology handler below that restores a dropped -e.
+const ENDS_IN_VOWEL_RE = /[aeiouɑæɛɪɔʊʌəɝ]$/;
+
 // The vowel before an unstressed Latinate ending is the slot the suffix
 // reduces (anim+al, crimin+al, capit+al, condi+ment), but the suffix
 // handlers price the base without the suffix in view, so its last /ɪ/
@@ -622,6 +628,14 @@ export class EnglishG2P implements LanguageProcessor {
     const stemPron = (b: string): string | undefined =>
       lex(b) || this.predictInternal(b, undefined, false);
     const sPlural = (p: string): string => p + sAllomorph(p);
+    // A doubled consonant right before a vowel-initial suffix is
+    // orthographic gemination, not a real double letter to carry into the
+    // stem lookup (control → controllable, refer → referral), as inflect()
+    // separately tests for -ed/-ing. Shared by the -able and -al handlers.
+    const doubledConsonantLex = (stem: string): string | undefined =>
+      stem.length > 3 && stem[stem.length - 1] === stem[stem.length - 2]
+        ? lex(stem.slice(0, -1))
+        : undefined;
     // Indefinite pronouns and adverbs are a determiner + a free noun
     // (anyone, everything, somebody, nowhere): read both parts from the
     // lexicon and put a secondary on the second.
@@ -668,7 +682,7 @@ export class EnglishG2P implements LanguageProcessor {
       const silentE = () => {
         if (/([bcdfgklmnprst])\1$/.test(base)) return undefined;
         const p = this.wellKnown(base + "e");
-        return p && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(p) ? p : undefined;
+        return p && !ENDS_IN_VOWEL_RE.test(p) ? p : undefined;
       };
       if (!/[aeiou]$/.test(base)) {
         const m = silentE();
@@ -723,7 +737,7 @@ export class EnglishG2P implements LanguageProcessor {
       // bare stem there so distinguished → …ʃt, not …ʃid.
       if (ruleFallback && /[aeiou]/.test(base) && !/[aeiou]$/.test(base)) {
         const ruleBaseE = this.predictInternal(base + "e", undefined, true);
-        if (ruleBaseE && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(ruleBaseE))
+        if (ruleBaseE && !ENDS_IN_VOWEL_RE.test(ruleBaseE))
           return join(ruleBaseE);
         const ruleBase = this.predictInternal(base, undefined, true);
         if (ruleBase) return join(ruleBase);
@@ -757,7 +771,7 @@ export class EnglishG2P implements LanguageProcessor {
       // syllabic -es (buses/taxes), and multi-vowel stems (housewives).
       if (/[ts]ions$|^[^aeiou]*[aeiou][bcdfghjklmnpqrtvz]es$/.test(lowerWord)) {
         const stem = this.predictInternal(lowerWord.slice(0, -1), undefined, true);
-        if (!/[aeiouɑæɛɪɔʊʌəɝ]$/.test(stem)) return sPlural(stem);
+        if (!ENDS_IN_VOWEL_RE.test(stem)) return sPlural(stem);
       }
       // A final -s must not turn the stem's final ow/o into a closed
       // syllable (shows, yellows, photos). Preserve the stem vowel.
@@ -769,7 +783,7 @@ export class EnglishG2P implements LanguageProcessor {
       // tutorials, editorials).
       if (/(?:ate|ial)s$/.test(lowerWord) && lowerWord.length > 5) {
         const p = this.predictInternal(stem, undefined, true);
-        if (p && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(p)) return sPlural(p);
+        if (p && !ENDS_IN_VOWEL_RE.test(p)) return sPlural(p);
       }
     }
     if (/['''']s$/.test(lowerWord) && lowerWord.length > 3) {
@@ -783,7 +797,7 @@ export class EnglishG2P implements LanguageProcessor {
       // an -es plural (buses, gases); read it through the silent-e form.
       if (/^[^aeiouy]*[aeiouy]+[^aeiouys]*s$/.test(base)) {
         const stem = this.predictInternal(base + "e", undefined, true);
-        if (stem && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(stem)) return sPlural(stem);
+        if (stem && !ENDS_IN_VOWEL_RE.test(stem)) return sPlural(stem);
       }
       const basePron = this.wellKnown(base);
       if (basePron) return basePron + "ɪz";
@@ -829,7 +843,7 @@ export class EnglishG2P implements LanguageProcessor {
       // Reject a vowel-final hit unless the base ends in y/w/r, where that
       // vowel is a genuine offglide/rhotic the suffix attaches to cleanly
       // (flye→flyer, howe→hower, acquire→acquirer).
-      if (magicPron && /[^aeiouyrw]$/.test(base) && /[aeiouɑæɛɪɔʊʌəɝ]$/.test(magicPron)) {
+      if (magicPron && /[^aeiouyrw]$/.test(base) && ENDS_IN_VOWEL_RE.test(magicPron)) {
         magicPron = undefined;
       }
       if (magicPron) {
@@ -932,20 +946,18 @@ export class EnglishG2P implements LanguageProcessor {
     const ible = lowerWord.endsWith("ible") && lowerWord.length > 7;
     if (able || ible) {
       const base = lowerWord.slice(0, -4);
+      const withAble = (p: string): string => p.replace(/ə$/, "") + "əbəl";
       if ((able || base.length >= 5) && !/[aeiour]$/.test(base) && !lex(base)) {
         const m = lex(base + "e");
-        if (m) return m.replace(/ə$/, "") + "əbəl";
+        if (m) return withAble(m);
       }
       if (able) {
         // A doubled consonant before -able is orthographic (control →
         // controllable, regret → regrettable): read the single-consonant stem.
-        const undoubled =
-          base.length > 3 && base[base.length - 1] === base[base.length - 2]
-            ? lex(base.slice(0, -1))
-            : undefined;
-        if (undoubled) return undoubled.replace(/ə$/, "") + "əbəl";
+        const undoubled = doubledConsonantLex(base);
+        if (undoubled) return withAble(undoubled);
         const bare = stemPron(base);
-        if (bare) return bare.replace(/ə$/, "") + "əbəl";
+        if (bare) return withAble(bare);
         const short = stemPron(lowerWord.slice(0, -3));
         if (short) return short + "əbəl";
       }
@@ -1075,6 +1087,8 @@ export class EnglishG2P implements LanguageProcessor {
       if (!lowerWord.endsWith(sfx) || lowerWord.length <= sfx.length + 2)
         continue;
       const b = lowerWord.slice(0, -sfx.length);
+      const finish = (p: string): string =>
+        softenBaseFinal(preSuffixReduce(p, lowerWord), b, sfx) + ipa;
       // Stripping a vowel-initial -al from an unknown one-syllable base
       // closes its syllable (fi|nal → fin, to|tal → tot) and loses the
       // tense vowel; leave those to the whole-word rule path.
@@ -1091,10 +1105,8 @@ export class EnglishG2P implements LanguageProcessor {
       if (sfx === "al" && !lex(b)) {
         // A doubled consonant before -al is orthographic (refer → referral):
         // read the single-consonant stem, as inflect() does for -ed/-ing.
-        const undoubled =
-          b.length > 3 && b[b.length - 1] === b[b.length - 2] ? lex(b.slice(0, -1)) : undefined;
-        if (undoubled)
-          return softenBaseFinal(preSuffixReduce(undoubled, lowerWord), b, sfx) + ipa;
+        const undoubled = doubledConsonantLex(b);
+        if (undoubled) return finish(undoubled);
         // Silent-e stem (approve → approval, arrive → arrival): a table lookup
         // only, since rule-predicting base + e always yields something
         // (classic + e, addition + e). A base under five letters is left out,
@@ -1103,8 +1115,7 @@ export class EnglishG2P implements LanguageProcessor {
           const magic = lex(b + "e");
           // A silent e leaves a consonant-final stem; a vowel-final hit is a
           // loan whose e is sounded (principe, cantone).
-          if (magic && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(magic))
-            return softenBaseFinal(preSuffixReduce(magic, lowerWord), b, sfx) + ipa;
+          if (magic && !ENDS_IN_VOWEL_RE.test(magic)) return finish(magic);
         }
       }
       // -ular pulls the primary onto the stem's OWN final syllable
@@ -1140,7 +1151,7 @@ export class EnglishG2P implements LanguageProcessor {
       // /ɡ/ resurfaces once a vowel-initial suffix follows: 5/5 -ngular
       // dict words keep it (ˈæŋɡjəɫɝ, ˈsɪŋɡjəɫɝ, …).
       if (p && sfx === "ular" && b.endsWith("ng") && p.endsWith("ŋ")) p = p + "ɡ";
-      if (p) return softenBaseFinal(preSuffixReduce(p, lowerWord), b, sfx) + ipa;
+      if (p) return finish(p);
     }
 
     return undefined;

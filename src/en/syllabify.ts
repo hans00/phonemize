@@ -19,64 +19,63 @@ const VALID_ONSETS = new Set(
 // --- Phoneme Rules ---
 
 // Improved stress-sensitive suffix rules
-const SUFFIX_RULES: Array<[RegExp, string, boolean]> = [
-  [/^ge$/, "dʒ", false],
-  [/^[cs]e$/, "s", false],
-  [/^que$/, "k", false],
-  [/^the$/, "ð", false],
-  [/^sten$/, "sən", false],
-  [/^stion$/, "stʃən", false],
-  [/^t(?:ion|ian)$/, "ʃən", false], // -tion/-tian are always unstressed
-  [/^s(?:ion|ian)$/, "ʒən", false], // -sion/-sian are always unstressed (asian/persian: 25 ʒ vs 9 i in dict; russian → sʒ → ʃ post-lexically)
-  [/^c[ei]an$/, "ʃən", false], // -cian/-cean: technician/ocean
-  [/^lion$/, "ljən", false], // -llion: million, billion, stallion (guard: syllableIndex > 0)
-  [/^[ct]ial$/, "ʃəl", false], // -cial/-tial (commercial, social, potential, partial)
-  [/^cient$/, "ʃənt", false],
-  [/^scien$/, "ʃən", false], // -cient: efficient/ancient; -scien: conscience (guard: idx>0)
-  [/^ture$/, "tʃɝ", false], // -ture (future, nature)
-  [/^sure$/, "ʒɝ", false], // -sure (measure, pleasure)
-  [/^g[ei]ous$/, "dʒəs", false], // -geous/-gious: gorgeous/contagious
-  [/^[ct]ious$|^scious$|^ceous$/, "ʃəs", false], // -cious/-tious/-scious/-ceous: delicious/conscious/crustaceous
-  [/^kness$/, "knəs", false], // -kness: darkness, frankness, weakness (k is pronounced, not silent)
-  [/^ness$/, "nəs", false], // -ness
-  [/^ment$/, "mənt", false],
-  [/^less$/, "ləs", false], // -ment / -less
-  [/^ful$/, "fəl", false],
-  [/^ly$/, "li", false], // -ful / -ly
-  [/^er$/, "ɝ", false],
-  [/^ers$/, "ɝz", false],
-  [/^est$/, "əst", false],
-  [/^ing$/, "ɪŋ", false],
-  [/^ed$/, "d", false],
-  [/^ves$/, "vz", false], // -ves plural (loaves/calves/wolves/selves)
-  [/^e?s$/, "z", false], // -es/-s (plural/3rd person)
-  [/^age$/, "ɪdʒ", false],
-  [/^ism$/, "ɪzəm", false],
-  [/^ist$/, "ɪst", false], // -ism/-ist
-  [/^al$/, "əl", false], // -ity / -al
-  [/^ic(s?)$/, "ɪk$1", true], // -ic/-ics attract stress (economic/mathematics)
-  [/^lity$/, "ləti", false],
-  [/^ty$/, "ti", false],
-  [/^[ae]ry$/, "ɛri", false],
-  [/^ory$/, "ɔri", false],
-  [/^y$/, "i", false],
-  [/^stein$/, "staɪn", false],
-  [/^ford$/, "fɝd", false],
-  [/^ward$/, "wɝd", false],
-  [/^more$/, "mɔɹ", false],
-  [/^b(?:erry|ury)$/, "bɛɹi", false],
-  [/^well$/, "wɛl", false],
-  [/^back$/, "bæk", false],
-  [/^beck$/, "bɛk", false],
-  [/^star$/, "stɑɹ", false],
-  [/^tel[l]?$/, "tɛl", false],
-  [/^te[ck]$/, "tɛk", false],
-  [/^cor[e]?$/, "kɔɹ", false],
-  [/^sto$/, "stoʊ", false],
-  [/^dale$/, "deɪl", false],
-  [/^twood$/, "twʊd", false],
-  [/^cle$/, "kəɫ", false], // syllabic -cle ending: circle/barnacle/miracle/uncle
-  [/^le$/, "əl", false], // syllabic-l: battle/simple/table (guard in loop for ll-split)
+const SUFFIX_RULES: Array<[RegExp, string]> = [
+  [/^ge$/, "dʒ"],
+  [/^[cs]e$/, "s"],
+  [/^que$/, "k"],
+  [/^the$/, "ð"],
+  [/^sten$/, "sən"],
+  [/^stion$/, "stʃən"],
+  [/^t(?:ion|ian)$|^c[ei]an$/, "ʃən"], // -tion/-tian/-cian/-cean are always unstressed: technician/ocean
+  [/^s(?:ion|ian)$/, "ʒən"], // -sion/-sian are always unstressed (asian/persian: 25 ʒ vs 9 i in dict; russian → sʒ → ʃ post-lexically)
+  [/^lion$/, "ljən"], // -llion: million, billion, stallion (guard: syllableIndex > 0)
+  [/^[ct]ial$/, "ʃəl"], // -cial/-tial (commercial, social, potential, partial)
+  [/^cient$/, "ʃənt"],
+  [/^scien$/, "ʃən"], // -cient: efficient/ancient; -scien: conscience (guard: idx>0)
+  [/^ture$/, "tʃɝ"], // -ture (future, nature)
+  [/^sure$/, "ʒɝ"], // -sure (measure, pleasure)
+  [/^g[ei]ous$/, "dʒəs"], // -geous/-gious: gorgeous/contagious
+  [/^[ct]ious$|^scious$|^ceous$/, "ʃəs"], // -cious/-tious/-scious/-ceous: delicious/conscious/crustaceous
+  [/^kness$/, "knəs"], // -kness: darkness, frankness, weakness (k is pronounced, not silent)
+  [/^ness$/, "nəs"], // -ness
+  [/^ment$/, "mənt"],
+  [/^less$/, "ləs"], // -ment / -less
+  [/^ful$/, "fəl"],
+  [/^ly$/, "li"], // -ful / -ly
+  [/^er$/, "ɝ"],
+  [/^ers$/, "ɝz"],
+  [/^est$/, "əst"],
+  [/^ing$/, "ɪŋ"],
+  [/^ed$/, "d"],
+  [/^ves$/, "vz"], // -ves plural (loaves/calves/wolves/selves)
+  [/^e?s$/, "z"], // -es/-s (plural/3rd person)
+  [/^age$/, "ɪdʒ"],
+  [/^ism$/, "ɪzəm"],
+  [/^ist$/, "ɪst"], // -ism/-ist
+  [/^al$/, "əl"], // -ity / -al
+  [/^ic(s?)$/, "ɪk$1"], // -ic (economic, mathematic-); stress is handled separately by the endsWith("ic") check in assignStress
+  [/^lity$/, "ləti"],
+  [/^ty$/, "ti"],
+  [/^[ae]ry$/, "ɛri"],
+  [/^ory$/, "ɔri"],
+  [/^y$/, "i"],
+  [/^stein$/, "staɪn"],
+  [/^ford$/, "fɝd"],
+  [/^ward$/, "wɝd"],
+  [/^more$/, "mɔɹ"],
+  [/^b(?:erry|ury)$/, "bɛɹi"],
+  [/^well$/, "wɛl"],
+  [/^back$/, "bæk"],
+  [/^beck$/, "bɛk"],
+  [/^star$/, "stɑɹ"],
+  [/^tel[l]?$/, "tɛl"],
+  [/^te[ck]$/, "tɛk"],
+  [/^cor[e]?$/, "kɔɹ"],
+  [/^sto$/, "stoʊ"],
+  [/^dale$/, "deɪl"],
+  [/^twood$/, "twʊd"],
+  [/^cle$/, "kəɫ"], // syllabic -cle ending: circle/barnacle/miracle/uncle
+  [/^le$/, "əl"], // syllabic-l: battle/simple/table (guard in loop for ll-split)
 ];
 
 // Context-sensitive phoneme rules with improved accuracy
@@ -160,14 +159,12 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // is /aʊ/ (lounge).
   [/^ou(?=[bp]le|ntr|ng(?!e))/, "ʌ"],
   [/^oup/, "up"], // group, soup, coup, croup (ou+p → /u/)
-  [/^ou/, "aʊ"], // house, about, cloud
-  [/^ow(?=[snmk])/, "aʊ"], // cow, down, brown (before consonants)
+  [/^o(?:u|w(?=[snmk]))/, "aʊ"], // house, about, cloud; cow, down, brown (before consonants)
   [/^ow/, "oʊ"], // show, blow, know (at word end typically)
   [/^o[yi]/, "ɔɪ"], // boy/toy (oy) and coin/voice (oi)
   [/^a[uw]/, "ɔ"], // caught/sauce (au) and saw/draw (aw)
-  [/^ay/, "eɪ"], // day, say, way
   [/^air/, "ɛɹ"], // hair, fair, chair, stair (must precede ^ai)
-  [/^ai/, "eɪ"], // rain, main, paid
+  [/^a[iy]/, "eɪ"], // rain, main, paid; day, say, way
   [/^eau[x]?/, "oʊ"], // plateau/beau + beaux/bordeaux: French eau(x) → /oʊ/ (x silent)
   [/^ealth/, "ɛlθ"], // health, wealth, stealth (ea+lth → /ɛ/)
   [/^ead/, "ɛd"], // head, bread, dead, spread, instead, deadline (ea+d closing the syllable: 106 ɛ vs 16 i in dict; the /i/ bases lea|der/rea|ding move the d to the next syllable and never reach here)
@@ -183,9 +180,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ier$/, "iɝ"], // -iew (view/review) → ju; -ier word-final → iɝ (guard: isLastSyllable)
   [/^ie/, "i"], // piece, field, believe
   [/^cei/, "si"], // receive, ceiling, conceive (i before e after c)
-  [/^ei/, "eɪ"], // vein, weight, eight
   [/^ey$/, "i"], // honey, abbey, valley, turkey (unstressed final -ey; guard skips when stressed)
-  [/^ey/, "eɪ"], // they, grey, obey (stressed -ey)
+  [/^e[iy]/, "eɪ"], // vein, weight, eight; they, grey, obey (stressed -ey)
   [/^ight/, "aɪt"], // night, right, knight (i+ght)
   [/^igh/, "aɪ"],  // high, sigh, thigh — igh without following t
   [/^ign(?=s?$)/, "aɪn"], // sign, design, align, assign, benign, resign: syllable-final -ign is the silent-g rime (14 aɪn vs 1 in dict; the ɪɡn words dig|nity, sig|nal, ig|nore all move the n onto a following vowel). aign/eign never reach it — ^ai/^ei eat the vowel first.
@@ -544,14 +540,6 @@ export function assignStress(syllables: string[], word: string): number {
   if (syllables.length <= 1) return 0;
 
   const lowerWord = word.toLowerCase();
-
-
-  // Check for stress-attracting suffixes (stress BEFORE the suffix)
-  for (const [pattern, , attracts_stress] of SUFFIX_RULES) {
-    if (attracts_stress && lowerWord.match(pattern)) {
-      return Math.max(0, syllables.length - 2);
-    }
-  }
 
   // Specific suffix stress patterns
   if (
