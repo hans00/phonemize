@@ -563,7 +563,17 @@ const PATRONYMIC_ENDING = /(?:[aeiouy]wi(?:cz|ch)|czak)$/;
 // wins) and dropped: a $-anchored branch matching only its own literal
 // string is a whole-word entry wearing a regex, not a root, and house
 // style (the -graphy/-nomy set above) generalises a suffix across many
-// words rather than hardcoding one. Scoped to -ic/-ist/-o only: 7 k : 0.
+// words rather than hardcoding one. GREEK_CH_ROOT's own rule-diff yield
+// after that trim (chor-/charact-/charis-/chem- only — NOT the separate
+// tryCompoundSplit guard in g2p.ts, whose astrological/ecological/
+// psychological wins land in the combined total reported at the
+// definition's call site): strict 4 win (choral, chorba, choric,
+// chorus) : 1 loss (chorney), lenient 10 : 1. chem- and charis- clear
+// the consonant but not the whole word — chemical/chemistry/chemo/
+// charisma only reach lenient, because each carries an unrelated vowel-
+// or stress-rule gap elsewhere in the same word (chemical's own -ical
+// depth, chemo's tense o, charisma's stressed /ɪ/) that this rule
+// doesn't touch, so they were never candidates for a strict win.
 // chimerical was measured too and left out: the dict's own "chimera" is
 // tʃ, so there is no orthographic signal for the one word that differs
 // from its own root. Open: chorizo (Spanish, tʃ) is not in the dict to
