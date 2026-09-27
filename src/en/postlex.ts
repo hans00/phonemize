@@ -426,6 +426,55 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => /stles?$/.test(w), re: /st(ə[lɫ]z?)$/, sub: "s$1" },
   // Polish -owski: <w> devoices before the /sk/ cluster (232:45 in dict).
   { when: (w) => /owsk[iy]$/.test(w), re: /oʊsk([ɪi])$/, sub: "ɔfsk$1" },
+  // Polish -ewski: the same <w>-devoicing as -owski, but English has no
+  // "ew" → /ɛf/ digraph rule to correct, so the pipeline reads the vowel
+  // through the general "ew" → /u/ fallback instead (milewski mɪˈɫuski,
+  // dict mɪˈɫɛfski). -niewski is excluded: the dict splits that specific
+  // spelling both ways with no orthographic tell (sypniewski/okoniewski
+  // keep /u/, zaniewski/wisniewski/kaniewski want /ɛf/). Over the rest:
+  // 3 strict wins, 0 losses, 10 lenient wins, 1 loss (wroblewski, one of
+  // the -lewski minority that also keeps /u/).
+  { when: (w) => /ewsk[iy]$/.test(w) && !/niewsk[iy]$/.test(w), re: /u(sk[ɪi])$/, sub: "ɛf$1" },
+  // Polish -awski: <w> devoices the same way, and English "aw" is read as
+  // the ɔ digraph (poplawski pəˈpɫɔski, dict pəˈpɫɑfski). 7 strict wins,
+  // 1 loss (rawski, which the dict keeps as the plain English digraph —
+  // dubrawski/warshawsky are also left as-is, wanting aʊ/əw respectively).
+  { when: (w) => /awsk[iy]$/.test(w), re: /ɔ(sk[ɪi])$/, sub: "ɑf$1" },
+  // -szewski: sz is a single Polish fricative, but (as with -czak above)
+  // the syllabifier has no "sz" onset and splits it as coda-s + onset-z,
+  // which the -ewski fix above leaves as a stray /z/ before the restored
+  // /ɛf/ (olszewski → oʊɫˈszɛfski, dict oʊɫˈʃɛfski). 5 strict wins, 0
+  // losses.
+  { when: (w) => /szewsk[iy]$/.test(w), re: /s(ˈ?)z(?=ɛfsk[ɪi]$)/, sub: "$1ʃ" },
+  // Polish -czak: cz is a single Polish affricate onset, but the
+  // syllabifier has no "cz" onset, so a following vowel (adamczak, unlike
+  // -czyk where "y" isn't a syllable nucleus and cz stays inside one
+  // syllable) splits the cluster as coda-c + onset-z instead, losing the
+  // affricate and over-reducing the vowel the dict keeps full (adamczak
+  // → dæmkzək, dict ɑdəmtʃæk). 13 of 26 dict -czak words hit this split;
+  // all 13 fixed, 0 regressions. A preceding nasal was already
+  // assimilated to /ŋ/ before the (still-/k/-shaped) c, so it has to be
+  // restored to /n/ once cz is reunited as the non-velar affricate
+  // (franczak, stanczak) — that repair has to run before the general fix
+  // so the plain one doesn't leave the ŋ behind.
+  { when: (w) => /czak$/.test(w), re: /ŋkz[əæ]?k$/, sub: "ntʃæk" },
+  { when: (w) => /czak$/.test(w), re: /kz[əæ]?k$/, sub: "tʃæk" },
+  // Polish -wicz patronymic: the vowel+w before it is a reduced linking
+  // vowel, not an English vowel-w digraph, and the w itself voices to /v/
+  // (frankiewicz ˈfɹænkəvɪtʃ, markowicz ˈmɑɹkəvɪtʃ, filipowicz
+  // fɪˈɫɪpəvɪtʃ): 36 of 49 -wicz/-wich dict words collapse the whole
+  // digraph-plus-suffix tail this way (the rest keep the linking vowel
+  // stressed, keep w as w, or read cz as /ts/, all left as measured
+  // losses). The only -wich word this reaches, kolowich, is one of those
+  // losses too (dict keeps a literal /w/, ˈkɑɫəwɪtʃ) but the v-for-w
+  // substitution is still a 1-edit lenient win over the plain "ow"
+  // digraph reading, so -wich stays in. The guard requires the raw
+  // spelling's w (sandwich/norwich/greenwich have a consonant before w,
+  // not a vowel, so they never match).
+  {
+    when: (w) => /[aeiou]wi(?:cz|ch)$/.test(w),
+    re: /j?[aeiouɑæɛɪɔʊʌəɝ]+ɪtʃ$/, sub: "əvɪtʃ",
+  },
 
   // — Final-s voicing (plural/genitive-shaped spellings) —
   // After a sibilant, -es is the syllabic allomorph /əz/ (classes,
@@ -567,10 +616,13 @@ function addSecondary(ipa: string, suffixRe: RegExp): string {
 const FULL_NUCLEI = ["eɪ", "aɪ", "oʊ", "aʊ", "ɔɪ", "ɑ", "æ", "ɔ", "ɛ", "u"];
 // Two-consonant onsets a secondary mark may attach before (legal
 // English onsets; superset of ONSET_CLUSTERS — s-clusters are fine to
-// MARK before, they just don't attract a moved primary).
+// MARK before, they just don't attract a moved primary). tʃ/dʒ are a
+// single affricate phoneme spelled with two IPA characters, not a
+// cluster, but the same two-character backtrack has to treat them as
+// one unit or it splits the digraph (ˈædəmtˌʃæk instead of ˈædəmˌtʃæk).
 const LEGAL_ONSET_2 = new Set(
   Array.from(ONSET_CLUSTERS).concat([
-    "sp", "st", "sk", "sm", "sn", "sw", "sl", "sɫ", "sf",
+    "sp", "st", "sk", "sm", "sn", "sw", "sl", "sɫ", "sf", "tʃ", "dʒ",
   ]),
 );
 

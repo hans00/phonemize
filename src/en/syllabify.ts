@@ -504,6 +504,9 @@ const ITALIAN_ENDING = /(?:ino|ano|ini|oni|elli|etti|ello|etto|ucci|acci|ola)$/;
 // pallone): the Italian surname reading of "one", not the native English
 // or Greek-compound one (see assignStress and syllableToIPA).
 const DOUBLED_ONE_ENDING = /([b-df-hj-np-tv-z])\1one$/;
+// Polish surname suffixes -wicz/-wich (markiewicz) and -czak (adamczak).
+// -czyk rarely reaches three slots, since y is no nucleus here.
+const PATRONYMIC_ENDING = /(?:[aeiouy]wi(?:cz|ch)|czak)$/;
 // Latin hiatus endings that pull the primary onto the syllable right
 // before them and (see the syllableToIPA use site) tense an open vowel
 // there: -ia (malaria), -ian (canadian), -ious (curious), -eous
@@ -607,6 +610,17 @@ export function assignStress(syllables: string[], word: string): number {
   // left out at 4+ syllables, where the split is only 4:2.
   if (DOUBLED_ONE_ENDING.test(lowerWord) && syllables.length === 3)
     return 1;
+  // Polish -wicz/-wich/-czak stress the syllable two in from the suffix
+  // (markiewicz mɑɹˈkəvɪtʃ, filipowicz fɪˈɫɪpəvɪtʃ, adamczak ˈɑdəmtʃæk):
+  // the maximal-onset syllabifier keeps -wicz/-wich's swallowed w with
+  // its linking vowel as one slot ("kiew", "pow") ahead of the isolated
+  // "icz" slot, and -czak is itself always the last slot, so either way
+  // the target is 3 slots from the end. 45 of 49 -wicz/-wich words and
+  // all 6 -czak words that reach 3+ slots; the -wicz/-wich losses keep
+  // the linking vowel stressed (waszkiewicz, rosewicz) or read cz as
+  // /ts/ (balcerowicz, sawicz).
+  if (PATRONYMIC_ENDING.test(lowerWord) && syllables.length >= 3)
+    return syllables.length - 3;
 
   // A word ending in a single vowel letter a/o/i after a consonant is a
   // Romance/Japanese-type loan or name with penult stress (banana, tornado,
