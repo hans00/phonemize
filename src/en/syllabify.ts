@@ -500,6 +500,10 @@ export function secondaryStressIndices(
 
 const GERMANIC_NAME_ENDING = /(?:berger|inger|ermann?|heimer|meyer|meier|hofer|felder)$/;
 const ITALIAN_ENDING = /(?:ino|ano|ini|oni|elli|etti|ello|etto|ucci|acci|ola)$/;
+// A doubled consonant right before word-final "one" (cannone, bottone,
+// pallone): the Italian surname reading of "one", not the native English
+// or Greek-compound one (see assignStress and syllableToIPA).
+const DOUBLED_ONE_ENDING = /([b-df-hj-np-tv-z])\1one$/;
 // Latin hiatus endings that pull the primary onto the syllable right
 // before them and (see the syllableToIPA use site) tense an open vowel
 // there: -ia (malaria), -ian (canadian), -ious (curious), -eous
@@ -591,6 +595,18 @@ export function assignStress(syllables: string[], word: string): number {
   // baldacci): -ino/-ano/-ini/-oni/-elli/-etti/-ello/-etto/-ucci/-acci.
   if (ITALIAN_ENDING.test(lowerWord) && syllables.length >= 3)
     return syllables.length - 2;
+
+  // A doubled consonant + "one" is the same Italian surname pattern (see
+  // syllableToIPA for the matching final-e vowel): cannone, bottone,
+  // pallone. Unlike the endings above, "one" also occurs after a SINGLE
+  // consonant in native English words (atone, alone — handled by the a-
+  // prefix rule) and in Greek-compound scientific terms (acetone, ketone,
+  // telephone), which stay initial-stressed by the default below, so the
+  // doubling is the load-bearing signal. 22 penult : 4 initial at exactly
+  // 3 syllables (doggone, giannone, spallone, yannone are the exceptions);
+  // left out at 4+ syllables, where the split is only 4:2.
+  if (DOUBLED_ONE_ENDING.test(lowerWord) && syllables.length === 3)
+    return 1;
 
   // A word ending in a single vowel letter a/o/i after a consonant is a
   // Romance/Japanese-type loan or name with penult stress (banana, tornado,
@@ -757,9 +773,13 @@ export function assignStress(syllables: string[], word: string): number {
     // than to VOWEL_DIGRAPHS so `isSyllableHeavy` and the com-/pro- laxRoot
     // test keep their measured behaviour.
     // A word-final -ey/-ie is the unstressed /i/ ending (abbey, amie), not
-    // a tense rime, so it is excluded.
+    // a tense rime, so it is excluded. RHOTIC_VOWEL_RE (adore, ashore,
+    // aspire) is measured over the same bare-a and assimilated-ad branches
+    // below at 13 final : 4 initial (the losses are amore, ashare, astore,
+    // azure — lexical minorities of the same shape).
     const tenseRoot =
-      (DIGRAPH_RIME.test(syllables[1]) || syllables[1].includes("oi")) &&
+      (DIGRAPH_RIME.test(syllables[1]) || syllables[1].includes("oi") ||
+        RHOTIC_VOWEL_RE.test(syllables[1])) &&
       !/(?:ey|ie)$/.test(syllables[1]);
     if (firstSyl === "a" && tenseRoot) return 1;
     // Assimilated Latin ad-: account, approach, appear, allow. The doubled
@@ -769,6 +789,19 @@ export function assignStress(syllables: string[], word: string): number {
       /^a[bcdfglmnprstvz]$/.test(firstSyl) &&
       syllables[1][0] === firstSyl[1] &&
       tenseRoot
+    )
+      return 1;
+    // Non-assimilated ad-/in-/mis-/out- over the same rhotic rime (adhere,
+    // admire, acquire, inquire, inspire, insure, misfire, outscore): the
+    // doubling test above can't fire without a doubled consonant, but the
+    // dict is still 8:1 final over this specific rime (the loss, inshore,
+    // is a real compound "in shore"). ab- was measured in the same set and
+    // dropped — its one hit, abshire, is a surname compound with no win to
+    // offset it. con- was measured and dropped too: conspire is final but
+    // conjure and confrere are not, a 1:2 split.
+    if (
+      RHOTIC_VOWEL_RE.test(syllables[1]) &&
+      ["ad", "ac", "in", "mis", "out"].includes(firstSyl)
     )
       return 1;
     return 0;
@@ -907,6 +940,11 @@ export function assignStress(syllables: string[], word: string): number {
 // Vowel digraphs that make a syllable heavy (long nucleus).
 const VOWEL_DIGRAPHS = "aa ai au aw ay ea ee ei eu ey ie oa oo ou ow oy ue ui".split(" ");
 const DIGRAPH_RIME = new RegExp(VOWEL_DIGRAPHS.join("|"));
+// A full rhotic-diphthong rime: a vowel directly before a word-final "re"
+// (adore, ashore, aspire, assure), unlike a bare consonant-cluster + re that
+// never had a vowel between the onset and the r (acre, genre, theatre) or
+// the syllabic -Cle merge. See assignStress's 2-syllable branch.
+const RHOTIC_VOWEL_RE = /[aeiouy]re$/;
 
 // Vowel pairs that already reduce to ONE phoneme downstream — not a
 // hiatus. Most are PHONEME_RULES digraphs (a single glide/monophthong
@@ -1173,7 +1211,11 @@ export function syllableToIPA(
     !/(?:ee|[^aeiou]le|he|tte|se|[aeiou]re)$/.test(syllable) &&
     CONSONANTS.has(syllable[syllable.length - 2]) &&
     // be/me/we: in a one-syllable word the e is the nucleus, not silent
-    (syllableIndex > 0 || /[aeiouy]/.test(syllable.slice(0, -1)));
+    (syllableIndex > 0 || /[aeiouy]/.test(syllable.slice(0, -1))) &&
+    // Nor is it silent in the Italian doubled-one surname (cannone,
+    // bottone): see the eFire clause below, which needs the "e" left in
+    // `remaining` to reach the guarded ^e$ rule.
+    !(syllableIndex === 2 && syllable === "ne" && DOUBLED_ONE_ENDING.test(head + syllable));
 
   if (endsWithSilentE) {
     remaining = syllable.slice(0, -1);
@@ -1554,7 +1596,14 @@ export function syllableToIPA(
       // petal 5 ɛ : 1) and so is an r-initial ending (feral, cerus); the
       // onset must be a single consonant, the shape of an open syllable.
       (twoSylTense && /^[^aeiouy]*e$/.test(syllable) &&
-        /^(?:[^aeiouyrtd]als?|[^aeiouyr](?:es|us|ing|ed|est))$/.test(nextSyllable!));
+        /^(?:[^aeiouyrtd]als?|[^aeiouyr](?:es|us|ing|ed|est))$/.test(nextSyllable!)) ||
+      // The Italian doubled-one surname (see assignStress): the word-final
+      // "e" that is silent everywhere else is pronounced /i/ here (cannone,
+      // bottone, pallone — 25 : 3, the losses barrone/stallone/varrone are
+      // anglicised). syllableIndex 2 stands in for "exactly 3 syllables",
+      // the same restriction assignStress's penult-stress rule uses.
+      (isLastSyllable && syllableIndex === 2 && syllable === "ne" &&
+        DOUBLED_ONE_ENDING.test(head + syllable));
     if (!eFire) skip.add("^e$");
     if (syllableIndex === 0 || isStressed) skip.add("^tur$");
     if (isLastSyllable || !nextSyllable?.startsWith("st")) skip.add("^y(?=$)");
