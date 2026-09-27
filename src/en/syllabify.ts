@@ -650,6 +650,31 @@ export function assignStress(syllables: string[], word: string): number {
     return Math.max(0, syllables.length - 2);
   }
 
+  // Name-forming -man/-son/-ton (Addleman, Abelson, Appleton): the suffix
+  // is a reduced, unstressed /mən sən tən/ that keeps the root's own
+  // initial stress instead of falling through to the prefix loop or the
+  // heaviness fallback below. This has to run ahead of both: over the dict
+  // words that reach this branch (3+ syllables), -man is 460/490 (93.9%)
+  // initial-stressed, -son 511/542 (94.3%), -ton 282/310 (91.0%) — and the
+  // subset that also happens to start with a listed prefix below (Abelson,
+  // Adelman, Congressman, Denison) is STILL majority initial (13/18, 19/24,
+  // 12/16), because "ab-"/"ad-"/"con-"/"de-" there is a name's spelling,
+  // not a real prefix. The minority is genuine prefix+word compounds
+  // (inhuman, subhuman, unbutton, repairman, pre-season), outvoted by the
+  // surnames. Word-initial regardless of length, not an antepenult offset:
+  // at 4 syllables the dict is still word-initial for -man (16:3) and -ton
+  // (11:1) and roughly split for -son (11:10), so the fixed slot never
+  // loses to the length-3 alternative and wins outright for the other two
+  // (businessman, forewoman, haliburton). -ington is left out, as in
+  // GERMANIC_NAME_ENDING: American usage varies there (ellington).
+  if (
+    syllables.length >= 3 &&
+    /^(?:man|son|ton)$/.test(syllables[syllables.length - 1]) &&
+    !lowerWord.endsWith("ington")
+  ) {
+    return 0;
+  }
+
   // Common prefixes that don't usually take stress. For 3+ syllable
   // words we use the orthographic prefix as a signal but rely on the
   // doubled-consonant guard to avoid false matches (e.g. "address"
@@ -1452,6 +1477,22 @@ export function syllableToIPA(
     if (!hasVowelBeforeTerminalY) skip.add("^y$");
     if (!isLastSyllable && !isStressed && !nextIsMagicE) skip.add("^o$");
     if (triLax) skip.add("^o$");
+    // A stressed open o before a lax-cluster onset (the same s+stop/sh/ch/
+    // th/x set that already blocks a/e/i tensing) stays lax when the whole
+    // word ends in the reduced -Con suffix: boston, bosman, coxon. Scoped
+    // to that final "-n" shape specifically — the same cluster before an
+    // -er/-or/-ar agent-noun ending or a full final vowel goes the other
+    // way (poster, kosher, costar, bosko all keep oʊ), so a blanket gate on
+    // any next syllable would trade those away. Measured over the -on
+    // subset alone (open first syllable, single-consonant "Con" last
+    // syllable): 89/94 (94.7%) of the non-cluster, non-r-onset population
+    // is already oʊ by the default above, so this only needs to carve the
+    // cluster cases back out to lax.
+    if (
+      nextIsLaxCluster && !nextIsCle &&
+      isNextLastSyllable && nextSyllable!.endsWith("n")
+    )
+      skip.add("^o$");
     if (!isLastSyllable || isStressed) skip.add("^ous$");
     if (!isStressed || hasDoubledConsonantBeforeY) skip.add("^a(?=[^aeioun]y$)");
     if (!aFire) skip.add("^a$");
