@@ -23,7 +23,6 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/([pbtdkɡfvszʃʒθðmnŋlɹhjwɫ])\1/g, "$1"],
   [/sʒ/g, "ʃ"],
   [/əɹ/g, "ɝ"],
-  [/(?<=[^aeiouæɛɪɑɔʌʊ])ɪɹɝ$/, "ɝɝ"],
   [/n([kɡ])/g, "ŋ$1"],
   [/^mk/, "mək"],
   [/ɹɪtʃ$/, "ɹɪk"],

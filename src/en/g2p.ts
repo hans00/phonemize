@@ -843,7 +843,23 @@ export class EnglishG2P implements LanguageProcessor {
       // is a lexical coincidence, not a plural: this/his/has/yes/gas
       // are whole words. -o stems (photos, videos) are real plurals.
       const stem = lowerWord.slice(0, -1);
-      const basePron = /^[^aeiouy]*[aeiuy]$/.test(stem) ? undefined : this.wellKnown(stem);
+      const basePron = /^[^aeiouy]*[aeiuy]$/.test(stem)
+        ? undefined
+        : this.wellKnown(stem) ||
+          // An r-final stem that's gone rule-exact (error, actor, author,
+          // doctor, vendor, dollar) has left the exceptions table, so
+          // wellKnown() no longer finds it and its plural was falling
+          // through to whole-word rule syllabification of the INFLECTED
+          // form instead — which mishandles a word-final -or/-ar rime
+          // followed by the suffix's own consonant (errors, actors:
+          // syllableToIPA's final-unstressed-vowel reduction only ever
+          // checks the literal last phoneme, so the plural's trailing "s"
+          // masks the "or"/"ar" nucleus it's meant to reduce to ɝ). Forcing
+          // the rule path on just the stem sidesteps that: it's the one
+          // shape whose SINGULAR the rules already predict correctly on
+          // their own, and sPlural's sAllomorph voices correctly off its
+          // r-colored ɝ ending regardless.
+          (/r$/.test(stem) ? this.predictInternal(stem, undefined, true) : undefined);
       if (basePron) return sPlural(basePron);
       // Rule-derived stems are absent from the exception table. Preserve
       // -tion/-sion palatalization and monosyllabic silent-e vowels

@@ -171,6 +171,23 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // is /aʊ/ (lounge).
   [/^ou(?=[bp]le|ntr|ng(?!e))/, "ʌ"],
   [/^oup/, "up"], // group, soup, coup, croup (ou+p → /u/)
+  // "jour" is French /ʒuʁ/ ("day") nativised as /dʒɝ/ wherever it's a whole
+  // syllable — journal, journey, journalist, adjourn, sojourn: 100% of the
+  // dict words spelling a bare jour syllable (the general ^o(u|w) rule
+  // below would otherwise read it as /dʒaʊɹ/). Same shape as ^wor above.
+  [/^jour/, "dʒɝ"],
+  // "our" before s/t/c within the same syllable (not followed by a vowel,
+  // so court/fourth themselves, not courier/tourist) is the THOUGHT/FORCE
+  // vowel, not the general ou-diphthong the rule below would give it:
+  // court, fourth. course/source/resource want the same vowel but the
+  // silent e gives them their own syllable ("cour"·"se"), so they're
+  // covered by the nextSyllable-based check above instead, not this
+  // in-syllable lookahead. Measured over the dict: t 35 ɔɹ : 8 ɝ
+  // (courtesy's family) : 2 ʊɹ; s 20 : 8 : 2; c 16 : 1 : 3. The ɝ
+  // minority (courtesy, courteous, courtier) stays wrong either way — it
+  // was never matched by the general rule below — so this is a pure win
+  // on the c/s/t majority with no new loss.
+  [/^our(?=[cst])/, "ɔɹ"],
   [/^o(?:u|w(?=[snmk]))/, "aʊ"], // house, about, cloud; cow, down, brown (before consonants)
   [/^ow/, "oʊ"], // show, blow, know (at word end typically)
   [/^o[yi]/, "ɔɪ"], // boy/toy (oy) and coin/voice (oi)
@@ -1406,6 +1423,15 @@ export function syllableToIPA(
     if (NON_INITIAL_SUFFIXES.has(src) && syllableIndex === 0) continue;
     if (src === "^sto$" && nextSyllable !== "ne") continue;
     if (src === "^the$" && (syllableIndex === 0 || !isLastSyllable)) continue;
+    // A bare "er" syllable right before another syllable starting with r
+    // (error, terror's medial, erratic) is not the reduced word-final -er
+    // suffix this rule targets (teacher, baker) — the second r belongs to
+    // the NEXT syllable, spelled onto this one by gemination/assimilation,
+    // so this syllable's own vowel is a plain checked nucleus, not the
+    // agentive schwa. See the doubled-r rime skip below, which this
+    // mirrors for the (rarer) case where "er" is a whole syllable with no
+    // onset consonant of its own and so never reaches the main loop.
+    if (src === "^er$" && nextSyllable?.[0] === "r") continue;
     if (remaining.match(pattern)) {
       steps?.push({
         grapheme: remaining,
@@ -1778,6 +1804,19 @@ export function syllableToIPA(
       remaining = remaining.substring(1);
       continue;
     }
+    // "our" right before a NEXT syllable starting c/s/t is the same
+    // THOUGHT/FORCE vowel as the in-syllable ^our(?=[cst]) PHONEME_RULES
+    // entry below, for the two ways the boundary can fall short of that
+    // entry's own lookahead: the silent-e syllable split (course, source,
+    // resource, discourse — "cour"·"se", nothing left in THIS syllable's
+    // remaining for the in-syllable check to see) and a genuine syllable
+    // boundary before a vowel-initial next syllable (fourteen — "four"·
+    // "teen").
+    if (remaining === "our" && /^[cst]/.test(nextSyllable ?? "")) {
+      emit("our", "ɔɹ", "phoneme:our(nextSyllable=[cst])");
+      remaining = "";
+      continue;
+    }
     // Precompute the set of pattern sources to skip for this syllable
     // context. The inner per-rule loop becomes a single Set.has() check
     // instead of 13+ string comparisons per rule. Built once per
@@ -1922,6 +1961,49 @@ export function syllableToIPA(
     ) {
       skip.add("^th(?=[aeiou])");
       skip.add("^the$");
+    }
+    // A bare vowel+r rime (nothing else left in this syllable) right
+    // before a syllable starting with r is the doubled/assimilated r at a
+    // syllable boundary (ar·range, ar·rive, er·ror, mir·ror, car·ry,
+    // bar·rel), not this syllable's own r-colored coda: the second r is
+    // the next syllable's onset, spelled onto this one. ^ar/^[eiu]r would
+    // otherwise fuse the vowel and r into one r-colored phoneme before the
+    // /ɹ/ onset rule ever runs, which is wrong either way — stressed, the
+    // dict wants the plain checked vowel (error ˈɛɹɝ, mirror ˈmɪɹɝ, not
+    // ˈɝɹɝ); unstressed, it wants the vowel to reduce and coalesce with
+    // the following /ɹ/ the same way the single-r case already does
+    // (arise əˈɹaɪz → ɝˈaɪz via postlex's /əɹ/ → ɝ), which can only happen
+    // if the vowel is left bare here for the reduction pass to reach.
+    // Falling through lands on the plain ^a/^e/^i letter rules below
+    // (æ/ɛ/ɪ), and the lone r is picked up by ^r on the next iteration.
+    // u is excluded: hurry/current/curry split ɝ vs ɑɹ in the dict with no
+    // orthographic discriminator, so ^[eiu]r's existing ɝ default is left
+    // alone there. i is excluded too: it collides with the "ir" negative
+    // prefix (irregular, irrational, irreversible), which the dict keeps
+    // as ɪ + a SEPARATE ɹ under its own secondary stress, not a coalesced
+    // ɝ, and with a handful of names (cirrus, mirra, mirren, pirro, sirri)
+    // that keep ɪɹ stressed. Isolated (a/e-only vs a/e/i): strict 0 : 7,
+    // so i stays out. Scoped to the word's last two syllables
+    // (isNextLastSyllable): a 3+-syllable Spanish/Italian surname with the
+    // doubled r earlier in the word (arriaga, barrera, carrasco, marrero)
+    // keeps its open, unreduced vowel there — measured net-negative
+    // without this restriction (many such surnames in the dict). Also
+    // excluded: a head + this syllable spelling out a compounding prefix
+    // (over·run, counter·revolution) — that "r" doubling is two real
+    // morphemes colliding at a boundary, not gemination within one, and
+    // degeminating it the same way drops the second root's own onset r
+    // (overrun ˈoʊvɝɹən → ˈoʊvɝən). Same prefix set as the -Vce reduction
+    // above, for the same reason.
+    if (
+      nextSyllable?.[0] === "r" &&
+      remaining[0] !== "u" &&
+      remaining[0] !== "i" &&
+      isNextLastSyllable &&
+      !/^(?:inter|over|under|counter|super)$/.test(head + syllable) &&
+      (remaining === "ar" || /^[ei]r$/.test(remaining))
+    ) {
+      skip.add("^ar");
+      skip.add("^[eiu]r");
     }
 
     let matchFound = false;
