@@ -2034,6 +2034,59 @@ export function syllableToIPA(
       remaining = remaining.substring(1);
       continue;
     }
+    // Unstressed i+vowel after a bare (uncrowded) l/n onset, the syllable
+    // right after the primary stress, is the /j/ glide's own environment
+    // (million, companion, union, brilliant, valiant, convenient), not
+    // the i-ə hiatus the general vowel rules give it by default — the
+    // i-counterpart of the mid-word u+a/o hiatus glide a few hundred
+    // lines up. `!isStressed` is what keeps this off a syllable whose
+    // own vowel IS the stress, three letters up the same "Cl/Cr + i"
+    // shape reading as a diphthong instead (client, pliant, compliant —
+    // onset "pl"/"cl" is excluded anyway by requiring the bare letter
+    // l/n right here, but reliant's "liant" carries its OWN primary
+    // stress and is excluded by that, not by the onset). `prevStressed`
+    // (adjacency to the primary, not just "somewhere unstressed") was
+    // measured against a plain `!isStressed` gate and is worth 1 fewer
+    // strict loss (a French surname, litalien) for zero fewer wins — it
+    // does NOT reach opinion/dominion/convenience, whose "o·pi·nion"-
+    // shaped words this frame also matches: those stay blocked by
+    // `assignStress` misplacing the primary on the WRONG syllable for
+    // that whole shape, a pre-existing bug this rule doesn't touch. The
+    // -a branch's lookahead requires a further consonant after "an"
+    // (valiant, ebullient's family) so it does not reach a bare word-
+    // final -ian/-iance slot (civilian, brilliance), which
+    // LATIN_HIATUS_ENDING and the tensing rule above already own;
+    // measured on that population alone the split is unpredictable by
+    // spelling (35.7% l-onset, 9.3% n-onset glide) and net-negative to
+    // extend here (civilian/australian/brazilian/italian are open
+    // misses, not a rule). -ium/-ius/-iam are excluded by construction
+    // (this only matches a/e/o, not u, and -iam's onset is followed by
+    // m, not the "nt"/"n" this needs) — also measured net-negative as a
+    // class, checked position-aware (onset immediately before a j, not
+    // a j anywhere in the word — aluminium and uranium's own j is on
+    // their word-initial "lju"/"jɝ", not the -nium suffix): -ium 1:27
+    // (epithelium the one glide), -ius 3:18 (genius one of three), -iam
+    // 4:7 (william one of four). Rule-diff gate (whole family, win/loss
+    // over the words whose prediction actually changed — not the raw
+    // population ratios above, which only justify the -ian/-ium/-ius/
+    // -iam exclusions): strict 19 : 3, lenient 7 : 3, top-5000 1 : 0
+    // (union). The 3 strict losses are defoliant (shares valiant's exact
+    // shape but the dict keeps it un-glided — no spelling split found),
+    // lenient (loses to its own -ly/-cy inflections, which DO glide in
+    // the dict: leniently, leniency — a same-lemma inconsistency, not a
+    // rule gap) and lilienthal (a German surname).
+    if (
+      !isStressed &&
+      syllableIndex > 0 &&
+      prevStressed &&
+      /^[ln]i(?:o(?=n)|a(?=nt)|e(?=n))/.test(remaining)
+    ) {
+      const onsetLetter = remaining[0];
+      emit(onsetLetter, onsetLetter, "phoneme:^[ln]i[aeo]-glide-onset");
+      emit(remaining.slice(1, 3), "jə", "phoneme:^[ln]i[aeo]-glide");
+      remaining = remaining.slice(3);
+      continue;
+    }
     // "our" right before a NEXT syllable starting c/s/t is the same
     // THOUGHT/FORCE vowel as the in-syllable ^our(?=[cst]) PHONEME_RULES
     // entry below, for the two ways the boundary can fall short of that
