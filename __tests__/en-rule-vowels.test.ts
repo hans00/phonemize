@@ -425,3 +425,10 @@ describe("o as STRUT before -ve/-vern/-nth", () => {
     ["month", /^ˈmʌnθ$/],
   ])("%s", (w, re) => expect(g.predict(w, "en")).toMatch(re));
 });
+
+describe("a bare -ic syllable", () => {
+  // The suffix table's ipa is used literally; an "ɪk$1" entry once shipped
+  // the text "$1" for these.
+  it.each(["ickes", "lewicki"])("%s has no substitution residue", (w) =>
+    expect(rules(w)).not.toContain("$"));
+});

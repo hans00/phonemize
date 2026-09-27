@@ -53,7 +53,11 @@ const SUFFIX_RULES: Array<[RegExp, string]> = [
   [/^ism$/, "ɪzəm"],
   [/^ist$/, "ɪst"], // -ism/-ist
   [/^al$/, "əl"], // -ity / -al
-  [/^ic(s?)$/, "ɪk$1"], // -ic (economic, mathematic-); stress is handled separately by the endsWith("ic") check in assignStress
+  // -ic (economic, mathematic-); stress is handled separately by the
+  // endsWith("ic") check in assignStress. The table's ipa is used
+  // literally, so -ics needs its own entry (a "$1" here once shipped).
+  [/^ic$/, "ɪk"],
+  [/^ics$/, "ɪks"],
   [/^lity$/, "ləti"],
   [/^ty$/, "ti"],
   [/^[ae]ry$/, "ɛri"],
