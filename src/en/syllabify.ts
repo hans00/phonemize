@@ -1625,7 +1625,12 @@ export function syllableToIPA(
     //   open u in a stressed or onsetless non-final syllable (mu|sic,
     //   stu|dent, u|nique) or before -tion/-sion/magic-e (so|lu|tion,
     //   u|se), ue (cue/due), ew (few/new). Closed-syllable u stays /ʌ/
-    //   (cut, sun); unstressed open u after a consonant reduces (campus).
+    //   (cut, sun). A mid-word unstressed open u after a coronal onset
+    //   (t d s z n l r) reduces to a bare ə (accuracy's "ra"-onset next
+    //   syllable aside — see the branch below); after a non-coronal
+    //   onset (p b k ɡ m f v) it keeps the glide instead (see the next
+    //   branch), and a u+a/o hiatus keeps a full glide+u regardless of
+    //   stress depth (the branch after that).
     //   Word-final -gue/-que keep their silent ue (league, plaque), and
     //   gu before e/i is hard g with a silent u (guess, guide, guitar).
     //   Maximal onset opens the syllable before s+C and bl clusters
@@ -1697,6 +1702,88 @@ export function syllableToIPA(
     ) {
       emit("u", longU(onset, nextSyllable?.startsWith("r")), "phoneme:^u$");
       break;
+    }
+    // A mid-word unstressed open u after a single yod-taking (non-coronal)
+    // consonant onset keeps the glide even though the vowel itself reduces
+    // off-stress: accuracy kjɝ (a following r onset then colors the
+    // reduced vowel through the existing unstressed-r merge, the same as
+    // any other ə+r), ambulance bjə, amputate pjə, amulet mjə, ammunition
+    // mjə. Measured over data/en/dict.json on the C+u+C+V mid-word frame
+    // (dict-has-a-j-anywhere proxy, noisy — the real gate is the rule-diff
+    // win/loss dump): p 90%, f 92%, c/k 89% (the letter c; the letter k
+    // alone is a smaller, noisier 31%), ɡ 78%, m 81%, b 53%, all well
+    // above the coronal population this excludes (t 6%, d 7%, s 8%, l 9%,
+    // r 5%, z 3%; h was measured too, at 22%, and also left out), which
+    // drops the glide instead and falls to the plain ^u rule below. The
+    // rule-diff gate, with the next-syllable-s exclusion below already
+    // applied: strict 61 : 4, lenient 41 : 13. A secondary-stressed
+    // syllable keeps the full, un-reduced u.
+    // A next syllable starting with s is excluded too: it is never a win
+    // in the dict (0 of 60) and it is how a monosyllabic -Cus base
+    // (campus, circus, Fergus, Markus — themselves already glide-less,
+    // closed ^u$ syllables) resyllabifies under an -es/-on suffix
+    // (campuses, ferguson): the coda s that made the base's u lax
+    // reappears as the next syllable's onset, but the syllable is glide-
+    // less by the base word's own lexical identity, not by this frame.
+    // This one exclusion takes the strict count from 61 : 8 to 61 : 4 —
+    // campuses, circuses, ferguson, markuson recovered, zero wins lost.
+    if (
+      remaining === "u" &&
+      syllableIndex > 0 &&
+      !isStressed &&
+      !isLastSyllable &&
+      !endsWithSilentE &&
+      onset !== undefined &&
+      /^[pbkɡmfv]$/.test(onset) &&
+      !nextIsLaxCluster &&
+      !nextSyllable?.startsWith("s")
+    ) {
+      emit("u", isSecondary ? "ju" : "jə", "phoneme:^u$-medial-yod");
+      break;
+    }
+    // A mid-word unstressed u+a/o hiatus keeps a full, un-reduced glide+u
+    // (continuous, ambiguous, tenuous, obituary, situate) instead of
+    // reducing: the syllable isn't closed the way the bare-^u$ frame
+    // above is, so the vowel that follows carries on being read by the
+    // rules below (the suffix loop's ^ous$, the -ary hiatus branch, the
+    // magic-e -ate). Over data/en/dict.json on this C+u+[ao] mid-word
+    // frame the coronal stops palatalize with the glide (t → tʃ:
+    // actuary, mortuary, sanctuary, statuary, gargantuan; d → dʒ:
+    // arduous, deciduous, gradual). Known miss, not excepted by this code:
+    // a handful of Spanish proper nouns sharing the same du+a shape keep
+    // it plain instead (padua/anzaldua/basaldua/paduano), while the rest of
+    // the frame's consonants keep the onset and insert a plain j
+    // (ambiguous, conspicuous, contiguous, continuous, ingenuous,
+    // january, manual, strenuous, vacuous). s is left out: the dict is
+    // split three ways there with no single winning pattern (persuade
+    // sw, sensuous ʃə, usually ʒə). Rule-diff gate over the whole dict:
+    // strict 16 : 0, lenient 12 : 3 (the gu+a exclusion just below then
+    // recovers one of those three lenient losses at no further cost).
+    // gu+a is excluded: it is the same Spanish/"guard" silent-u digraph
+    // the word-initial rule above treats as ɡw, just mid-word instead of
+    // at syllableIndex 0 (jaguar, vanguard, nicaraguan, paraguay,
+    // uruguay); gu+o (ambiguous, contiguous) is unaffected. Rule-diff
+    // gate for the exclusion alone: strict 0 : 0, lenient +1 (castonguay).
+    if (
+      remaining.length > 2 &&
+      remaining[0] === "u" &&
+      /^[ao]/.test(remaining[1]) &&
+      syllableIndex > 0 &&
+      !isStressed &&
+      onset !== undefined &&
+      !(onset === "ɡ" && remaining[1] === "a")
+    ) {
+      if (/^[td]$/.test(onset)) {
+        phonemes[phonemes.length - 1] = onset === "t" ? "tʃ" : "dʒ";
+        emit("u", "u", "phoneme:^u-hiatus-coalesce");
+        remaining = remaining.substring(1);
+        continue;
+      }
+      if (/^[pbkɡmfnv]$/.test(onset)) {
+        emit("u", "ju", "phoneme:^u-hiatus-yod");
+        remaining = remaining.substring(1);
+        continue;
+      }
     }
     if (
       /^(?:ue|ew)/.test(remaining) &&

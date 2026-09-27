@@ -1192,7 +1192,23 @@ export class EnglishG2P implements LanguageProcessor {
       !(lowerWord.endsWith("tual") && lowerWord.length > 6)
     ) {
       const p = stemPron(lowerWord.slice(0, -3));
-      if (p) return p.replace(/[uʊ]$/, "") + "uəl";
+      if (p) {
+        const stem = p.replace(/[uʊ]$/, "");
+        // The glide behaves like the ^ue digraph elsewhere in this file:
+        // n/l keep a literal j (annual, manual, continual, semiannual —
+        // 4/4 in the dict), a final d palatalizes with it (gradual,
+        // residual, individual — 3/3). Known miss, not excepted by this
+        // code: a handful of Spanish proper nouns sharing the same du+a
+        // shape keep it plain (padua, anzaldua, basaldua). Every other
+        // onset is left on the plain "uəl" this branch already returned
+        // (accrual, menstrual's r) — the s-onset population measured too
+        // mixed to rule (visual/sexual coalesce, consensual/asexual
+        // don't, and the vowel that follows differs too: uə vs əwə).
+        // Rule-diff gate: strict 3 : 0, lenient 1 : 1.
+        if (/[nl]$/.test(stem)) return stem + "juəl";
+        if (stem.endsWith("d")) return stem.slice(0, -1) + "dʒuəl";
+        return stem + "uəl";
+      }
     }
     for (const [sfx, ipa] of [
       ["ify", "əˌfaɪ"],
