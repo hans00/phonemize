@@ -512,6 +512,18 @@ export function secondaryStressIndices(
 
 const GERMANIC_NAME_ENDING = /(?:berger|inger|ermann?|heimer|meyer|meier|hofer|felder)$/;
 const ITALIAN_ENDING = /(?:ino|ano|ini|oni|elli|etti|ello|etto|ucci|acci|ola)$/;
+// French loanword/surname endings that keep the primary on the final
+// syllable at exactly two slots (chateau, giroux, voltaire): -eau/-eaux,
+// -oux, -aire measured 141:11 final over the true two-syllable-branch
+// dict population (syllabify().length===2, restricted to dict words that
+// are themselves 2 real syllables). The 11 losses are single-morpheme
+// Anglicised names that took the ending as their whole root (bureau,
+// juneau, decaire) — no orthographic discriminator separates them from
+// the rest of the class. -elle was measured in the same set and dropped:
+// 20 of the 23 two-slot -elle words are dict MONOsyllables (belle, elle,
+// welle — the "le" is a syllabic-l spelling, not a second vowel), so
+// stressing slot 1 voices a vowel the word doesn't have (belle → bəˈɫ).
+const FRENCH_FINAL_ENDING = /(?:eaux|eau|oux|aire)$/;
 // A doubled consonant right before word-final "one" (cannone, bottone,
 // pallone): the Italian surname reading of "one", not the native English
 // or Greek-compound one (see assignStress and syllableToIPA).
@@ -589,6 +601,25 @@ export function assignStress(syllables: string[], word: string): number {
   // cafeteria, canadian, barbarian, various, curious, spontaneous); the
   // syllabifier keeps consonant + suffix as the last slot.
   if (syllables.length >= 2 && LATIN_HIATUS_ENDING.test(syllables[syllables.length - 1]))
+    return syllables.length - 2;
+
+  // A word-final "que" is the French spelling of a bare /k/ (antique,
+  // critique, boutique, mystique, martinique): "qu" starts with a vowel
+  // letter, so it never trips SILENT_E_SLOT and the syllabifier gives it
+  // its own slot (an|ti|que), but phonetically it closes the syllable
+  // before it, which is the one that actually carries the stress.
+  // Excluded: -esque, a suffix in its own right whose stress is the free
+  // root's, not this gram's (kafkaesque, picturesque, statuesque);
+  // burlesque/grotesque don't need the exclusion; their penult is already
+  // closed (les-) and self-stresses through the heaviness fallback below.
+  // 33 penult : 7 elsewhere over the dict words this reaches (82.5%); the
+  // losses are idiosyncratic loans/names with no further orthographic
+  // split (albuquerque, barbeque, communique, discotheque).
+  if (
+    syllables.length >= 3 &&
+    syllables[syllables.length - 1] === "que" &&
+    !lowerWord.endsWith("esque")
+  )
     return syllables.length - 2;
 
   // Germanic compound surname elements leave the primary on the first
@@ -822,6 +853,24 @@ export function assignStress(syllables: string[], word: string): number {
       ["ad", "ac", "in", "mis", "out"].includes(firstSyl)
     )
       return 1;
+    // -ureau is initial in both dict words that have it (bureau,
+    // lamoureaux): the u + r is the English CURE reading, not French.
+    if (FRENCH_FINAL_ENDING.test(lowerWord) && !/ureau$/.test(lowerWord))
+      return 1;
+    // -oon is the French/Spanish loan suffix (balloon, baboon, cartoon,
+    // bassoon): 94.9% final (37:2) over the two-syllable population,
+    // unlike the wider oo+consonant family it sits inside (mostly English
+    // compounds — allwood, ashbrook — only 18% final), so it is scoped to
+    // this one gram rather than the digraph generally.
+    if (/oon$/.test(lowerWord)) return 1;
+    // A bare -een that is not the Scandinavian surname suffix -deen
+    // (lindeen, hedeen — 40% final, 4:6) or a bare -teen word (canteen,
+    // preteen against osteen, umpteen — 62.5% final, too mixed to add to
+    // the rule, and the cardinal-number compounds eighteen/fifteen are
+    // majority initial on their own, 0:5) is a French/Irish loan or place
+    // name with final stress (aileen, baleen, between, canteen, careen):
+    // 83.3% final (45:9) over the rest.
+    if (/een$/.test(lowerWord) && !/(?:deen|teen)$/.test(lowerWord)) return 1;
     return 0;
   }
 
