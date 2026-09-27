@@ -1408,12 +1408,28 @@ export function syllableToIPA(
   // A consonant + open u voices only when u|se is the whole stem (fuse,
   // muse, ruse — 13:0 in dict); in a longer word the -use noun/adjective
   // keeps /s/ (abuse, excuse, profuse, abstruse) and onsetless u|se is
-  // the noun "use".
+  // the noun "use". The [ieo]$ half of the test matches a digraph's LAST
+  // letter too, which wrongly pulls in two digraphs that stay voiceless:
+  // the German/Baltic surname spellings -eise/-oese (freise/heise/weise,
+  // 7:0; froese/genoese/kroese, 5:0). -oose (goose/loose/moose/caboose,
+  // 14:2) is the same false positive but is left alone: the 2 exceptions
+  // are "choose" and "roose", and a spelling-only guard can't tell the one
+  // verb in that class from the surrounding nouns/adjectives without
+  // naming it, so excluding -oose loses the top-5000 word (choose) it
+  // would break for the one just outside it (loose, rank 5227) it would
+  // fix. -tose is the sugar/chemistry -ose suffix (comatose/fructose/
+  // galactose/lactose/maltose): 5:0, no dict counterexample, unlike the
+  // sibling -pose/-rose/-nose/-mose classes this rule leaves alone — each
+  // is majority-voiced already (19:4, 17:5, 4:1, 2:1) with one named,
+  // spelling-invisible minority (purpose/adipose, morose, diagnose) — or
+  // -cose (glucose/bellicose vs cose/jocose), an even 2:2 split.
   if (
     remaining === "se" &&
     isLastSyllable &&
     (prevSyllable?.match(/[ieo]$|au$/i) ||
-      (syllableIndex === 1 && /[^aeiou]u$/i.test(prevSyllable ?? "")))
+      (syllableIndex === 1 && /[^aeiou]u$/i.test(prevSyllable ?? ""))) &&
+    !/(?:ei|oe)$/i.test(prevSyllable ?? "") &&
+    prevSyllable !== "to"
   )
     return "z";
   // Word-final unstressed -cia/-sia (single onset consonant) is one
@@ -1592,6 +1608,8 @@ export function syllableToIPA(
     //            after a front digraph (paisley, beasley, keesler)  20:2
     //   Ci/Co|si- before a -t/-b tail (visit, visitor, visible,
     //            depository)                                   14:2
+    //   Co|si- before a -ti/-te tail (composite, opposite,
+    //            positive, dispositive, positivism)              8:0
     // A sixth frame, Cu|sic- (music), measured +4/-1 but the dict is 4:4
     // on it and every win is the one music/musical/musician family — a
     // per-word patch in frame clothing, so it is not here.
@@ -1608,7 +1626,7 @@ export function syllableToIPA(
           /^sl(?:ey|er|ing|y)$/.test(remaining)) ||
         (/[^aeiou][io]$/.test(prevSyllable ?? "") &&
           (remaining === "sit" ||
-            (remaining === "si" && /^(?:tor|b)/.test(nextSyllable ?? "")))))
+            (remaining === "si" && /^(?:tor|b|ti|te)/.test(nextSyllable ?? "")))))
     ) {
       emit("s", "z", "phoneme:onset-s");
       remaining = remaining.substring(1);
@@ -2038,6 +2056,14 @@ export function syllableToIPA(
     if (isLastSyllable || !nextSyllable?.startsWith("st")) skip.add("^y(?=$)");
     if (syllableIndex > 0) { skip.add("^x(?=[aeiouy])"); skip.add("^gil"); skip.add("^scien"); }
     if (syllableIndex === 0 && isLastSyllable) skip.add("^baum$");
+    // trans- before /f/ or /d/ keeps its coda voiceless (transfer/
+    // transform/transfix/transfuse family, 21:0; transducer, 1:0) against
+    // the general word-final ^ns$ → /nz/ rule below, which is otherwise
+    // right for trans- before a vowel/sonorant onset (transit, transmit —
+    // resolved elsewhere, since those syllabify the s into the next
+    // syllable) and before g/r (transgender/transgress family 6:0,
+    // transracial/transrapid 2:0).
+    if (syllable === "trans" && /^[fd]/.test(nextSyllable ?? "")) skip.add("^ns$");
     // Greek ch → /k/ (see GREEK_CH_ROOT): off everywhere else, since plain
     // word-initial ch defaults to tʃ (chair, church) far more often than
     // not.
