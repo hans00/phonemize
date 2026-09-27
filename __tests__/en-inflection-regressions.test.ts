@@ -54,3 +54,29 @@ describe("Inflection boundaries", () => {
     expect(toIPA("names games")).toBe("neɪmz ɡeɪmz");
   });
 });
+
+describe("Silent-e probe gating (MAGIC_E_CANDIDATE)", () => {
+  // inflect()'s -ed/-ing silent-e fallback fabricates base + "e" and runs
+  // it through the full rule pipeline to test whether the base is a
+  // dropped-e stem (advanced → advance). Unconditionally, that probe also
+  // fires on bases whose ending has no silent-e spelling in English (ask,
+  // mask, gasp, form), where it fabricated "aske"/"maske"/"gaspe"/"forme",
+  // tensed the vowel through the magic-e rule, and shipped it: asked came
+  // out /ˈeɪskt/ at runtime. asked/masked/formed aren't dict keys, so no
+  // gate saw it. MAGIC_E_CANDIDATE now gates the probe to endings that can
+  // plausibly carry a real silent e.
+  const g2p = new EnglishG2P();
+
+  it("keeps the lax vowel in asked", () => {
+    expect(g2p.predict("asked")).toMatch(/^ˈæskt$/);
+  });
+
+  it.each([
+    ["asking", /^ˈæskɪŋ$/],
+    ["masked", /^ˈmæskt$/],
+    ["gasped", /^ˈɡæspt$/],
+    ["formed", /^ˈfɔɹmd$/],
+  ] as const)("keeps the lax vowel in %s", (word, expected) => {
+    expect(g2p.predict(word)).toMatch(expected);
+  });
+});

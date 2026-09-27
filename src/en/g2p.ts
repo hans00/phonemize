@@ -157,6 +157,73 @@ function geminateStem(word: string): string | null {
 // Shared by every morphology handler below that restores a dropped -e.
 const ENDS_IN_VOWEL_RE = /[aeiouɑæɛɪɔʊʌəɝ]$/;
 
+// A stripped -ed/-ing base is only a PLAUSIBLE dropped-e spelling when its
+// ending is one English silent e can actually follow. That's not just the
+// classic single-consonant case (hop→hopped vs hope→hoped, so a bare
+// "V+single-consonant" tail is a candidate): a handful of consonant
+// CLUSTERS also carry a silent e productively — c/g/s/v soften or voice
+// only before e (announce, abridge, cause, involve), a syllabic l needs it
+// to spell the schwa (amble, crackle) and -st/-th are two more attested
+// closed-cluster + e endings (paste, soothe). Every OTHER cluster — sk,
+// ct, rm, rt, nt, nd, mp, pt, lt, ft, rd, … — has no silent-e spelling in
+// English at all, so base+"e" there (aske, uncollecte, unconfirme) is pure
+// fabrication.
+// A second, orthogonal allowance: an exactly-bisyllabic base (con-vert,
+// ad-dict, com-pact, con-duct) is also let through even when its cluster
+// isn't in the list above. These are the classic Latinate noun/verb stress
+// pairs (CONtract/conTRACT): the bare 2-syllable form defaults to initial
+// (noun-like) stress, and the extra fake syllable happens to push the
+// syllable-count-based stress heuristic onto the correct (verb) syllable —
+// not silent-e reasoning, but real and common enough (converted is a
+// top-5000 word) to keep. A 3+-syllable un-/mis- + root base (uncollect,
+// unconfirm) doesn't have this noun/verb ambiguity to resolve, so it's
+// excluded by the cluster+syllable-count test above either way.
+// A doubled final consonant (kidnapp, sandbagg — its undoubled form isn't
+// a table word, or the earlier doubled-consonant check above would already
+// have returned) is excluded too: it's gemination, not a dropped e.
+// Measured both ways: WITHOUT this exclusion, the doubled base is allowed
+// through whichever disjunct below it happens to match, which nets one
+// MORE strict win on the plain rule-diff count (22 : 5 vs 31 : 15) by
+// recovering kidnapped/sandbagged-style cases — but it does so by giving
+// up deferred/demurred/deterred/recurred-style doubled -r roots (whose
+// undoubled form also isn't a table word), and those carry primary-stress
+// placement that only evaluate-strict (which keeps the stress mark) can
+// see: +13 there instead of +26. Since this project tracks stress
+// placement as its own metric precisely because segment-only scores can't
+// see it, the exclusion stays.
+// Without this gate at all the probe fabricates ANY base+"e" string and
+// runs it through the FULL rule pipeline as if it were a real word, so it
+// inherits whatever closed-syllable vowel/stress rule fires for the shape
+// it's handed: asked → "aske" → tensed /eɪsk/ → shipped /ˈeɪskt/ (dict
+// /æskt/, not even a table word — a live bug on any -ed/-ing base this
+// pattern hits and the table doesn't cover). uncollected/unconfirmed
+// similarly picked up a spurious segment from the -ive silent-e stress
+// fold reading the fake trailing "e" as a real syllable (both are now
+// table entries, so the shipped pipeline doesn't see it, but the
+// rules-only path still does).
+// Measured over the whole dict (rule-diff, disableDict, before → after
+// this gate): a first single-consonant-only version was strict 179 : 370,
+// net negative against the unguarded probe (mostly the Cl/c/g/s/v/st/th
+// clusters and the bisyllabic stress class, all rejected too broadly).
+// With both allowances plus the doubled exclusion: strict 31 : 15, lenient
+// 18 : 6, top-5000 0 : 0 (the sole top-5000 regression from the
+// cluster-only version, converted, is exactly the case the bisyllabic
+// allowance recovers), evaluate-strict headline +26. Remaining losses:
+// kidnapped/sandbagged/backslapping/combatting/outmanned/wildcatting/
+// clendenning/offsetting (the doubled-base trade-off above), gehring (a
+// surname, not "gehr" + silent e), offspring (a monomorphemic noun the
+// -ing strip never should have touched), overlapped/overlapping
+// (3-syllable + doubled p, outside every allowance) and unprotected (the
+// same 3+-syllable un- shape as uncollected/unconfirmed, still correctly
+// excluded — its remaining stress error is unrelated, see assignStress's
+// prefix rules).
+const MAGIC_E_CANDIDATE = (base: string): boolean =>
+  !/([bcdfgklmnprst])\1$/.test(base) &&
+  (/[aeiouy][bcdfghjklmnpqrstvwxz]$/.test(base) ||
+    /[cgsvl]$/.test(base) ||
+    /(?:st|th)$/.test(base) ||
+    syllabify(base).length === 2);
+
 // The vowel before an unstressed Latinate ending is the slot the suffix
 // reduces (anim+al, crimin+al, capit+al, condi+ment), but the suffix
 // handlers price the base without the suffix in view, so its last /ɪ/
@@ -730,13 +797,17 @@ export class EnglishG2P implements LanguageProcessor {
       // vowel and end in a consonant, so a root-final suffix with a
       // vowelless stem (bled, sped, fled) is left for the normal path.
       // Try the silent-e-restored stem first (advanced → advance,
-      // placed → place) — but ONLY when the restored e is actually silent,
-      // i.e. the prediction still ends in a consonant. For sibilant-final
-      // stems the e is pronounced (distinguishe → …ʃi, washe → …ʃi), which
-      // would wrongly attach the allomorph to a vowel; fall back to the
-      // bare stem there so distinguished → …ʃt, not …ʃid.
+      // placed → place) — but ONLY when MAGIC_E_CANDIDATE says the base's
+      // ending could plausibly carry a real dropped-e spelling (see its
+      // comment) AND the restored e is actually silent, i.e. the
+      // prediction still ends in a consonant. For sibilant-final stems the
+      // e is pronounced (distinguishe → …ʃi, washe → …ʃi), which would
+      // wrongly attach the allomorph to a vowel; fall back to the bare
+      // stem there so distinguished → …ʃt, not …ʃid.
       if (ruleFallback && /[aeiou]/.test(base) && !/[aeiou]$/.test(base)) {
-        const ruleBaseE = this.predictInternal(base + "e", undefined, true);
+        const ruleBaseE = MAGIC_E_CANDIDATE(base)
+          ? this.predictInternal(base + "e", undefined, true)
+          : undefined;
         if (ruleBaseE && !ENDS_IN_VOWEL_RE.test(ruleBaseE))
           return join(ruleBaseE);
         const ruleBase = this.predictInternal(base, undefined, true);
