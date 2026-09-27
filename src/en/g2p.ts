@@ -1008,6 +1008,13 @@ export class EnglishG2P implements LanguageProcessor {
         if (m) return m.replace(/ə$/, "") + "əbəl";
       }
       if (able) {
+        // A doubled consonant before -able is orthographic (control →
+        // controllable, regret → regrettable): read the single-consonant stem.
+        const undoubled =
+          base.length > 3 && base[base.length - 1] === base[base.length - 2]
+            ? lex(base.slice(0, -1))
+            : undefined;
+        if (undoubled) return undoubled.replace(/ə$/, "") + "əbəl";
         const bare = stemPron(base);
         if (bare) return bare.replace(/ə$/, "") + "əbəl";
         const short = stemPron(lowerWord.slice(0, -3));
@@ -1152,6 +1159,25 @@ export class EnglishG2P implements LanguageProcessor {
       // Same for -al after a polysyllabic -ent/-ant stem: environmental,
       // accidental, fundamental stress the -en- the stem left unstressed.
       if (sfx === "al" && /[ae]nt$/.test(b) && (b.match(/[aeiouy]+/g)?.length ?? 0) >= 2) continue;
+      if (sfx === "al" && !lex(b)) {
+        // A doubled consonant before -al is orthographic (refer → referral):
+        // read the single-consonant stem, as inflect() does for -ed/-ing.
+        const undoubled =
+          b.length > 3 && b[b.length - 1] === b[b.length - 2] ? lex(b.slice(0, -1)) : undefined;
+        if (undoubled)
+          return softenBaseFinal(preSuffixReduce(undoubled, lowerWord), b, sfx) + ipa;
+        // Silent-e stem (approve → approval, arrive → arrival): a table lookup
+        // only, since rule-predicting base + e always yields something
+        // (classic + e, addition + e). A base under five letters is left out,
+        // where an unrelated entry is likeliest (anim + e is "anime").
+        if (b.length >= 5 && !/[aeiour]$/.test(b)) {
+          const magic = lex(b + "e");
+          // A silent e leaves a consonant-final stem; a vowel-final hit is a
+          // loan whose e is sounded (principe, cantone).
+          if (magic && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(magic))
+            return softenBaseFinal(preSuffixReduce(magic, lowerWord), b, sfx) + ipa;
+        }
+      }
       const p = stemPron(b);
       if (p) return softenBaseFinal(preSuffixReduce(p, lowerWord), b, sfx) + ipa;
     }
