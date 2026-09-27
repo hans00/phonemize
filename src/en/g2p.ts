@@ -887,7 +887,22 @@ export class EnglishG2P implements LanguageProcessor {
 
     if (lowerWord.endsWith("er") && lowerWord.length > 3) {
       const base = lowerWord.slice(0, -2);
-      const magicPron = this.wellKnown(base + "e");
+      // A doubled final consonant on the base is orthographic gemination,
+      // not a real letter to keep before adding "e" — the same skip
+      // silentE() in inflect() already applies for -ed/-ing. Without it an
+      // unrelated pronounced-e loanword sharing the doubled spelling
+      // corrupts the derivation (bette → better, latte → latter, butte →
+      // butter, passé → passer).
+      const doubledBase = /([bcdfgklmnprst])\1$/.test(base);
+      let magicPron = doubledBase ? undefined : this.wellKnown(base + "e");
+      // A short base can also coincidentally match an unrelated headword
+      // whose final e IS pronounced (ente "duck" → enter, mete → meter).
+      // Reject a vowel-final hit unless the base ends in y/w/r, where that
+      // vowel is a genuine offglide/rhotic the suffix attaches to cleanly
+      // (flye→flyer, howe→hower, acquire→acquirer).
+      if (magicPron && /[^aeiouyrw]$/.test(base) && /[aeiouɑæɛɪɔʊʌəɝ]$/.test(magicPron)) {
+        magicPron = undefined;
+      }
       if (magicPron) {
         const magicClean = magicPron.replace(/[ˈˌ]/g, '');
         if (magicClean.endsWith('ndʒ')) {
@@ -901,6 +916,20 @@ export class EnglishG2P implements LanguageProcessor {
           }
         }
         return magicPron + 'ɝ';
+      }
+      // No magic-e stem. Try the base with a doubled final consonant
+      // singled (better←bet, controller←control), then a bare base the
+      // general syllabifier mispredicts in isolation on its own (grosser←
+      // gross: ˈɡɹɑs not ˈɡɹoʊs in isolation), before falling through to
+      // whole-word resyllabification. skipMorphology=true per the
+      // chas→cha+s precedent above: a fragment must not be re-decomposed.
+      if (doubledBase && base.length >= 4) {
+        const undoubled = this.wellKnown(base.slice(0, -1), undefined, true);
+        if (undoubled) return undoubled + 'ɝ';
+      // -ther is one morpheme (brother, bother, leather), not broth + -er.
+      } else if (base.length >= 5 && !base.endsWith("th")) {
+        const directPron = this.wellKnown(base, undefined, true);
+        if (directPron) return directPron + 'ɝ';
       }
     }
 
