@@ -797,39 +797,69 @@ export function assignStress(syllables: string[], word: string): number {
     )
       return 1;
 
-    // -ive (active, negative, cumulative, alternative, reproductive...)
-    // spells its final syllable with a silent e, and the maximal-onset
-    // syllabifier still gives that e its own slot ("ac·ti·ve", not
-    // "ac·tive"), so the word is one syllable shorter than the array below
-    // says: negative's real stress is on "neg", the first of its three
-    // syllables (neg-a-tive), but the raw array has four slots
-    // (ne·ga·ti·ve) and both the gram lookup and the penult/antepenult
-    // test undercount by one for the whole family. Fold the trailing
-    // "Ci"+"ve" pair back into the syllable it actually is — the same
-    // silent-e-slot adjustment `secondaryStressIndices` already makes —
-    // before applying the fallback rules below; every earlier return in
-    // this function (compounds, the a-/assimilated-prefix magic-e case
-    // just above, the unstressed-prefix loop) already lands on the right
-    // slot on its own and is unaffected; this only touches words that
-    // reach the gram/heaviness fallback. Measured over the whole rules-only
-    // dict dump (`yarn rule-diff compare`): strict +21/-2, lenient +31/-4,
-    // top-5000 +2/-1 — the two strict losses are a "non+motive" compound
-    // (automotive, which keeps "motive"'s own stress) and a knock-on vowel-
-    // reduction mismatch on an unrelated secondary syllable (distributive),
-    // not a stress-position regression. The guard requires a plain
-    // consonant+i syllable (ti/si/ci/xi...), not a digraph nucleus like
-    // -cei- (conceive, perceive): that "ei" already makes the raw syllable
-    // heavy on its own and self-stresses correctly through the ordinary
-    // heaviness test below, so folding it in here would instead test the
-    // heaviness of the WRONG (earlier) syllable and break it.
-    const ivePattern =
-      lowerWord.endsWith("ive") &&
+    // A word-final syllable that is nothing but a silent-e coda (te, se,
+    // ve, de, ge, ce, ne...) is not a real syllable for stress-counting
+    // purposes — the same fact `secondaryStressIndices` already relies on
+    // via this same SILENT_E_SLOT test. The maximal-onset syllabifier still
+    // gives that e its own slot ("fa·vo·ri·te", not "fa·vo·rite"), so a
+    // whole family of 4-slot words is one syllable shorter than the array
+    // below says: favorite's real stress is on "fa", the first of its
+    // three syllables (fa-vo-rite), but the raw array has four slots and
+    // both the gram lookup and the penult/antepenult test undercount by
+    // one. This generalizes what was previously a narrower fold limited to
+    // -ive (active, negative, cumulative...): every trailing silent-e slot
+    // gets the same treatment (favorite, heritage, medicine, episode,
+    // enterprise, hurricane, magazine, merchandise, valentine, coverage,
+    // average, absolute, attribute). Fold the trailing pair back into the
+    // syllable it actually is before applying the fallback rules below;
+    // every earlier return in this function (compounds, the a-/assimilated-
+    // prefix magic-e case just above, the unstressed-prefix loop) already
+    // lands on the right slot on its own and is unaffected; this only
+    // touches words that reach the gram/heaviness fallback. Restricted to
+    // an original 4+ slots: at 3 slots this would collapse the word to two
+    // real syllables, where a final-stressed French/Greek loan (parade,
+    // machine, cascade, epitome, anemone) is a genuinely different,
+    // pronounced-final-e population, not a silent one. Measured over the
+    // whole rules-only dict dump (`yarn rule-diff compare`): strict
+    // +130/-43, lenient +237/-76, top-5000 +1/-0. Most of the strict losses
+    // are a single interaction: the -ed/-ing morphology handler probes a
+    // fabricated "base+e" string (uncollect+e, mismanage+e) through the
+    // rule path to test for a magic-e stem, and this fold changes that
+    // fabricated word's stress the same way it changes a real one
+    // (uncollected, mismanaged, unperturbed) — a pre-existing quirk of
+    // that probe surfacing on a non-word, not a stress-position rule
+    // this family owns. None of it reaches the top-5000 list. The -ive
+    // subset alone was already +21/-2 strict; its two known losses carry
+    // over unchanged (a "non+motive" compound, and a knock-on vowel-
+    // reduction mismatch on an unrelated syllable in distributive, not a
+    // stress-position regression) via the same `.motive$` exclusion.
+    const silentEFold =
+      syllables.length >= 4 &&
+      SILENT_E_SLOT.test(syllables[syllables.length - 1]) &&
       // A compound on the free word "motive" keeps its stress there
       // (automotive, locomotive).
       !/.motive$/.test(lowerWord) &&
-      syllables[syllables.length - 1] === "ve" &&
-      /[^aeiouy]i$/.test(syllables[syllables.length - 2]);
-    const stressSyllables = ivePattern
+      // The syllabifier groups a genuine vowel-vowel hiatus into one slot
+      // (af·fi·lia·te, appro·pria·te, asso·cia·te — the same grouping
+      // geo·graphy relies on), so the slot right before the silent-e coda
+      // there is really TWO syllables (i + eɪt), not one light "Ce" pair.
+      // Folding it in on top of that undercounts by a second syllable and
+      // over-retracts the primary (affiliate loses its dict-correct
+      // əˈfɪɫiˌeɪt to ˈæfɪɫiˌeɪt). Excluding a hiatus antepenult leaves the
+      // true silent-e family (favorite, heritage, medicine) untouched,
+      // since a single-vowel slot like "ri" or "ta" isn't a hiatus.
+      !isHiatusSlot(syllables[syllables.length - 2]) &&
+      // A digraph nucleus right before the silent-e coda (believe,
+      // conceive, perceive — "ie"/"ei") is already heavy on its own and
+      // self-stresses correctly through the ordinary heaviness test below
+      // without folding: disbelieve and misconceive need the primary on
+      // "lieve"/"ceive" itself (the word-attaching prefix loop already
+      // routes a 4+-slot dis-/mis- stem here expecting that), which this
+      // fold — capped at penult/antepenult — can never produce. The old,
+      // narrower -ive-only fold never touched this population, because
+      // "believe"/"conceive" end in "eve", not "ive".
+      !DIGRAPH_RIME.test(syllables[syllables.length - 2]);
+    const stressSyllables = silentEFold
       ? [
           ...syllables.slice(0, -2),
           syllables[syllables.length - 2] + syllables[syllables.length - 1],
@@ -863,7 +893,7 @@ export function assignStress(syllables: string[], word: string): number {
     // penult : 1 antepenult (effusive) in the dict, and folding this in on
     // top of the plain collapse fix recovers 10 more strict wins with 0
     // added losses on the full rules-only dump.
-    const sivePenult = ivePattern && /(?:sive|cive|xive)$/.test(lowerWord);
+    const sivePenult = silentEFold && /(?:sive|cive|xive)$/.test(lowerWord);
     if (isSyllableHeavy(penult) || sivePenult) {
       return stressSyllables.length - 2; // Stress the penult if heavy
     } else {

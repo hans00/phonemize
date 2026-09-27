@@ -31,3 +31,6 @@ around AH0 R AW1 N D
 runaround R AH1 N AX0 R AW2 N D
 wind W IH1 N D # Default noun reading; the homograph table handles verb context.
 etcetera EH2 T S EH1 T ER0 AH0
+videotape V IH2 D IY0 OW0 T EY1 P
+videotaped V IH2 D IY0 OW0 T EY1 P T
+travelodge T R AE2 V AH0 L AA1 JH
