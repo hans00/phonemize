@@ -776,9 +776,26 @@ export function assignStress(syllables: string[], word: string): number {
   )
     return syllables.length - 2;
 
-  // Greek -graphy/-nomy/-sophy/-scopy/-pathy/-gamy/-cracy likewise
-  // (photography, economy, philosophy, democracy): the ending is one slot.
-  if (/(?:graph|nom|soph|scop|path|gam|crac)y$/.test(lowerWord) && syllables.length >= 3)
+  // Greek -graphy/-nomy/-sophy/-scopy/-pathy/-gamy/-cracy/-tomy/-emy/-etry
+  // likewise (photography, economy, philosophy, democracy, anatomy,
+  // academy, telemetry): the ending is one slot. -tomy/-emy/-etry share
+  // -nomy's frame but aren't a "nom" substring, so they need their own
+  // entries; a bare "tom"/"em"/"etr" can't false-match anything outside the
+  // literal "...tomy"/"...emy"/"...etry" dict words (custom, atom, bottom,
+  // system, sentry don't end in those strings). Dict ratio over the words
+  // that reach this 3+-slot branch: -tomy 12 antepenult : 1 elsewhere
+  // (lobotomy, whose three full unreduced vowels are unreachable by rules
+  // regardless of which syllable takes the mark); -emy/-etry 7 : 1
+  // (cabinetry elides its "i" entirely — kæbnətɹi, not kæbɪnətɹi — so the
+  // orthographic slot this rule targets doesn't line up with a real
+  // nucleus there). Most of the wider -tomy/-emy/-etry population
+  // (vasectomy, mastectomy, alchemy, poetry, basketry…) is 2 slots or
+  // already lands on the right syllable through the closed-syllable
+  // heaviness fallback and is unaffected either way. rule-diff over the
+  // whole dict, -tomy and -emy/-etry together: strict 4 wins (anatomy,
+  // academy, archenemy, spectrometry) : 0 losses, lenient 6 : 1, top-5000
+  // 1 (academy) : 0.
+  if (/(?:graph|nom|soph|scop|path|gam|crac|tom|em|etr)y$/.test(lowerWord) && syllables.length >= 3)
     return syllables.length - 2;
 
   // Greek/Latin scientific suffixes with fixed stress: uranium, samarium,
@@ -872,6 +889,15 @@ export function assignStress(syllables: string[], word: string): number {
   // same override would trade a real win for a real loss instead of only
   // fixing one.
   if (syllables.length === 3 && /[^aeiouy]ary$/.test(lowerWord)) return 0;
+
+  // A 3-syllable Greek -crat word is word-initial (democrat, autocrat,
+  // bureaucrat, eurocrat, kleptocrat, plutocrat, technocrat: 7/7 in the
+  // dict), unlike its own -cracy derivative above, which is stressed right
+  // before the suffix instead. Checked ahead of the prefix loop below,
+  // whose "de" entry would otherwise take democrat as de- + -mocrat and
+  // stress the root; aristocrat is a-+ristocrat at 4 syllables and is
+  // already correct without this, so it is left out by the length check.
+  if (syllables.length === 3 && lowerWord.endsWith("crat")) return 0;
 
   // Common prefixes that don't usually take stress. For 3+ syllable
   // words we use the orthographic prefix as a signal but rely on the
