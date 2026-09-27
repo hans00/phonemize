@@ -7,7 +7,133 @@ interface DictEntry {
   [word: string]: string;
 }
 
-function parseDict(content: string): DictEntry {
+// ---- Careful-vs-casual variant selection ----------------------------------
+//
+// ipa-dict/en_US.txt lists more than one pronunciation for 8,419 of its
+// 125,927 entries, and variants[0] (the pick used everywhere below until
+// this change) is frequently the CASUAL-SPEECH form: next ˈnɛks (not
+// ˈnɛkst), accounted əˈkaʊnəd (not əˈkaʊntɪd). dict.json is both the
+// runtime lexicon source and the reference evaluate.ts/evaluate-parity.ts/
+// evaluate-common-accuracy.ts score against, so shipping the casual form
+// teaches — and grades — a less standard pronunciation than a dictionary
+// should.
+//
+// Measured over every multi-variant word (2026-09-28): 7,909 of the 8,419
+// have exactly 2 unique variants (357 have 3, 153 have 4 — left on
+// variants[0], the previous behaviour, since a clean two-way comparison
+// doesn't generalise to them without guessing which pair to diff). Of the
+// 7,909, 3,852 differ only by stress-mark position or a same-length vowel
+// swap — a lexical axis (stress, vowel quality, or a heteronym's separate
+// sense), never a register one, so those stay on variants[0] too: nothing
+// below fires unless the two variants differ in segment COUNT.
+//
+// For the other 4,057, a Levenshtein edit script between the longer and
+// shorter variant (both stress-stripped) is taken as a candidate casual
+// deletion only when every inserted/deleted edit classifies as one of four
+// documented English casual-speech processes — word-final t/d cluster
+// simplification (acts ˈækts → ˈæks), t or d lost from /nt(d)/ (center
+// ˈsɛntɝ → ˈsɛnɝ, playground -ɡɹaʊnd → -ɡɹaʊn), a reduced /ə/ syllable lost
+// before a sonorant (battling ˈbætəɫɪŋ → ˈbætɫɪŋ), or a /j/ or /w/ glide
+// lost (revenue ˈɹɛvənˌju → ˈɹɛvəˌnu) — optionally paired with an adjacent
+// vowel reducing further to /ə/ as a direct consequence of the same
+// deletion (accounted əˈkaʊntɪd → əˈkaʊnəd: dropping /t/ leaves the
+// following /ɪ/ nothing to anchor against). Anything else (a genuinely
+// different vowel, an unrelated cluster change) is left unclassified and
+// the word stays on variants[0], unchanged from before this pass.
+// That resolves 1,241 of the 4,057 as a recognised casual/careful pair;
+// 451 of those actually differ from the old variants[0] pick. Checked
+// against pinned CMUdict (scripts/.common-accuracy-cache/cmudict.dict) as
+// a tie-breaker, as a secondary measurement only: 0 of the 451 make the
+// pick worse (CMUdict very often lists both forms itself, e.g. "center"
+// and "center(2)" — ties), 8 make it strictly better (proper nouns/brand
+// names where CMUdict has only the fuller reading: debussy, cusip, uclaf),
+// and the rest tie. CMUdict agreement added nothing the structural rule
+// didn't already get right on its own, so it's not consulted at pick time
+// — only used here to confirm the structural rule.
+//
+// Heteronyms are excluded from this override entirely: a homograph's two
+// ipa-dict variants can encode a noun/verb SENSE split (e.g. a stress
+// shift), not a register one, and picking by segment count must not be
+// allowed to decide which sense ships as the citation form. build-dict's
+// own homograph sources (upstream + custom + misaki) are checked, not a
+// hand-written word list.
+const VOWELS = new Set("aeiouɑæɛɪɔʊʌəɝ".split(""));
+
+function stripStress(ipa: string): string {
+  return ipa.replace(/[ˈˌ]/g, "");
+}
+
+type CasualCat = "final-td" | "nt-drop" | "reduced-vowel" | "glide" | null;
+
+// Classify one deleted character (present in the longer variant L, absent
+// from the shorter one) by its context in L.
+function classifyDeletion(L: string, idx: number): CasualCat {
+  const ch = L[idx];
+  const prev = idx > 0 ? L[idx - 1] : "";
+  if ((ch === "t" || ch === "d") && prev === "n") return "nt-drop";
+  if ((ch === "t" || ch === "d") && prev && !VOWELS.has(prev)) {
+    // A word-final consonant cluster: everything from the deleted char to
+    // the end of L (its own position included) is non-vocalic, so the
+    // deletion sits inside a coda cluster rather than before a vowel
+    // (which "nt-drop" above already covers on its own terms).
+    let restIsConsonantal = true;
+    for (let k = idx + 1; k < L.length; k++) {
+      if (VOWELS.has(L[k])) { restIsConsonantal = false; break; }
+    }
+    if (restIsConsonantal) return "final-td";
+  }
+  if (ch === "ə") return "reduced-vowel";
+  if (ch === "j" || ch === "w") return "glide";
+  return null;
+}
+
+// Minimal-edit alignment between the longer variant L and the shorter S
+// (both already stress-stripped). Returns the classified deletions, or
+// null if the pair isn't a clean "L minus some deletions (plus an
+// optional adjacent ə-reduction) equals S" relation.
+function classifyCasualPair(L: string, S: string): boolean {
+  const n = L.length, m = S.length;
+  const dp: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = 0; i <= n; i++) dp[i][0] = i;
+  for (let j = 0; j <= m; j++) dp[0][j] = j;
+  for (let i = 1; i <= n; i++)
+    for (let j = 1; j <= m; j++)
+      dp[i][j] = L[i - 1] === S[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+
+  const dels: number[] = [];
+  const subs: { li: number; a: string; b: string }[] = [];
+  let i = n, j = m;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && L[i - 1] === S[j - 1] && dp[i][j] === dp[i - 1][j - 1]) { i--; j--; }
+    else if (i > 0 && j > 0 && dp[i][j] === dp[i - 1][j - 1] + 1) { subs.push({ li: i - 1, a: L[i - 1], b: S[j - 1] }); i--; j--; }
+    else if (i > 0 && dp[i][j] === dp[i - 1][j] + 1) { dels.push(i - 1); i--; }
+    else return false; // S has a segment L lacks -- not a pure "L minus deletions" relation
+  }
+  if (dels.length === 0) return false;
+  if (dels.some((idx) => classifyDeletion(L, idx) === null)) return false;
+  // A substitution is only allowed as the vowel-reduction half of an
+  // adjacent accepted deletion, never a free-standing vowel swap.
+  return subs.every((s) => s.b === "ə" && VOWELS.has(s.a) && dels.some((d) => Math.abs(d - s.li) <= 1));
+}
+
+function pickCarefulVariant(first: string, second: string): string {
+  const a = stripStress(first), b = stripStress(second);
+  if (a.length === b.length) return first; // stress/vowel-quality only, not this rule's call
+  const [L, S, longerIsFirst] = a.length > b.length ? [a, b, true] : [b, a, false];
+  return classifyCasualPair(L, S) ? (longerIsFirst ? first : second) : first;
+}
+
+// Dedupe a candidate pool and apply the careful-form pick only when it
+// narrows to exactly two distinct readings and the word isn't a heteronym.
+function selectVariant(pool: string[], isHeteronym: boolean): string {
+  const unique = [...new Set(pool)];
+  if (unique.length === 2 && !isHeteronym) return pickCarefulVariant(unique[0], unique[1]);
+  return unique[0];
+}
+
+function parseDict(content: string, heteronymWords: Set<string>): DictEntry {
   const lines = content.split("\n");
 
   const dict: DictEntry = {};
@@ -32,9 +158,10 @@ function parseDict(content: string): DictEntry {
     // variant — choosing ɔ universally would mispronounce them.
     const lowerWord = word.toLowerCase();
     const isThoughtSpelling = /augh|ough|aw|au[a-z]|alk|alm|all|alt/.test(lowerWord);
-    const ipa = isThoughtSpelling
-      ? (variants.find(v => v.includes("ɔ")) ?? variants[0])
-      : variants[0];
+    const pool = isThoughtSpelling && variants.some(v => v.includes("ɔ"))
+      ? variants.filter(v => v.includes("ɔ"))
+      : variants;
+    const ipa = selectVariant(pool, heteronymWords.has(lowerWord));
     dict[lowerWord] = ipa;
   }
 
@@ -193,12 +320,30 @@ async function main(): Promise<void> {
     fs.mkdirSync(enDir, { recursive: true });
   }
 
+  // Fetched once, up front, so the heteronym set (used by parseDict's
+  // careful-form picker, above) is ready before dict.json is built; the
+  // homograph-building block below reuses this same text instead of
+  // fetching it again.
+  const homographRes = await fetch(
+    "https://raw.githubusercontent.com/Kyubyong/g2p/master/g2p_en/homographs.en",
+  );
+  const homographText = homographRes.ok ? await homographRes.text() : "";
+  const customHomographsPath = new URL("../src-data/en/homographs-custom.txt", import.meta.url)
+    .pathname;
+  const misakiHomographsPath = new URL("../src-data/en/homographs-misaki.txt", import.meta.url)
+    .pathname;
+  const heteronymWords = new Set([
+    ...Object.keys(parseHomographs(homographText)),
+    ...Object.keys(parseHomographs(fs.readFileSync(customHomographsPath, "utf-8"))),
+    ...Object.keys(parseHomographs(fs.readFileSync(misakiHomographsPath, "utf-8"))),
+  ]);
+
   {
     // Parse Dictionary
     const res = await fetch(
       "https://raw.githubusercontent.com/open-dict-data/ipa-dict/refs/heads/master/data/en_US.txt",
     );
-    const dict = parseDict(await res.text());
+    const dict = parseDict(await res.text(), heteronymWords);
     console.log(`Loaded ${Object.keys(dict).length} entries from Dictionary`);
 
     // Load custom dictionary
@@ -232,19 +377,14 @@ async function main(): Promise<void> {
   }
 
   {
-    // Load and parse homographs
-    const res = await fetch(
-      "https://raw.githubusercontent.com/Kyubyong/g2p/master/g2p_en/homographs.en",
-    );
+    // Parse homographs (already fetched above, for heteronymWords)
     let homographDict: HomographDict = {};
-    if (res.ok) {
-      console.log(`Parsing homographs from: ${res.url}`);
-      homographDict = parseHomographs(await res.text());
+    if (homographRes.ok) {
+      console.log(`Parsing homographs from: ${homographRes.url}`);
+      homographDict = parseHomographs(homographText);
     }
 
     // Load custom homographs
-    const customHomographsPath = new URL("../src-data/en/homographs-custom.txt", import.meta.url)
-      .pathname;
     const customHomographs = parseHomographs(fs.readFileSync(customHomographsPath, "utf-8"));
     console.log(
       `Loaded ${Object.keys(customHomographs).length} entries from custom homographs`,
@@ -252,8 +392,6 @@ async function main(): Promise<void> {
 
     // misaki's POS-split readings fill words the upstream table lacks
     // (see scripts/import-misaki-homographs.ts).
-    const misakiHomographsPath = new URL("../src-data/en/homographs-misaki.txt", import.meta.url)
-      .pathname;
     const misakiHomographs = parseHomographs(fs.readFileSync(misakiHomographsPath, "utf-8"));
     console.log(`Loaded ${Object.keys(misakiHomographs).length} entries from misaki homographs`);
 
