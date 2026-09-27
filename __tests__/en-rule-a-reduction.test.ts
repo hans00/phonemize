@@ -37,7 +37,7 @@ describe("a word-initial unstressed closed <e> keeps /ɛ/", () => {
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 
   it("keeps /ɛ/ under a doubled coda too", () => {
-    expect(rules("temperature")).toMatch(/^tɛm/);
+    expect(rules("centennial")).toMatch(/^sɛn/);
   });
 
   it("leaves the ex- prefix raised, where the lexicon has no majority", () => {

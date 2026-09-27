@@ -621,7 +621,14 @@ function addSecondary(ipa: string, suffixRe: RegExp): string {
 
 // Full (unreduced) nuclei that attract a secondary mark when they sit
 // ≥1 syllable after the primary: ˈækɹɪˌmoʊni, ˈæɫbəˌkɔɹ. Word-final
-// open syllables stay unmarked (ˈæɹoʊ).
+// open syllables stay unmarked (ˈæɹoʊ). /ʌ/ (STRUT) is deliberately left
+// out: unlike the other listed nuclei, the rule engine also emits a bare,
+// genuinely unstressed /ʌ/ in a closed word-final syllable (humerus,
+// uterus, gotterdammerung's -ung) that `normalizeStrut` then demotes to
+// /ə/ specifically because it carries no adjacent mark — adding /ʌ/ here
+// marks those too and blocks that demotion, a net loss measured over the
+// whole dict (5 rule-diff strict losses, 0 wins) that swamps the 3 -ture
+// words (agriculture, acupuncture, horticulture) it would otherwise fix.
 const FULL_NUCLEI = ["eɪ", "aɪ", "oʊ", "aʊ", "ɔɪ", "ɑ", "æ", "ɔ", "ɛ", "u"];
 // Two-consonant onsets a secondary mark may attach before (legal
 // English onsets; superset of ONSET_CLUSTERS — s-clusters are fine to

@@ -513,7 +513,28 @@ export function secondaryStressIndices(
   let last = syllables.length - 1;
   if (last > 0 && SILENT_E_SLOT.test(syllables[last])) last--;
   const after = primary + 2;
-  if (after <= last && (after < last || FINAL_BEAT_RIME.test(syllables[after])))
+  // A syllable exactly two after the primary, immediately before a
+  // word-final -ture/-ure tail (temperature, literature, caricature,
+  // musculature, tabulature), is a genuine reduced medial rather than a
+  // rhythmic secondary when it is open with a single-consonant onset: the
+  // dict never marks it there, 5:0 over the words that reach this slot.
+  // The same position with a complex onset (legislature, nomenclature) or
+  // a closed syllable (architecture, agriculture, acupuncture,
+  // bonaventure, horticulture, superstructure) keeps the secondary and its
+  // full vowel, 10:0 (the lone exception, telepicture, is a double-primary
+  // compound that isLikelyCompound already routes to primary 0 above and
+  // never reaches assignStress's -ture branch this pairs with).
+  const lastSyl = syllables[syllables.length - 1];
+  const tureMedial =
+    after + 1 === syllables.length - 1 &&
+    (lastSyl === "ture" || lastSyl === "ure") &&
+    isOpen(after) &&
+    !/^[^aeiouy]{2}/.test(syllables[after] ?? "");
+  if (
+    after <= last &&
+    (after < last || FINAL_BEAT_RIME.test(syllables[after])) &&
+    !tureMedial
+  )
     out.add(after);
   return out;
 }
@@ -976,6 +997,37 @@ export function assignStress(syllables: string[], word: string): number {
       return 0; // First syllable gets primary stress in compounds
     }
 
+    // A word-final -ture/-ure syllable is the reduced /tʃɝ/ or /jɝ/ tail
+    // (PHONEME_RULES' ^ture$/^ure$ entries), never a real nucleus of its
+    // own, so at exactly 4 syllables the primary stays on the root's first
+    // syllable rather than falling to the heaviness fallback below
+    // (literature, temperature, architecture): 16 initial : 6 elsewhere
+    // in the dict at this length. This runs after the compound
+    // check and the unstressedPrefixes loop above, so the 6 losses — real
+    // prefix+word or compound formations whose stem keeps its own stress
+    // (manufacture, misadventure, divestiture, investiture, expenditure) —
+    // are already routed to the right answer before reaching here and stay
+    // untouched; the loop's own "in-" entry also still (mis)handles
+    // infrastructure exactly as before this rule existed.
+    // Excludes a closed, single-consonant-onset <u> syllable right before
+    // the tail (agriculture, acupuncture, horticulture): PHONEME_RULES
+    // reads that <u> as /ʌ/ (^u → ʌ), and /ʌ/ is deliberately left out of
+    // FULL_NUCLEI in postlex.ts (see the comment there), so the syllable
+    // this rule vacates never receives the secondary mark that would
+    // protect it from reduction to /ə/ once it stops being the primary —
+    // and, ipa-dict itself writing STRUT as /ə/, a stress-stripped-exact
+    // rule output then evicts the word from the exception table and ships
+    // the now-/ə/ reading (measured: agriculture regresses top-5000
+    // segment accuracy against CMUdict). Left on the old (mis-stressed but
+    // vowel-correct) fallback until FULL_NUCLEI carries /ʌ/ for this
+    // position specifically.
+    if (
+      syllables.length === 4 &&
+      (syllables[3] === "ture" || syllables[3] === "ure") &&
+      !/^[^aeiouy]*u[^aeiouy]+$/.test(syllables[2])
+    )
+      return 0;
+
     // The weak a- prefix again, over a magic-e root. The orthographic
     // syllabifier splits the silent e off as its own syllable (a|lo|ne,
     // a|ma|ze, as|su|me, ap|pro|ve), so the two-syllable branch never sees
@@ -1424,7 +1476,7 @@ export function syllableToIPA(
     syllableIndex === 0 && isNextLastSyllable && isStressed &&
     !!nextSyllable && A_TENSE_ENDINGS.test(nextSyllable);
   const nextIsMagicE =
-    (isStressed || isNextLastSyllable) &&
+    isNextLastSyllable &&
     !!nextSyllable?.match(/^[^aeiou]e$/);
   // Trisyllabic laxing. A stressed open o/y keeps its tense vowel in the
   // penult (motion, hero, cycle) but goes lax two or more syllables from
