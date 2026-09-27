@@ -159,8 +159,31 @@ const POST_LEX_RULES: PostLexRule[] = [
     when: (w) => (w.length >= 7 && w.endsWith("tice")) || (w.length >= 7 && w.endsWith("vice")),
     re: /aɪs$/, sub: "ɪs",
   },
-  // -ange → /eɪndʒ/ (change/range/strange/exchange); guard -lange (flange/phalange stay /æ/)
-  { when: (w) => w.endsWith("ange") && !w.endsWith("lange"), re: /ændʒ$/, sub: "eɪndʒ" },
+  // -ange(r|s|rous)? → /eɪndʒ/: change/range/strange/exchange,
+  // danger/stranger/ranger/granger/dangerous, changes/exchanges. Rule-diff
+  // over the whole dict (this extension alone, beyond the pre-existing
+  // bare -ange case): strict 13:0, lenient 13:0, zero losses. Guard
+  // -lange (flange/phalange, and now their -es/-r forms:
+  // flanges/langer): an "l" onset right before "ange" never tenses, the
+  // same class the bare-word rule already carved out. "anger" itself
+  // (ˈæŋɡɝ — hard ŋɡ, not soft ndʒ, and lax, not tense) has no
+  // orthographic split from "danger" once a real onset consonant IS
+  // present, so it is NOT special-cased here: excluding it by name would
+  // be a whole-word exception, and it costs nothing to leave in — it is
+  // already strict- and lenient-wrong on the untouched consonant, in
+  // both dict.json and rule-diff's own canon (which folds æ/eɪ), so
+  // tensing its vowel moves neither score. Table hit at runtime.
+  {
+    when: (w) =>
+      /ange(?:rous|rs|r|s)?$/.test(w) &&
+      !/lange(?:rous|rs|r|s)?$/.test(w),
+    // The lookahead has to cover this rule's position in the pipeline,
+    // BEFORE the later whole-word passes that coalesce ɪɹ→ɝ (dangerous:
+    // "dan"·"ge"·"rous" splits the r onto the "rous" syllable, so the
+    // "e"/"r" here are still two raw phonemes, ɪɹ not ɝ) and voice a
+    // plural s→z (changes/exchanges/flanges): əs, not yet əz.
+    re: /ændʒ(?=ɝ|ɪɹ|$)/, sub: "eɪndʒ",
+  },
   // -erous/-arous/-orous/-urous: unstressed -er- is /ɝ/ (generous/cancerous/boisterous)
   { when: (w) => /(?:erous|arous|orous|urous)$/.test(w), re: /ɪɹəs$/, sub: "ɝəs" },
   // -ious/-eous: unstressed -i- before vowel cluster is /i/ not /ɪ/ (serious/obvious/furious)

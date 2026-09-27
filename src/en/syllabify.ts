@@ -1569,6 +1569,41 @@ export function syllableToIPA(
   // Doubled-gg: either cross-syllable split (bigger/trigger) or within one syllable (baggy/foggy) → hard g
   const gFromDoubling =
     (prevSyllable?.endsWith("g") ?? false) || /gg[eiy]/i.test(syllable);
+  // A syllable "get" is hard /ɡ/ unless the preceding syllable ends in
+  // "d" (get, forget, target, beget, retarget vs budget/gadget/midget/
+  // fidget/nugget — nugget's hard g already comes from gFromDoubling
+  // above, its "get" syllable following a "g", not a "d"): over the whole
+  // dict, non-dget "-get"-final words are 14 hard : 5 not (bourget,
+  // paget, piaget, puget, roget — all French, and not uniformly soft
+  // either: bourget/piaget/roget are /ʒ/, which this rule can't produce
+  // regardless, so only paget/puget are genuine new losses). Rule-diff
+  // over the whole dict: strict 6:1, lenient 9:4. Excluded: a following
+  // silent-e syllable ("te", split off on its own by the syllabifier's
+  // magic-e handling — suffragette/georgette/bridgette/pagette), the
+  // French -ette suffix, which is majority soft (dʒ/ʒ), the opposite of
+  // plain -get. Accepted as measured losses, not fixed: "puget"/"paget",
+  // which the spelling can't tell apart from the native-English majority
+  // (target/marget/winget…), and "vegetable"/"vegetal", where the
+  // -able/-al morphology handler's stem-recovery fallback fabricates and
+  // rule-predicts the non-word "veget" in isolation (Latin "veget-", not
+  // a real "-get" word) — the same fabricated-stem risk noted elsewhere
+  // in this file for the -ed/-ing silent-e probe, here with no gate
+  // available since -able's fallback has none to begin with.
+  // INTEGRATOR NARROWING (2026-09-28, merging worktree agent-a6fded6dd32a8d17a):
+  // restricted to a NON-initial "get" syllable (prevSyllable defined), i.e.
+  // forget/target/beget/retarget/the surnames, not the bare monosyllable
+  // "get" itself. The bare word was already rule-exact-adjacent via the
+  // dict/exceptions table, and letting the rule alone claim it evicted
+  // "get" from exceptions.json (build-dict's rule-exact eviction), which
+  // broke `inflect()`'s doubled-consonant undo in g2p.ts for "getting"
+  // (undoubles to "get", looks it up with `wellKnown(undoubled, ...)`,
+  // which stopped finding a table entry and had no rule-prediction
+  // fallback for a bare monosyllabic stem) — a table hit at runtime either
+  // way, so nothing shipped changes; this only protects the rules-only
+  // metrics. See AGENTS.md's rule-exact-eviction trap.
+  const gFromGetSuffix =
+    syllable === "get" && prevSyllable !== undefined && nextSyllable !== "te" &&
+    !(prevSyllable?.endsWith("d") ?? false);
   // Apply phoneme rules
   while (remaining.length > 0) {
     if (
@@ -1971,7 +2006,7 @@ export function syllableToIPA(
       !ineReduces;
     const skip = new Set<string>();
     if (!hadDoubledL) skip.add("^al$");
-    if (gFromDoubling) skip.add("^g(?=[eiy])");
+    if (gFromDoubling || gFromGetSuffix) skip.add("^g(?=[eiy])");
     if (!hasVowelBeforeTerminalY) skip.add("^y$");
     if (!isLastSyllable && !isStressed && !nextIsMagicE) skip.add("^o$");
     if (triLax) skip.add("^o$");
