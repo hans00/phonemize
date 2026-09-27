@@ -1327,6 +1327,20 @@ const A_TENSE_ENDINGS = /^(?:[^aeiouyr](?:ey|iers?|er(?:y|ies)|ies)|s[ktp]e)$/;
 const FRENCH_INE_GRAM =
   /(?:cine|chine|sine|zine|rmine|rtine|stine)$|[aeiouy](?:rine|tine)$/;
 
+// A word-initial th + vowel syllable that closes in a real consonant
+// CLUSTER (2+ letters — digraphs ck/tch/mb/mp/nk/ng/ft/rd/rm/rn/rp/rt all
+// count) is voiceless even in a monosyllable or before a magic e: theft,
+// third, thumb, thatch, thank, thong (measured over word-initial
+// monosyllabic/magic-e th+vowel content words with a 2+-letter coda: 0
+// exceptions found — no dict word of this shape voices). "gh" is excluded
+// — it's silent here (though), not a real coda. A single-letter coda (or
+// none) is where the closed-class function words live (this/that/than/
+// thus/the/they/…), and stays on the existing monosyllable-voices default:
+// no orthographic feature separates them from a single-coda content word
+// (this/thin, than/thug, these/theme are identical in shape and opposite
+// in voicing) — measured, and left as the existing heuristic's residual.
+const THETA_CLUSTER_CODA = /^th[aeiou][aeiouy]?[bcdfghjklmnpqrstvwxz]{2,}$/;
+
 // Enhanced syllable to IPA conversion with stress-sensitive vowel reduction
 // Suffixes that only spell a suffix at the end of the word
 // (legionnaire/album/algebra keep the plain letter values) and ones that
@@ -1806,6 +1820,24 @@ export function syllableToIPA(
       emit("the", "ð", "phoneme:the-final");
       break;
     }
+    // worth+y → /wɝði/, not the default voiceless th (worthy, unworthy,
+    // trustworthy, noteworthy, seaworthy, creditworthy, and the surnames
+    // sharing the shape: galsworthy, goldsworthy, kenworthy, langworthy).
+    // Maximal-onset syllabification pulls a preceding consonant into this
+    // syllable in a compound (news+worthy → "sworthy", trust+worthy →
+    // "tworthy") or leaves the w behind (note+worthy → "tew"+"orthy"), so
+    // the test is endsWith, not ===. Measured over word-final -Xthy
+    // syllables in the dict by the 3 letters before "thy": -orthy is 19
+    // voiced : 1 (dorthy, a name); every other vowel context is voiceless
+    // (apathy/sympathy/telepathy, healthy/wealthy/stealthy, earthy/
+    // mccarthy, cathy/kathy/timothy/dorothy), so this stays scoped to the
+    // one clean shape rather than any word ending "-thy" (swarthy, the
+    // -arthy minority, is left open).
+    if (remaining === "thy" && syllable.endsWith("orthy")) {
+      emit("th", "ð", "phoneme:worthy-th");
+      remaining = remaining.substring(2);
+      continue;
+    }
     // An open "ea" syllable is lax before these orthographic tails
     // (dict ɛ:i) — -ther feather/leather/weather 49:8, -san
     // pleasant/peasant 12:2, -lou jealous/zealous 9:0, -su measure/
@@ -2092,6 +2124,16 @@ export function syllableToIPA(
       skip.add("^ar");
       skip.add("^[eiu]r");
     }
+    // See THETA_CLUSTER_CODA above: extends the voiceless default to
+    // word-initial monosyllables/magic-e forms whose coda is a real
+    // cluster, which the two checks above don't reach (they only force
+    // voiceless at syllableIndex > 0).
+    if (
+      syllableIndex === 0 &&
+      THETA_CLUSTER_CODA.test(remaining) &&
+      !/gh$/.test(remaining)
+    )
+      skip.add("^th(?=[aeiou])");
 
     let matchFound = false;
     for (const [pattern, ruleIpa] of PHONEME_RULES) {

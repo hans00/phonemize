@@ -78,7 +78,6 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/(?<=[eaoɔ]ɪ)æ$/, "ə"],
   [/zjʊɹ$/, "ʒɝ"], // -zure: seizure/azure → ʒɝ
   [/nð$/, "nθ"], // word-final -nth: absinthe/labyrinth → nθ
-  [/([lɹ])ð/g, "$1θ"], // -lth-/-rth- cluster: altherr/waltham/carthage → lθ/ɹθ
 ];
 
 // --- Guarded orthography/etymology corrections ---
@@ -201,6 +200,26 @@ const POST_LEX_RULES: PostLexRule[] = [
   {
     when: (w) => /(?:thet|theis|thesis|thesia|thentic|theon)/.test(w),
     re: /ð/g, sub: "θ",
+  },
+  // -lth-/-rth- cluster devoices by default (waltham, carthage, warthen,
+  // barthel, northeast — the syllable-level th+e rule that excludes r/w/y/t
+  // from forcing devoicing also lets these through voiced, and this is
+  // where they're corrected). Excluded: the closed set of real -ther
+  // suffix continuations, where that same r-exclusion is the whole point —
+  // farther/further/farthest/farthing/norther(ly)/northern/northey/werther/
+  // worthey stay voiced (measured over data/en/dict.json: 11 voiced : 2
+  // voiceless — furthest/walther — for [lr]th + er(s)/erly/ern/est(s)/
+  // ing(s)/e/ey; the two losses are a dict transcription inconsistency
+  // against further/farthest's own voiced -est, and a German surname that
+  // keeps the foreign reading, both accepted against the 9 real wins). Also
+  // excluded: a word-final -orthy (worthy and any compound ending in it —
+  // trustworthy, newsworthy, galsworthy — via the same 19:1 dict ratio the
+  // worthy-th rule above measures) reaching this rule specifically when
+  // maximal-onset syllabification leaves the r as its own /ɹ/ rather than
+  // merging into /ɝ/ (news+worthy → nuz-wɔɹði, not wɝði).
+  {
+    when: (w) => !/[lr]th(?:ers?|erly|ern|ests?|ings?|e|ey)$|orthy$/.test(w),
+    re: /([lɹ])ð/g, sub: "$1θ",
   },
   { when: (w) => /ach(?:en|er)$/.test(w), re: /tʃ([ɛəɪ])/, sub: "k$1" },
   {
