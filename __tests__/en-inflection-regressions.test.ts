@@ -80,3 +80,41 @@ describe("Silent-e probe gating (MAGIC_E_CANDIDATE)", () => {
     expect(g2p.predict(word)).toMatch(expected);
   });
 });
+
+describe.each([false, true])("-nge verb inflections (disableDict=%s)", (disableDict) => {
+  // inflect()'s closed-stem list ("ll|ss|ch|sh|ck|ng|lk") keeps a bare
+  // rule-derived stem for a base ending in one of those clusters, because
+  // adding a fictitious silent e usually changes the vowel wrongly
+  // (call+ed, reach+ing). "ng" is the one cluster where that default is
+  // sometimes wrong: change/range/hinge really did drop a silent e, and
+  // bring/sing/hang never had one, but the two shapes are orthographically
+  // identical (chang vs bring) and a vowel-tensing test can't tell them
+  // apart either (see the comment at that branch in g2p.ts). The one exact
+  // signal is the table's own -es plural: -nge is always spelled -nges
+  // (changes, ranges), never -ngs, so a stem's -es form being a dict entry
+  // is restored evidence a bare -ng plural can never produce by accident.
+  const g2p = new EnglishG2P({ disableDict });
+  const consonant = (word: string) => g2p.predict(word)?.match(/ndʒ|ŋ/)?.[0];
+
+  it.each([
+    "bringing", "singing", "longing", "hanging", "ringing", "belonging",
+    "clinging", "swinging", "stinging", "winged", "hanged",
+    // "banging" is deliberately excluded: "bange" (a rare surname) is a
+    // genuine exceptions.json entry, so inflect()'s dict-based silentE()
+    // step accepts it before this branch ever runs. That's a pre-existing
+    // table collision upstream of this rule, out of scope here.
+  ])("keeps the bare /ŋ/ coda in %s", (word) => {
+    expect(consonant(word)).toBe("ŋ");
+  });
+
+  it.each([
+    "changing", "changed", "ranging", "arranged", "exchanging",
+    "challenged", "plunged", "lunging",
+    // "hinged"/"cringing"/"binged" stay open: hing/cring/bing have no -es
+    // dict entry (unlike chang/rang/exchang), and unlike the -ang stems
+    // their vowel doesn't tense either way, so no signal distinguishes
+    // them from bring/cling/... — see the -es corroboration comment above.
+  ])("restores the silent e to /ndʒ/ in %s", (word) => {
+    expect(consonant(word)).toBe("ndʒ");
+  });
+});

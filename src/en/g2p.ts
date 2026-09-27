@@ -795,8 +795,31 @@ export class EnglishG2P implements LanguageProcessor {
       }
       // These final clusters already close the stem; adding a fictitious
       // silent e changes its vowel (called), or decomposition splits a
-      // consonant digraph (reaching). Keep the bare rule-derived stem.
+      // consonant digraph (reaching). Keep the bare rule-derived stem —
+      // except "ng", which is genuinely ambiguous: bring/sing/hang keep
+      // a bare stem, but change/range/hinge dropped a silent e, and the
+      // two shapes are orthographically identical (chang vs bring). No
+      // vowel or letter-count test separates them (measured: an -ang
+      // stem always tenses through the -ange postlex rule whether or not
+      // the word is real, so "hange"/"bange" tense exactly like "change"
+      // and a vowel-comparison test wrongly flips hang/bang/long/belong
+      // too). The one signal that is exact: -nge's plural is spelled
+      // -nges (changes, ranges), while a bare -ng plural never carries an
+      // e (brings, hangs) — so a stem is restored only when the table
+      // independently attests its -es form. Measured over every dict
+      // -ed/-ing word with an "ng" stem: 5/5 stems with an -es hit are
+      // genuine -nge words (chang→changes, exchang→exchanges,
+      // rang→ranges, prearrang→prearranges, spong→sponges), 0 false
+      // positives; the un-corroborated majority (27 stems, mostly other
+      // real -nge verbs whose own -es form was never a dict headword)
+      // falls through to the bare stem unchanged, same as before this
+      // rule existed. hinge/cringe/binge are in that unresolved set —
+      // open, see AGENTS.md.
       if (/[aeiou]/.test(base) && /(?:ll|ss|[cs]h|ck|ng|lk)$/.test(base)) {
+        if (/ng$/.test(base) && this.wellKnown(base + "es", undefined, true)) {
+          const eForm = this.predictInternal(base + "e", undefined, true);
+          if (eForm) return join(eForm);
+        }
         return join(this.predictInternal(base, undefined, true));
       }
       // Dict lookup failed for the stem because it is a regular word the
