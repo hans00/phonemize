@@ -852,6 +852,12 @@ export class EnglishG2P implements LanguageProcessor {
       if (/(?:ow|o)s$/.test(lowerWord)) {
         return sPlural(this.predictInternal(lowerWord.slice(0, -1), undefined, true));
       }
+      // A rule-exact -ate verb has left the table, so its -s form needs the
+      // rule-derived stem (communicates, aggregates: 8 : 0).
+      if (lowerWord.endsWith("ates") && lowerWord.length > 5) {
+        const p = this.predictInternal(stem, undefined, true);
+        if (p && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(p)) return sPlural(p);
+      }
     }
     if (/['''']s$/.test(lowerWord) && lowerWord.length > 3) {
       const basePron = this.wellKnown(lowerWord.slice(0, -2));
@@ -871,7 +877,11 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     // y-stem family: restore the -y the suffix replaced (tried → try,
-    // happiness → happy), look the stem up, attach the allomorph.
+    // happiness → happy), read the stem, attach the allomorph. The stem may
+    // be rule-derived, since a rule-exact base (dictionary) has left the
+    // table: 118 strict : 4 (dictionaries, mercenaries, tapestries). -ier
+    // stays lexicon-only, where French/German surnames (grenier, dozier)
+    // make the fallback 32 : 60.
     for (const [sfx, join] of [
       ["ied", edPast],
       ["ies", sPlural],
@@ -881,7 +891,13 @@ export class EnglishG2P implements LanguageProcessor {
     ] as [string, (p: string) => string][]) {
       if (!lowerWord.endsWith(sfx) || lowerWord.length <= sfx.length + 1)
         continue;
-      const basePron = this.wellKnown(lowerWord.slice(0, -sfx.length) + "y");
+      const stripped = lowerWord.slice(0, -sfx.length);
+      const base = stripped + "y";
+      // A vowelless remainder is no stem (priest is not pr + -iest).
+      const basePron =
+        sfx === "ier" || !/[aeiou]/.test(stripped)
+          ? this.wellKnown(base)
+          : stemPron(base);
       if (basePron) return join(basePron);
     }
 
