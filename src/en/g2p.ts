@@ -852,9 +852,10 @@ export class EnglishG2P implements LanguageProcessor {
       if (/(?:ow|o)s$/.test(lowerWord)) {
         return sPlural(this.predictInternal(lowerWord.slice(0, -1), undefined, true));
       }
-      // A rule-exact -ate verb has left the table, so its -s form needs the
-      // rule-derived stem (communicates, aggregates: 8 : 0).
-      if (lowerWord.endsWith("ates") && lowerWord.length > 5) {
+      // A rule-exact -ate verb or -ial noun has left the table, so its -s
+      // form needs the rule-derived stem (communicates, aggregates: 8 : 0;
+      // tutorials, editorials).
+      if (/(?:ate|ial)s$/.test(lowerWord) && lowerWord.length > 5) {
         const p = this.predictInternal(stem, undefined, true);
         if (p && !/[aeiouɑæɛɪɔʊʌəɝ]$/.test(p)) return sPlural(p);
       }

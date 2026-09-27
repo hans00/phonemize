@@ -1,9 +1,9 @@
 {
   "total": 90369,
-  "exact": 41720,
-  "phonemicExact": 50198,
-  "stressOnly": 4714,
-  "vowelOnly": 12188,
-  "structural": 31747,
-  "meanED": 1.2809
+  "exact": 41793,
+  "phonemicExact": 50295,
+  "stressOnly": 4731,
+  "vowelOnly": 12132,
+  "structural": 31713,
+  "meanED": 1.2778
 }

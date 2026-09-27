@@ -1180,6 +1180,21 @@ export function syllableToIPA(
       (syllableIndex === 1 && /[^aeiou]u$/i.test(prevSyllable ?? "")))
   )
     return "z";
+  // Word-final unstressed -cia/-sia (single onset consonant) is one
+  // syllable, not the i-ə hiatus the general vowel handling gives it: the
+  // intervocalic s voices (ambrosia, amnesia, indonesia — 29 ʒə : 15 siə,
+  // the losses mostly names: aloisia, dambrosia, nicosia), and c (already
+  // /s/ before i/e/y) stays voiceless (patricia, marcia, acacia — 36 ʃə :
+  // 5, the losses foreign place/first names: garcia, galicia, pharmacia).
+  // A doubled onset (boccia, cassia) is the Italian -ccia ending and stays
+  // on the hiatus path.
+  if (
+    (remaining === "sia" || remaining === "cia") &&
+    isLastSyllable &&
+    !isStressed &&
+    prevSyllable?.[prevSyllable.length - 1] !== remaining[0]
+  )
+    return (remaining === "sia" && /[aeiouy]$/.test(prevSyllable ?? "") ? "ʒ" : "ʃ") + "ə";
   for (const [pattern, ipa] of SUFFIX_RULES) {
     const src = pattern.source;
     if (!isLastSyllable && FINAL_ONLY_SUFFIXES.has(src)) continue;
@@ -1443,7 +1458,10 @@ export function syllableToIPA(
     if (
       remaining === "u" &&
       (nextSyllable === "tion" || nextSyllable === "sion" || nextIsMagicE ||
-        (!isLastSyllable && !endsWithSilentE && (isStressed || onset === undefined) &&
+        (!isLastSyllable && !endsWithSilentE &&
+          (isStressed || onset === undefined ||
+            (syllableIndex === 0 && !nextSyllable?.startsWith("r") &&
+              !(syllable === "su" && nextSyllable?.startsWith("b")))) &&
           !nextIsLaxCluster))
     ) {
       emit("u", longU(onset, nextSyllable?.startsWith("r")), "phoneme:^u$");
