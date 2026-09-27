@@ -93,6 +93,13 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // bare "-aus" ending without the h has no majority (claus/glaus → ɔ,
   // klaus/kraus → aʊ) and is left on the default `^a[uw]` → ɔ path.
   [/^haus$/, "haʊs"],
+  // German -baum ("tree") is /baʊm/ as a compound-surname element
+  // (rosenbaum, birnbaum, tannenbaum, apfelbaum): 46 of 49 dict words
+  // spelling a whole "baum" syllable, like -auer/haus above. The bare
+  // word "baum" is the elsewhere-regular English reading instead (dict
+  // /bɔm/, as in the author L. Frank Baum) and is guarded out below
+  // (syllableIndex === 0 && isLastSyllable, i.e. the whole word).
+  [/^baum$/, "baʊm"],
   // Silent letter combinations
   [/^pn/, "n"],
   [/^ps/, "s"],
@@ -510,7 +517,7 @@ export function secondaryStressIndices(
   return out;
 }
 
-const GERMANIC_NAME_ENDING = /(?:berger|inger|ermann?|heimer|meyer|meier|hofer|felder)$/;
+const GERMANIC_NAME_ENDING = /(?:berger|inger|ermann?|heimer|meyer|meier|hofer|felder|baum)$/;
 const ITALIAN_ENDING = /(?:ino|ano|ini|oni|elli|etti|ello|etto|ucci|acci|ola)$/;
 // French loanword/surname endings that keep the primary on the final
 // syllable at exactly two slots (chateau, giroux, voltaire): -eau/-eaux,
@@ -626,7 +633,10 @@ export function assignStress(syllables: string[], word: string): number {
   // syllable (aldinger, ackerman, bamberger, oppenheimer), as English
   // words that share them do (fisherman, harbinger). -ington is left out:
   // it is an English place-name element, and American usage varies there
-  // (ellington is heard with the second syllable stressed).
+  // (ellington is heard with the second syllable stressed). -baum joins
+  // the set at 3+ syllables (rosenbaum, tannenbaum, mandelbaum): 28/28 in
+  // the dict. Excluded at 2 syllables, where -baum itself keeps the beat
+  // (erlbaum) rather than the element before it.
   if (GERMANIC_NAME_ENDING.test(lowerWord) && syllables.length >= 3) return 0;
 
   // Italian name endings take the penult (albano, agostini, capelli,
@@ -739,6 +749,13 @@ export function assignStress(syllables: string[], word: string): number {
   ) {
     return 0;
   }
+  // Name-forming -ville (Aldenville, Andersonville, Bartlesville) is the
+  // same reduced-suffix pattern, but the syllabifier splits it "vil·le"
+  // (two slots) rather than one, so it needs its own whole-word check:
+  // 149/163 (91.4%) initial over the dict words at 3+ syllables. The
+  // minority is short French-origin roots that keep their own stress
+  // (Seville, Deville, Douville, Courville) and Mc-/Mac- surnames.
+  if (syllables.length >= 3 && lowerWord.endsWith("ville")) return 0;
 
   // Common prefixes that don't usually take stress. For 3+ syllable
   // words we use the orthographic prefix as a signal but rely on the
@@ -1603,6 +1620,22 @@ export function syllableToIPA(
       remaining = remaining.substring(1);
       continue;
     }
+    // Same closed-syllable frame, for a/o: a stressed single-consonant
+    // coda before a bare -le syllable is tense (cradle, ladle; bodle,
+    // knodle), where the doubled-coda case (paddle, apple; bottle,
+    // coddle) stays lax by the syllable-closing default below. a: 10
+    // eɪ : 6 other over the dict (cadle/cradle/ladle/radle/shadle/hazle/
+    // mahle/stahle/strahle/vahle); o (w excluded — "-owle" is the /aʊ/
+    // digraph, crowle/fowle/howle): 8 oʊ : 1 (aristotle, unstressed here).
+    if (
+      isStressed && isNextLastSyllable && nextSyllable === "le" &&
+      /^[ao][^aeiouwylr]$/.test(remaining) &&
+      !/([b-df-hj-np-tv-z])\1/.test(syllable)
+    ) {
+      emit(remaining[0], remaining[0] === "a" ? "eɪ" : "oʊ", "phoneme:^[ao](?=Cle)");
+      remaining = remaining.substring(1);
+      continue;
+    }
     if (
       syllableIndex === 0 &&
       ((isStressed && /^i(?=o|a(?:[^aeiouyn]|n[^aeiouy]))/.test(remaining)) ||
@@ -1705,6 +1738,7 @@ export function syllableToIPA(
     if (syllableIndex === 0 || isStressed) skip.add("^tur$");
     if (isLastSyllable || !nextSyllable?.startsWith("st")) skip.add("^y(?=$)");
     if (syllableIndex > 0) { skip.add("^x(?=[aeiouy])"); skip.add("^gil"); skip.add("^scien"); }
+    if (syllableIndex === 0 && isLastSyllable) skip.add("^baum$");
     // Greek silent-h ^rh only fires word-initially or in -rrh- (the
     // prior syllable ends in r: diarrhea, hemorrhage). A plain medial
     // r|h is a compound/name boundary where h is pronounced (barham).
