@@ -2254,6 +2254,44 @@ export function syllableToIPA(
     }
   }
 
+  // A stressed (primary or secondary) open <a> right before a syllable
+  // whose onset is a single r and whose nucleus is i/y takes the same
+  // SQUARE vowel as the -ia/-ian r-onset case above, without the suffix
+  // restriction (charity, clarity, popularity, marion, maritime, arizona,
+  // marijuana, chariot, necessarily). Unlike the hiatus case, the
+  // r-syllable need not be the word's last (maritime, arizona) and a
+  // secondary stress counts (arizona, marijuana — assignStress gives their
+  // initial syllable only a secondary). The r-syllable must be OPEN: bare
+  // ri/ry, a hiatus (rion, rious, rie), or a trailing consonant that isn't
+  // a true coda-closer — a word-final doubled consonant (tariff's riff,
+  // one phoneme spelt twice) or the ch digraph (barich/klarich/marich/
+  // sarich read "rich" as one /tʃ/ coda, not r+i+c+h). A genuine single
+  // coda consonant closes the syllable instead and keeps the checked <a>
+  // (arid's rid, paris's ris, caribbean's rib, glutaric/pindaric's ric —
+  // caribbean is a measured, accepted miss: its "rib" closes on a real
+  // doubled-b coda, like the excluded class, but the dict tenses it
+  // anyway). Over the dict: strict 56 : 18, lenient 36 : 8, common-word-set
+  // +3 (arizona, necessarily, popularity). The losses are proper names
+  // sharing the open-ri shape with no orthographic split (mariposa,
+  // larimer, parish); barbarity is the one common-shaped loss, a
+  // reduplicated bar-BAR-ity the dict keeps æ on for no visible reason.
+  // Doubled-r words (marry, carry, harry, barrio) never reach this branch:
+  // their first syllable keeps the r as its own coda (bar, car, har), so
+  // it isn't a bare "a" here. variable/variance/variation/solaris stay
+  // open: their morphology handlers (g2p.ts) look the bound stem up in the
+  // exceptions table first (vari/solari are themselves dict headwords —
+  // surnames — with a different vowel), so the rule-derived form here is
+  // never reached.
+  if (
+    (isStressed || isSecondary) &&
+    /^r[iy]/.test(nextSyllable ?? "") &&
+    !/^r[iy](?:ch|[^aeiouyl])$/.test(nextSyllable ?? "") &&
+    /^[^aeiouy]*a$/.test(syllable)
+  ) {
+    const i = sources.lastIndexOf("a");
+    if (i >= 0) phonemes[i] = "ɛ";
+  }
+
   // The stressed penult before an Italian name ending (see assignStress)
   // takes its Italian vowel, not the English checked/free one: bar·BA·no
   // /ɑ/, ca·SI·no /i/, capo·NE·tti /ɛ/.

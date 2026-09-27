@@ -872,7 +872,20 @@ export class EnglishG2P implements LanguageProcessor {
       const basePron = this.wellKnown(lowerWord.slice(0, -2));
       if (basePron) return sPlural(basePron);
     }
-    if (lowerWord.endsWith("es") && lowerWord.length > 3) {
+    // -ies is excluded here and left for the y-stem loop below, which
+    // restores the -y the suffix replaced (vary → varies) before its own
+    // lookup. Stripping just "es" instead (base "vari") can coincide with
+    // an unrelated dict headword sharing that spelling (the name "Vari",
+    // ˈvɑɹi) and silently return ITS pronunciation instead of the real
+    // "vary" stem's: varies ˈvɑɹiɪz → ˈvɛɹiz, the one segment error the
+    // ar+i/y SQUARE-vowel rule (syllabify.ts) can't reach through this
+    // path. Measured over the dict: strict 12 : 1, lenient 9 : 1 — besides
+    // varies, the same wrong-stem collision was silently mispronouncing
+    // buries/centuries/gullies/hurries/liberties/mercies/mies/parodies/
+    // rabies/shies/skies. The loss is alkalies, whose singular genuinely
+    // ends in -i (alkali), not a restored -y: there's no spelling-only way
+    // to tell that stem apart from the -y words this branch is for.
+    if (lowerWord.endsWith("es") && !lowerWord.endsWith("ies") && lowerWord.length > 3) {
       const base = lowerWord.slice(0, -2);
       // A one-syllable base ending in a single s is almost always a
       // magic-e stem plus -s (uses, cases, roses, houses, nurses), not
