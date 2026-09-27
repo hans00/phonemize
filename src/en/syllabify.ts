@@ -2190,35 +2190,38 @@ export function syllableToIPA(
     ) {
       phonemes[len - 3] = "ə";
     }
-    // -ory right after the stressed syllable: /ɔɹ|ɑɹ/ before /i/ → /ɝ/
-    // (memory/factory/salary at 2 slots; accessory/directory/advisory at
-    // 3, where the primary is the stem's own, not the word-initial
+    // -ory/-ary right after the stressed syllable: /ɔɹ|ɑɹ/ before /i/ →
+    // /ɝ/ (memory/factory/salary at 2 slots; accessory/directory/advisory
+    // at 3, where the primary is the stem's own, not the word-initial
     // default). Gated on adjacency to the primary, not a fixed slot
-    // index, so it reaches both, where the old syllableIndex===1 check
-    // could only ever fire at 2 slots. Over the dict population whose
-    // ending is exactly one syllable after the primary (counted on the
-    // rendered IPA, so the merged "ɝi" reading itself counts as that one
-    // syllable), -ory reduction is the majority reading, 42 : 17. A
+    // index, so it reaches both. Isolated from the rest of this family's
+    // other changes (rule-diff with only this branch disabled, vs a true
+    // pre-change baseline): 23 dict words are net-new over what the old
+    // syllableIndex===1 check already reached at 2 slots — 3+-syllable
+    // -ory (accessory, advisory, aleatory, compulsory, degregory,
+    // desultory, excretory, inventory, peremptory, predatory,
+    // promissory, repertory, unsavory) and -ary words whose primary
+    // lands elsewhere in the stem, not on the word-initial syllable the
+    // separate -ary rule above covers (alimentary, anniversary,
+    // elementary, rudimentary, sedimentary, semilegendary, testamentary,
+    // unnecessary — raw /ar/ is still /ɑɹ/ here; it only reduces once
+    // adjacent to wherever -ental/-mentary's own stress actually lands).
+    // -ery never reaches this branch, checked over the whole dict: its
+    // vowel is /ɛɹ/ from the plain `^er(?=[aeiouwy])` rule, reduced to
+    // /ɝ/ by the general unstressed-vowel merge regardless of stress
+    // adjacency, so it never has the raw /ɔɹ|ɑɹ/ this test looks for. A
     // syllable NOT adjacent to the primary (secretary, category) is
-    // untouched, matching the dict's kept /ˌɔɹi/. -ary and -ery don't
-    // reach this branch at all outside the 2-slot case the old check
-    // already covered (salary): their unstressed /ar/, /er/ already
-    // render ɛɹ before this point (postlex's addFullVowelSecondaries for
-    // a non-adjacent -ary, the plain `^er(?=[aeiouwy])` rule plus the
-    // general unstressed-vowel merge for -ery), never the ɔɹ/ɑɹ this
-    // test looks for; -ary 39 : 22 and -ery 155 : 6 are dict-wide
-    // evidence that reduction is the right default across the whole
-    // -Vry family, not word counts this branch moves. Checked over the
-    // whole dict (rule-diff before/after): zero -ary or -ery words
-    // change through this branch: only -ory does, plus the -iary/-uary
-    // hiatus exclusion below. The -iary/-uary hiatus (subsidiary,
-    // incendiary) is excluded: its extra vowel is a real syllable the
-    // maximal-onset syllabifier still folds into this same slot, so
-    // "adjacent to the primary" is true of the SLOT but not of the "ary"
-    // nucleus itself, which stays the dict's full /ɛɹi/ — without this
-    // exclusion the old 2-slot check already over-reduced actuary,
-    // aviary, estuary, january, mortuary, sanctuary, statuary and
-    // topiary; excluding it is the fix.
+    // untouched, matching the dict's kept /ˌɔɹi ˌɛɹi/. -ory 42 : 17 and
+    // -ary 39 : 22 are dict-wide evidence that reduction is the right
+    // default across the class; -ery 155 : 6 is the same evidence for a
+    // suffix this branch doesn't touch at all. The -iary/-uary hiatus
+    // (subsidiary, incendiary) is excluded: its extra vowel is a real
+    // syllable the maximal-onset syllabifier still folds into this same
+    // slot, so "adjacent to the primary" is true of the SLOT but not of
+    // the "ary" nucleus itself, which stays the dict's full /ɛɹi/ —
+    // without this exclusion the old 2-slot check already over-reduced
+    // actuary, aviary, estuary, january, mortuary, sanctuary, statuary
+    // and topiary; excluding it is the fix.
     if (
       prevStressed &&
       !isHiatusSlot(syllable) &&
