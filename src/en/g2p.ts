@@ -178,6 +178,22 @@ function geminateStem(word: string): string | null {
 // Shared by every morphology handler below that restores a dropped -e.
 const ENDS_IN_VOWEL_RE = /[aeiouɑæɛɪɔʊʌəɝ]$/;
 
+// A rule-derived stem is usable as a morphology base when its predicted
+// pronunciation ends in a consonant — except a coda /ɝ/, which is the
+// genuine outcome of a real dropped silent-e -ure ending (configure,
+// measure, gesture) and carries its own glide/palatalization a bare
+// no-e stem lacks, so it's exempted from the vowel check too. That
+// exemption is withheld at 4+ syllables: caricature/caricatured is a
+// genuine, isolated lexical exception (CMUdict shifts its primary onto
+// the 2nd syllable, unlike capture/picture/feature/fracture/gesture),
+// and the bare-stem fallback's own stress-assignment quirk on a
+// 4-syllable, final-e-less word happens to already reproduce that
+// exact shift — see the -ed/-ing and -s-plural call sites below for
+// the measured win/loss evidence. Shared by both, since they apply the
+// identical test to a differently-sourced stem prediction.
+const isUsableConsonantStem = (ipa: string, base: string): boolean =>
+  !ENDS_IN_VOWEL_RE.test(ipa) || (ipa.endsWith("ɝ") && syllabify(base).length < 4);
+
 // A stripped -ed/-ing base is only a PLAUSIBLE dropped-e spelling when its
 // ending is one English silent e can actually follow. That's not just the
 // classic single-consonant case (hop→hopped vs hope→hoped, so a bare
@@ -836,7 +852,7 @@ export class EnglishG2P implements LanguageProcessor {
       // same rule-exact-eviction trap this file has hit before (see
       // AGENTS.md). Restoring the "ie" spelling directly and reading it
       // through the rules is table-independent either way.
-      if (base.length === 2 && /^[bcdfghjklmnpqrstvwxz]y$/.test(base)) {
+      if (/^[bcdfghjklmnpqrstvwxz]y$/.test(base)) {
         const ie = this.predictInternal(base.slice(0, -1) + "ie", undefined, true);
         if (ie) return join(ie);
       }
@@ -882,37 +898,22 @@ export class EnglishG2P implements LanguageProcessor {
       // Try the silent-e-restored stem first (advanced → advance,
       // placed → place) — but ONLY when MAGIC_E_CANDIDATE says the base's
       // ending could plausibly carry a real dropped-e spelling (see its
-      // comment) AND the restored e is actually silent, i.e. the
-      // prediction still ends in a consonant. For sibilant-final stems the
-      // e is pronounced (distinguishe → …ʃi, washe → …ʃi), which would
-      // wrongly attach the allomorph to a vowel; fall back to the bare
-      // stem there so distinguished → …ʃt, not …ʃid. ɝ is exempted from
-      // that vowel check too: a coda syllabic rhotic (configure →
-      // kənˈfɪɡjɝ, measure → ˈmɛʒɝ, gesture → ˈdʒɛstʃɝ) is the genuine
-      // outcome of a real dropped e, not a sign the e was pronounced —
-      // without the exemption the -j-/-ʒ-/-ʃ- glide/palatalization that
-      // makes these correct was lost, since the bare (no-e) stem doesn't
-      // carry it. Excluded at 4+ syllables (`syllabify(base).length`):
-      // caricature/caricatured/caricatures are a genuine, isolated
-      // lexical exception — CMUdict agrees with ipa-dict that the verb
-      // shifts its primary stress onto the 2nd syllable, unlike every
-      // other -ture verb measured (capture, picture, feature, fracture,
-      // gesture all keep 1st-syllable stress in CMUdict) — and the bare-
-      // stem fallback's own stress-assignment quirk on a 4-syllable,
-      // final-e-less word happens to reproduce that exact shift, so this
-      // exemption is withheld there rather than overriding a rule that's
-      // accidentally already right. Unscoped vs 4+-syllable-scoped
-      // measured on the dict: unscoped strict 16:1 (loses caricatured),
-      // scoped strict 14:0 but ALSO loses gestured/gesturing (2 syllables,
-      // wrongly caught by an earlier blanket "ends in tur" attempt) —
-      // the syllable-count cut is what keeps both: 16:0.
+      // comment) AND isUsableConsonantStem says the restored e is
+      // actually silent (see its comment for the /ɝ/ exemption and the
+      // 4-syllable cutoff — configure/measure/gesture need it). For
+      // sibilant-final stems the e is pronounced (distinguishe → …ʃi,
+      // washe → …ʃi), which would wrongly attach the allomorph to a
+      // vowel; fall back to the bare stem there so distinguished → …ʃt,
+      // not …ʃid. Measured on the dict: unscoped strict 16:1 (loses
+      // caricatured), scoped strict 14:0 but ALSO loses gestured/
+      // gesturing (2 syllables, wrongly caught by an earlier blanket
+      // "ends in tur" attempt) — the syllable-count cut in the shared
+      // helper is what keeps both: 16:0.
       if (ruleFallback && /[aeiou]/.test(base) && !/[aeiou]$/.test(base)) {
         const ruleBaseE = MAGIC_E_CANDIDATE(base)
           ? this.predictInternal(base + "e", undefined, true)
           : undefined;
-        if (ruleBaseE && (!ENDS_IN_VOWEL_RE.test(ruleBaseE) ||
-          (ruleBaseE.endsWith("ɝ") && syllabify(base).length < 4)))
-          return join(ruleBaseE);
+        if (ruleBaseE && isUsableConsonantStem(ruleBaseE, base)) return join(ruleBaseE);
         const ruleBase = this.predictInternal(base, undefined, true);
         if (ruleBase) return join(ruleBase);
       }
@@ -1060,20 +1061,19 @@ export class EnglishG2P implements LanguageProcessor {
       // rule-derived stem for ITS -s form (communicates, aggregates:
       // 8 : 0; tutorials, editorials) — one shared branch, since both
       // just rule-predict `stem` and require it to stay consonant-final.
-      // Verify silent e by the consonant-final prediction. Exclude s/x,
-      // which instead introduce syllabic -es (buses/taxes), and
-      // multi-vowel stems (housewives). ɝ is exempted from the
-      // consonant-final check for the same reason as inflect()'s -ed/-ing
-      // gate above (measures/figures/pressures restore their stem's own
-      // -ure glide/palatalization), with the same 4+-syllable withholding
-      // — this branch measured as a no-op on the current dict either way
-      // (no word reaches it with a ɝ-final stem yet), kept for symmetry.
+      // Verify silent e via isUsableConsonantStem (shared with inflect()'s
+      // -ed/-ing gate above: measures/figures/pressures restore their
+      // stem's own -ure glide/palatalization the same way — this branch
+      // measured as a no-op on the current dict either way, since no word
+      // reaches it with a ɝ-final stem yet, kept for symmetry). Exclude
+      // s/x, which instead introduce syllabic -es (buses/taxes), and
+      // multi-vowel stems (housewives).
       if (
         /[ts]ions$|^[^aeiou]*[aeiou][bcdfghjklmnpqrtvz]es$/.test(lowerWord) ||
         (/(?:ate|ial)s$/.test(lowerWord) && lowerWord.length > 5)
       ) {
         const p = this.predictInternal(stem, undefined, true);
-        if (!ENDS_IN_VOWEL_RE.test(p) || (p.endsWith("ɝ") && syllabify(stem).length < 4)) return sPlural(p);
+        if (isUsableConsonantStem(p, stem)) return sPlural(p);
       }
       // A final -s must not turn the stem's final ow/o into a closed
       // syllable (shows, yellows, photos). Preserve the stem vowel.
@@ -1273,7 +1273,7 @@ export class EnglishG2P implements LanguageProcessor {
       lowerWord.endsWith("ly") &&
       !lowerWord.endsWith("ally") &&
       lowerWord.length > 4 &&
-      !Array.from(KEEP_UNMERGED_AFTER_PREFIX).some((p) => lowerWord === p + "ply")
+      !(lowerWord.endsWith("ply") && KEEP_UNMERGED_AFTER_PREFIX.has(lowerWord.slice(0, -3)))
     ) {
       const stem = lowerWord.slice(0, -2);
       // y-restoration: a stem ending in vowel+i came from a base-final -y
