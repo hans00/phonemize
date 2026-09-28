@@ -2202,10 +2202,56 @@ export function syllableToIPA(
     // instead of 13+ string comparisons per rule. Built once per
     // syllable; for a 5-syllable word that's 5 small allocations
     // instead of 13 × 150 × 5 = ~10K string ops.
+    // A stressed open "a" immediately before a genuine Latin/Greek -ium/
+    // -io/-ius hiatus tail is tense (radio, radius, stadium, valium,
+    // palladium, titanium, vanadium; contagion, savior, behavior, when the
+    // "a" sits past syllable 0 — unlike twoSylTense/aTwoSylTense, not
+    // scoped to syllableIndex 0). Excluded onsets on the hiatus syllable:
+    // t/s/c/x spell the -tion/-sion/-cious/-tious suffix family, already
+    // owned by the tion/sion branches above and the -ation morphology
+    // handler (measuring that population separately found it 474 : 6
+    // already correct, i.e. already-solved territory this rule doesn't
+    // need to touch); r/l/n are the SQUARE-vowel -ario/-arious hiatus (a
+    // different vowel, ɛ/ɑ not æ/eɪ) and the l/n-onset glide frame a few
+    // hundred lines up, both of which already own that population —
+    // measured bare over the dict, the l/n-onset slice here is 4 tense :
+    // 10 lax (companion, battalion, canion, obanion, …), the opposite
+    // majority. Rule-diff over the whole dict: strict 9 : 0, lenient
+    // 13 : 10. The 10 lenient losses are a THIRD, unrelated vowel this
+    // rule doesn't touch: word-final "-Cio" Italian/Spanish surnames the
+    // dict writes with /ɑ/, not æ or eɪ (abio, akio, defabio, defazio,
+    // delgadio, fabio, fazio, flavio, savio, savion) — orthographically
+    // identical to radio's own "Ca·Cio" shape, so there is no split to
+    // find; the old æ guess sat at Levenshtein 1 from /ɑ/ (lenient-
+    // correct), the new eɪ sits at 2 (lenient-wrong). None are top-5000.
+    const hiatusATense =
+      isStressed && !!nextSyllable && /^[^aeiouystcxrln]+i[ou]/.test(nextSyllable);
+    // A stressed open "a" immediately before an unstressed -ency/-ancy
+    // tail is tense (agency, latency, vacancy, vagrancy, complacency —
+    // the "a" need not be syllable 0, unlike aTwoSylTense/twoSylTense, so
+    // this is its own disjunct rather than an A_TENSE_ENDINGS entry).
+    // Measured over the dict: 5 tense : 0 lax, the whole a-initial-
+    // syllable population found (fancy/dancer/cancer/lancer never reach
+    // here at all — their "a" is a CLOSED "an"-syllable nucleus, not this
+    // open-syllable frame, so they stay on the unrelated closed-syllable
+    // default regardless).
+    const encyATense =
+      isStressed && !!nextSyllable && /^[^aeiouy]+(?:ency|ancy)$/.test(nextSyllable);
+    // twoSylTense's TENSE_ENDINGS includes "or", which is right for an
+    // obstruent onset (favor, gator, jacor, kapor, labor, major, razor,
+    // savor, tabor, vapor) but wrong for a SONORANT one — l/m/n before
+    // "or" is lax (amor, calor, falor, hamor, manor, valor): 7 lax : 11
+    // tense over the dict, split cleanly by that one onset-manner
+    // feature, not by which sonorant or which surrounding consonant.
+    // Rule-diff: strict 8 : 1, lenient 8 : 1. The one loss is cranor, a
+    // surname the dict keeps tense against the sonorant-lax majority —
+    // no spelling split found.
+    const aOrLax = /[lmn]or$/.test(nextSyllable ?? "");
     // Bare-"a" test factored out (distributive: (p&&a)||(p&&b) === p&&(a||b)).
     const aFire = nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE ||
+      hiatusATense || encyATense ||
       (/^[^aeiouy]*a$/.test(syllable) &&
-        ((twoSylTense && !nextSyllable!.startsWith("r")) || aTwoSylTense));
+        ((twoSylTense && !nextSyllable!.startsWith("r") && !aOrLax) || aTwoSylTense));
     // See FRENCH_INE_GRAM: an unstressed word-final -ine syllable whose
     // preceding consonant(s) mark it as reduced-suffix or French-loan,
     // not the Germanic/Latin-adjective aɪn default.

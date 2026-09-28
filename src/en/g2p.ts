@@ -1112,7 +1112,22 @@ export class EnglishG2P implements LanguageProcessor {
       // corrupts the derivation (bette → better, latte → latter, butte →
       // butter, passé → passer).
       const doubledBase = /([bcdfgklmnprst])\1$/.test(base);
-      let magicPron = doubledBase ? undefined : this.wellKnown(base + "e");
+      // A short base ending in "th" (bath, lath, math, rath, with) also
+      // coincidentally matches an unrelated, obscure dict headword that
+      // happens to be spelled the same as a genuine "-the" verb (bathe,
+      // lathe, mathe, rathe, withe) — bather/lather/mather/rather/wither
+      // are surnames and unrelated words (ˈbæðɝ, not "one who bathes"),
+      // not real -the derivations, and there is no dict word for which
+      // the short-base reading is correct. A LONGER "th" base is the
+      // opposite case and must still go through this lookup: breath+e=
+      // breathe is real, and breather (ˈbɹiðɝ) needs it. base.length <= 4
+      // is the split (bath/lath/math/rath/with are the whole 4-letter
+      // population found; breath is 6). Rule-diff over the whole dict:
+      // strict 5 : 0, lenient 4 : 0 (bather, lather, mather, rather,
+      // wither).
+      let magicPron = doubledBase || (base.length <= 4 && base.endsWith("th"))
+        ? undefined
+        : this.wellKnown(base + "e");
       // A short base can also coincidentally match an unrelated headword
       // whose final e IS pronounced (ente "duck" → enter, mete → meter).
       // Reject a vowel-final hit unless the base ends in y/w/r, where that
