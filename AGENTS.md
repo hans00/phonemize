@@ -365,10 +365,12 @@ For provably score-neutral refactors, gate with `tsx scripts/snapshot-dump.ts` b
 
 | Trigger | Condition |
 |---|---|
-| **Line count** | `src/en/g2p.ts` exceeds 1150 lines, or the three rule modules (`src/en/g2p.ts` + `src/en/syllabify.ts` + `src/en/postlex.ts`) together exceed 2600 lines **of code** — comment and blank lines don't count |
+| **Line count** | `src/en/g2p.ts` exceeds 1150 lines, or the three rule modules (`src/en/g2p.ts` + `src/en/syllabify.ts` + `src/en/postlex.ts`) together exceed the code-line count recorded after the most recent compression pass by more than 150 lines **of code** — comment and blank lines don't count. Last compression: 2599 code lines (2026-09-28, fifth pass) → next trigger above 2749. |
 | **Session growth** | A single session adds ≥ 3 entries to `PHONEME_RULES` or `SUFFIX_RULES` |
 | **Cluster overlap** | `yarn test:eval --cluster` shows the same grapheme appearing as top-hit across ≥ 2 different clusters |
 | **Parallel handlers** | `tryMorphologicalAnalysis` gains a new suffix handler that shares base-lookup logic with an existing one |
+
+The line-count trigger moved from a fixed ceiling to this relative threshold (set 2026-09-28) because five compression passes had driven the fixed ceiling down to 2599/2600 code lines, and what remains at that size is mostly the per-rule measured-evidence comments this loop requires and the core phonology the "What not to compress" list protects — so any single new rule re-tripped the fixed ceiling regardless of how compact the surrounding code already was; a threshold relative to the count recorded after the last pass tracks accumulated growth instead. Each future compression note must update the recorded baseline in this row.
 
 "Lines of code" in the line-count trigger is counted **block-comment-aware**: a line inside a `/* … */` or `/** … */` block (including the block's own start/end lines) doesn't count, the same as a `//` line. Two integrators reported different counts from the same checkout (2,713 naive vs 2,557 block-aware) because a naive count treats every physical line as code unless it starts with `//`, which overcounts every multi-line `/** … */` doc comment above a rule. Use the block-aware count when checking the trigger.
 
