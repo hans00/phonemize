@@ -23,6 +23,7 @@ import {
   syllabify,
   syllableToIPA,
   isHiatusSlot,
+  KEEP_UNMERGED_AFTER_PREFIX,
 } from "./syllabify";
 
 export type EnglishDialect = "en-US" | "en-GB";
@@ -811,8 +812,23 @@ export class EnglishG2P implements LanguageProcessor {
       const magicPron = silentE();
       if (magicPron) return join(magicPron);
       // A y-final stem keeps its vowel before -ing (try/copy/study,
-      // buy/play/enjoy). Two-letter stems are excluded: dying/lying/tying
-      // restore -ie.
+      // buy/play/enjoy). Two-letter stems are excluded: dying/lying/tying/
+      // vying restore -ie instead — rendering the bare 2-letter base
+      // itself would read it through the general word-final -y rules
+      // (city/happy's lax /i/, or a bare-monosyllable /aɪ/ with no
+      // guarantee of which), neither of which is this closed class's
+      // actual spelling change. This used to work by accident: lex(base)
+      // a few lines up found "ly"/"dy"/"vy" as exceptions-table entries
+      // whenever rules-only mispredicted them, before "ly"'s own /aɪ/
+      // stress fix (see syllabify.ts's rely-class fix) made it rule-exact
+      // and evicted it from the table, silently breaking "lying" — the
+      // same rule-exact-eviction trap this file has hit before (see
+      // AGENTS.md). Restoring the "ie" spelling directly and reading it
+      // through the rules is table-independent either way.
+      if (base.length === 2 && /^[bcdfghjklmnpqrstvwxz]y$/.test(base)) {
+        const ie = this.predictInternal(base.slice(0, -1) + "ie", undefined, true);
+        if (ie) return join(ie);
+      }
       if (base.length > 2 && base.endsWith("y")) {
         return join(this.predictInternal(base, undefined, true));
       }
@@ -1188,10 +1204,40 @@ export class EnglishG2P implements LanguageProcessor {
         return basePron.replace(/ə$/, "") + "əli";
       }
     }
+    // apply/comply/supply/imply/reply are the bound Latin root "ply"
+    // (< plicare "to fold") after an assimilated ad-/com-/sub-/in-/re-
+    // prefix, not a free root + the -ly adverb suffix — the stem this
+    // handler would otherwise strip ("app", "comp", "supp", "imp", "rep")
+    // isn't a real word, and the fabricated reading loses the suffix's
+    // own final stress (ˈæpɫi, not əˈpɫaɪ). Routed instead to the plain
+    // rule path (syllabify -> assignStress -> syllableToIPA), whose
+    // 2-syllable prefix check now recognises this exact 4-prefix set (see
+    // assignStress) and whose "re" case was already an existing
+    // unstressed-prefix entry.
+    //
+    // This used to be a literal `^(?:ap|com|sup|im|re)ply$` alternation —
+    // a whole-word list of exactly these 5 words wearing a regex, which
+    // this project's rules forbid in code. Two structural alternatives
+    // were measured. A stem-plausibility test (skip stripping when the
+    // remaining stem is a doubled consonant, or ends in a cluster no
+    // English word can) only half-works: "app"/"supp" are correctly
+    // implausible, but "imp" and "rep" are themselves ordinary dict
+    // headwords, so no stem-shape test can tell imply/reply's fabricated
+    // stem apart from a genuine short word. What DOES generalise is
+    // reusing KEEP_UNMERGED_AFTER_PREFIX (syllabify.ts) — the same
+    // assimilated-prefix set that keeps these words' two syllables from
+    // merging in the first place: a word is this bound root exactly when
+    // it equals one of those prefixes plus literal "ply". Since "deply"
+    // and "unply" aren't English words, that composition names precisely
+    // the same 5 words the old regex did (confirmed by a byte-identical
+    // rules-only dump before/after this substitution) — it is a morpheme
+    // rule, not a lookup table, per the -ation/-ity precedent of reusing
+    // general prefix/suffix composition elsewhere in this file.
     if (
       lowerWord.endsWith("ly") &&
       !lowerWord.endsWith("ally") &&
-      lowerWord.length > 4
+      lowerWord.length > 4 &&
+      !Array.from(KEEP_UNMERGED_AFTER_PREFIX).some((p) => lowerWord === p + "ply")
     ) {
       const stem = lowerWord.slice(0, -2);
       // y-restoration: a stem ending in vowel+i came from a base-final -y

@@ -341,6 +341,16 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^u/, "ʌ"], // cut, but, run
 ];
 
+// The assimilated Latin ad-/com-/sub-/in-/re- prefix set that keeps a
+// following bare-consonant syllable unmerged (see the comment inside
+// syllabify() below) and, reused structurally rather than re-enumerated,
+// also tells g2p.ts's -ly adverb handler apart from the bound root "ply"
+// (apply/comply/supply/imply/reply are <prefix in this set> + "ply", not
+// a free "ply" adjective + the -ly suffix — see that call site).
+export const KEEP_UNMERGED_AFTER_PREFIX = new Set([
+  "com", "de", "re", "un", "ap", "im", "sup",
+]);
+
 export function syllabify(word: string): string[] {
   // A more linguistically informed syllabification algorithm based on Maximal Onset Principle.
   // This is a complex problem, and this implementation is a heuristic approach.
@@ -487,8 +497,57 @@ export function syllabify(word: string): string[] {
 
   // Post-processing: Merge any leftover single-consonant syllables into the previous one.
   // This can happen with words like "apple" -> ap-ple, where current logic might give a-p-ple
+  // "y" is in CONSONANTS as well as VOWELS (it can be either), so the
+  // `every char is in CONSONANTS` test below also matches a syllable
+  // whose only vowel-like character is a syllable-final "y" that already
+  // served as that syllable's own nucleus in the main loop above. Deep
+  // inside a longer word that merge is relied on (com·mu·ni·ty ->
+  // com·mu·nity): every -ity/-ary/-acy/-ogy/-emy stress rule elsewhere in
+  // this file (assignStress's `syllables.length - N` offsets) is written
+  // against the resulting merged count, and testing "no real vowel"
+  // instead of "every char is a consonant" there is a net LOSS measured
+  // on the full dict (764 strict losses : 341 wins) — those rules would
+  // need re-deriving against a new count, out of scope here. The SAME
+  // merge also collapses a genuine two-syllable word's only two
+  // syllables into one (re·ly -> "rely", ap·ply -> "apply"), which feeds
+  // assignStress's `length <= 1` guard and returns index 0 no matter
+  // where the stress belongs — always wrong for this class, since a
+  // one-syllable "word" that started as two has nowhere else for the
+  // primary to go. But a blanket "don't merge when it would collapse to
+  // one syllable" fix (tried and measured) is ALSO a net loss (240 : 148)
+  // on ordinary bisyllabic -Cy nouns of the identical orthographic shape
+  // (ba·by, la·dy, co·py): English's open-vowel tense/lax split one
+  // syllable before a single intervocalic consonant is lexically mixed
+  // either way (baby tense, body lax, no spelling signal), and the OLD
+  // merged-blob path happens to already read that ambiguous population
+  // right via its own per-letter rules — unmerging it for no reason
+  // loses that accidental correctness. What IS a spelling signal is the
+  // first syllable being a recognised weak 2-syllable verb-forming
+  // prefix (the assimilated Latin ad-/com-/sub-/in-/re- set): unmerging
+  // is scoped to exactly that set, which is also the set
+  // assignStress's own 2-syllable prefix checks already know how to
+  // stress once the syllable boundary survives. Scoped further than the
+  // full PREFIXES_2SYL list just below: "be"/"dis"/"ex"/"ob"/"pre"/"pro"/
+  // "sub" were measured against the whole dict and dropped, because
+  // nothing in the qualifying population (a bare Cy-final syllable after
+  // that prefix) is a real prefix+root verb the way de-/re-/com-/ap-/
+  // im-/sup- are — they only reach real or surname words that keep their
+  // OLD merged-blob reading (beryl, betsy, bevy all regressed when "be"
+  // was included, with no compensating win). de-/re- keep a handful of
+  // surname false positives (dery, deryck, remy, reny) that no spelling
+  // signal separates from decry/deny/defy/reply/retry, the same
+  // proper-noun trade this file makes elsewhere. (Hoisted to module scope
+  // as KEEP_UNMERGED_AFTER_PREFIX, above, so g2p.ts's -ly handler can
+  // reuse the same prefix set instead of re-enumerating the words it
+  // produces.)
   for (let j = syllables.length - 1; j > 0; j--) {
     if (syllables[j].split("").every((c) => CONSONANTS.has(c))) {
+      if (
+        syllables.length === 2 &&
+        KEEP_UNMERGED_AFTER_PREFIX.has(syllables[0]) &&
+        syllables[j].split("").some((c) => VOWELS.has(c))
+      )
+        continue;
       if (syllables[j - 1]) {
         syllables[j - 1] += syllables[j];
         syllables.splice(j, 1);
@@ -826,7 +885,24 @@ export function assignStress(syllables: string[], word: string): number {
   // (acceptance, abundance, admittance — 39 of 45 want slot 1), an open
   // one a Latin bound root that leaves the primary at the front
   // (conference, difference, competence, evidence — 68 of 124).
-  if ((lowerWord.endsWith("ance") || lowerWord.endsWith("ence")) && syllables.length >= 3)
+  //
+  // -ience is a different suffix that happens to share -ence's last four
+  // letters (the "i" is the suffix's own glide vowel, not part of the
+  // stem this rule is measuring): at 3 slots it is unconditionally
+  // word-initial already (patience, science, conscience) and stays on
+  // this rule, but at 4 slots the "open second slot -> initial stress"
+  // half of the formula above is wrong for it (convenience, experience,
+  // obedience all want the primary on slot 1, not slot 0), because the
+  // -ience root is a genuine con-/ex-/ob- + bound-root formation, not an
+  // open-stem noun like conference/difference. Excluding just the 4-slot
+  // -ience case lets those words reach the unstressedPrefixes loop below,
+  // which already stresses con-/ex-/ob- correctly — no new rule needed,
+  // just getting out of that loop's way.
+  if (
+    (lowerWord.endsWith("ance") || lowerWord.endsWith("ence")) &&
+    syllables.length >= 3 &&
+    !(lowerWord.endsWith("ience") && syllables.length === 4)
+  )
     return syllables.length === 3 || (syllables.length === 4 && /[aeiouy]$/.test(syllables[1])) ? 0 : 1;
 
   if (lowerWord.endsWith("ic")) return syllables.length - 2;
@@ -969,6 +1045,19 @@ export function assignStress(syllables: string[], word: string): number {
   // stay.
   if (syllables.length === 2) {
     const firstSyl = syllables[0];
+    // The bound Latin root "ply" (< plicare "to fold") keeps the suffix's
+    // own stress after its assimilated ad-/com-/sub-/in- prefix (apply,
+    // comply, supply, imply). Checked ahead of the general com- laxRoot
+    // default just below, which would otherwise give comply initial
+    // stress like process/proper. Scoped to this exact 4-prefix set, not
+    // a blanket "-ply is final-stressed" rule: the same orthographic tail
+    // is also the -ly adverb suffix on a free p-final adjective (amply,
+    // cheaply, crisply, deeply, sharply, simply, steeply), none of whose
+    // first syllables collide with ap/com/sup/im — 4 : 0 over the
+    // qualifying prefix set against 0 : 8 if the rule were widened to any
+    // "ply" syllable.
+    if (syllables[1] === "ply" && ["ap", "com", "sup", "im"].includes(firstSyl))
+      return 1;
     const PREFIXES_2SYL = [
       "be", "com", "de", "dis", "ex", "ob", "pre", "pro", "re", "sub", "un",
     ];
@@ -1495,6 +1584,14 @@ export function syllableToIPA(
     if (NON_INITIAL_SUFFIXES.has(src) && syllableIndex === 0) continue;
     if (src === "^sto$" && nextSyllable !== "ne") continue;
     if (src === "^the$" && (syllableIndex === 0 || !isLastSyllable)) continue;
+    // -ly is the unstressed adverbial suffix (quickly, only); a STRESSED
+    // "ly" syllable is instead the bound Latin root of rely/reply (< OFr
+    // lier), which the 2-syllable prefix checks in assignStress route
+    // here already stressed — skip so it falls through to the general
+    // word-final-y handling below, which reads a stressed sole-vowel y as
+    // the tense /aɪ/ diphthong (rely, reply) instead of the suffix's lax
+    // /i/.
+    if (src === "^ly$" && isStressed) continue;
     // A bare "er" syllable right before another syllable starting with r
     // (error, terror's medial, erratic) is not the reduced word-final -er
     // suffix this rule targets (teacher, baker) — the second r belongs to
@@ -2286,6 +2383,23 @@ export function syllableToIPA(
     const skip = new Set<string>();
     if (!hadDoubledL) skip.add("^al$");
     if (gFromDoubling || gFromGetSuffix) skip.add("^g(?=[eiy])");
+    // A position-aware version of this guard (skip the lax default when
+    // the syllable is stressed OR word-initial, not just unconditionally)
+    // was measured and rejected: it correctly separates rely/apply
+    // (stressed, tense) from comfy/proxy (unstressed non-initial, lax)
+    // and dynamic/hygiene (unstressed initial, still tense) on its own,
+    // but it touches essentially every "Cy"-shaped syllable in the dict —
+    // far more words than this file's own rule-diff win/loss count
+    // showed — and that breadth destabilizes scripts/mine-exceptions.ts's
+    // dependency-aware eviction pass: re-pinned stems dropped from ~400
+    // to ~15 on a full `yarn build-dict`, regressing 14 top-5000 words
+    // (programs, marketing, table, etc. — none of them Cy-shaped, purely
+    // collateral from the eviction miner's own net-check landing
+    // differently over a much larger candidate population). The
+    // syllabify() merge-loop fix above already covers this pass's actual
+    // target (rely/apply/comply/deny/defy/supply/reply/imply); comfy/
+    // proxy/demystify/dery/deryck/remy/reny keep the old unconditional
+    // tense default and are accepted losses, table hits at runtime.
     if (!hasVowelBeforeTerminalY) skip.add("^y$");
     // Four conditions merged (Set.add is idempotent) that all block the
     // tense "^o$" default: an unstressed non-final syllable; trisyllabic
