@@ -1703,29 +1703,43 @@ export function syllableToIPA(
     // prefix's trailing r to the FIRST syllable, spelling it "rear"), so
     // including "r" turns a prefix-boundary coincidence into a loss
     // (rearrange, prearrange, rearrest) with no matching win anywhere in
-    // the dict to offset it. "l" is excluded too, though it wins 6 : 0 in
-    // the rules-only dict (brearley, cearley, earley, earlie, kearley,
-    // pearline — all proper names, already table hits either way, so
-    // zero runtime upside): an l-initial next syllable is also where a
-    // genuine free "year"/"ear" root collides with an l-initial compound
-    // tail the syllabifier can't see as a compound (yearlong; "year"
-    // isn't a verified head in compound-parts.json, so `yearlong`
-    // syllabifies as plain year|long and reaches this rule instead of
-    // being routed around it). `dict.json`'s ˈjɪɹˈɫɔŋ carries two primary
-    // stresses, and `mine-exceptions.ts`'s miner (line ~339) deliberately
-    // never memorizes a 2-primary dict entry into `exceptions.json` when
-    // the rule's own prediction has only one primary, treating it as a
-    // "corrupt / non-reduced compound" transcription — so `yearlong` was
-    // never going to be corrected by a table entry regardless of what
-    // this rule predicts, and the segmental choice here is the only thing
-    // standing between it and `yarn test:parity`. Measured over every
-    // word that reaches here with the n/c set alone: strict 10 : 1
-    // (pearce, a surname whose second syllable is an unrelated spelling
-    // wrinkle — a table hit at runtime either way).
+    // the dict to offset it. Measured over every word that reaches here
+    // with the n/c set alone: strict 10 : 1 (pearce, a surname whose
+    // second syllable is an unrelated spelling wrinkle — a table hit at
+    // runtime either way).
+    //
+    // "l" rejoins the set (re-added 2026-09-28), scoped by TAIL shape
+    // rather than by the next syllable's onset letter alone. A bare
+    // letter-class test can't tell "earley"/"earline" (a bound, unstressed
+    // continuation) from "yearlong" (a genuine compound whose second
+    // element is the FREE word "long"): both syllabify with an l-initial
+    // next syllable. `tail` (every syllable after this one, joined) does
+    // distinguish them — the bound continuations spell one of a small
+    // closed set of shapes (the -ey/-ie name suffix, the -ine suffix, or
+    // a bare silent-e "-le") that a genuine free compound tail never does.
+    // "-le" also covers "yearling" itself: `inflect()`'s -ing handler in
+    // g2p.ts never reaches "year"+"ling" as two real syllables (its
+    // MAGIC_E_CANDIDATE probe fires first on the stripped "yearl" stem,
+    // producing the fabricated "yearle" — "year"+"le" — before any
+    // "-ling" syllable can form; see that function's own comment).
+    // Measured over every word that reaches here: strict 5 : 0 (brearley,
+    // cearley, earley, kearley, pearline — surnames, already table hits
+    // either way), lenient 9 : 1, common (top-5000) 0 : 0. earle/pearle/
+    // searle/tearle and "yearling" itself (via the fabricated "-le" probe
+    // above) get the corrected rhotic vowel but stay short of strict-exact:
+    // the unrelated, pre-existing `^le$` → "əl" suffix rule always inserts
+    // a schwa before the syllabic l, and the dict is itself split on
+    // whether an r-colored vowel keeps that schwa (aberle ˈæbɝəɫ vs berle
+    // ˈbɝɫ — no orthographic split found; left alone) — not something this
+    // change touches. The one lenient loss, tearle (dict ˈtɔɹəɫ, an
+    // idiosyncratic non-rhotic spelling), sat at lenient distance 1 from
+    // the dict entry on its old, WRONG /ɪɹ/ guess by coincidence; the more
+    // regular /ɝ/ answer here moves it to distance 2. Never a strict win or
+    // loss either way.
     if (
       remaining === "ear" &&
       !isLastSyllable &&
-      /^[nc]/.test(nextSyllable ?? "")
+      (/^[nc]/.test(nextSyllable ?? "") || /^(?:ley|line|le)$/.test(tail ?? ""))
     ) {
       emit("ear", "ɝ", "phoneme:ear-boundary");
       remaining = "";
@@ -2028,9 +2042,48 @@ export function syllableToIPA(
     // -y verb inflections. Restricted to a stressed first syllable so
     // the -ier/-ion/-ial suffixes of car|ri|er, re|gion, mil|lion,
     // au|dio keep their unstressed /i/.
-    if (isStressed && syllableIndex === 0 && isLastSyllable && /^ie[sdr]?$/.test(remaining)) {
+    //
+    // "t"/"nt" join the coda set (diet, quiet, client): the syllabifier
+    // keeps these one orthographic slot (no consonant separates "ie" from
+    // what follows for it to split on), but the dict spells them with a
+    // real second nucleus after the diphthong (daɪət, kwaɪət, kɫaɪənt),
+    // unlike the s/d/r codas above, which stay genuinely monosyllabic
+    // (dies, cried, drier) — so these two codas alone get a linking
+    // schwa. Restricted to exactly "t"/"nt" (not e.g. -ence/-el) because
+    // those are the only two attested word-final continuations this
+    // condition (single orthographic syllable, stressed, word-initial)
+    // ever reaches: every dict word with a stressed *medial* -ient
+    // (patient, ancient, gradient, orient, salient, sufficient) has a
+    // consonant before the "i" that gives the syllabifier a real split
+    // (pa|tient, gra|dient, o|rient), landing "ient" at syllableIndex ≥ 1,
+    // outside this branch's syllableIndex===0 guard — untouched, still
+    // read by the separate ^cient$/^tient$-shaped suffix and glide rules.
+    // A doubled final consonant in the ORIGINAL spelling (cliett, quiett
+    // — surnames, not the plain words) is excluded: gemination marks the
+    // vowel checked/short, the same signal MAGIC_E_CANDIDATE elsewhere in
+    // this codebase reads the same way, and by the time `remaining` is
+    // tested it has already been degeminated (the pass above this one),
+    // so the check has to read the untouched `syllable` parameter.
+    // Measured over the monosyllabic-per-syllabify population this
+    // reaches (6 dict words): strict 3 : 1. Wins: client, diet, quiet.
+    // Loss: vliet (dict ˈvɫit, a Dutch surname element where "ie" is the
+    // digraph's plain /i/, not a hiatus — no spelling signal separates it
+    // from diet/quiet, the same class/token trade-off as viet below).
+    // piet (dict ˈpaɪɪt, an ɪ coda instead of the majority-pattern ə) and
+    // viet (dict viˈɛt, a Vietnamese loan stressed on its SECOND syllable
+    // — the whole premise of a one-syllable "iet" is wrong for this
+    // specific word) were already wrong before this change and stay
+    // wrong after; neither is a new strict win or loss.
+    if (
+      isStressed &&
+      syllableIndex === 0 &&
+      isLastSyllable &&
+      /^ie(?:nt|t|[sdr])?$/.test(remaining) &&
+      !(/^(?:t|nt)$/.test(remaining.slice(2)) && /(.)\1$/.test(syllable))
+    ) {
       const coda = remaining.slice(2);
-      emit(remaining, "aɪ" + (coda === "r" ? "ɝ" : coda), "phoneme:^ie$-hiatus");
+      const codaIpa = coda === "r" ? "ɝ" : coda === "t" ? "ət" : coda === "nt" ? "ənt" : coda;
+      emit(remaining, "aɪ" + codaIpa, "phoneme:^ie$-hiatus");
       break;
     }
     // A single consonant before a syllabic -le belongs to the -le

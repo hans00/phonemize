@@ -932,7 +932,15 @@ export class EnglishG2P implements LanguageProcessor {
           // is either a genuine rule-exact eviction (the rules already
           // match the dict for the singular) or a novel word the whole-
           // word fallback would have mishandled anyway.
-          (/(?:r|gn|ion)$/.test(stem)
+          // "ient$" joins the set for the same reason (client → clients):
+          // the syllabify.ts monosyllabic ie+t/ie+nt hiatus rule made
+          // "client" itself rule-exact, evicting it, and every OTHER
+          // "-ient"-stem plural in the dict (patients, gradients, orients,
+          // salients, …) is unaffected because each of those stems is
+          // genuinely irregular and stays in the table regardless — this
+          // branch is only ever reached once wellKnown(stem) has already
+          // failed, so it can't misfire on them.
+          (/(?:r|gn|ion|ient)$/.test(stem)
             ? this.predictInternal(stem, undefined, true)
             // A multi-syllable silent-e stem (device, virus is NOT this —
             // it has no e at all) has the identical problem one syllable
