@@ -110,9 +110,11 @@ const HOMOGRAPHS: HomographDict = Object.assign(
 // Statistically-verified compound parts (scripts/mine-compound-parts.ts):
 // heads/tails that earn ≥10% join-accuracy against the lexicon when
 // paired with any verified partner. Both sides must match for a split.
-const COMPOUND_PARTS = resolveJson<{ heads: EnDict; tails: EnDict }>(
-  compoundParts,
-);
+const COMPOUND_PARTS = resolveJson<{
+  heads: EnDict;
+  tails: EnDict;
+  tailsReversed: EnDict;
+}>(compoundParts);
 const COMPOUND_HEADS: EnDict = Object.assign(
   Object.create(null),
   COMPOUND_PARTS.heads,
@@ -120,6 +122,15 @@ const COMPOUND_HEADS: EnDict = Object.assign(
 const COMPOUND_TAILS: EnDict = Object.assign(
   Object.create(null),
   COMPOUND_PARTS.tails,
+);
+// Tails verified ONLY via the tail keeping its own primary (never once via
+// the ordinary head-primary convention) — see the matching comment in
+// mine-compound-parts.ts. tryCompoundSplit joins these the other way
+// around, so a word like overdone gets the dict's actual ˌoʊvɝˈdʌn instead
+// of a segmentally-right but stress-backwards ˈoʊvɝˌdʌn.
+const COMPOUND_TAILS_REVERSED: EnDict = Object.assign(
+  Object.create(null),
+  COMPOUND_PARTS.tailsReversed,
 );
 // Boundary degemination for compound joins (book+kayak style overlaps).
 const COMPOUND_GEMINATE_RE = /([pbtdkɡfvszʃʒθðmnŋɫɹ])(ˌ?)\1/g;
@@ -1566,8 +1577,36 @@ export class EnglishG2P implements LanguageProcessor {
       // stress-stripped-equal to dict either way) and one strict loss
       // (immulogic, a brand name whose head-stressed reading the dict
       // actually keeps); the real payoff is the "-ological" family
-      // reached through the "-al" morphology handler.
-      if (/^(?:log|graph|nom|soph)ic$/.test(b)) continue;
+      // reached through the "-al" morphology handler. "-matic" joined the
+      // exclusion 2026-09-28: it is the same Greek/Latin -atic adjectival
+      // suffix (dogmatic, dramatic, systematic, aromatic, thematic,
+      // traumatic), and once mine-compound-parts.ts's TAIL verification
+      // also accepted a tail keeping its own primary (added the same day
+      // so a legitimately-verified HEAD like over/some can pair with a
+      // tail whose dict form happens to be tail-primary, e.g. overdone),
+      // "matic" newly cleared the win-rate floor as a mined tail purely
+      // from the same suffix-stress coincidence (2/9 either-convention,
+      // 0/9 under the original single-convention test), and "dog" (an
+      // ordinary, unexcluded compound head) broke a pinned test by giving
+      // dogmatic the free-standing /dɔɡ/ instead of the initial-closed-o
+      // frame's /dɑɡ/.
+      if (/^(?:log|graph|nom|soph|mat)ic$/.test(b)) continue;
+      // "pose" is the same trap from the other side: it newly verifies as
+      // a tail (1/9, from impose — dict "im" and the "im-" prefix share
+      // one vowel /ɪm/, so joinTailPrimary happens to reproduce impose's
+      // real ˌɪmˈpoʊz exactly), but "pro" was ALREADY a legitimate
+      // pre-existing compound head (14.6% under the original, unchanged
+      // single-convention HEAD test, mostly from program) — an unrelated,
+      // much larger win population this pass does not touch. The two
+      // independently-earned parts combine wrongly on "propose", where
+      // "pro" is a reduced, unstressed prefix (/prə/), not the free
+      // word's full /proʊ/: broke a pinned test ("propose" → /prəˈpoʊz/).
+      // -pose is a closed set of Latin/French bound verb roots (propose,
+      // oppose, suppose, expose, dispose, compose, transpose) whose
+      // prefix identity swings unpredictably between full-vowel and
+      // reduced, so it is excluded outright rather than trying to save
+      // "impose" specifically.
+      if (b === "pose") continue;
       const score = Math.min(a.length, b.length);
       if (score > bestScore) {
         bestScore = score;
@@ -1576,8 +1615,13 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
     if (head === undefined || tail === undefined) return undefined;
+    // A tail attested ONLY tail-primary (see COMPOUND_TAILS_REVERSED) keeps
+    // its own primary; the head's demotes instead. Everything else keeps
+    // the ordinary head-primary/tail-secondary convention.
     return (
-      COMPOUND_HEADS[head] + COMPOUND_TAILS[tail].replace(/ˈ/g, "ˌ")
+      COMPOUND_TAILS_REVERSED[tail] !== undefined
+        ? COMPOUND_HEADS[head].replace(/ˈ/g, "ˌ") + COMPOUND_TAILS_REVERSED[tail]
+        : COMPOUND_HEADS[head] + COMPOUND_TAILS[tail].replace(/ˈ/g, "ˌ")
     ).replace(COMPOUND_GEMINATE_RE, "$2$1");
   }
 

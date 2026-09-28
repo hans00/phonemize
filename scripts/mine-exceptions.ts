@@ -348,11 +348,16 @@ writeFileSync(
 );
 console.log(`\nWrote data/en/exception-candidates.json (${candidates.length} entries, ${(JSON.stringify(candidatesMap).length / 1024).toFixed(1)} KB)`);
 
-// A standard IPA transcription has exactly one primary stress. ~1,400
-// dict entries carry two or more ˈ marks (corrupt / non-reduced compounds
-// like addresses→ˈæˈdɹɛsɪz). Don't memorize those when the rule path
-// already produces a single, cleaner primary stress — the AI eval scores
-// mis-stress as wrong, and the rule output is the better pronunciation.
+// A standard IPA transcription has exactly one primary stress.
+// scripts/build-dict.ts's normalizeMultiplePrimaryStress now fixes this at
+// the source — dict.json itself never carries 2+ ˈ marks any more — so
+// dictIpa is always single-primary here and no separate eviction check is
+// needed. (Previously ~1,400 dict entries reached this point with 2+ ˈ
+// marks, e.g. addresses→ˈæˈdɹɛsɪz, and were dropped outright whenever the
+// rule path already produced a single primary; that just left the word
+// relying on the rule never regressing, with no memorized fallback and a
+// scoring reference that couldn't be matched either way. `primaryCount` is
+// still used below, as a sanity guard on the refinement/redundancy pass.)
 const primaryCount = (s: string): number => (s.match(/ˈ/g) ?? []).length;
 // The ipa-dict source frequently drops /t/ in an /nt/ cluster (county
 // ˈkaʊni, accountable əˈkaʊnəbəl) — a casual-speech reduction the AI judge
@@ -366,7 +371,6 @@ const ntDropped = (c: Cand): boolean =>
   c.dictIpa.includes("n");
 const shippedCands = candidates.filter(
   (c: Cand) =>
-    !(primaryCount(c.dictIpa) >= 2 && primaryCount(c.predIpa) < 2) &&
     !ntDropped(c) &&
     (c.origin !== "native" || c.ed >= cliMin)
 );
@@ -417,7 +421,6 @@ for (;;) {
       ? Math.max(distance, 1) : distance;
     const candidate: Cand = { word, dictIpa, predIpa, ed, origin: originOf(word) };
     if (ed < 1 || (candidate.origin === "native" && ed < cliMin)) continue;
-    if (primaryCount(dictIpa) >= 2 && primaryCount(predIpa) < 2) continue;
     if (ntDropped(candidate)) continue;
     shippedMap[word] = dictIpa;
     refinedWords.add(word);
@@ -777,7 +780,6 @@ const finalMap: Record<string, string> = { ...shippedMap, ...Object.fromEntries(
       ? Math.max(distance, 1) : distance;
     const candidate: Cand = { word, dictIpa, predIpa, ed, origin: originOf(word) };
     if (ed < 1 || (candidate.origin === "native" && ed < cliMin)) continue;
-    if (primaryCount(dictIpa) >= 2 && primaryCount(predIpa) < 2) continue;
     if (ntDropped(candidate)) continue;
     finalMap[word] = dictIpa;
     postRepinAdded++;

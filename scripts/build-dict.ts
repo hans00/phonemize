@@ -133,6 +133,50 @@ function selectVariant(pool: string[], isHeteronym: boolean): string {
   return unique[0];
 }
 
+// ---- Multiple-primary-stress normalisation --------------------------------
+//
+// A standard IPA transcription has exactly one primary stress. ipa-dict
+// leaves ~1,400 dict.json entries with 2+ ˈ marks instead — mostly
+// compounds and prefixed derivatives it never reduced to primary+secondary
+// (etcetera ˈɛtˈsɛtɝə, videotape ˈvɪdioʊˈteɪp, travelodge ˈtɹævəˈlɑdʒ,
+// asynchronous ˈeɪˈsɪŋkɹənəs). Until now, scripts/mine-exceptions.ts simply
+// refused to memorize these as exceptions when the rule path predicted a
+// clean single primary, on the theory that the rule's output was the
+// better pronunciation — but that leaves the word RELYING on the rule
+// being right forever: any later rule change that regresses its stress
+// has nothing to fall back on, and dict.json (the reference every eval
+// script scores against) still carries the double-primary form, so a
+// correct single-primary prediction was already being scored as wrong.
+//
+// Fix at the source instead: pick one of the ˈ marks as the true primary
+// and demote the rest to ˌ, so dict.json itself becomes a normal
+// single-primary reference, and mine-exceptions.ts can memorize it like
+// any other word (shipping it if the rules don't already reproduce it).
+//
+// Measured 2026-09-28 which mark to keep, against pinned CMUdict
+// (scripts/.common-accuracy-cache/cmudict.dict) over the double-primary
+// dict.json words where CMUdict ITSELF commits to a single primary and
+// the two transcriptions' syllable counts line up (n=36 — the largest
+// clean sample available: CMUdict carries the identical unreduced-compound
+// quirk on 94% of the rest, so it can't arbitrate those either). Keeping
+// the LAST ˈ agrees with CMUdict's primary 24:9 over keeping the FIRST.
+// The FIRST-agreeing minority is dominated by true N+N compounds and
+// French-stressed surnames (dillard, luxembourg, nestle) that keep
+// English's initial compound stress; the LAST-agreeing majority is
+// prefix+root derivations and the -teen numbers, where English stresses
+// the root/final element (unfair, predate, recessed, eighteen,
+// asynchronous) — the larger and more general class. This also matches
+// the hand-picked custom.dict entries already carrying this exact
+// pattern (etcetera, videotape, travelodge all keep their LAST primary).
+function normalizeMultiplePrimaryStress(ipa: string): string {
+  const marks: number[] = [];
+  for (let i = 0; i < ipa.length; i++) if (ipa[i] === "ˈ") marks.push(i);
+  if (marks.length < 2) return ipa;
+  const chars = [...ipa];
+  for (let i = 0; i < marks.length - 1; i++) chars[marks[i]] = "ˌ";
+  return chars.join("");
+}
+
 function parseDict(content: string, heteronymWords: Set<string>): DictEntry {
   const lines = content.split("\n");
 
@@ -161,7 +205,7 @@ function parseDict(content: string, heteronymWords: Set<string>): DictEntry {
     const pool = isThoughtSpelling && variants.some(v => v.includes("ɔ"))
       ? variants.filter(v => v.includes("ɔ"))
       : variants;
-    const ipa = selectVariant(pool, heteronymWords.has(lowerWord));
+    const ipa = normalizeMultiplePrimaryStress(selectVariant(pool, heteronymWords.has(lowerWord)));
     dict[lowerWord] = ipa;
   }
 
