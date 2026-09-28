@@ -198,30 +198,32 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.endsWith("iment"), re: /ɪmənt$/, sub: "əmənt" },
   { when: (w) => w.endsWith("ancy"), re: /ænsi$/, sub: "ənsi" },
   { when: (w) => w.endsWith("erage") || w.endsWith("erature"), re: /ɛɹ/g, sub: "ɝ" },
-  { when: (w) => w.startsWith("mechan"), re: /tʃ/, sub: "k" },
+  { when: (w) => w.startsWith("mechan") || w.includes("anchor"), re: /tʃ/, sub: "k" },
 
   // — Germanic <ei> → /aɪ/ and hard <g> —
   { when: (w) => w.startsWith("ei") && !/^ei(ght|ther)/.test(w), re: /^eɪ/, sub: "aɪ" },
-  {
-    when: (w) => GERMANIC_EI_SUFFIX_RE.test(w) && w.includes("ei") && !w.includes("eight"),
-    re: /eɪ/g, sub: "aɪ",
-  },
+  // Merged from four rules with identical /eɪ/g → "aɪ"; a global replace
+  // is idempotent, so OR-ing `when` is equivalent to four separate entries.
   {
     when: (w) =>
-      w.includes("ei") &&
-      (w.startsWith("klein") || w.startsWith("drei") || w.startsWith("breit") ||
-        w.startsWith("mein") || w.startsWith("meio") || w.startsWith("wei") ||
-        (w.startsWith("feig") && !w.startsWith("feigh")) ||
-        (w.startsWith("hei") && !/^hei(?:nous|fer|r$|res|ress)/.test(w)) ||
-        (w.startsWith("lei") && w.length >= 6 && !/^lei(?:sure|s$)/.test(w)) ||
-        (w.startsWith("pf") && w.includes("ei"))),
+      (GERMANIC_EI_SUFFIX_RE.test(w) && w.includes("ei") && !w.includes("eight")) ||
+      (w.includes("ei") &&
+        (w.startsWith("klein") || w.startsWith("drei") || w.startsWith("breit") ||
+          w.startsWith("mein") || w.startsWith("meio") || w.startsWith("wei") ||
+          (w.startsWith("feig") && !w.startsWith("feigh")) ||
+          (w.startsWith("hei") && !/^hei(?:nous|fer|r$|res|ress)/.test(w)) ||
+          (w.startsWith("lei") && w.length >= 6 && !/^lei(?:sure|s$)/.test(w)) ||
+          (w.startsWith("pf") && w.includes("ei")))) ||
+      w.includes("seism") || (w.includes("eich") && w.length >= 5),
     re: /eɪ/g, sub: "aɪ",
   },
-  { when: (w) => w.includes("seism"), re: /eɪ/g, sub: "aɪ" },
   { when: (w) => w.includes("reif") && w.length >= 5, re: /ɹeɪf/, sub: "ɹaɪf" },
   { when: (w) => w.length >= 5 && /eidt?$/.test(w), re: /eɪ([dt]?)$/, sub: "aɪ$1" },
+  // Merged with a compound-internal thought/think/thank root
+  // (afterthought, freethinker — the voiced default doesn't cross a
+  // compound boundary), moved here from its own entry: identical /ð/g → θ.
   {
-    when: (w) => /(?:thet|theis|thesis|thesia|thentic|theon)/.test(w),
+    when: (w) => /(?:thet|theis|thesis|thesia|thentic|theon)/.test(w) || /th(?:ought|ink|ank)/.test(w),
     re: /ð/g, sub: "θ",
   },
   // -lth-/-rth- cluster devoices by default (waltham, carthage, warthen,
@@ -247,25 +249,8 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => /ach(?:en|er)$/.test(w), re: /tʃ([ɛəɪ])/, sub: "k$1" },
   {
     when: (w) =>
-      /^g[ei]/.test(w) &&
-      /(?:berg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein)$/.test(w),
-    re: /^dʒ/, sub: "ɡ",
-  },
-  {
-    when: (w) =>
-      /(?:berg|burg)$/.test(w) && (w.includes("ge") || w.includes("gi")) &&
-      !w.includes("nge") && !w.includes("ngi"),
-    re: /dʒ/g, sub: "ɡ",
-  },
-  {
-    when: (w) =>
-      (w.startsWith("berg") && w.length >= 6 && !/(?:ey|y)$/.test(w)) ||
-      (w.startsWith("mcg") && w.length >= 5 && !/orge$/.test(w)),
-    re: /dʒ/g, sub: "ɡ",
-  },
-  { when: (w) => w.startsWith("beg") && w.length >= 5, re: /^bɪdʒ/, sub: "bɪɡ" },
-  {
-    when: (w) =>
+      (/^g[ei]/.test(w) &&
+        /(?:berg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein)$/.test(w)) ||
       (w.length >= 5 && (w.startsWith("gei") || /^gel[dbns]/.test(w) || w.startsWith("get"))) ||
       /^gi[dvm]/.test(w) ||
       (w.startsWith("gig") && w.length >= 4 && !/^gig(?:i$|lio|lia|lo|ot|ol)/.test(w)) ||
@@ -273,6 +258,15 @@ const POST_LEX_RULES: PostLexRule[] = [
       (w.startsWith("geh") && w.length >= 5 && !/^geh(?:le|res|rke)$/.test(w)),
     re: /^dʒ/, sub: "ɡ",
   },
+  {
+    when: (w) =>
+      (/(?:berg|burg)$/.test(w) && (w.includes("ge") || w.includes("gi")) &&
+        !w.includes("nge") && !w.includes("ngi")) ||
+      (w.startsWith("berg") && w.length >= 6 && !/(?:ey|y)$/.test(w)) ||
+      (w.startsWith("mcg") && w.length >= 5 && !/orge$/.test(w)),
+    re: /dʒ/g, sub: "ɡ",
+  },
+  { when: (w) => w.startsWith("beg") && w.length >= 5, re: /^bɪdʒ/, sub: "bɪɡ" },
   { when: (w) => /(?:ingen|angen)$/.test(w) && w.length >= 7, re: /dʒ([əɛɪ]n)$/, sub: "ɡ$1" },
   {
     when: (w) =>
@@ -286,20 +280,17 @@ const POST_LEX_RULES: PostLexRule[] = [
       !/(?:cudgel|gudgel|kegel|nigel|rigel|bagel|angel|evangel|rangel|dgel)$/.test(w),
     re: /dʒ([əɛɪ][lɫ]?)$/, sub: "ɡ$1",
   },
+  // Merged from three mutually-exclusive suffixes (-ger/-gers/-gen) via a
+  // capture group: "dʒ(ɝz?|ən)$" → "ɡ$1" reproduces each original's own
+  // substitution (ɡɝ / ɡɝz / ɡən) exactly, per-branch exclusions intact.
   {
     when: (w) =>
-      w.endsWith("ger") &&
-      ((w.length >= 7 && /[bcdfghjklmnpqrstvwxyz]{2}ger$/.test(w)) ||
-        (w.length >= 8 && !/(?:anger|inger|onger|enger|ager)$/.test(w))),
-    re: /dʒɝ$/, sub: "ɡɝ",
-  },
-  {
-    when: (w) => w.endsWith("gers") && w.length >= 7 && !/(?:[ao]ngers|agers|ingers|ungers)$/.test(w),
-    re: /dʒɝz$/, sub: "ɡɝz",
-  },
-  {
-    when: (w) => w.endsWith("gen") && w.length >= 7 && /[bcdfghjklmnpqrstvwxyz]{2}gen$/.test(w),
-    re: /dʒən$/, sub: "ɡən",
+      (w.endsWith("ger") &&
+        ((w.length >= 7 && /[bcdfghjklmnpqrstvwxyz]{2}ger$/.test(w)) ||
+          (w.length >= 8 && !/(?:anger|inger|onger|enger|ager)$/.test(w)))) ||
+      (w.endsWith("gers") && w.length >= 7 && !/(?:[ao]ngers|agers|ingers|ungers)$/.test(w)) ||
+      (w.endsWith("gen") && w.length >= 7 && /[bcdfghjklmnpqrstvwxyz]{2}gen$/.test(w)),
+    re: /dʒ(ɝz?|ən)$/, sub: "ɡ$1",
   },
   {
     when: (w) => (w.endsWith("ford") && w.length > 4) || /(?:worth|world|works?)$/.test(w),
@@ -316,8 +307,7 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.endsWith("ouquet"), re: /aʊkw[ɛə]t$/, sub: "ukeɪ" },
   { when: (w) => w.endsWith("quet") && !w.endsWith("nquet") && !w.endsWith("mquet"), re: /kw[ɛə]t$/, sub: "keɪ" },
   { when: (w) => w.endsWith("ochet"), re: /tʃ[ɛə]t$/, sub: "ʃeɪ" },
-  { when: (w) => w.endsWith("achet"), re: /[ɛɪə]t$/, sub: "eɪ" },
-  { when: (w) => w.endsWith("alet"), re: /[ɛɪə]t$/, sub: "eɪ" },
+  { when: (w) => w.endsWith("achet") || w.endsWith("alet"), re: /[ɛɪə]t$/, sub: "eɪ" },
   { when: (w) => w.endsWith("ette") && w.length >= 5, re: /([^ɛɪæaouʊə])t$/, sub: "$1ɛt" },
   {
     when: (w) =>
@@ -361,7 +351,6 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.startsWith("dh"), re: /^dh/, sub: "d" },
   { when: (w) => w.startsWith("orch"), re: /^ɔɹtʃ/, sub: "ɔɹk" },
   { when: (w) => w.includes("chord"), re: /tʃ([ɔɑɝ])/, sub: "k$1" },
-  { when: (w) => w.includes("anchor"), re: /tʃ/, sub: "k" },
   {
     when: (w) => w.includes("och") && !w.endsWith("och") && !w.endsWith("oche") && !/och[cfpt]/.test(w),
     re: /[ɑɔ]tʃ/g, fn: (m) => m[0] + "k",
@@ -423,8 +412,8 @@ const POST_LEX_RULES: PostLexRule[] = [
   // <cch> is a single /k/ (bacchi, cecchi); POST_PROC degemination has
   // already run by here, so the pair must not be re-introduced.
   { when: (w) => w.includes("cchi"), re: /ktʃ/g, sub: "k" },
-  { when: (w) => w.includes("cchi"), re: /tʃ/g, sub: "k" },
-  { when: (w) => /chet(?:ti|ta|to|te)$/.test(w) && w.length >= 6, re: /tʃ/g, sub: "k" },
+  // Also merged with the unrelated psych-/tech- ch=/k/ rule: same /tʃ/g → "k".
+  { when: (w) => w.includes("cchi") || (/chet(?:ti|ta|to|te)$/.test(w) && w.length >= 6) || /psych|tech(?!y)/.test(w), re: /tʃ/g, sub: "k" },
   { when: (w) => /cci[oa]?$/.test(w), re: /ks([ɪi]?)(oʊ|ə|ʊ|eɪ|a)?$/, sub: "tʃ$1$2" },
   {
     when: (w) => w.includes("cci") && !/cci[oa]?$/.test(w) && !/ccid|ccip|ccint|ccent/.test(w),
@@ -435,15 +424,7 @@ const POST_LEX_RULES: PostLexRule[] = [
       w.includes("cci") && !/cci[oa]?$/.test(w) && /(?:ini|ino|elli|ello|illi|illo|iani|iano)$/.test(w),
     re: /ksɪ/g, sub: "tʃɪ",
   },
-  { when: (w) => w.includes("eich") && w.length >= 5, re: /eɪ/g, sub: "aɪ" },
   { when: (w) => w.includes("eich") && w.length >= 5, re: /aɪtʃ/g, sub: "aɪk" },
-
-  // Voiceless th in compound-internal thought/think/thank roots
-  // (afterthought, freethinker) — the voiced-between-vowels default
-  // doesn't apply across the compound boundary.
-  { when: (w) => /th(?:ought|ink|ank)/.test(w), re: /ð/g, sub: "θ" },
-  // Greek ch = /k/ in psych-/tech- roots (psychic, technical).
-  { when: (w) => /psych|tech(?!y)/.test(w), re: /tʃ/g, sub: "k" },
 
   // — Reduced-vowel quality by spelling (lexicon-measured contexts) —
   // -et keeps lax ɪ (anklet, badgett) except after c/k/l where the

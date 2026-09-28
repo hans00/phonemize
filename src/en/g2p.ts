@@ -944,25 +944,26 @@ export class EnglishG2P implements LanguageProcessor {
               : undefined);
       if (basePron) return sPlural(basePron);
       // Rule-derived stems are absent from the exception table. Preserve
-      // -tion/-sion palatalization and monosyllabic silent-e vowels
-      // when adding -s (solutions/names/bikes). Verify silent e by the
-      // consonant-final prediction. Exclude s/x, which instead introduce
-      // syllabic -es (buses/taxes), and multi-vowel stems (housewives).
-      if (/[ts]ions$|^[^aeiou]*[aeiou][bcdfghjklmnpqrtvz]es$/.test(lowerWord)) {
-        const stem = this.predictInternal(lowerWord.slice(0, -1), undefined, true);
-        if (!ENDS_IN_VOWEL_RE.test(stem)) return sPlural(stem);
+      // -tion/-sion palatalization and monosyllabic silent-e vowels when
+      // adding -s (solutions/names/bikes), the same way a rule-exact
+      // -ate verb or -ial noun that has left the table needs the
+      // rule-derived stem for ITS -s form (communicates, aggregates:
+      // 8 : 0; tutorials, editorials) — one shared branch, since both
+      // just rule-predict `stem` and require it to stay consonant-final.
+      // Verify silent e by the consonant-final prediction. Exclude s/x,
+      // which instead introduce syllabic -es (buses/taxes), and
+      // multi-vowel stems (housewives).
+      if (
+        /[ts]ions$|^[^aeiou]*[aeiou][bcdfghjklmnpqrtvz]es$/.test(lowerWord) ||
+        (/(?:ate|ial)s$/.test(lowerWord) && lowerWord.length > 5)
+      ) {
+        const p = this.predictInternal(stem, undefined, true);
+        if (!ENDS_IN_VOWEL_RE.test(p)) return sPlural(p);
       }
       // A final -s must not turn the stem's final ow/o into a closed
       // syllable (shows, yellows, photos). Preserve the stem vowel.
       if (/(?:ow|o)s$/.test(lowerWord)) {
         return sPlural(this.predictInternal(lowerWord.slice(0, -1), undefined, true));
-      }
-      // A rule-exact -ate verb or -ial noun has left the table, so its -s
-      // form needs the rule-derived stem (communicates, aggregates: 8 : 0;
-      // tutorials, editorials).
-      if (/(?:ate|ial)s$/.test(lowerWord) && lowerWord.length > 5) {
-        const p = this.predictInternal(stem, undefined, true);
-        if (p && !ENDS_IN_VOWEL_RE.test(p)) return sPlural(p);
       }
     }
     if (/['''']s$/.test(lowerWord) && lowerWord.length > 3) {

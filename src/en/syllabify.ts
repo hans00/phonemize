@@ -43,21 +43,16 @@ const SUFFIX_RULES: Array<[RegExp, string]> = [
   [/^ful$/, "fəl"],
   [/^ly$/, "li"], // -ful / -ly
   [/^er$/, "ɝ"],
-  [/^ers$/, "ɝz"],
   [/^est$/, "əst"],
   [/^ing$/, "ɪŋ"],
   [/^ed$/, "d"],
   [/^ves$/, "vz"], // -ves plural (loaves/calves/wolves/selves)
   [/^e?s$/, "z"], // -es/-s (plural/3rd person)
-  [/^age$/, "ɪdʒ"],
   [/^ism$/, "ɪzəm"],
-  [/^ist$/, "ɪst"], // -ism/-ist
-  [/^al$/, "əl"], // -ity / -al
+  [/^al$/, "əl"], // -ity / -al / -ism
   // -ic (economic, mathematic-); stress is handled separately by the
-  // endsWith("ic") check in assignStress. The table's ipa is used
-  // literally, so -ics needs its own entry (a "$1" here once shipped).
+  // endsWith("ic") check in assignStress.
   [/^ic$/, "ɪk"],
-  [/^ics$/, "ɪks"],
   [/^lity$/, "ləti"],
   [/^ty$/, "ti"],
   [/^[ae]ry$/, "ɛri"],
@@ -109,9 +104,8 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^mn/, "n"], // mnemonic, mnesic (silent initial m)
   [/^wr/, "ɹ"], // write, wrong, wrist (silent w)
   [/^rh/, "ɹ"], // rhyme, rhino — Greek silent h; guarded in loop so compound-name r|h boundaries keep /h/ (bar|ham)
-  [/^bt$/, "t"], // debt, doubt, subtle (silent b in word/syllable-final bt)
+  [/^(?:bt$|ght)/, "t"], // debt, doubt, subtle (silent b in word/syllable-final bt); right, might, fight
   [/^sph/, "sf"], // sphere, sphinx (Greek-origin /sf/)
-  [/^ght/, "t"], // right, might, fight
   [/^gh$/, ""], // silent gh at word end (though, bough)
   [/^gh/, "ɡ"], // ghost, ghetto (at start)
   [/^lm/, "m"], // palm, calm, psalm
@@ -129,27 +123,29 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^olt$/, "oʊlt"],
   [/^olk$/, "oʊk"], // bolt/colt/jolt + folk/yolk (silent l)
   [/^ost$/, "oʊst"], // most, post, host (loses cost/lost; majority pattern wins)
-  [/^ould$/, "ʊd"], // would, could, should (silent l, lax u — closed function-word family)
   // Improved digraph handling
-  [/^tsch/, "tʃ"], // German loanwords
   // Word-initial "scien" is /saɪən/ (science, scientific, scientology), not
   // the elsewhere-regular soft-c + ie-digraph reading /siən/: 8/8 dict
   // words. Guarded to syllableIndex 0 (in the loop below) so it doesn't
   // shadow the -scien$ SUFFIX_RULES entry conscience/conscious already use
   // at idx>0, a different (ʃən) reading of the same letters after "con".
   [/^scien/, "saɪən"],
-  [/^s(?:ch|z)/, "ʃ"], // German sch (schmaltz/Schmidt) + Polish/Hungarian sz (szabo); school/schema live in dict
   [/^she$/, "ʃi"], // she (pronoun; anchored so it doesn't eat shed/shell)
   [/^he$/, "hi"], // he  (pronoun; anchored so it doesn't eat here/hen)
   [/^d[zg]/, "dʒ"], // Polish dz (dziedzic) + dg (bridge, judge, edge)
-  [/^cz/, "tʃ"], // czech, czechoslovak, czar (Polish/Czech cz)
   [/^chr/, "kɹ"], // chrome, chronic, Christ (Greek ch before r)
   [/^chl/, "kl"], // chlorine, chlorinated (Greek ch before l)
   [/^ch/, "k"], // Greek ch in chem-/chor-/charact-/charis- (see GREEK_CH_ROOT; guarded in the loop below, off by default)
-  [/^t?ch/, "tʃ"], // chair, church, much; watch, match, catch
+  // Merged with two earlier same-output rules that never overlap anything
+  // between their old position and here (different first letters/clusters):
+  // ^tsch (German loanwords) and ^cz (czech, czechoslovak, czar).
+  [/^(?:t?ch|tsch|cz)/, "tʃ"], // chair, church, much; watch, match, catch
   [/^ck/, "k"], // back, pick, truck
   [/^ph/, "f"], // phone, graph, elephant
-  [/^sh/, "ʃ"], // shoe, fish, wash
+  // Merged with the earlier ^s(?:ch|z) (German sch: schmaltz/Schmidt +
+  // Polish/Hungarian sz: szabo; school/schema live in dict) — nothing
+  // between the two original positions also starts with "sch"/"sz".
+  [/^(?:sh|s(?:ch|z))/, "ʃ"], // shoe, fish, wash
   [/^thr/, "θɹ"], // th + r cluster is always voiceless: through, three
   [/^th(?=ink|ing$|ick|orn)/, "θ"], // voiceless: think/thing/thick/thorn (exceptions to voiced-before-vowel)
   [/^the$/, "ðə"], // the (definite article — anchored so it doesn't eat them/then/their)
@@ -163,8 +159,10 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // Improved vowel teams with better quality distinctions
   [/^o[ao]r/, "ɔɹ"], // door/floor (oor) and board/soar/roar (oar) → /ɔɹ/
   [/^ook/, "ʊk"], // book, cook, look, hook, took (oo before k → /ʊ/)
-  [/^ood/, "ʊd"], // wood, hood, good, stood (oo before d → /ʊ/)
-  [/^oo/, "u"], // boot, moon, cool, moose (long u; dict uses /u/ not /uː/)
+  // Merged with the earlier ^ould$ (would, could, should — silent l, lax
+  // u, closed function-word family); nothing between the two original
+  // positions starts with "ou".
+  [/^(?:ood|ould$)/, "ʊd"], // wood, hood, good, stood (oo before d → /ʊ/)
   [/^ous$/, "əs"], // -ous suffix: famous/nervous/dangerous (guarded: last+unstressed in loop)
   // STRUT spelt ou before -ble/-ple, -ntr and -ng not -nge (double,
   // couple, country, young): 26 : 1, 10 : 1 and 19 : 0 in the dict; -ounge
@@ -189,40 +187,46 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // on the c/s/t majority with no new loss.
   [/^our(?=[cst])/, "ɔɹ"],
   [/^o(?:u|w(?=[snmk]))/, "aʊ"], // house, about, cloud; cow, down, brown (before consonants)
-  [/^ow/, "oʊ"], // show, blow, know (at word end typically)
+  // Merged from three same-output rules (^ow: show, blow, know; ^eau[x]?:
+  // plateau/beau + beaux/bordeaux, French eau(x), x silent; ^oa: boat,
+  // coat, road). MUST sit here, before ^e[ae] below (in the "i" group) —
+  // that rule's second-char class [ae] also matches "eau"'s leading "ea",
+  // so placing this merge any later lets ^e[ae] wrongly eat "eau" first.
+  [/^(?:ow|eau[x]?|oa)/, "oʊ"],
   [/^o[yi]/, "ɔɪ"], // boy/toy (oy) and coin/voice (oi)
   [/^a[uw]/, "ɔ"], // caught/sauce (au) and saw/draw (aw)
   [/^air/, "ɛɹ"], // hair, fair, chair, stair (must precede ^ai)
-  [/^a[iy]/, "eɪ"], // rain, main, paid; day, say, way
-  [/^eau[x]?/, "oʊ"], // plateau/beau + beaux/bordeaux: French eau(x) → /oʊ/ (x silent)
   [/^ealth/, "ɛlθ"], // health, wealth, stealth (ea+lth → /ɛ/)
   [/^ead/, "ɛd"], // head, bread, dead, spread, instead, deadline (ea+d closing the syllable: 106 ɛ vs 16 i in dict; the /i/ bases lea|der/rea|ding move the d to the next syllable and never reach here)
-  [/^ear(?=[nlcr]|th)/, "ɝ"], // learn, earn, earth, pearl, search, earl (ear before n/l/c/r: 63:9, before th 19:2 in dict; d/t/s stay ɪɹ/ɑɹ)
-  [/^e[ae]/, "i"], // read, seat, beat; see, tree, free (default long)
+  // Merged with the later ^eur (connoisseur, entrepreneur — French -eur):
+  // placed HERE (not there) because ^e[ae] a few lines below would
+  // otherwise intercept "ear"+lookahead content first if this fired late.
+  [/^(?:ear(?=[nlcr]|th)|eur)/, "ɝ"], // learn, earn, earth, pearl, search, earl (ear before n/l/c/r: 63:9, before th 19:2 in dict; d/t/s stay ɪɹ/ɑɹ)
   // e before o is hiatus: the e is its own tense nucleus and the o keeps its
   // own value (geography, neoclassic, theocracy, creosote, cleo, rodeo).
   // 179 i : 43 other over the dict words whose first syllable spells it,
   // with -eor- already excluded — that exclusion drops the 21 ɔɹ of
-  // george/georgia and costs the 6 i of reorganize-.
-  [/^e(?=o(?!r))/, "i"],
-  [/^iew/, "ju"],
+  // george/georgia and costs the 6 i of reorganize-. Merged (adjacent, no
+  // intervening entry) with ^e[ae] (read, seat, beat; see, tree, free).
+  [/^e(?:[ae]|(?=o(?!r)))/, "i"],
+  // Merged with the later ^eu (feud, neuter, Europe) — MUST sit here, not
+  // there: ^ie a few lines below would otherwise eat "iew"'s "ie" first.
+  [/^(?:iew|eu)/, "ju"],
   [/^ier$/, "iɝ"], // -iew (view/review) → ju; -ier word-final → iɝ (guard: isLastSyllable)
   [/^ie/, "i"], // piece, field, believe
   [/^cei/, "si"], // receive, ceiling, conceive (i before e after c)
   [/^ey$/, "i"], // honey, abbey, valley, turkey (unstressed final -ey; guard skips when stressed)
-  [/^e[iy]/, "eɪ"], // vein, weight, eight; they, grey, obey (stressed -ey)
+  // Merged with ^a[iy] (rain, main, paid; day, say, way) — nothing between
+  // the two original positions also starts with "a" + i/y.
+  [/^(?:e[iy]|a[iy])/, "eɪ"], // vein, weight, eight; they, grey, obey (stressed -ey)
   [/^ight/, "aɪt"], // night, right, knight (i+ght)
   [/^igh/, "aɪ"],  // high, sigh, thigh — igh without following t
   [/^ign(?=s?$)/, "aɪn"], // sign, design, align, assign, benign, resign: syllable-final -ign is the silent-g rime (14 aɪn vs 1 in dict; the ɪɡn words dig|nity, sig|nal, ig|nore all move the n onto a following vowel). aign/eign never reach it — ^ai/^ei eat the vowel first.
-  [/^oa/, "oʊ"], // boat, coat, road
   // LOT→THOUGHT frames. Doubled consonants are deduped before the rules
   // run, so the coda spellings here are single: `of` covers -off/-offC.
   // (That dedup is also why the ^oss rule these replace could never fire.)
   [/^ong/, "ɔŋ"], // long, song, strong, along, belong (123:13 in dict)
   [/^of$/, "ɔf"], // off, offer, office, often, software (242:60 in dict)
-  [/^eur/, "ɝ"], // connoisseur, entrepreneur (French -eur → /ɝ/)
-  [/^eu/, "ju"], // feud, neuter, Europe
-  [/^ue/, "u"], // true, blue, glue (at end)
   [/^uy$/, "aɪ"], // buy, guy
   [/^uil/, "ɪl"], // build, built, guild, guilt, guile (ɪ not u before l)
   // "ui" before d or n keeps both vowels as a genuine two-nucleus hiatus
@@ -239,7 +243,10 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // their own environments, is 5 : 0. The lookahead leaves d/n unconsumed
   // for the normal consonant rules to emit.
   [/^ui(?=[dn])/, "uɪ"],
-  [/^ui/, "u"], // fruit, suit, cruise
+  // Merged with two earlier same-output rules that never overlap anything
+  // between their old position and here: ^oo (boot, moon, cool, moose;
+  // long u) and ^ue (true, blue, glue, at end).
+  [/^(?:ui|oo|ue)/, "u"], // fruit, suit, cruise
   // R-controlled magic-e rimes: must precede generic ^ar/^ir/^or/^ur rules.
   [/^are$/, "ɛɹ"], // care, bare, share, prepare
   [/^ire$/, "aɪɹ"], // fire, hire, wire, tire
@@ -2014,30 +2021,29 @@ export function syllableToIPA(
     // to the same shape but stay lax. i is tense in the single-coda
     // frame: 8 aɪ : 0 in the dict — title, entitle, subtitle, idle,
     // bridle, sidle.
+    // Same closed-syllable frame shared by i and a/o below: a stressed
+    // single-consonant coda before a bare -le syllable is tense (title,
+    // idle; cradle, ladle; bodle, knodle), where the doubled-coda case
+    // (little, middle; paddle, apple; bottle, coddle) stays lax by the
+    // syllable-closing default below. i: 8 aɪ : 0 in the dict (title,
+    // entitle, subtitle, idle, bridle, sidle). a: 10 eɪ : 6 other
+    // (cadle/cradle/ladle/radle/shadle/hazle/mahle/stahle/strahle/vahle);
+    // o (w excluded — "-owle" is the /aʊ/ digraph, crowle/fowle/howle):
+    // 8 oʊ : 1 (aristotle, unstressed here).
     if (
       isStressed && isNextLastSyllable && nextSyllable === "le" &&
-      /^i[^aeiouylr]$/.test(remaining) &&
       !/([b-df-hj-np-tv-z])\1/.test(syllable)
     ) {
-      emit("i", "aɪ", "phoneme:^i(?=Cle)");
-      remaining = remaining.substring(1);
-      continue;
-    }
-    // Same closed-syllable frame, for a/o: a stressed single-consonant
-    // coda before a bare -le syllable is tense (cradle, ladle; bodle,
-    // knodle), where the doubled-coda case (paddle, apple; bottle,
-    // coddle) stays lax by the syllable-closing default below. a: 10
-    // eɪ : 6 other over the dict (cadle/cradle/ladle/radle/shadle/hazle/
-    // mahle/stahle/strahle/vahle); o (w excluded — "-owle" is the /aʊ/
-    // digraph, crowle/fowle/howle): 8 oʊ : 1 (aristotle, unstressed here).
-    if (
-      isStressed && isNextLastSyllable && nextSyllable === "le" &&
-      /^[ao][^aeiouwylr]$/.test(remaining) &&
-      !/([b-df-hj-np-tv-z])\1/.test(syllable)
-    ) {
-      emit(remaining[0], remaining[0] === "a" ? "eɪ" : "oʊ", "phoneme:^[ao](?=Cle)");
-      remaining = remaining.substring(1);
-      continue;
+      if (/^i[^aeiouylr]$/.test(remaining)) {
+        emit("i", "aɪ", "phoneme:^i(?=Cle)");
+        remaining = remaining.substring(1);
+        continue;
+      }
+      if (/^[ao][^aeiouwylr]$/.test(remaining)) {
+        emit(remaining[0], remaining[0] === "a" ? "eɪ" : "oʊ", "phoneme:^[ao](?=Cle)");
+        remaining = remaining.substring(1);
+        continue;
+      }
     }
     if (
       syllableIndex === 0 &&
@@ -2119,9 +2125,10 @@ export function syllableToIPA(
     // instead of 13+ string comparisons per rule. Built once per
     // syllable; for a 5-syllable word that's 5 small allocations
     // instead of 13 × 150 × 5 = ~10K string ops.
-    const aFire = (nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE ||
-      (twoSylTense && /^[^aeiouy]*a$/.test(syllable) && !nextSyllable!.startsWith("r")) ||
-      (aTwoSylTense && /^[^aeiouy]*a$/.test(syllable)));
+    // Bare-"a" test factored out (distributive: (p&&a)||(p&&b) === p&&(a||b)).
+    const aFire = nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE ||
+      (/^[^aeiouy]*a$/.test(syllable) &&
+        ((twoSylTense && !nextSyllable!.startsWith("r")) || aTwoSylTense));
     // See FRENCH_INE_GRAM: an unstressed word-final -ine syllable whose
     // preceding consonant(s) mark it as reduced-suffix or French-loan,
     // not the Germanic/Latin-adjective aɪn default.
@@ -2157,32 +2164,28 @@ export function syllableToIPA(
     if (!hadDoubledL) skip.add("^al$");
     if (gFromDoubling || gFromGetSuffix) skip.add("^g(?=[eiy])");
     if (!hasVowelBeforeTerminalY) skip.add("^y$");
-    if (!isLastSyllable && !isStressed && !nextIsMagicE) skip.add("^o$");
-    if (triLax) skip.add("^o$");
-    // A stressed open o before a lax-cluster onset (the same s+stop/sh/ch/
-    // th/x set that already blocks a/e/i tensing) stays lax when the whole
-    // word ends in the reduced -Con suffix: boston, bosman, coxon. Scoped
-    // to that final "-n" shape specifically — the same cluster before an
-    // -er/-or/-ar agent-noun ending or a full final vowel goes the other
-    // way (poster, kosher, costar, bosko all keep oʊ), so a blanket gate on
-    // any next syllable would trade those away. Measured over the -on
-    // subset alone (open first syllable, single-consonant "Con" last
-    // syllable): 89/94 (94.7%) of the non-cluster, non-r-onset population
-    // is already oʊ by the default above, so this only needs to carve the
-    // cluster cases back out to lax.
+    // Four conditions merged (Set.add is idempotent) that all block the
+    // tense "^o$" default: an unstressed non-final syllable; trisyllabic
+    // laxing; a stressed open o before a lax-cluster onset (the same
+    // s+stop/sh/ch/th/x set
+    // that already blocks a/e/i tensing) when the whole word ends in the
+    // reduced -Con suffix (boston, bosman, coxon) — scoped to that final
+    // "-n" shape specifically, since the same cluster before an -er/-or/-ar
+    // agent-noun ending or a full final vowel goes the other way (poster,
+    // kosher, costar, bosko all keep oʊ); and, unlike the rest of
+    // nextIsLaxCluster, a next syllable starting with x is lax regardless
+    // of what follows it (boxer, boxes, coxen, doxie, epoxy, hypoxia,
+    // obnoxious, biloxi) — no -er/-ar/full-vowel ending keeps it tense the
+    // way poster/kosher/costar do for the s+stop/sh/ch/th members above,
+    // since /ks/ is a genuine coda cluster wearing a single letter (111 : 0
+    // in the dict, no exceptions found).
     if (
-      nextIsLaxCluster && !nextIsCle &&
-      isNextLastSyllable && nextSyllable!.endsWith("n")
+      (!isLastSyllable && !isStressed && !nextIsMagicE) ||
+      triLax ||
+      (nextIsLaxCluster && !nextIsCle && isNextLastSyllable && nextSyllable!.endsWith("n")) ||
+      nextSyllable?.startsWith("x")
     )
       skip.add("^o$");
-    // Unlike the rest of nextIsLaxCluster, a next syllable starting with x
-    // is lax regardless of what follows it (boxer, boxes, coxen, doxie,
-    // epoxy, hypoxia, obnoxious, biloxi) — no -er/-ar/full-vowel ending
-    // keeps it tense the way poster/kosher/costar do for the s+stop/sh/ch/
-    // th members above. /ks/ is a genuine coda cluster wearing a single
-    // letter, so it checks the vowel the way any other coda would: 111 : 0
-    // in the dict, no exceptions found.
-    if (nextSyllable?.startsWith("x")) skip.add("^o$");
     if (!isLastSyllable || isStressed) skip.add("^ous$");
     // The "leftover single-consonant" merge in `syllabify` also glues a
     // stressed a + single consonant + y into one chunk in the Greek
@@ -2205,26 +2208,28 @@ export function syllableToIPA(
     // (completion, deletion, 6:2), the unstressed re-/pre- prefix (release,
     // prevent, 411:136; de-/be- measured negative), and before consonant + i +
     // vowel (medium, tedious, 17:5). Elsewhere open e stays lax (seven, level).
+    // Bare-"e" test factored out of 3 disjuncts (distributive law, as aFire).
     const eFire =
       (syllableIndex === 0 && isLastSyllable && /^[^aeiouy]+e$/.test(syllable)) ||
-      (isStressed && isNextLastSyllable && nextIsMagicE &&
-        /^[^aeiouy]*e$/.test(syllable) && !nextSyllable!.startsWith("r")) ||
       nextSyllable === "tion" || nextSyllable === "sion" ||
       (syllableIndex === 0 && !isStressed && !isLastSyllable && /^p?re$/.test(syllable)) ||
-      (isStressed && !nextIsLaxCluster && /^[^aeiouy]*e$/.test(syllable) &&
-        /^[^aeiouyr]+i[aeou][a-z]/.test(nextSyllable ?? "")) ||
-      // The two-syllable magic-e frame that already tenses a and i, for
-      // the subset of inflection endings where the dict backs it (i : ɛ):
-      // -es 18:5 (thebes, ceres, feces), -us 14:6 (fetus, genus, jesus),
-      // -al 11:6 (legal, penal, renal), -ing 8:3 (ceding), -ed 4:1,
-      // -est 2:2. The endings left out measure even or negative and are
-      // deliberately excluded: -er is 44:35 but costs ever/never/clever/
-      // lever, -en 14:16 (seven), -is 6:15, -ent 7:10, -or 1:15, -ant 1:4.
-      // Within the subset, a t/d before -al is lax (metal, medal, pedal,
-      // petal 5 ɛ : 1) and so is an r-initial ending (feral, cerus); the
-      // onset must be a single consonant, the shape of an open syllable.
-      (twoSylTense && /^[^aeiouy]*e$/.test(syllable) &&
-        /^(?:[^aeiouyrtd]als?|[^aeiouyr](?:es|us|ing|ed|est))$/.test(nextSyllable!)) ||
+      (/^[^aeiouy]*e$/.test(syllable) &&
+        ((isStressed && isNextLastSyllable && nextIsMagicE && !nextSyllable!.startsWith("r")) ||
+          (isStressed && !nextIsLaxCluster &&
+            /^[^aeiouyr]+i[aeou][a-z]/.test(nextSyllable ?? "")) ||
+          // The two-syllable magic-e frame that already tenses a and i,
+          // for the subset of inflection endings where the dict backs it
+          // (i : ɛ): -es 18:5 (thebes, ceres, feces), -us 14:6 (fetus,
+          // genus, jesus), -al 11:6 (legal, penal, renal), -ing 8:3
+          // (ceding), -ed 4:1, -est 2:2. The endings left out measure
+          // even or negative and are deliberately excluded: -er is 44:35
+          // but costs ever/never/clever/lever, -en 14:16 (seven), -is
+          // 6:15, -ent 7:10, -or 1:15, -ant 1:4. Within the subset, a t/d
+          // before -al is lax (metal, medal, pedal, petal 5 ɛ : 1) and so
+          // is an r-initial ending (feral, cerus); the onset must be a
+          // single consonant, the shape of an open syllable.
+          (twoSylTense &&
+            /^(?:[^aeiouyrtd]als?|[^aeiouyr](?:es|us|ing|ed|est))$/.test(nextSyllable!)))) ||
       // The Italian doubled-one surname (see assignStress): the word-final
       // "e" that is silent everywhere else is pronounced /i/ here (cannone,
       // bottone, pallone — 25 : 3, the losses barrone/stallone/varrone are
@@ -2270,24 +2275,24 @@ export function syllableToIPA(
     // th before a/i/o/u is the Greek/Latin θ (author, method, marathon,
     // thalamus): 300:30 medially, 268:15 word-initially in dict. The ð
     // exceptions are all monosyllabic function words (this/that/thou), so
-    // a one-syllable first syllable keeps the voiced default.
+    // a one-syllable first syllable keeps the voiced default. th+e is
+    // voiceless too when the previous syllable closes in a consonant
+    // (anthem, esthete, mythic, naphtha): 226:32 in dict — r is excluded,
+    // that cluster is voiced (further, northern, worthy); w/y close a
+    // vowel digraph (lawther, blythe) and t a geminate (matthey).
+    // A third trigger (THETA_CLUSTER_CODA, declared above) extends the
+    // voiceless default to a word-initial monosyllable/magic-e form whose
+    // coda is a real cluster, which syllableIndex > 0 above doesn't reach;
+    // merged into the same skip.add (Set.add is idempotent).
+    const theVoicelessAtBoundary =
+      syllableIndex > 0 && /^the/.test(remaining) && /[^aeiouyrwt]$/.test(prevSyllable ?? "");
     if (
-      /^th[aiou]/.test(remaining) &&
-      (syllableIndex > 0 || (!isLastSyllable && !nextIsMagicE))
+      (/^th[aiou]/.test(remaining) && (syllableIndex > 0 || (!isLastSyllable && !nextIsMagicE))) ||
+      theVoicelessAtBoundary ||
+      (syllableIndex === 0 && THETA_CLUSTER_CODA.test(remaining) && !/gh$/.test(remaining))
     )
       skip.add("^th(?=[aeiou])");
-    // th+e is voiceless too when the previous syllable closes in a
-    // consonant (anthem, esthete, mythic, naphtha): 226:32 in dict.
-    // r is excluded — that cluster is voiced (further, northern, worthy);
-    // w/y close a vowel digraph (lawther, blythe) and t a geminate (matthey).
-    if (
-      syllableIndex > 0 &&
-      /^the/.test(remaining) &&
-      /[^aeiouyrwt]$/.test(prevSyllable ?? "")
-    ) {
-      skip.add("^th(?=[aeiou])");
-      skip.add("^the$");
-    }
+    if (theVoicelessAtBoundary) skip.add("^the$");
     // A bare vowel+r rime (nothing else left in this syllable) right
     // before a syllable starting with r is the doubled/assimilated r at a
     // syllable boundary (ar·range, ar·rive, er·ror, mir·ror, car·ry,
@@ -2331,16 +2336,6 @@ export function syllableToIPA(
       skip.add("^ar");
       skip.add("^[eiu]r");
     }
-    // See THETA_CLUSTER_CODA above: extends the voiceless default to
-    // word-initial monosyllables/magic-e forms whose coda is a real
-    // cluster, which the two checks above don't reach (they only force
-    // voiceless at syllableIndex > 0).
-    if (
-      syllableIndex === 0 &&
-      THETA_CLUSTER_CODA.test(remaining) &&
-      !/gh$/.test(remaining)
-    )
-      skip.add("^th(?=[aeiou])");
 
     let matchFound = false;
     for (const [pattern, ruleIpa] of PHONEME_RULES) {
