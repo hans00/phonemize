@@ -669,19 +669,17 @@ export function assignStress(syllables: string[], word: string): number {
   // `syllables.length <= 1` guard above means length is always >= 2 here,
   // so `syllables.length - 2` can't go negative and needs no Math.max —
   // true of every "penult" return in this function.
-  if (/(?:tion|sion|cial|tial)$/.test(lowerWord)) return syllables.length - 2;
-
   // -ity pulls the primary onto the syllable right before it (activity,
   // abnormality, accessibility). The syllabifier keeps consonant + ity as
   // one final slot (ac·ti·vity), so that syllable is length - 2. -iety
   // (society, anxiety) is a different frame and is left out.
-  if (/[^aeiouy]ity$/.test(lowerWord)) return syllables.length - 2;
-  // -ial does the same at 3+ slots (adversarial, editorial, material); at
-  // two the <i> is itself the stressed vowel (denial, trial).
-  if (/[^aeiouy]ial$/.test(lowerWord) && syllables.length >= 3)
+  if (/(?:tion|sion|cial|tial)$/.test(lowerWord) || /[^aeiouy]ity$/.test(lowerWord))
     return syllables.length - 2;
-  // -ental/-antal likewise (accidental, fundamental, environmental).
-  if (/[ae]ntal$/.test(lowerWord) && syllables.length >= 3) return syllables.length - 2;
+  // -ial does the same at 3+ slots (adversarial, editorial, material); at
+  // two the <i> is itself the stressed vowel (denial, trial). -ental/-antal
+  // likewise (accidental, fundamental, environmental).
+  if ((/[^aeiouy]ial$/.test(lowerWord) || /[ae]ntal$/.test(lowerWord)) && syllables.length >= 3)
+    return syllables.length - 2;
   // -ate/-ator put the primary two syllables before their own /eɪt/
   // (abdicate, accelerate, anticipate, and the adjectives accurate,
   // delicate; -ator stresses the same way: generator, indicator,
@@ -698,9 +696,7 @@ export function assignStress(syllables: string[], word: string): number {
   // -ia/-ian/-ious/-eous stress the syllable before them (india, malaria,
   // cafeteria, canadian, barbarian, various, curious, spontaneous); the
   // syllabifier keeps consonant + suffix as the last slot.
-  if (LATIN_HIATUS_ENDING.test(syllables[syllables.length - 1]))
-    return syllables.length - 2;
-
+  //
   // A word-final "que" is the French spelling of a bare /k/ (antique,
   // critique, boutique, mystique, martinique): "qu" starts with a vowel
   // letter, so it never trips SILENT_E_SLOT and the syllabifier gives it
@@ -714,9 +710,10 @@ export function assignStress(syllables: string[], word: string): number {
   // losses are idiosyncratic loans/names with no further orthographic
   // split (albuquerque, barbeque, communique, discotheque).
   if (
-    syllables.length >= 3 &&
-    syllables[syllables.length - 1] === "que" &&
-    !lowerWord.endsWith("esque")
+    LATIN_HIATUS_ENDING.test(syllables[syllables.length - 1]) ||
+    (syllables.length >= 3 &&
+      syllables[syllables.length - 1] === "que" &&
+      !lowerWord.endsWith("esque"))
   )
     return syllables.length - 2;
 
@@ -779,14 +776,6 @@ export function assignStress(syllables: string[], word: string): number {
   // 93% (-o) and 96% (-i) of the time, and 88-96% at 4 slots.
   // Latin/Greek -ica/-ula/-ema/-ico and a few more grams stay antepenult
   // (africa, america, formula, cinema, mexico): each is under 70% penult.
-  if (
-    /[^aeiouy][aoi]$/.test(lowerWord) &&
-    !/(?:ic|ul|em|or|ac|om|ig)[aoi]$/.test(lowerWord) &&
-    syllables.length >= 3 &&
-    /^[^aeiouy]+[aoi]$/.test(syllables[syllables.length - 1])
-  )
-    return syllables.length - 2;
-
   // Greek -graphy/-nomy/-sophy/-scopy/-pathy/-gamy/-cracy/-tomy/-emy/-etry
   // likewise (photography, economy, philosophy, democracy, anatomy,
   // academy, telemetry): the ending is one slot. -tomy/-emy/-etry share
@@ -806,34 +795,39 @@ export function assignStress(syllables: string[], word: string): number {
   // whole dict, -tomy and -emy/-etry together: strict 4 wins (anatomy,
   // academy, archenemy, spectrometry) : 0 losses, lenient 6 : 1, top-5000
   // 1 (academy) : 0.
-  if (/(?:graph|nom|soph|scop|path|gam|crac|tom|em|etr)y$/.test(lowerWord) && syllables.length >= 3)
-    return syllables.length - 2;
-
+  //
   // Greek/Latin scientific suffixes with fixed stress: uranium, samarium,
   // osmosis, diagnosis, arthritis, analysis, psoriasis. They pull the
   // primary onto the syllable before the suffix. The orthographic
   // syllabifier groups the trailing "-rium/-nosis/-lysis" as one chunk, so
-  // that target is the penult of the syllable array (length - 2).
-  if (/(?:ium|osis|itis|ysis|iasis)$/.test(lowerWord)) return syllables.length - 2;
+  // that target is the penult of the syllable array (length - 2), and
+  // (unlike the two rules above) needs no syllable-count guard of its own.
+  //
+  // All three of these rules — the a/o/i ending, the Greek -graphy family,
+  // and the -ium/-osis/… family — return the same syllables.length - 2 and
+  // share no state, so they OR into one test.
+  if (
+    (/[^aeiouy][aoi]$/.test(lowerWord) &&
+      !/(?:ic|ul|em|or|ac|om|ig)[aoi]$/.test(lowerWord) &&
+      syllables.length >= 3 &&
+      /^[^aeiouy]+[aoi]$/.test(syllables[syllables.length - 1])) ||
+    (/(?:graph|nom|soph|scop|path|gam|crac|tom|em|etr)y$/.test(lowerWord) && syllables.length >= 3) ||
+    /(?:ium|osis|itis|ysis|iasis)$/.test(lowerWord)
+  )
+    return syllables.length - 2;
 
   // -ance/-ence is unstressed (162:31 əns:æns in dict, and that æns set
   // is final-stressed), and maximal onset splits it over two slots
   // ("dis|tan|ce"), so a 3-slot array is a monosyllabic stem: stress it
   // (distance ˈdɪstəns, balance ˈbæɫəns). Longer stems keep the
   // root-initial default (dominance ˈdɑmənəns, equivalence ɪˈkwɪvəɫəns).
-  if (
-    (lowerWord.endsWith("ance") || lowerWord.endsWith("ence")) &&
-    syllables.length >= 3
-  ) {
-    if (syllables.length === 3) return 0;
-    // At four slots the stem is one syllable longer and the split is
-    // carried by that syllable's weight: a closed second slot means a
-    // stressed stem (acceptance, abundance, admittance — 39 of 45 want
-    // slot 1), an open one a Latin bound root that leaves the primary at
-    // the front (conference, difference, competence, evidence — 68 of 124).
-    if (syllables.length === 4 && /[aeiouy]$/.test(syllables[1])) return 0;
-    return 1;
-  }
+  // At four slots the stem is one syllable longer and the split is carried
+  // by that syllable's weight: a closed second slot means a stressed stem
+  // (acceptance, abundance, admittance — 39 of 45 want slot 1), an open
+  // one a Latin bound root that leaves the primary at the front
+  // (conference, difference, competence, evidence — 68 of 124).
+  if ((lowerWord.endsWith("ance") || lowerWord.endsWith("ence")) && syllables.length >= 3)
+    return syllables.length === 3 || (syllables.length === 4 && /[aeiouy]$/.test(syllables[1])) ? 0 : 1;
 
   if (lowerWord.endsWith("ic")) return syllables.length - 2;
 
@@ -854,21 +848,13 @@ export function assignStress(syllables: string[], word: string): number {
   // loses to the length-3 alternative and wins outright for the other two
   // (businessman, forewoman, haliburton). -ington is left out, as in
   // GERMANIC_NAME_ENDING: American usage varies there (ellington).
-  if (
-    syllables.length >= 3 &&
-    /^(?:man|son|ton)$/.test(syllables[syllables.length - 1]) &&
-    !lowerWord.endsWith("ington")
-  ) {
-    return 0;
-  }
   // Name-forming -ville (Aldenville, Andersonville, Bartlesville) is the
   // same reduced-suffix pattern, but the syllabifier splits it "vil·le"
   // (two slots) rather than one, so it needs its own whole-word check:
   // 149/163 (91.4%) initial over the dict words at 3+ syllables. The
   // minority is short French-origin roots that keep their own stress
   // (Seville, Deville, Douville, Courville) and Mc-/Mac- surnames.
-  if (syllables.length >= 3 && lowerWord.endsWith("ville")) return 0;
-
+  //
   // A 3-syllable Latinate -ary word (secretary, legendary, commentary,
   // corollary) keeps its primary word-initial even when a closed middle
   // syllable would otherwise pull the heaviness fallback onto it
@@ -888,16 +874,28 @@ export function assignStress(syllables: string[], word: string): number {
   // — 7 initial : 17 elsewhere at 3 slots with a closed middle), so the
   // same override would trade a real win for a real loss instead of only
   // fixing one.
-  if (syllables.length === 3 && /[^aeiouy]ary$/.test(lowerWord)) return 0;
-
-  // A 3-syllable Greek -crat word is word-initial (democrat, autocrat,
+  //
+  // A 3-syllable Greek -crat word is word-initial too (democrat, autocrat,
   // bureaucrat, eurocrat, kleptocrat, plutocrat, technocrat: 7/7 in the
   // dict), unlike its own -cracy derivative above, which is stressed right
   // before the suffix instead. Checked ahead of the prefix loop below,
   // whose "de" entry would otherwise take democrat as de- + -mocrat and
   // stress the root; aristocrat is a-+ristocrat at 4 syllables and is
   // already correct without this, so it is left out by the length check.
-  if (syllables.length === 3 && lowerWord.endsWith("crat")) return 0;
+  //
+  // The four conditions above (man/son/ton, ville, ary, crat) all return
+  // the word-initial stress 0 and share no state, so they are OR'd into
+  // one test, grouped by their length guard (>=3 for man/son/ton/ville,
+  // ===3 for ary/crat) to avoid repeating it.
+  if (
+    (syllables.length >= 3 &&
+      ((/^(?:man|son|ton)$/.test(syllables[syllables.length - 1]) &&
+        !lowerWord.endsWith("ington")) ||
+        lowerWord.endsWith("ville"))) ||
+    (syllables.length === 3 &&
+      (/[^aeiouy]ary$/.test(lowerWord) || lowerWord.endsWith("crat")))
+  )
+    return 0;
 
   // A word-final -ion syllable that is not the -tion/-sion suffix (opinion,
   // criterion, pavilion, battalion, communion, suspicion, dominion,
@@ -912,13 +910,16 @@ export function assignStress(syllables: string[], word: string): number {
   // scorpion, champion: 6 penult/initial : 57 final in the dict) and is
   // excluded by the length check; the doubled-l subset of the 2-slot
   // population (million, billion, stallion) is already handled directly by
-  // the `^lion$` SUFFIX_RULES entry above, unaffected either way.
-  if (
-    syllables.length >= 3 &&
-    /ion$/.test(lowerWord) &&
-    !/(?:tion|sion)$/.test(lowerWord)
-  )
-    return syllables.length - 2;
+  // the `^lion$` SUFFIX_RULES entry above, unaffected either way. The
+  // `!/(?:tion|sion)$/` exclusion a first version of this rule carried is
+  // dead code, not just redundant: this function's very first statement
+  // already returns for every -tion/-sion word unconditionally (see its
+  // own comment), so no such word can ever reach here to need excluding.
+  // (This whole compression pass's snapshot dump is byte-identical before
+  // and after, which proves the pass as a whole is behavior-preserving;
+  // it wasn't isolated to re-verify this one clause alone, since the
+  // logical argument above is airtight on its own.)
+  if (syllables.length >= 3 && /ion$/.test(lowerWord)) return syllables.length - 2;
 
   // Common prefixes that don't usually take stress. For 3+ syllable
   // words we use the orthographic prefix as a signal but rely on the
@@ -1010,13 +1011,13 @@ export function assignStress(syllables: string[], word: string): number {
       (DIGRAPH_RIME.test(syllables[1]) || syllables[1].includes("oi") ||
         RHOTIC_VOWEL_RE.test(syllables[1])) &&
       !/(?:ey|ie)$/.test(syllables[1]);
-    if (firstSyl === "a" && tenseRoot) return 1;
-    // Assimilated Latin ad-: account, approach, appear, allow. The doubled
-    // consonant at the boundary is the assimilation, so `isPrefix` has to be
-    // inverted here — it is a prefix precisely because the letter repeats.
+    // Assimilated Latin ad- (account, approach, appear, allow) counts too:
+    // the doubled consonant at the boundary is the assimilation, so
+    // `isPrefix` has to be inverted here — it is a prefix precisely
+    // because the letter repeats.
     if (
-      /^a[bcdfglmnprstvz]$/.test(firstSyl) &&
-      syllables[1][0] === firstSyl[1] &&
+      (firstSyl === "a" ||
+        (/^a[bcdfglmnprstvz]$/.test(firstSyl) && syllables[1][0] === firstSyl[1])) &&
       tenseRoot
     )
       return 1;
@@ -1028,39 +1029,40 @@ export function assignStress(syllables: string[], word: string): number {
     // dropped — its one hit, abshire, is a surname compound with no win to
     // offset it. con- was measured and dropped too: conspire is final but
     // conjure and confrere are not, a 1:2 split.
-    if (
-      RHOTIC_VOWEL_RE.test(syllables[1]) &&
-      ["ad", "ac", "in", "mis", "out"].includes(firstSyl)
-    )
-      return 1;
     // -ureau is initial in both dict words that have it (bureau,
     // lamoureaux): the u + r is the English CURE reading, not French.
-    if (FRENCH_FINAL_ENDING.test(lowerWord) && !/ureau$/.test(lowerWord))
-      return 1;
+    //
     // -oon is the French/Spanish loan suffix (balloon, baboon, cartoon,
     // bassoon): 94.9% final (37:2) over the two-syllable population,
     // unlike the wider oo+consonant family it sits inside (mostly English
     // compounds — allwood, ashbrook — only 18% final), so it is scoped to
     // this one gram rather than the digraph generally.
-    if (/oon$/.test(lowerWord)) return 1;
+    //
     // A bare -een that is not the Scandinavian surname suffix -deen
     // (lindeen, hedeen — 40% final, 4:6) or a bare -teen word (canteen,
     // preteen against osteen, umpteen — 62.5% final, too mixed to add to
     // the rule, and the cardinal-number compounds eighteen/fifteen are
     // majority initial on their own, 0:5) is a French/Irish loan or place
     // name with final stress (aileen, baleen, between, canteen, careen):
-    // 83.3% final (45:9) over the rest.
-    if (/een$/.test(lowerWord) && !/(?:deen|teen)$/.test(lowerWord)) return 1;
+    // 83.3% final (45:9) over the rest. All four remaining return-1 checks
+    // here share no state, so they OR into one test before the length-2
+    // branch's return-0 default.
+    if (
+      (RHOTIC_VOWEL_RE.test(syllables[1]) && ["ad", "ac", "in", "mis", "out"].includes(firstSyl)) ||
+      (FRENCH_FINAL_ENDING.test(lowerWord) && !/ureau$/.test(lowerWord)) ||
+      /oon$/.test(lowerWord) ||
+      (/een$/.test(lowerWord) && !/(?:deen|teen)$/.test(lowerWord))
+    )
+      return 1;
     return 0;
   }
 
   // For 3+ syllables, use improved stress assignment
   if (syllables.length >= 3) {
-    // Check for compound words (typically have primary stress on first part)
-    if (isLikelyCompound(lowerWord, syllables)) {
-      return 0; // First syllable gets primary stress in compounds
-    }
-
+    // Check for compound words (typically have primary stress on first
+    // part, like the word-final -ture/-ure root check just below, so the
+    // two OR into one test).
+    //
     // A word-final -ture/-ure syllable is the reduced /tʃɝ/ or /jɝ/ tail
     // (PHONEME_RULES' ^ture$/^ure$ entries), never a real nucleus of its
     // own, so at exactly 4 syllables the primary stays on the root's first
@@ -1086,9 +1088,10 @@ export function assignStress(syllables: string[], word: string): number {
     // vowel-correct) fallback until FULL_NUCLEI carries /ʌ/ for this
     // position specifically.
     if (
-      syllables.length === 4 &&
-      (syllables[3] === "ture" || syllables[3] === "ure") &&
-      !/^[^aeiouy]*u[^aeiouy]+$/.test(syllables[2])
+      isLikelyCompound(lowerWord, syllables) ||
+      (syllables.length === 4 &&
+        /^t?ure$/.test(syllables[3]) &&
+        !/^[^aeiouy]*u[^aeiouy]+$/.test(syllables[2]))
     )
       return 0;
 

@@ -288,8 +288,7 @@ const ENDS_IN_VOWEL_RE = /[aeiouɑæɛɪɔʊʌəɝ]$/;
 // a real regression on the metric that gates this fix, so left open.
 const MAGIC_E_CANDIDATE = (base: string): boolean =>
   !/([bcdfgklmnprst])\1$/.test(base) &&
-  !/gn$/.test(base) &&
-  !/(?:ook|ood)$/.test(base) &&
+  !/(?:gn|ook|ood)$/.test(base) &&
   (/[aeiouy][bcdfghjklmnpqrstvwxz]$/.test(base) ||
     /[cgsvl]$/.test(base) ||
     /(?:st|th)$/.test(base) ||
@@ -940,8 +939,7 @@ export class EnglishG2P implements LanguageProcessor {
           // genuinely irregular and stays in the table regardless — this
           // branch is only ever reached once wellKnown(stem) has already
           // failed, so it can't misfire on them.
-          (/(?:r|gn|ion|ient)$/.test(stem)
-            ? this.predictInternal(stem, undefined, true)
+          (/(?:r|gn|ion|ient)$/.test(stem) ||
             // A multi-syllable silent-e stem (device, virus is NOT this —
             // it has no e at all) has the identical problem one syllable
             // over: devices resyllabifies as de·vi·ces, and the extra
@@ -1001,10 +999,10 @@ export class EnglishG2P implements LanguageProcessor {
             // exchanging/ranged/ranging. No -nge word was among this
             // package's own target examples (device/notice/license), so
             // the exclusion costs nothing intended.
-            : /[^aeiouy]e$/.test(stem) &&
+            (/[^aeiouy]e$/.test(stem) &&
               !/(?:ee|[^aeiou]le|he|tte|se|ves|xe|nge)$/.test(stem) &&
               syllabify(stem).length > 1 && syllabify(stem).length <= 3 &&
-              !/(?:us|is|ix)es$/.test(lowerWord)
+              !/(?:us|is|ix)es$/.test(lowerWord))
               ? this.predictInternal(stem, undefined, true)
               : undefined);
       if (basePron) return sPlural(basePron);
@@ -1420,11 +1418,10 @@ export class EnglishG2P implements LanguageProcessor {
       // -ial is not stress-neutral like -al: it pulls the primary onto the
       // syllable before it (adversary → adversarial, editor → editorial),
       // which the whole-word stress rule places.
-      // A one-syllable stem is the stressed <i> itself (trial, dial).
-      if (sfx === "al" && b.endsWith("i") && (b.match(/[aeiouy]+/g)?.length ?? 0) >= 2) continue;
-      // Same for -al after a polysyllabic -ent/-ant stem: environmental,
+      // A one-syllable stem is the stressed <i> itself (trial, dial). Same
+      // for -al after a polysyllabic -ent/-ant stem: environmental,
       // accidental, fundamental stress the -en- the stem left unstressed.
-      if (sfx === "al" && /[ae]nt$/.test(b) && (b.match(/[aeiouy]+/g)?.length ?? 0) >= 2) continue;
+      if (sfx === "al" && (b.endsWith("i") || /[ae]nt$/.test(b)) && (b.match(/[aeiouy]+/g)?.length ?? 0) >= 2) continue;
       if (sfx === "al" && !lex(b)) {
         // A doubled consonant before -al is orthographic (refer → referral):
         // read the single-consonant stem, as inflect() does for -ed/-ing.
@@ -1644,7 +1641,6 @@ export class EnglishG2P implements LanguageProcessor {
       // ordinary, unexcluded compound head) broke a pinned test by giving
       // dogmatic the free-standing /dɔɡ/ instead of the initial-closed-o
       // frame's /dɑɡ/.
-      if (/^(?:log|graph|nom|soph|mat)ic$/.test(b)) continue;
       // "pose" is the same trap from the other side: it newly verifies as
       // a tail (1/9, from impose — dict "im" and the "im-" prefix share
       // one vowel /ɪm/, so joinTailPrimary happens to reproduce impose's
@@ -1660,7 +1656,7 @@ export class EnglishG2P implements LanguageProcessor {
       // prefix identity swings unpredictably between full-vowel and
       // reduced, so it is excluded outright rather than trying to save
       // "impose" specifically.
-      if (b === "pose") continue;
+      if (/^(?:log|graph|nom|soph|mat)ic$/.test(b) || b === "pose") continue;
       const score = Math.min(a.length, b.length);
       if (score > bestScore) {
         bestScore = score;
