@@ -899,6 +899,27 @@ export function assignStress(syllables: string[], word: string): number {
   // already correct without this, so it is left out by the length check.
   if (syllables.length === 3 && lowerWord.endsWith("crat")) return 0;
 
+  // A word-final -ion syllable that is not the -tion/-sion suffix (opinion,
+  // criterion, pavilion, battalion, communion, suspicion, dominion,
+  // connexion, crucifixion, malathion, centurion, collodion, hyperion,
+  // nonunion, pygmalion, vermilion) takes the penult at 3+ slots: 34
+  // penult : 10 elsewhere (77.3%) over the dict. The losses are Spanish
+  // -acion loans that keep French/Spanish final stress (aviacion,
+  // concepcion, corporacion, encarnacion, fundacion, revolucion),
+  // -illion surnames (couvillion, gomillion, gremillion), and dandelion,
+  // an antepenult minority with no orthographic split from the rest. At 2
+  // slots the same ending goes the other way (union, onion, legion,
+  // scorpion, champion: 6 penult/initial : 57 final in the dict) and is
+  // excluded by the length check; the doubled-l subset of the 2-slot
+  // population (million, billion, stallion) is already handled directly by
+  // the `^lion$` SUFFIX_RULES entry above, unaffected either way.
+  if (
+    syllables.length >= 3 &&
+    /ion$/.test(lowerWord) &&
+    !/(?:tion|sion)$/.test(lowerWord)
+  )
+    return syllables.length - 2;
+
   // Common prefixes that don't usually take stress. For 3+ syllable
   // words we use the orthographic prefix as a signal but rely on the
   // doubled-consonant guard to avoid false matches (e.g. "address"

@@ -919,7 +919,20 @@ export class EnglishG2P implements LanguageProcessor {
           // silent-g word that goes rule-exact): its syllable-boundary
           // dependency is the same one MAGIC_E_CANDIDATE's "gn$" exclusion
           // guards below, so it gets the identical, narrowly-scoped test.
-          (/(?:r|gn)$/.test(stem)
+          // A bare "-ion" ending is the same shape again, not the rejected
+          // wide "n" extension: assignStress's new word-final -ion (not
+          // -tion/-sion) penult rule (syllabify.ts) makes opinion, dominion,
+          // battalion, communion, pavilion and their siblings rule-exact,
+          // and none of their plurals were reachable through the existing
+          // -tion/-sion `/[ts]ions$/` fallback below, whose test is scoped
+          // to the letter right before "ion" and never matches an n-final
+          // stem (opinions, dominions). Forcing the rule path on any
+          // wellKnown()-miss "-ion" stem is the same safe shape as r/gn:
+          // it only fires once the table lookup has already failed, so it
+          // is either a genuine rule-exact eviction (the rules already
+          // match the dict for the singular) or a novel word the whole-
+          // word fallback would have mishandled anyway.
+          (/(?:r|gn|ion)$/.test(stem)
             ? this.predictInternal(stem, undefined, true)
             // A multi-syllable silent-e stem (device, virus is NOT this —
             // it has no e at all) has the identical problem one syllable
