@@ -413,7 +413,7 @@ for (;;) {
   const runtime = new RuntimeG2P();
   let added = 0;
   for (const [word, dictIpa] of Object.entries(dict)) {
-    if (!/^[a-z]+$/.test(word) || Object.hasOwn(shippedMap, word) || initialisms[word]) continue;
+    if (!/^[a-z]+$/.test(word) || Object.prototype.hasOwnProperty.call(shippedMap, word) || initialisms[word]) continue;
     const predIpa = runtime.predict(word, "en");
     if (!predIpa) continue;
     const distance = levenshtein.get(norm(predIpa), norm(dictIpa));
@@ -685,7 +685,7 @@ function localTryDecomposition(
   if (result && result.length >= 3 && result.some((p) => p.length < 4)) return undefined;
   return result;
 }
-const chunkExists = (c: string): boolean => Object.hasOwn(shippedMap, c) || evictedMap.has(c);
+const chunkExists = (c: string): boolean => Object.prototype.hasOwnProperty.call(shippedMap, c) || evictedMap.has(c);
 const resolvedByPhase2 = new Set<string>();
 for (const word of residual) {
   const dictIpa = flipSet.get(word)!;
@@ -772,7 +772,7 @@ const finalMap: Record<string, string> = { ...shippedMap, ...Object.fromEntries(
   const postRepinRuntime = new PostRepinCtor();
   let postRepinAdded = 0;
   for (const [word, dictIpa] of Object.entries(dict)) {
-    if (!/^[a-z]+$/.test(word) || Object.hasOwn(finalMap, word) || initialisms[word]) continue;
+    if (!/^[a-z]+$/.test(word) || Object.prototype.hasOwnProperty.call(finalMap, word) || initialisms[word]) continue;
     const predIpa = postRepinRuntime.predict(word, "en");
     if (!predIpa) continue;
     const distance = levenshtein.get(norm(predIpa), norm(dictIpa));
