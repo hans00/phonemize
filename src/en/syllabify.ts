@@ -186,6 +186,13 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // was never matched by the general rule below — so this is a pure win
   // on the c/s/t majority with no new loss.
   [/^our(?=[cst])/, "ɔɹ"],
+  // Bare word-final "our" (candidate b, see report): flour/hour/our/
+  // devour/dour/scour/sour spell ɝ in the dict (9 ɝ : 0 ɹ, excluding the
+  // ^our(?=[cst]) environment above), but four/pour/tour/your/cour/
+  // amour/detour spell ɔɹ/ʊɹ with no orthographic split found (onset
+  // consonant class doesn't discriminate: f/p/t/k appear on both sides).
+  // See report for measurement.
+  [/^our$/, "aʊɝ"],
   [/^o(?:u|w(?=[snmk]))/, "aʊ"], // house, about, cloud; cow, down, brown (before consonants)
   // Merged from three same-output rules (^ow: show, blow, know; ^eau[x]?:
   // plateau/beau + beaux/bordeaux, French eau(x), x silent; ^oa: boat,
@@ -253,6 +260,14 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   [/^ore$/, "ɔɹ"], // more, sore, store, before
   [/^ure$/, "jʊɹ"], // cure, pure, secure
   [/^ere$/, "ɪɹ"], // here, mere, sphere
+  // Candidate (c), see report. A silent-e "-re" ending (the French/
+  // British spelling of -er) is one syllable with the preceding onset
+  // consonant baked in by the maximal-onset syllabifier (cen·tre, a·cre,
+  // fi·bre), so this has to sit ahead of the generic ^br/^cr/^tr cluster
+  // rules below. Scoped to the three onsets with common-word support.
+  [/^cre$/, "kɝ"],
+  [/^tre$/, "tɝ"],
+  [/^bre$/, "bɝ"],
 
   // R-controlled vowels (rhotic)
   [/^ar/, "ɑɹ"], // car, far, start
@@ -1630,14 +1645,18 @@ export function syllableToIPA(
   // handled as full-rime rules below; stripping the 'e' first would let
   // the generic `^ar/^ir/^ur` rules collapse the vowel+r into /ɑɹ/ /ɝ/
   // /ɝ/ before the magic-e upgrade can fire, and the upgrade tables
-  // can't disambiguate ir-source-ɝ (→ aɪɹ) from ur-source-ɝ (→ jʊɹ).
+  // can't disambiguate ir-source-ɝ (→ aɪɹ) from ur-source-ɝ (→ jʊɹ). The
+  // French/British -bre/-cre/-tre spelling (acre/centre/fibre, candidate
+  // c) is the same problem one onset consonant over: stripping the e
+  // first leaves just "tr" for the generic ^tr cluster rule, before the
+  // ^tre$ upgrade below ever sees it.
   // Exclude "-Cle" endings (consonant + le: table/simple/castle) but allow
   // "-Vle" endings (vowel + le: hole/mole/pole/rule/pale) — those are magic-e.
   const endsWithSilentE =
     isLastSyllable &&
     syllable.length > 1 &&
     syllable.endsWith("e") &&
-    !/(?:ee|[^aeiou]le|he|tte|se|[aeiou]re)$/.test(syllable) &&
+    !/(?:ee|[^aeiou]le|he|tte|se|[aeiou]re|[bct]re)$/.test(syllable) &&
     CONSONANTS.has(syllable[syllable.length - 2]) &&
     // be/me/we: in a one-syllable word the e is the nucleus, not silent
     (syllableIndex > 0 || /[aeiouy]/.test(syllable.slice(0, -1))) &&
@@ -2401,6 +2420,26 @@ export function syllableToIPA(
     // proxy/demystify/dery/deryck/remy/reny keep the old unconditional
     // tense default and are accepted losses, table hits at runtime.
     if (!hasVowelBeforeTerminalY) skip.add("^y$");
+    // ^our$ (candidate b) targets the STRESSED /aʊ/ diphthong (flour,
+    // hour, our, deVOUR). The identical spelling also covers the
+    // unstressed British -our = American -or agentive suffix (ARbour,
+    // ARmour, BARbour, CLAMour, GLAMour, HARbour), which reduces to a
+    // plain schwa+r (ɝ) via the existing unstressed-vowel POST_PROC_RULES
+    // merge and never carries the full diphthong — unguarded, this rule
+    // was promoting that reduced ɝ to a wrongly-restressed aʊɝ.
+    if (!isLastSyllable || !isStressed) skip.add("^our$");
+    // ^cre$/^tre$/^bre$ (candidate c) read a whole syllable as the -er-
+    // equivalent silent-e rime (acre, centre, fibre), but unlike ^ire$/
+    // ^ore$/^ure$/^ere$ the same three letters also spell a genuine,
+    // pronounced, non-final open syllable (se·cre·tary, ac·cre·tion),
+    // since a bare consonant + vowel-e syllable is common mid-word and
+    // the "e" there isn't silent — the vowel+r magic-e rimes are safe
+    // without this guard only because a silent e is inherently word-final.
+    if (!isLastSyllable) {
+      skip.add("^cre$");
+      skip.add("^tre$");
+      skip.add("^bre$");
+    }
     // Four conditions merged (Set.add is idempotent) that all block the
     // tense "^o$" default: an unstressed non-final syllable; trisyllabic
     // laxing; a stressed open o before a lax-cluster onset (the same

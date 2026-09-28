@@ -732,8 +732,19 @@ export class EnglishG2P implements LanguageProcessor {
     // "chas" would morphologise to cha+s), and for most suffixes falls
     // back to its whole-word prediction.
     const lex = (b: string): string | undefined => this.wellKnown(b, undefined, true);
+    // A suffix-stripped stem ending in the French silent-e "cre"/"tre"/
+    // "bre" rime (see syllabify.ts's ^cre$/^tre$/^bre$ PHONEME_RULES
+    // entries, candidate c) is never a genuine free word once lex(b) has
+    // already come up empty — "incre" (increment − ment), "cre" (creal −
+    // al), "mccre" (mccreless − less) aren't English words, but
+    // predictInternal's whole-word path wrongly treats their fabricated
+    // final syllable as the true word-final "-cre"/"-tre"/"-bre" position
+    // that rule is for (acre, centre, fibre). Reject the rule fallback
+    // for that shape so the suffix handler falls through to its next
+    // candidate instead.
+    const FRENCH_RE_STEM_RE = /[cbt]re$/;
     const stemPron = (b: string): string | undefined =>
-      lex(b) || this.predictInternal(b, undefined, false);
+      lex(b) || (FRENCH_RE_STEM_RE.test(b) ? undefined : this.predictInternal(b, undefined, false));
     const sPlural = (p: string): string => p + sAllomorph(p);
     // A doubled consonant right before a vowel-initial suffix is
     // orthographic gemination, not a real double letter to carry into the
@@ -875,12 +886,32 @@ export class EnglishG2P implements LanguageProcessor {
       // prediction still ends in a consonant. For sibilant-final stems the
       // e is pronounced (distinguishe → …ʃi, washe → …ʃi), which would
       // wrongly attach the allomorph to a vowel; fall back to the bare
-      // stem there so distinguished → …ʃt, not …ʃid.
+      // stem there so distinguished → …ʃt, not …ʃid. ɝ is exempted from
+      // that vowel check too: a coda syllabic rhotic (configure →
+      // kənˈfɪɡjɝ, measure → ˈmɛʒɝ, gesture → ˈdʒɛstʃɝ) is the genuine
+      // outcome of a real dropped e, not a sign the e was pronounced —
+      // without the exemption the -j-/-ʒ-/-ʃ- glide/palatalization that
+      // makes these correct was lost, since the bare (no-e) stem doesn't
+      // carry it. Excluded at 4+ syllables (`syllabify(base).length`):
+      // caricature/caricatured/caricatures are a genuine, isolated
+      // lexical exception — CMUdict agrees with ipa-dict that the verb
+      // shifts its primary stress onto the 2nd syllable, unlike every
+      // other -ture verb measured (capture, picture, feature, fracture,
+      // gesture all keep 1st-syllable stress in CMUdict) — and the bare-
+      // stem fallback's own stress-assignment quirk on a 4-syllable,
+      // final-e-less word happens to reproduce that exact shift, so this
+      // exemption is withheld there rather than overriding a rule that's
+      // accidentally already right. Unscoped vs 4+-syllable-scoped
+      // measured on the dict: unscoped strict 16:1 (loses caricatured),
+      // scoped strict 14:0 but ALSO loses gestured/gesturing (2 syllables,
+      // wrongly caught by an earlier blanket "ends in tur" attempt) —
+      // the syllable-count cut is what keeps both: 16:0.
       if (ruleFallback && /[aeiou]/.test(base) && !/[aeiou]$/.test(base)) {
         const ruleBaseE = MAGIC_E_CANDIDATE(base)
           ? this.predictInternal(base + "e", undefined, true)
           : undefined;
-        if (ruleBaseE && !ENDS_IN_VOWEL_RE.test(ruleBaseE))
+        if (ruleBaseE && (!ENDS_IN_VOWEL_RE.test(ruleBaseE) ||
+          (ruleBaseE.endsWith("ɝ") && syllabify(base).length < 4)))
           return join(ruleBaseE);
         const ruleBase = this.predictInternal(base, undefined, true);
         if (ruleBase) return join(ruleBase);
@@ -1031,13 +1062,18 @@ export class EnglishG2P implements LanguageProcessor {
       // just rule-predict `stem` and require it to stay consonant-final.
       // Verify silent e by the consonant-final prediction. Exclude s/x,
       // which instead introduce syllabic -es (buses/taxes), and
-      // multi-vowel stems (housewives).
+      // multi-vowel stems (housewives). ɝ is exempted from the
+      // consonant-final check for the same reason as inflect()'s -ed/-ing
+      // gate above (measures/figures/pressures restore their stem's own
+      // -ure glide/palatalization), with the same 4+-syllable withholding
+      // — this branch measured as a no-op on the current dict either way
+      // (no word reaches it with a ɝ-final stem yet), kept for symmetry.
       if (
         /[ts]ions$|^[^aeiou]*[aeiou][bcdfghjklmnpqrtvz]es$/.test(lowerWord) ||
         (/(?:ate|ial)s$/.test(lowerWord) && lowerWord.length > 5)
       ) {
         const p = this.predictInternal(stem, undefined, true);
-        if (!ENDS_IN_VOWEL_RE.test(p)) return sPlural(p);
+        if (!ENDS_IN_VOWEL_RE.test(p) || (p.endsWith("ɝ") && syllabify(stem).length < 4)) return sPlural(p);
       }
       // A final -s must not turn the stem's final ow/o into a closed
       // syllable (shows, yellows, photos). Preserve the stem vowel.
