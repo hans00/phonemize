@@ -254,9 +254,42 @@ const ENDS_IN_VOWEL_RE = /[aeiouɑæɛɪɔʊʌəɝ]$/;
 // not dɪˈzaɪnd). No real English word takes a genuine dropped-e spelling
 // after this digraph, so the exclusion costs nothing the allowance was
 // ever meant to cover.
+// INTEGRATOR NARROWING (2026-09-28, dependency-aware-eviction booking
+// regression): a base ending in "ook"/"ood" is excluded outright, the
+// same shape as the gn$ exclusion above and for the identical reason.
+// syllabify() strands that digraph open the same way it opens a real
+// magic-e vowel (ho·pe, ba·ke): the coda consonant becomes the
+// fabricated "e" syllable's onset, and ook/ood are rimes where the
+// CLOSED digraph gets a different vowel than its open default (^ook/
+// ^ood "ʊ" vs the open ^(?:ui|oo|ue) "u") — so the fabricated probe
+// silently picks the open one: booking → "boo·ke" → /bukɪŋ/, not
+// /bʊkɪŋ/ (also looking/looked, overbooked/overbooking). None of these
+// -ing/-ed forms are dict.json headwords (ipa-dict doesn't list every
+// inflection separately), so rule-diff over the exceptions-table
+// comparison is a no-op here (0 changed both ways) — the real evidence
+// is runtime: yarn test:common-accuracy word-diffed against the
+// pre-fix report, +3/−0 (looking, looked, booking newly correct, zero
+// regressions), and yarn test:parity/test:eval/evaluate-strict/
+// test:homographs all held exactly flat, since none of the words this
+// touches are in data/en/dict.json either.
+//
+// The identical mechanism also breaks "ead" (dreaded → "drea·de" →
+// /dridɪd/, not /dɹɛdɪd/; also treaded, spearheaded/spearheading,
+// overbooked's sibling "unleaded"), but ead is NOT excluded here: "lead"
+// is a genuine heteronym (metal /lɛd/ vs verb /lid/, in the homographs
+// table), and the open reading this bug produces for the fabricated
+// probe happens to equal the correct DEFAULT verb reading for "leading"
+// — "lead" alone, read by the plain rules with no homograph lookup
+// (this internal fallback never passes a pos), gives the closed /lɛd/
+// metal reading, so excluding ead flips "leading" ˈɫidɪŋ → ˈɫɛdɪŋ, a
+// real common-word regression (dict ˈɫidɪŋ) for a net gain of one
+// strict word (unleaded) elsewhere. Measured both ways: excluding ead
+// scores strict 1 : 1, lenient 4 : 0, common strict 0 : 1 (leading) —
+// a real regression on the metric that gates this fix, so left open.
 const MAGIC_E_CANDIDATE = (base: string): boolean =>
   !/([bcdfgklmnprst])\1$/.test(base) &&
   !/gn$/.test(base) &&
+  !/(?:ook|ood)$/.test(base) &&
   (/[aeiouy][bcdfghjklmnpqrstvwxz]$/.test(base) ||
     /[cgsvl]$/.test(base) ||
     /(?:st|th)$/.test(base) ||
