@@ -17,6 +17,7 @@ import { transformAmericanToRP } from "./gb";
 import { predictPrincipled } from "./principled";
 import { applyPhonotactics } from "./phonotactics";
 import { applyPostLexical, applyPostStress, hiatusMarkOffset } from "./postlex";
+import { tryStressNeutralSuffix, softenBaseFinal, preSuffixReduce } from "./morph-parser";
 import {
   assignStress,
   secondaryStressIndices,
@@ -310,30 +311,6 @@ const MAGIC_E_CANDIDATE = (base: string): boolean =>
     /[cgsvl]$/.test(base) ||
     /(?:st|th)$/.test(base) ||
     syllabify(base).length === 2);
-
-// The vowel before an unstressed Latinate ending is the slot the suffix
-// reduces (anim+al, crimin+al, capit+al, condi+ment), but the suffix
-// handlers price the base without the suffix in view, so its last /ɪ/
-// stays full — the same join problem the -ily/-ibly adverbs have. On the
-// frame below data/en/dict.json has 78 ə : 22 ɪ, and 9 : 1 over the
-// top-5000 slice; the rule path reaches it in `syllableToIPA`.
-const PRE_SUFFIX_ORTHO_RE = /i[tnmp](?:als?|ous|ants?|ents?)$/;
-const preSuffixReduce = (ipa: string, word: string): string =>
-  PRE_SUFFIX_ORTHO_RE.test(word)
-    ? ipa.replace(/(?<![eaɔ])ɪ(?=[^ɑɔæɛɪiʊuʌəɝɚ]*$)/, "ə")
-    : ipa;
-
-// A front-vowel-initial suffix softens the base's final <c>/<g>
-// (allerg+ist dʒ 62:4, critic+ize s). Priced alone the base ends the
-// letter word-finally, where it always reads hard, so the suffix
-// handlers have to put the softening back. Doubled gg/cc stays hard
-// (druggist).
-function softenBaseFinal(ipa: string, base: string, sfx: string): string {
-  if (!/^[eiy]/.test(sfx)) return ipa;
-  if (/(?:^|[^g])g$/.test(base)) return ipa.replace(/ɡ$/, "dʒ");
-  if (/(?:^|[^c])c$/.test(base)) return ipa.replace(/k$/, "s");
-  return ipa;
-}
 
 // Fast check for "does this string contain any uppercase ASCII char?".
 // Returns true iff toLowerCase would change the string. Avoids the
@@ -1485,21 +1462,20 @@ export class EnglishG2P implements LanguageProcessor {
         return stem + "uəl";
       }
     }
+    // The stress-neutral suffix family (-ify/-tual/-tuous/-ulation/
+    // -ulator/-ulate/-ment/-ness/-less/-ful/-ize/-ist/-ism) is handled by
+    // the declarative table in morph-table.ts/morph-parser.ts — see that
+    // module's header for the shared composition logic and AGENTS.md's
+    // 2026-09-30 note for the dict-wide measurements behind the split.
+    // Placed here (after the -ual block, before the surviving -ular/-al
+    // loop) so it keeps the exact same relative try-order those rows had
+    // in the old single loop: any word not resolved by the table falls
+    // through to -ular/-al below, matching the original ordering the
+    // "actual"/"tual"-before-"al" substring overlap depends on.
+    const tableResult = tryStressNeutralSuffix(lowerWord, stemPron);
+    if (tableResult) return tableResult;
     for (const [sfx, ipa] of [
-      ["ify", "əˌfaɪ"],
-      ["tual", "tʃuəl"],
-      ["tuous", "tʃuəs"],
-      ["ulation", "jəleɪʃən"],
-      ["ulator", "jəleɪtɝ"],
-      ["ulate", "jəleɪt"],
       ["ular", "jəlɝ"],
-      ["ment", "mənt"],
-      ["ness", "nəs"],
-      ["less", "ləs"],
-      ["ful", "fəl"],
-      ["ize", "aɪz"],
-      ["ist", "ɪst"],
-      ["ism", "ɪzəm"],
       ["al", "əl"],
     ] as [string, string][]) {
       if (!lowerWord.endsWith(sfx) || lowerWord.length <= sfx.length + 2)
