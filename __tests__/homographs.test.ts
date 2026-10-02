@@ -2,6 +2,11 @@ import { toIPA, toARPABET } from "../src/index";
 
 describe("Homographs", function() {
   describe("Common homographs with POS disambiguation", function() {
+    it("should keep both valid stress patterns of 'invite' in context", function() {
+      expect(toIPA("We will invite them")).toContain("ɪnˈvaɪt");
+      expect(toIPA("I received an invite")).toContain("ˈɪnvaɪt");
+    });
+
     it("should correctly pronounce 'read' based on context", function() {
       // Present tense: "I read books" - verb, present tense pronunciation
       const presentResult = toIPA("I read books every day");
@@ -139,4 +144,4 @@ describe("Homographs", function() {
       expect(result).toContain("boʊ"); // bow (correctly identified as noun after "a")
     });
   });
-}); 
+});
