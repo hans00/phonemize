@@ -725,6 +725,12 @@ export class EnglishG2P implements LanguageProcessor {
     // "chas" would morphologise to cha+s), and for most suffixes falls
     // back to its whole-word prediction.
     const lex = (b: string): string | undefined => this.wellKnown(b, undefined, true);
+    // -ed/-ing derive from a verb even when the result is an adjective.
+    // Require an explicit V reading: !N only means non-noun and can also
+    // be an adjective/adverb, so it must not override a citation stem.
+    const verbStem = (b: string, skipMorphology = false): string | undefined =>
+      this.homographs[b]?.find((entry) => entry.pos === "V")?.pronunciation ||
+      this.wellKnown(b, undefined, skipMorphology);
     // A suffix-stripped stem ending in the French silent-e "cre"/"tre"/
     // "bre" rime (see syllabify.ts's ^cre$/^tre$/^bre$ PHONEME_RULES
     // entries, candidate c) is never a genuine free word once lex(b) has
@@ -786,7 +792,7 @@ export class EnglishG2P implements LanguageProcessor {
       // (pass → passé). Such a stem cannot explain dropped-e spelling.
       const silentE = () => {
         if (/([bcdfgklmnprst])\1$/.test(base)) return undefined;
-        const p = this.wellKnown(base + "e");
+        const p = verbStem(base + "e");
         return p && !ENDS_IN_VOWEL_RE.test(p) ? p : undefined;
       };
       if (!/[aeiou]$/.test(base)) {
@@ -797,7 +803,7 @@ export class EnglishG2P implements LanguageProcessor {
       // word, not a re-decomposition. Without this, wellKnown("chas")
       // morphologises to "cha"+s → /tʃɑz/, intercepting the magic-e
       // recovery and yielding chased→/tʃɑzd/ instead of /tʃeɪst/.
-      const basePron = lex(base);
+      const basePron = verbStem(base, true);
       if (basePron) return join(basePron);
       // Doubled-consonant base: the two chars before the suffix are
       // identical (stopped → stop, planned → plan).
@@ -810,7 +816,7 @@ export class EnglishG2P implements LanguageProcessor {
         // A recovered -s must be lexical, not a newly inferred plural
         // (finessed must not become fines + d). Derived stems such as
         // pedal in pedalled still need the normal morphology lookup.
-        const p = this.wellKnown(undoubled, undefined, undoubled.endsWith("s"));
+        const p = verbStem(undoubled, undoubled.endsWith("s"));
         if (p) return join(p);
       }
       const magicPron = silentE();

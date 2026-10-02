@@ -55,6 +55,25 @@ describe("Inflection boundaries", () => {
   });
 });
 
+describe.each([false, true])("Verb-reading stems (disableDict=%s)", (disableDict) => {
+  const g2p = new EnglishG2P({ disableDict });
+
+  it.each([
+    ["used", /juzd$/],
+    ["using", /juzɪŋ$/],
+    ["closed", /kɫoʊzd$/],
+    ["closing", /kɫoʊzɪŋ$/],
+    ["living", /ɫɪvɪŋ$/],
+    ["housing", /haʊzɪŋ$/],
+  ] as const)("takes the explicit verb reading in %s", (word, ending) => {
+    expect(g2p.predict(word)).toMatch(ending);
+  });
+
+  it("keeps citation stress when the table only specifies a non-noun reading", () => {
+    expect(g2p.predict("overrunning")).toMatch(/^ˈoʊvɝɹ[ʌə]nɪŋ$/);
+  });
+});
+
 describe("Silent-e probe gating (MAGIC_E_CANDIDATE)", () => {
   // inflect()'s -ed/-ing silent-e fallback fabricates base + "e" and runs
   // it through the full rule pipeline to test whether the base is a
