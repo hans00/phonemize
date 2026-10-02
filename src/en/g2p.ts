@@ -179,10 +179,10 @@ function geminateStem(word: string): string | null {
 // Shared by every morphology handler below that restores a dropped -e.
 const ENDS_IN_VOWEL_RE = /[aeiouɑæɛɪɔʊʌəɝ]$/;
 
-// A rule-derived stem is usable as a morphology base when its predicted
+// A recovered stem is usable as a morphology base when its
 // pronunciation ends in a consonant — except a coda /ɝ/, which is the
-// genuine outcome of a real dropped silent-e -ure ending (configure,
-// measure, gesture) and carries its own glide/palatalization a bare
+// genuine outcome of a dropped silent-e -ire/-ure ending (desire,
+// injure, measure) and carries its own glide/palatalization a bare
 // no-e stem lacks, so it's exempted from the vowel check too. That
 // exemption is withheld at 4+ syllables: caricature/caricatured is a
 // genuine, isolated lexical exception (CMUdict shifts its primary onto
@@ -190,8 +190,8 @@ const ENDS_IN_VOWEL_RE = /[aeiouɑæɛɪɔʊʌəɝ]$/;
 // and the bare-stem fallback's own stress-assignment quirk on a
 // 4-syllable, final-e-less word happens to already reproduce that
 // exact shift — see the -ed/-ing and -s-plural call sites below for
-// the measured win/loss evidence. Shared by both, since they apply the
-// identical test to a differently-sourced stem prediction.
+// the measured win/loss evidence. Lexical and rule-derived stems use
+// the same eligibility check.
 const isUsableConsonantStem = (ipa: string, base: string): boolean =>
   !ENDS_IN_VOWEL_RE.test(ipa) || (ipa.endsWith("ɝ") && syllabify(base).length < 4);
 
@@ -793,7 +793,7 @@ export class EnglishG2P implements LanguageProcessor {
       const silentE = () => {
         if (/([bcdfgklmnprst])\1$/.test(base)) return undefined;
         const p = verbStem(base + "e");
-        return p && !ENDS_IN_VOWEL_RE.test(p) ? p : undefined;
+        return p && isUsableConsonantStem(p, base) ? p : undefined;
       };
       if (!/[aeiou]$/.test(base)) {
         const m = silentE();

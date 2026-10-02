@@ -74,6 +74,24 @@ describe.each([false, true])("Verb-reading stems (disableDict=%s)", (disableDict
   });
 });
 
+describe.each([false, true])("Rhotic silent-e stems (disableDict=%s)", (disableDict) => {
+  const g2p = new EnglishG2P({ disableDict });
+
+  it.each([
+    ["acquired", /əˈkwaɪ/],
+    ["desired", /zaɪ[ɝɹ]d$/],
+    ["desiring", /zaɪ[ɝɹ]ɪŋ$/],
+    ["injured", /^ˈɪndʒ/],
+    ["injuring", /^ˈɪndʒ/],
+  ] as const)("retains the recovered stem's vowel and stress in %s", (word, expected) => {
+    expect(g2p.predict(word)).toMatch(expected);
+  });
+
+  it("still rejects a pronounced-e loanword as a dropped-e stem", () => {
+    expect(g2p.predict("passed")).toBe("ˈpæst");
+  });
+});
+
 describe("Silent-e probe gating (MAGIC_E_CANDIDATE)", () => {
   // inflect()'s -ed/-ing silent-e fallback fabricates base + "e" and runs
   // it through the full rule pipeline to test whether the base is a
