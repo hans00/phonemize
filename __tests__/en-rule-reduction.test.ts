@@ -54,3 +54,19 @@ describe("frames that keep /ɪ/", () => {
     ["believe", "bɪˈɫiv"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
+
+describe("unstressed final -tain", () => {
+  it.each(["certain", "captain", "mountain", "fountain", "curtain", "chieftain"])(
+    "reduces the ending in %s", (word) => expect(rules(word)).toMatch(/tən$/),
+  );
+
+  it.each(["retain", "detain", "obtain", "stain"])(
+    "keeps the stressed diphthong in %s", (word) => expect(rules(word)).toMatch(/teɪn$/),
+  );
+});
+
+describe("-tain plurals after rule-exact stem eviction", () => {
+  it.each(["mountains", "captains", "curtains", "fountains", "chieftains"])(
+    "preserves the reduced stem in %s", (word) => expect(rules(word)).toMatch(/tənz$/),
+  );
+});

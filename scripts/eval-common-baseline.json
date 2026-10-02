@@ -2,12 +2,12 @@
   "date": "2026-10-02",
   "full": {
     "n": 6990,
-    "strictAccuracy": 65.5650929899857,
-    "lenientAccuracy": 84.56366237482116
+    "strictAccuracy": 65.62231759656653,
+    "lenientAccuracy": 84.6065808297568
   },
   "top5000": {
     "n": 3617,
-    "strictAccuracy": 67.73569256289743,
-    "lenientAccuracy": 85.65109206524745
+    "strictAccuracy": 67.81863422726016,
+    "lenientAccuracy": 85.70638650815593
   }
 }

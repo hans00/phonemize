@@ -25,6 +25,12 @@ const SUFFIX_RULES: Array<[RegExp, string]> = [
   [/^que$/, "k"],
   [/^the$/, "ð"],
   [/^sten$/, "sən"],
+  // Weak final -tain reduces (certain, captain, mountain); the loop
+  // preserves a primary/secondary-stressed or word-initial tain.
+  // Dict-wide rules-only: strict +10/-8, lenient +11/-11. The losses
+  // already have wrong stress (maintain, entertain); lexical hits keep
+  // their tense reading. Plurals use the same recovered stem in g2p.ts.
+  [/^tain$/, "tən"],
   [/^stion$/, "stʃən"],
   [/^t(?:ion|ian)$|^c[ei]an$/, "ʃən"], // -tion/-tian/-cian/-cean are always unstressed: technician/ocean
   [/^s(?:ion|ian)$/, "ʒən"], // -sion/-sian are always unstressed (asian/persian: 25 ʒ vs 9 i in dict; russian → sʒ → ʃ post-lexically)
@@ -1492,7 +1498,7 @@ const THETA_CLUSTER_CODA = /^th[aeiou][aeiouy]?[bcdfghjklmnpqrstvwxz]{2,}$/;
 // (legionnaire/album/algebra keep the plain letter values) and ones that
 // are never word-initial (a lone "lion"/"ford"/"ward" is the noun).
 const FINAL_ONLY_SUFFIXES = new Set(
-  "^le$ ^cle$ ^twood$ ^al$ ^que$ ^sten$ ^[cs]e$ ^ge$ ^ty$ ^ly$".split(" "),
+  "^le$ ^cle$ ^twood$ ^al$ ^que$ ^sten$ ^[cs]e$ ^ge$ ^ty$ ^ly$ ^tain$".split(" "),
 );
 const NON_INITIAL_SUFFIXES = new Set("^lion$ ^scien$ ^ford$ ^ward$".split(" "));
 
@@ -1597,6 +1603,7 @@ export function syllableToIPA(
     const src = pattern.source;
     if (!isLastSyllable && FINAL_ONLY_SUFFIXES.has(src)) continue;
     if (NON_INITIAL_SUFFIXES.has(src) && syllableIndex === 0) continue;
+    if (src === "^tain$" && (isStressed || isSecondary || syllableIndex === 0)) continue;
     if (src === "^sto$" && nextSyllable !== "ne") continue;
     if (src === "^the$" && (syllableIndex === 0 || !isLastSyllable)) continue;
     // -ly is the unstressed adverbial suffix (quickly, only); a STRESSED

@@ -970,7 +970,9 @@ export class EnglishG2P implements LanguageProcessor {
           // genuinely irregular and stays in the table regardless — this
           // branch is only ever reached once wellKnown(stem) has already
           // failed, so it can't misfire on them.
-          (/(?:r|gn|ion|ient)$/.test(stem) ||
+          // Reduced -tain becomes rule-exact too (mountain → mountains).
+          // Recover its singular so plural s cannot hide the final rime.
+          (/(?:r|gn|ion|ient|tain)$/.test(stem) ||
             // A multi-syllable silent-e stem (device, virus is NOT this —
             // it has no e at all) has the identical problem one syllable
             // over: devices resyllabifies as de·vi·ces, and the extra
