@@ -25,7 +25,9 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/əɹ/g, "ɝ"],
   [/n([kɡ])/g, "ŋ$1"],
   [/^mk/, "mək"],
-  [/ɹɪtʃ$/, "ɹɪk"],
+  // German -rich stays hard after rhotic coalescence (emerich), while
+  // a word-initial /r/ onset is the English root (rich), not this suffix.
+  [/((?<!^)ɹ|ɝ)ɪtʃ$/, "$1ɪk"],
   [/ɡdʒ$/, "ɡ"],
   [/(?<=[aɑɔɛiɪouəɝ])dʒɝ$/, "ɡɝ"], // -ger names keep hard g after any vowel (i: eager/kreger 38 vs 3)
   [/ətʃ$/, "ək"],
@@ -182,7 +184,7 @@ const POST_LEX_RULES: PostLexRule[] = [
     // "dan"·"ge"·"rous" splits the r onto the "rous" syllable, so the
     // "e"/"r" here are still two raw phonemes, ɪɹ not ɝ) and voice a
     // plural s→z (changes/exchanges/flanges): əs, not yet əz.
-    re: /ændʒ(?=ɝ|ɪɹ|$)/, sub: "eɪndʒ",
+    re: /ændʒ(?=ɝ|ɪɹ|əs$|əz$|$)/, sub: "eɪndʒ",
   },
   // -erous/-arous/-orous/-urous: unstressed -er- is /ɝ/ (generous/cancerous/boisterous)
   { when: (w) => /(?:erous|arous|orous|urous)$/.test(w), re: /ɪɹəs$/, sub: "ɝəs" },

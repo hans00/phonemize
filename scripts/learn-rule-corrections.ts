@@ -6,7 +6,9 @@
  * Emits reviewable corrections and evidence; never changes src/ or baselines.
  * --structural adds syllable/affix contexts to the original local templates.
  * A spelling-family component stays in one fold. Selection and stopping use
- * TRAIN fixes-minus-breaks only; HELD scores are reported, never optimized.
+ * TRAIN fixes-minus-breaks by default; --objective distance also considers
+ * partial repairs, requiring non-negative TRAIN strict and lenient deltas.
+ * HELD scores are reported, never used to rank candidates or choose stopping.
  * The old gram-style filter is retained as a TRAIN-only diagnostic, not as
  * permission to ship a correction. Final adoption needs the project's gates.
  *
@@ -41,7 +43,7 @@ import { isForeign } from "./foreign-filter";
 // ─────────────────────────── CLI args ────────────────────────────────────
 const argv = process.argv.slice(2);
 if (argv.includes("--help")) {
-  console.log("node --import tsx scripts/learn-rule-corrections.ts [--structural] [--include-long] [--k-folds 10] [--max-rules 30] [--min-support 5] [--seed 20260928] [--limit N] [--out DIR]");
+  console.log("node --import tsx scripts/learn-rule-corrections.ts [--objective strict|distance] [--structural] [--include-long] [--k-folds 10] [--max-rules 30] [--min-support 5] [--seed 20260928] [--limit N] [--out DIR]");
   console.log("Research only: emits candidates, train-only filter diagnostics, and family-held-out scores; never updates runtime or baselines.");
   process.exit(0);
 }
@@ -54,6 +56,8 @@ function flag(name: string, def?: string): string | undefined {
 }
 const LIMIT = flag("limit") ? Number(flag("limit")) : undefined;
 const MAX_RULES = Number(flag("max-rules", "30"));
+const OBJECTIVE = flag("objective", "strict")!;
+if (!["strict", "distance"].includes(OBJECTIVE)) throw new Error("--objective must be strict or distance");
 const SEED = Number(flag("seed", "20260928"));
 const OUT_DIR = flag("out", "/tmp/phonemize-rule-corrections")!;
 const MIN_SUPPORT = Number(flag("min-support", "5")); // pre-scoring prune (lower than Trial B's 8: common-only population is ~1/10th the size)
@@ -518,14 +522,15 @@ async function main(): Promise<void> {
   }, null, 2));
   log(`Assigned ${K_FOLDS} folds over ${families.size} spelling families: ${foldSizes}`);
 
-  function scoreCorpus(recsSubset: WordRec[], useCur: boolean): { strict: number; lenient: number; n: number } {
-    let strictN = 0, lenientN = 0;
+  function scoreCorpus(recsSubset: WordRec[], useCur: boolean): { strict: number; lenient: number; n: number; distance: number } {
+    let strictN = 0, lenientN = 0, distance = 0;
     for (const r of recsSubset) {
       const pred = useCur ? r.curFinal : r.baselineFinal;
       if (strictOk(pred, r.gold)) strictN++;
       if (lenientOk(pred, r.gold)) lenientN++;
+      distance += levenshtein.get(strip(pred), strip(r.gold));
     }
-    return { strict: strictN, lenient: lenientN, n: recsSubset.length };
+    return { strict: strictN, lenient: lenientN, n: recsSubset.length, distance };
   }
 
   // ── Reverse index: (grapheme,template,value) -> occurrences. Built ONCE
@@ -562,7 +567,7 @@ async function main(): Promise<void> {
     return best;
   }
   interface ScoreResult {
-    trainFix: number; trainBreak: number;
+    trainFix: number; trainBreak: number; trainLenientNet: number; trainDistanceGain: number;
     heldFix: number; heldBreak: number;
     top5000Fix: number; top5000Break: number;
     top5000DistDown: number; top5000DistUp: number;
@@ -585,7 +590,7 @@ async function main(): Promise<void> {
     const ik = `${cand.grapheme}\u0000${cand.template}\u0000${cand.value}`;
     const entries = revIndex.get(ik) ?? [];
     const res: ScoreResult = {
-      trainFix: 0, trainBreak: 0, heldFix: 0, heldBreak: 0,
+      trainFix: 0, trainBreak: 0, trainLenientNet: 0, trainDistanceGain: 0, heldFix: 0, heldBreak: 0,
       top5000Fix: 0, top5000Break: 0, top5000DistDown: 0, top5000DistUp: 0,
       foreignFix: 0, foreignBreak: 0,
       affectedTrainNonForeign: 0, changedTrainNonForeign: 0,
@@ -607,6 +612,8 @@ async function main(): Promise<void> {
       const distAfter = levenshtein.get(strip(newFinal), strip(e.rec.gold));
       if (e.rec.isTrain && !e.rec.foreign) {
         res.changedTrainNonForeign++;
+        res.trainLenientNet += +lenientOk(newFinal, e.rec.gold) - +lenientOk(e.rec.curFinal, e.rec.gold);
+        res.trainDistanceGain += distBefore - distAfter;
         if (fixed) { res.affectedTrainNonForeign++; res.trainFix++; if (res.fixedWordsTrain.length < 5) res.fixedWordsTrain.push({ word: e.rec.word, before: e.rec.curFinal, after: newFinal, gold: e.rec.gold }); }
         if (broken) { res.affectedTrainNonForeign++; res.trainBreak++; if (res.brokenWordsTrain.length < 5) res.brokenWordsTrain.push({ word: e.rec.word, before: e.rec.curFinal, after: newFinal, gold: e.rec.gold }); }
       } else if (e.rec.isTrain && e.rec.foreign) {
@@ -630,7 +637,7 @@ async function main(): Promise<void> {
 
   interface FoldRuleReport {
     keyStr: string; key: CandKey; complexity: number;
-    trainFixes: number; trainBreaks: number; affected: number; fixRate: number;
+    trainFixes: number; trainBreaks: number; trainLenientNet: number; trainDistanceGain: number; affected: number; fixRate: number;
     heldFixes: number; heldBreaks: number; top5000Fixes: number; top5000Breaks: number;
     top5000DistUp: number; pass: boolean; reason: string;
     examplesBroken: Array<{ word: string; before: string; after: string; gold: string }>;
@@ -641,6 +648,7 @@ async function main(): Promise<void> {
     mismatchCount: number; candPoolSize: number; prunedSize: number;
     acceptedCount: number; passedCount: number;
     heldStrictBefore: number; heldStrictAfterAllAccepted: number; heldStrictAfterPassed: number;
+    metricsBefore: ReturnType<typeof scoreCorpus>; metricsAfter: ReturnType<typeof scoreCorpus>;
     rules: FoldRuleReport[];
   }
   const foldReports: FoldReport[] = [];
@@ -710,7 +718,10 @@ async function main(): Promise<void> {
       let best: CandAgg | null = null, bestScore: ScoreResult | null = null, bestNet = -Infinity;
       for (const c of pool) {
         const s = getScore(c);
-        const net = s.trainFix - s.trainBreak;
+        const strictNet = s.trainFix - s.trainBreak;
+        const net = OBJECTIVE === "strict" ? strictNet :
+          strictNet < 0 || s.trainLenientNet < 0 ? -Infinity :
+          s.trainDistanceGain;
         if (net > bestNet || (net === bestNet && best && c.complexity < best.complexity)) { best = c; bestScore = s; bestNet = net; }
       }
       if (!best || !bestScore || bestNet <= 0) break;
@@ -753,6 +764,7 @@ async function main(): Promise<void> {
       return {
         keyStr: keyOf(a.key), key: a.key, complexity: a.complexity,
         trainFixes: a.score.trainFix, trainBreaks: a.score.trainBreak,
+        trainLenientNet: a.score.trainLenientNet, trainDistanceGain: a.score.trainDistanceGain,
         affected, fixRate,
         heldFixes: a.score.heldFix, heldBreaks: a.score.heldBreak,
         top5000Fixes: a.score.top5000Fix, top5000Breaks: a.score.top5000Break, top5000DistUp: a.score.top5000DistUp,
@@ -803,6 +815,7 @@ async function main(): Promise<void> {
       acceptedCount: accepted.length, passedCount,
       heldStrictBefore: scoreCorpus(heldNonForeign, false).strict,
       heldStrictAfterAllAccepted, heldStrictAfterPassed,
+      metricsBefore: scoreCorpus(heldNonForeign, false), metricsAfter: scoreCorpus(heldNonForeign, true),
       rules: ruleReports,
     });
   }
@@ -843,7 +856,7 @@ async function main(): Promise<void> {
   }
 
   const summary = {
-    toolSha256: toolHash,
+    toolSha256: toolHash, objective: OBJECTIVE,
     dictionarySha256: createHash("sha256").update(JSON.stringify(dict)).digest("hex"),
     frequencySha256: createHash("sha256").update(readFileSync(freqPath)).digest("hex"),
     baselineSha256: createHash("sha256").update(JSON.stringify(recs.map(r => [r.word, r.baselineFinal]))).digest("hex"),
@@ -860,9 +873,15 @@ async function main(): Promise<void> {
       strictCorrect: foldReports.reduce((s,f) => s + f.heldStrictAfterAllAccepted, 0),
       total: foldReports.reduce((s,f) => s + f.heldN, 0) },
     heldStrictPctAfterPassed: { mean: mean(heldStrictPctAfterPassed), std: std(heldStrictPctAfterPassed), perFold: heldStrictPctAfterPassed },
-    selection: "train net word fixes > 0, up to max-rules; held-out does not select k",
+    heldMetrics: foldReports.reduce((a, f) => {
+      for (const key of ["strict", "lenient", "distance", "n"] as const) {
+        a.before[key] += f.metricsBefore[key]; a.after[key] += f.metricsAfter[key];
+      }
+      return a;
+    }, {before:{strict:0,lenient:0,distance:0,n:0}, after:{strict:0,lenient:0,distance:0,n:0}}),
+    selection: `${OBJECTIVE} train objective, max-rules fixed; held-out never selects or stops`,
     perFold: foldReports.map((f) => ({
-      fold: f.fold, trainN: f.trainN, heldN: f.heldN, mismatchCount: f.mismatchCount,
+      fold: f.fold, trainN: f.trainN, heldN: f.heldN, metricsBefore:f.metricsBefore, metricsAfter:f.metricsAfter, mismatchCount: f.mismatchCount,
       candPoolSize: f.candPoolSize, prunedSize: f.prunedSize, acceptedCount: f.acceptedCount, passedCount: f.passedCount,
       heldStrictPctBefore: (f.heldStrictBefore / f.heldN) * 100,
       heldStrictPctAfterAllAccepted: (f.heldStrictAfterAllAccepted / f.heldN) * 100,

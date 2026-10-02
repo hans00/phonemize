@@ -103,8 +103,11 @@ function clusterFailures(
     const tr = g2p.trace(word);
     if (tr.path !== 'rules' || tr.steps.length === 0) continue;
 
-    const normPred = predicted.replace(/[ˈˌ]/g, '');
-    const normExp  = expected.replace(/[ˈˌ]/g, '');
+    // Trace steps precede dark-l phonotactics. Ignore that allophone here
+    // to locate substantive errors; the reported accuracy is unchanged.
+    const normPred = normalizePhonemes(predicted).replace(/ɫ/g, 'l');
+    const normExp  = normalizePhonemes(expected).replace(/ɫ/g, 'l');
+    if (normPred === normExp) continue;
     let pos = 0;
     while (pos < normPred.length && pos < normExp.length && normPred[pos] === normExp[pos]) pos++;
 
@@ -122,7 +125,7 @@ function clusterFailures(
   }
 
   const top = [...clusters.values()].sort((a, b) => b.words.length - a.words.length).slice(0, 20);
-  console.log('\n--- Top Failure Clusters ---\n');
+  console.log('\n--- Approximate Failure Clusters (direct rule traces) ---\n');
   top.forEach((c, i) => {
     const ex = c.words.slice(0, 5).join(', ') + (c.words.length > 5 ? ` +${c.words.length - 5} more` : '');
     console.log(`${i + 1}. [${c.rule}]  "${c.grapheme}" → /${c.phoneme}/  (${c.words.length} words)`);
@@ -365,6 +368,8 @@ async function evaluateCommonSubset(g2p: EnglishG2P, dict: Record<string, string
     console.log(`\nFull mismatch report (full frequency-list slice) saved to: ${commonReportPath}`);
   }
 
+  if (cliArgs.cluster) clusterFailures(fullResult.mismatches, g2p);
+
   if (cliArgs.updateBaseline) {
     const b: CommonBaseline = {
       date: new Date().toISOString().slice(0, 10),
@@ -394,4 +399,4 @@ async function evaluate() {
   }
 }
 
-evaluate().catch(console.error);
+evaluate().catch(error => { console.error(error); process.exitCode = 1; });

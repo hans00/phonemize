@@ -20,11 +20,14 @@
 // from here rather than the reverse, so there's no import cycle between
 // the two files.
 //
-// Stem attestation: `predictStem` is g2p.ts's own `stemPron` (lex(b) ||
+// Stem attestation: `predictStem` delegates to g2p.ts's `stemPron` (lex(b) ||
 // rule-predict b as literally spelled, gated off the French silent-e
 // "-cre/-tre/-bre" shape a suffix-stripped fabricated stem can
-// coincidentally match — see stemPron's own comment in g2p.ts). No
-// spelling change is undone here (these suffixes attach without one) —
+// coincidentally match — see stemPron's own comment in g2p.ts).
+// The callback also receives the suffix and its IPA so an unknown
+// bound stem can be rendered with its suffix in view; lexical roots
+// retain their supplied readings. No spelling change is undone here
+// (these suffixes attach without one) —
 // that's exactly why they're the safe subset to table-ify first; -al/
 // -ular (doubled-consonant undo, magic-e restoration, forced-stress
 // rendering) are NOT in this table.
@@ -56,12 +59,12 @@ export function softenBaseFinal(ipa: string, base: string, sfx: string): string 
 
 export function tryStressNeutralSuffix(
   lowerWord: string,
-  predictStem: (stem: string) => string | undefined,
+  predictStem: (stem: string, suffix: string, suffixIpa: string) => string | undefined,
 ): string | undefined {
   for (const { suffix, ipa } of STRESS_NEUTRAL_ROWS) {
     if (!lowerWord.endsWith(suffix) || lowerWord.length <= suffix.length + 2) continue;
     const stem = lowerWord.slice(0, -suffix.length);
-    const stemPron = predictStem(stem);
+    const stemPron = predictStem(stem, suffix, ipa);
     if (!stemPron) continue;
     return softenBaseFinal(preSuffixReduce(stemPron, lowerWord), stem, suffix) + ipa;
   }

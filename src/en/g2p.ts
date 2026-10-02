@@ -744,6 +744,19 @@ export class EnglishG2P implements LanguageProcessor {
     const FRENCH_RE_STEM_RE = /[cbt]re$/;
     const stemPron = (b: string): string | undefined =>
       lex(b) || (FRENCH_RE_STEM_RE.test(b) ? undefined : this.predictInternal(b, undefined, false));
+    // Transparent privative prefixes keep the attested root's stress.
+    // Before a vowel, un- can collide with Latin uni-/unus spellings;
+    // leave that boundary to the whole-word rules. Under- is a distinct
+    // longer prefix. Short remnants are insufficient stem evidence.
+    const privative = /^(un(?!der)(?=[^aeiou])|non|dis)([a-z]{4,})$/.exec(lowerWord);
+    if (privative) {
+      const base = privative[2];
+      // dis- can attach to a verb (disclose); an explicit V reading
+      // takes priority over a noun citation form of the same stem.
+      const known = (privative[1] === "dis" ? this.homographs[base]?.find(entry => entry.pos === "V")?.pronunciation : undefined) ||
+        lex(base) || (privative[1] !== "dis" ? COMPOUND_TAILS[base] : undefined);
+      if (known) return (privative[1] === "un" ? "ʌn" : privative[1] === "dis" ? "dɪs" : "nɑn") + known;
+    }
     const sPlural = (p: string): string => p + sAllomorph(p);
     // A doubled consonant right before a vowel-initial suffix is
     // orthographic gemination, not a real double letter to carry into the
@@ -788,11 +801,18 @@ export class EnglishG2P implements LanguageProcessor {
       ruleFallback: boolean,
     ): string | undefined => {
       const base = lowerWord.slice(0, -sfxLen);
+      // A regular verb stem needs a nucleus; sh/st/dr are abbreviations
+      // or interjections, not stems explaining shed/sting/dred.
+      if (!/[aeiouy]/.test(base)) return undefined;
       // Restoring silent e must not select a pronounced-e loanword
       // (pass → passé). Such a stem cannot explain dropped-e spelling.
       const silentE = () => {
         if (/([bcdfgklmnprst])\1$/.test(base)) return undefined;
         const p = verbStem(base + "e");
+        // Silent-e restoration cannot add a syllable to a known
+        // monosyllabic root (coat must not become the headword coate).
+        const known = verbStem(base, true) || COMPOUND_TAILS[base];
+        if (p && known && isMonosyllable(known) && !isMonosyllable(p)) return undefined;
         return p && isUsableConsonantStem(p, base) ? p : undefined;
       };
       if (!/[aeiou]$/.test(base)) {
@@ -972,7 +992,11 @@ export class EnglishG2P implements LanguageProcessor {
           // failed, so it can't misfire on them.
           // Reduced -tain becomes rule-exact too (mountain → mountains).
           // Recover its singular so plural s cannot hide the final rime.
-          (/(?:r|gn|ion|ient|tain)$/.test(stem) ||
+          // A -vie plural can be -ie + s, rather than a restored -vy.
+          // Preserve independently attested y stems first; aCy has its
+          // own lengthening (navies/gravies), so it stays on that path.
+          ((/[eiou]vie$/.test(stem) && !lex(stem.slice(0, -2) + "y")) ||
+            /(?:r|gn|ion|ient|tain)$/.test(stem) ||
             // A multi-syllable silent-e stem (device, virus is NOT this —
             // it has no e at all) has the identical problem one syllable
             // over: devices resyllabifies as de·vi·ces, and the extra
@@ -1140,7 +1164,8 @@ export class EnglishG2P implements LanguageProcessor {
       if (basePron) return join(basePron);
     }
 
-    if (lowerWord.endsWith("er") && lowerWord.length > 3) {
+    // The stressed -eer family (engineer, volunteer) is not neutral -er.
+    if (lowerWord.endsWith("er") && !lowerWord.endsWith("eer") && lowerWord.length > 3) {
       const base = lowerWord.slice(0, -2);
       // A doubled final consonant on the base is orthographic gemination,
       // not a real letter to keep before adding "e" — the same skip
@@ -1162,9 +1187,17 @@ export class EnglishG2P implements LanguageProcessor {
       // population found; breath is 6). Rule-diff over the whole dict:
       // strict 5 : 0, lenient 4 : 0 (bather, lather, mather, rather,
       // wither).
+      // A polysyllabic restored-e stem supplies the verb reading to an
+      // agent noun (produce → producer). Monosyllables can instead be
+      // comparatives (closer), so preserve their citation reading.
+      // A labelled -ate verb must retain its regular /eɪt/ ending.
+      const restored = base + "e";
+      const verb = this.homographs[restored]?.find(entry => entry.pos === "V")?.pronunciation;
+      const agentVerb = verb && !isMonosyllable(verb) &&
+        (!restored.endsWith("ate") || /eɪt$/.test(verb)) ? verb : undefined;
       let magicPron = doubledBase || (base.length <= 4 && base.endsWith("th"))
         ? undefined
-        : this.wellKnown(base + "e");
+        : agentVerb || this.wellKnown(restored);
       // A short base can also coincidentally match an unrelated headword
       // whose final e IS pronounced (ente "duck" → enter, mete → meter).
       // Reject a vowel-final hit unless the base ends in y/w/r, where that
@@ -1279,7 +1312,9 @@ export class EnglishG2P implements LanguageProcessor {
         const ble = stemPron(stem + "le");
         if (ble && /[lɫ]$/.test(ble)) return ble.replace(/ə([lɫ])$/, "$1") + "i";
       }
-      const basePron = stemPron(stem);
+      // Restore an attested adjective's y before -ily; the stripped
+      // i fragment can have an unrelated tense vowel (heavily).
+      const basePron = (/[^aeiouy]i$/.test(stem) ? lex(stem.slice(0, -1) + "y") : undefined) || stemPron(stem);
       if (basePron) {
         if (/[lɫ]$/.test(basePron)) return basePron + "i";
         // A consonant+i stem is the -y adjective with its final letter
@@ -1289,7 +1324,7 @@ export class EnglishG2P implements LanguageProcessor {
         // data/en/dict.json. The stem is read without the suffix in view,
         // so the reduction has to be applied on the join.
         if (/[^aeiouy]i$/.test(stem))
-          return basePron.replace(/ɪ$/, "ə") + "li";
+          return basePron.replace(/[iɪ]$/, "ə") + "li";
         return basePron + "li";
       }
     }
@@ -1355,11 +1390,12 @@ export class EnglishG2P implements LanguageProcessor {
       lowerWord.length > 5
     ) {
       const stem = lowerWord.slice(0, -4);
-      // -ential/-antial move the primary onto the -en-/-an- before them
-      // (confidential, residential); the stem's stress would stay put here,
-      // so a 3+-syllable -en/-an stem goes to the whole-word rules.
+      // -cial/-tial place stress before the suffix. A polysyllabic
+      // bound stem priced alone loses that stress and vowel context
+      // (beneficial, official); leave it to the whole-word rules.
+      // Short open stems retain the a/e boundary correction below.
       const pp =
-        /[ae]n$/.test(stem) && (stem.match(/[aeiouy]+/g)?.length ?? 0) >= 3
+        (stem.match(/[aeiouy]+/g)?.length ?? 0) >= 2
           ? undefined
           : stemPron(stem);
       // The stem is scored as a standalone open monosyllable, which
@@ -1449,7 +1485,7 @@ export class EnglishG2P implements LanguageProcessor {
       lowerWord.endsWith("ual") &&
       !lowerWord.endsWith("gual") &&
       lowerWord.length > 5 &&
-      !(lowerWord.endsWith("tual") && lowerWord.length > 6)
+      !lowerWord.endsWith("tual")
     ) {
       const p = stemPron(lowerWord.slice(0, -3));
       if (p) {
@@ -1480,7 +1516,16 @@ export class EnglishG2P implements LanguageProcessor {
     // in the old single loop: any word not resolved by the table falls
     // through to -ular/-al below, matching the original ordering the
     // "actual"/"tual"-before-"al" substring overlap depends on.
-    const tableResult = tryStressNeutralSuffix(lowerWord, stemPron);
+    // An unattested Latinate stem ending in <u> before -ment is bound,
+    // so word-final-u rules cannot price it as an independent word.
+    // Render the suffix in view while retaining the stem's stress; only
+    // reuse the result when the suffix has its regular pronunciation.
+    const tableResult = tryStressNeutralSuffix(lowerWord, (stem, suffix, suffixIpa) => {
+      const base = stemPron(stem);
+      if (!base || suffix !== "ment" || !/[^q]u$/.test(stem) || lex(stem)) return base;
+      const contextual = this.renderRuleForm(lowerWord, assignStress(syllabify(stem), stem));
+      return contextual.endsWith(suffixIpa) ? contextual.slice(0, -suffixIpa.length) : base;
+    });
     if (tableResult) return tableResult;
     for (const [sfx, ipa] of [
       ["ular", "jəlɝ"],
@@ -1489,6 +1534,11 @@ export class EnglishG2P implements LanguageProcessor {
       if (!lowerWord.endsWith(sfx) || lowerWord.length <= sfx.length + 2)
         continue;
       const b = lowerWord.slice(0, -sfx.length);
+      // Final -eal/-oal contains a vowel sequence, and -ual has its own
+      // glide/coalescence context. Keep those endings in view. The
+      // bound -eral frame also needs its full laxing context, rather
+      // than a coincidental free stem (mineral is not miner + -al).
+      if (sfx === "al" && (/[eou]$/.test(b) || lowerWord.endsWith("eral"))) continue;
       const finish = (p: string): string =>
         softenBaseFinal(preSuffixReduce(p, lowerWord), b, sfx) + ipa;
       // Stripping a vowel-initial -al from an unknown one-syllable base
@@ -1555,6 +1605,12 @@ export class EnglishG2P implements LanguageProcessor {
       if (p) return finish(p);
     }
 
+    // Outer suffixes resolve first: preference is not pre + ference.
+    // Only an independently attested root licenses this pre- boundary.
+    if (lowerWord.startsWith("pre") && lowerWord.length >= 7) {
+      const base = lex(lowerWord.slice(3));
+      if (base) return "pɹi" + base;
+    }
     return undefined;
   }
 

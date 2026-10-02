@@ -37,6 +37,7 @@ const SUFFIX_RULES: Array<[RegExp, string]> = [
   [/^lion$/, "ljən"], // -llion: million, billion, stallion (guard: syllableIndex > 0)
   [/^[ct]ial$/, "ʃəl"], // -cial/-tial (commercial, social, potential, partial)
   [/^cient$/, "ʃənt"],
+  [/^ciency$/, "ʃənsi"],
   [/^scien$/, "ʃən"], // -cient: efficient/ancient; -scien: conscience (guard: idx>0)
   [/^ture$/, "tʃɝ"], // -ture (future, nature)
   [/^sure$/, "ʒɝ"], // -sure (measure, pleasure)
@@ -742,10 +743,17 @@ const FINAL_GRAM_STRESS: Record<string, number> = {
 // Improved stress assignment based on morphological and phonological rules
 export function assignStress(syllables: string[], word: string): number {
   if (syllables.length <= 1) return 0;
+  // A final consonant + silent e closes the preceding nucleus.
+  if (syllables.length === 2 && SILENT_E_SLOT.test(syllables[1])) return 0;
 
   const lowerWord = word.toLowerCase();
+  // Stress-bearing -eer is a loan/agentive ending, not neutral -er.
+  if (/eer$/.test(lowerWord)) return syllables.length - 1;
 
-  // Specific suffix stress patterns (-tion/-sion/-cial/-tial). The
+  // -cient/-ciency stress the nucleus before their palatalized ending.
+  if (/cien(?:t|cy)$/.test(lowerWord)) return syllables.length - 2;
+
+  // Specific suffix stress patterns (-tion/-sion/-cial/-tial/-ese). The
   // `syllables.length <= 1` guard above means length is always >= 2 here,
   // so `syllables.length - 2` can't go negative and needs no Math.max —
   // true of every "penult" return in this function.
@@ -753,7 +761,7 @@ export function assignStress(syllables: string[], word: string): number {
   // abnormality, accessibility). The syllabifier keeps consonant + ity as
   // one final slot (ac·ti·vity), so that syllable is length - 2. -iety
   // (society, anxiety) is a different frame and is left out.
-  if (/(?:tion|sion|cial|tial)$/.test(lowerWord) || /[^aeiouy]ity$/.test(lowerWord))
+  if (/(?:tion|sion|cial|tial|ese)$/.test(lowerWord) || /[^aeiouy]ity$/.test(lowerWord))
     return syllables.length - 2;
   // -ial does the same at 3+ slots (adversarial, editorial, material); at
   // two the <i> is itself the stressed vowel (denial, trial). -ental/-antal
@@ -1457,7 +1465,7 @@ const TENSE_ENDINGS =
 // excluded too — they drop -Cey to 55% (bagley, bakley) and -Can to 56%.
 // A single-consonant -Can (caban, pagan, satan) is 44:2 tense, but it was
 // left out: one loss is alan, a top-5000 word, against no common win.
-const A_TENSE_ENDINGS = /^(?:[^aeiouyr](?:ey|iers?|er(?:y|ies)|ies)|s[ktp]e)$/;
+const A_TENSE_ENDINGS = /^(?:[^aeiouyr](?:ey|iers?|er(?:y|ies)|ies)|s[ktp]e|con)$/;
 
 // Word-final -ine, unstressed by the rule engine's own stress assignment
 // (isStressed/isSecondary both false on this syllable): the magic-e diphthong
@@ -1498,7 +1506,7 @@ const THETA_CLUSTER_CODA = /^th[aeiou][aeiouy]?[bcdfghjklmnpqrstvwxz]{2,}$/;
 // (legionnaire/album/algebra keep the plain letter values) and ones that
 // are never word-initial (a lone "lion"/"ford"/"ward" is the noun).
 const FINAL_ONLY_SUFFIXES = new Set(
-  "^le$ ^cle$ ^twood$ ^al$ ^que$ ^sten$ ^[cs]e$ ^ge$ ^ty$ ^ly$ ^tain$".split(" "),
+  "^le$ ^cle$ ^twood$ ^al$ ^que$ ^sten$ ^[cs]e$ ^ge$ ^ty$ ^ly$ ^tain$ ^e?s$".split(" "),
 );
 const NON_INITIAL_SUFFIXES = new Set("^lion$ ^scien$ ^ford$ ^ward$".split(" "));
 
@@ -2372,7 +2380,12 @@ export function syllableToIPA(
     // existing r-onset exclusion just below it (a following r-onset
     // syllable means the "a" is r-controlled, not this open frame):
     // NOT(starts with r OR ends in a sonorant + "or").
-    const aFire = nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE ||
+    const aFire =
+      // -asic lengthens its stressed open a; -ative does at two real
+      // syllables. Longer -ative words keep their existing laxing.
+      (isStressed && /^[^aeiouy]*a$/.test(syllable) &&
+        (nextSyllable === "sic" || syllableIndex === 0 && tail === "tive")) ||
+      nextSyllable === "tion" || nextSyllable === "sion" || nextIsCle || nextIsMagicE ||
       aTailTense ||
       (/^[^aeiouy]*a$/.test(syllable) &&
         ((twoSylTense && !/^r|[lmn]or$/.test(nextSyllable!)) || aTwoSylTense));
@@ -2490,6 +2503,12 @@ export function syllableToIPA(
     // vowel (medium, tedious, 17:5). Elsewhere open e stays lax (seven, level).
     // Bare-"e" test factored out of 3 disjuncts (distributive law, as aFire).
     const eFire =
+      // Open e before a closed qu- tail (equal, sequence, frequency),
+      // or the two-syllable dental + rhotic ending (meter, cedar).
+      (/^[^aeiouy]*e$/.test(syllable) &&
+        (isStressed && /^(?:qua[lrs]|quen(?:t|ce|cy)|quel)$/.test(t) ||
+          twoSylTense && /^[td]er$/.test(nextSyllable ?? "") ||
+          isStressed && isNextLastSyllable && /^[td]ar$/.test(nextSyllable ?? ""))) ||
       (syllableIndex === 0 && isLastSyllable && /^[^aeiouy]+e$/.test(syllable)) ||
       nextSyllable === "tion" || nextSyllable === "sion" ||
       (syllableIndex === 0 && !isStressed && !isLastSyllable && /^p?re$/.test(syllable)) ||
@@ -2653,6 +2672,16 @@ export function syllableToIPA(
   ) {
     const i = sources.lastIndexOf("o");
     if (i >= 0) phonemes[i] = "ʌ";
+  }
+
+  // Before final -ve/-ven/-vie, m/pr + o takes GOOSE (move, prove,
+  // movie). A doubled p may straddle the onset boundary (approve).
+  if (
+    (/^(?:mo|pro)$/.test(syllable) || syllable === "ro" && head.endsWith("p")) &&
+    /^v(?:e|en|ie)$/.test(nextSyllable ?? "") && isNextLastSyllable
+  ) {
+    const i = sources.lastIndexOf("o");
+    if (i >= 0) phonemes[i] = "u";
   }
 
   // STRUT <ou> before a -ble/-ple slot (dou·ble, cou·ple, trou·ble); the
@@ -2842,6 +2871,8 @@ export function syllableToIPA(
   // the whole frame is three words, ensconce/ensconced (ɪ) against enskilda
   // (ɛ). Keeping the exclusion holds the two and costs the one.
   const initialClosedE =
+    // Assimilated ef- raises when weak (efficient, effective).
+    !/^ef$/.test(syllable) &&
     syllableIndex === 0 &&
     /^[^aeiouy]*e[^aeiouyx]+$/.test(syllable) &&
     !(/^e[lmnr]$/.test(syllable) && nextSyllable?.[0] === "s");
@@ -3052,6 +3083,15 @@ export function syllableToIPA(
   if (!isStressed && !isSecondary) {
     for (let i = 0; i < phonemes.length; i++) {
       if (phonemes[i] !== "ɪ" || !/^[ie]$/.test(sources[i])) continue;
+      // Weak <e> after m/n or soft g centralizes instead of raising. Full
+      // vowels and secondary stress stay intact; be-/de- keep /ɪ/.
+      if (sources[i] === "e" && (
+        /^(?:m|g)$/.test(sources[i - 1] ?? "") && /^(?:m|dʒ)$/.test(phonemes[i - 1] ?? "") ||
+        sources[i - 1] === "n" && phonemes[i - 1] === "n"
+      )) {
+        phonemes[i] = "ə";
+        continue;
+      }
       if (syllableIndex === 0 && !/[aeiouy]/.test(sources.slice(0, i).join("")))
         continue;
       const rest = sources.slice(i + 1).join("") + (tail ?? "");
