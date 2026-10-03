@@ -86,7 +86,7 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
 
 interface PostLexRule {
   /** Cheap pre-guard on the spelling (w) and syllable count; rule fires only when true. */
-  when: (w: string, syl: number) => boolean;
+  when: (w: string, syl: number, finalPrimary: boolean) => boolean;
   re: RegExp;
   /** Plain replacement string (use `fn` instead for callback replacers). */
   sub?: string;
@@ -130,7 +130,9 @@ const POST_LEX_RULES: PostLexRule[] = [
   // figure ˈfɪɡjɝ, configure.
   { when: (w) => w.endsWith("gure"), re: /ɡjʊɹ$/, sub: "ɡjɝ" },
   { when: (w, syl) => w.endsWith("mony") && syl >= 3, re: /məni$/, sub: "moʊni" },
-  { when: (w) => !w.endsWith("sense") && !w.endsWith("fense"), re: /([ɪɛ])ns$/, sub: "əns" },
+  // Reduction belongs to a weak polysyllabic ending, never a complete
+  // fence/prince root or the primary-stressed tail of pretense/dispense.
+  { when: (w, syl, finalPrimary) => syl >= 3 && !finalPrimary && !w.endsWith("sense") && !w.endsWith("fense"), re: /([ɪɛ])ns$/, sub: "əns" },
   // -inger collapses n+dʒ to the assimilated nasal (singer, ringer,
   // stinger — from a real -ing stem) — 256:73 in dict overall. -singer
   // specifically inverts that (bassinger, kissinger, dysinger, all the
@@ -785,11 +787,11 @@ export function applyPostStress(ipa: string, word: string): string {
  * Apply the unconditional cleanup then the guarded corrections, in
  * table order, to the joined syllable IPA of the rule path.
  */
-export function applyPostLexical(ipa: string, word: string, sylCount: number): string {
+export function applyPostLexical(ipa: string, word: string, sylCount: number, finalPrimary = false): string {
   let out = ipa;
   for (const [from, to] of POST_PROC_RULES) out = out.replace(from, to);
   for (const rule of POST_LEX_RULES) {
-    if (!rule.when(word, sylCount)) continue;
+    if (!rule.when(word, sylCount, finalPrimary)) continue;
     out = rule.fn !== undefined ? out.replace(rule.re, rule.fn) : out.replace(rule.re, rule.sub!);
   }
   return out;

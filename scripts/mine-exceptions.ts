@@ -432,15 +432,16 @@ for (;;) {
 }
 // Refinement can temporarily need an exception that later stems make
 // redundant. Retain its lexical availability, but avoid changing only the
-// primary-stress boundary within the same consonant cluster. Segments,
-// secondary stress and the stressed vowel must all be identical.
+// primary-stress boundary or secondary marks when the rule form is
+// redundant. Segment strings and the primary nucleus must be identical;
+// stale secondary marks can otherwise promote a weak schwa to STRUT.
 const FinalG2P: typeof import("../src/en/g2p").default = require("../src/en/g2p").default;
 const finalRules = new FinalG2P({ disableDict: true });
 for (const word of refinedWords) {
   const lexical = shippedMap[word];
   const predicted = finalRules.predict(word, "en");
   if (predicted && primaryCount(lexical) === 1 && primaryCount(predicted) === 1 &&
-      lexical.replace(/ˈ/g, "") === predicted.replace(/ˈ/g, "") &&
+      norm(lexical) === norm(predicted) &&
       primaryNucleusIdx(lexical) === primaryNucleusIdx(predicted)) {
     shippedMap[word] = predicted;
   }

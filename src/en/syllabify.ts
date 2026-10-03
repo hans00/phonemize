@@ -10,6 +10,7 @@ import type { TraceStep } from "./g2p";
 
 const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
 const CONSONANTS = new Set("bcdfghjklmnpqrstvwxyz".split(""));
+const COR_ROOT = /^r[aeu][^aeiouy]+$/;
 
 // Valid English onsets (consonant clusters that can start a syllable)
 const VALID_ONSETS = new Set(
@@ -753,6 +754,9 @@ export function assignStress(syllables: string[], word: string): number {
   if (syllables.length === 2 && SILENT_E_SLOT.test(syllables[1])) return 0;
 
   const lowerWord = word.toLowerCase();
+  // -iety keeps its stressed /aɪ/ and two weak nuclei in one slot.
+  // Whole-dict frozen-table probe: strict +7/-0, lenient +8/-0.
+  if (/iety$/.test(lowerWord)) return syllables.length - 1;
   // Stress-bearing -eer is a loan/agentive ending, not neutral -er.
   if (/eer$/.test(lowerWord)) return syllables.length - 1;
 
@@ -1043,6 +1047,10 @@ export function assignStress(syllables: string[], word: string): number {
   // words we use the orthographic prefix as a signal but rely on the
   // doubled-consonant guard to avoid false matches (e.g. "address"
   // wouldn't fire because "addr" has doubled d).
+  // Assimilated cor- before a checked root keeps stress on that root.
+  if (syllables.length === 2 && syllables[0] === "cor" && COR_ROOT.test(syllables[1])) return 1;
+  // The bound mit- root retains stress after a weak Latin prefix.
+  if (syllables.length === 2 && /^(?:ad|com|sub)$/.test(syllables[0]) && syllables[1] === "mit") return 1;
   const unstressedPrefixes = [
     "ab", "ad", "con", "com", "de", "dis", "ex", "in", "mis",
     "ob", "out", "pre", "pro", "re", "sub", "un", "under",
@@ -1655,7 +1663,8 @@ export function syllableToIPA(
     // word-final-y handling below, which reads a stressed sole-vowel y as
     // the tense /aɪ/ diphthong (rely, reply) instead of the suffix's lax
     // /i/.
-    if (src === "^ly$" && isStressed) continue;
+    // Bare stressed less/est likewise have full ɛ, not suffix schwa.
+    if (["^ly$", "^less$", "^est$"].includes(src) && isStressed) continue;
     // A bare "er" syllable right before another syllable starting with r
     // (error, terror's medial, erratic) is not the reduced word-final -er
     // suffix this rule targets (teacher, baker) — the second r belongs to
@@ -1666,9 +1675,12 @@ export function syllableToIPA(
     // onset consonant of its own and so never reaches the main loop.
     if (src === "^er$" && nextSyllable?.[0] === "r") continue;
     if (suffixInput.match(pattern)) {
+      // Weak assimilated cor- coalesces its root-initial r (correct),
+      // unlike stressed cor/core and the open/digraph roots (correlate).
       const p = ionAcrossBoundary
         ? ipa.slice(0, -1).replace(/ʒ/, /n$/.test(prevSyllable ?? "") ? "ʃ" : "ʒ")
-        : ipa;
+        : src === "^cor[e]?$" && remaining === "cor" && COR_ROOT.test(nextSyllable ?? "") && !isStressed && !isSecondary
+          ? "kɝ" : ipa;
       steps?.push({
         grapheme: remaining,
         phoneme: p,
@@ -1732,18 +1744,24 @@ export function syllableToIPA(
   // image, finish) keep the lax default. Onsetless a before any other
   // ending is the unstressed prefix (about, alone); a before r and i
   // before v or -en/-ion are lax (baron, river, given, vision).
+  // Final -ence has the same two pronounced nuclei as -ent. Before
+  // that weak tail, open stressed i stays tense (silence/licence).
+  // Frozen whole-dict probe: strict +2/-0, no lenient change; e/a stay out.
   const twoSylTense =
-    syllableIndex === 0 && isNextLastSyllable && isStressed && !nextIsLaxCluster &&
-    !!nextSyllable && TENSE_ENDINGS.test(nextSyllable);
+    syllableIndex === 0 && isStressed && !nextIsLaxCluster &&
+    ((isNextLastSyllable && !!nextSyllable && TENSE_ENDINGS.test(nextSyllable)) ||
+      (/^[^aeiouy]*i$/.test(syllable) && /^[^aeiouy]+ence$/.test(tail ?? "")));
   // Same window, `a`-only endings, and exempt from nextIsLaxCluster — the
   // s+stop onset it blocks is the silent-e coda of haste/waste, not the
   // cu|stom cluster it was written for.
   const aTwoSylTense =
     syllableIndex === 0 && isNextLastSyllable && isStressed &&
     !!nextSyllable && A_TENSE_ENDINGS.test(nextSyllable);
+  // Primary-stressed -bre/-cre is transposed silent e (fibre/acre).
+  // Weak massacre and the different -itre loan frame keep their defaults.
   const nextIsMagicE =
     isNextLastSyllable &&
-    !!nextSyllable?.match(/^[^aeiou]e$/);
+    (!!nextSyllable?.match(/^[^aeiou]e$/) || isStressed && /^[bc]re$/.test(nextSyllable ?? ""));
   // Trisyllabic laxing. A stressed open o/y keeps its tense vowel in the
   // penult (motion, hero, cycle) but goes lax two or more syllables from
   // the end (policy ɑ, monitor, comedy; pyramid ɪ, synergy) and before
@@ -1802,18 +1820,9 @@ export function syllableToIPA(
   // a real "-get" word) — the same fabricated-stem risk noted elsewhere
   // in this file for the -ed/-ing silent-e probe, here with no gate
   // available since -able's fallback has none to begin with.
-  // INTEGRATOR NARROWING (2026-09-28, merging worktree agent-a6fded6dd32a8d17a):
-  // restricted to a NON-initial "get" syllable (prevSyllable defined), i.e.
-  // forget/target/beget/retarget/the surnames, not the bare monosyllable
-  // "get" itself. The bare word was already rule-exact-adjacent via the
-  // dict/exceptions table, and letting the rule alone claim it evicted
-  // "get" from exceptions.json (build-dict's rule-exact eviction), which
-  // broke `inflect()`'s doubled-consonant undo in g2p.ts for "getting"
-  // (undoubles to "get", looks it up with `wellKnown(undoubled, ...)`,
-  // which stopped finding a table entry and had no rule-prediction
-  // fallback for a bare monosyllabic stem) — a table hit at runtime either
-  // way, so nothing shipped changes; this only protects the rules-only
-  // metrics. See AGENTS.md's rule-exact-eviction trap.
+  // Noninitial -get stays on this guard. The initial hard-g guard below
+  // also accepts raw gett- at a suffix boundary, so evicting the bare get
+  // entry no longer softens getting's rule-derived doubled stem.
   const gFromGetSuffix =
     syllable === "get" && prevSyllable !== undefined && nextSyllable !== "te" &&
     !(prevSyllable?.endsWith("d") ?? false);
@@ -1831,9 +1840,12 @@ export function syllableToIPA(
     // present, design, reserve): 79:60 in dict. ab-/ob-/de- split overall
     // (20:48 for ab-/ob-) but are unanimous before the -serv-/-sert-/-sorb-
     // stem (deserve, desertion, observe, absorb): 20:0 in dict.
+    // trans- voices before front vowels; m and back-vowel frames keep
+    // their supplied contrasts (transmission/transom).
     if (
       syllableIndex === 1 &&
       ((/^p?re$/.test(prevSyllable ?? "") && /^s[aeiouy]/.test(remaining)) ||
+        (prevSyllable === "tran" && /^s[aei]/.test(remaining)) ||
         (/^(?:[ao]b|de)$/.test(prevSyllable ?? "") &&
           /^s(?:er|orb)/.test(remaining)))
     ) {
@@ -2237,6 +2249,23 @@ export function syllableToIPA(
     if (remaining === "sual" && !isStressed && /[aeiouy]$/.test(prevSyllable ?? "")) {
       emit(remaining, "ʒəwəl", "phoneme:^sual-coalesce"); break;
     }
+    // Preserve the existing giv- short-i frame across gi|v as well.
+    if (remaining === "gi" && /^v/.test(nextSyllable ?? "")) {
+      emit("gi", "ɡɪ", "phoneme:^giv-boundary"); remaining = ""; continue;
+    }
+    // Root sh+oe is GOOSE; medial Washoe and sch+oe stay outside.
+    if (remaining.startsWith("oe") && syllableIndex === 0 && sources[sources.length - 1] === "sh") {
+      emit("oe", "u", "phoneme:^oe-after-sh"); remaining = remaining.slice(2); continue;
+    }
+    // The creat- root has separate /i/ and FACE nuclei; creature/cream
+    // keep the ea digraph. Frozen-table probe: strict +4/-0, lenient +5/-0.
+    if (remaining.startsWith("ea") && sources[sources.length - 1] === "cr" && /^t(?:e|or|i(?:on|ve|vity))/.test(remaining.slice(2) + (tail ?? ""))) {
+      emit("ea", "ieɪ", "phoneme:^ea-creat-hiatus"); remaining = remaining.slice(2); continue;
+    }
+    // Written ie is a hiatus in -iety (society, variety), not /i/.
+    if (remaining === "iety" && isLastSyllable) {
+      emit(remaining, "aɪəti", "phoneme:^iety-hiatus"); break;
+    }
     // A single-onset oe before bare -m/-t(-ry) retains a weak second
     // nucleus (poem/poet/poetry); clusters and doubled German codas stay.
     if (isStressed && isLastSyllable && /^oe(?:ms?|ts?|try)$/.test(remaining) &&
@@ -2516,7 +2545,8 @@ export function syllableToIPA(
     if (!hadDoubledL) skip.add("^al$");
     // Onsetless ang-/eng- before weak -er keeps its velar stop (anger),
     // unlike vowel+nger after an onset or the existing Germanic name class.
-    if (gFromDoubling || gFromGetSuffix || (!isStressed && syllableIndex === 1 &&
+    if (gFromDoubling || gFromGetSuffix || (syllableIndex === 0 &&
+        /^g(?:et(?:[st]|$)|ear|eek|ig(?:g|s|$))/.test(syllable + (tail ?? ""))) || (!isStressed && syllableIndex === 1 &&
         /^[aeou]n$/.test(head) && !GERMANIC_NAME_ENDING.test(head + syllable + (tail ?? "")) &&
         (/^ger/.test(syllable) || syllable === "ge" && nextSyllable?.startsWith("r")))) skip.add("^g(?=[eiy])");
     // A position-aware version of this guard (skip the lax default when
@@ -2568,8 +2598,13 @@ export function syllableToIPA(
     // way poster/kosher/costar do for the s+stop/sh/ch/th members above,
     // since /ks/ is a genuine coda cluster wearing a single letter (111 : 0
     // in the dict, no exceptions found).
+    // Stressed root o is checked before -del/-vel/-dern and
+    // sp+weak vowel/-stel (model, novel, gospel, hostel). Keep -ster
+    // and -tel tense (poster, hotel).
     if (
       (!isLastSyllable && !isStressed && !nextIsMagicE) ||
+      (isStressed && /^[^aeiouy]*o$/.test(syllable) &&
+       /^(?:[dv]el$|dern$|sp[ei]|stel$)/.test(nextSyllable ?? "")) ||
       triLax ||
       (nextIsLaxCluster && !nextIsCle && isNextLastSyllable && nextSyllable!.endsWith("n")) ||
       nextSyllable?.startsWith("x")
@@ -2692,6 +2727,8 @@ export function syllableToIPA(
     )
       skip.add("^th(?=[aeiou])");
     if (theVoicelessAtBoundary || theGreekInitial) skip.add("^the$");
+    const initialCheckedR = syllableIndex === 0 && isStressed &&
+      (remaining === "er" || remaining === "ir" && /^[^aeiouy]?ir$/.test(syllable));
     // A bare vowel+r rime (nothing else left in this syllable) right
     // before a syllable starting with r is the doubled/assimilated r at a
     // syllable boundary (ar·range, ar·rive, er·ror, mir·ror, car·ry,
@@ -2706,14 +2743,17 @@ export function syllableToIPA(
     // if the vowel is left bare here for the reduction pass to reach.
     // Falling through lands on the plain ^a/^e/^i letter rules below
     // (æ/ɛ/ɪ), and the lone r is picked up by ^r on the next iteration.
+    // An initial stressed er also stays checked at longer lengths
+    // (terrace/terrible/territory); ir does so after a single consonant
+    // (mirror), keeping the clusters in stirrup/squirrel on NURSE.
     // u is excluded: hurry/current/curry split ɝ vs ɑɹ in the dict with no
     // orthographic discriminator, so ^[eiu]r's existing ɝ default is left
-    // alone there. i is excluded too: it collides with the "ir" negative
+    // alone there. Other i positions stay excluded: the "ir" negative
     // prefix (irregular, irrational, irreversible), which the dict keeps
     // as ɪ + a SEPARATE ɹ under its own secondary stress, not a coalesced
-    // ɝ, and with a handful of names (cirrus, mirra, mirren, pirro, sirri)
-    // that keep ɪɹ stressed. Isolated (a/e-only vs a/e/i): strict 0 : 7,
-    // so i stays out. Scoped to the word's last two syllables
+    // ɝ. The older global a/e/i extension lost 7 strict words; the
+    // initial stressed single-onset case is measured separately here.
+    // Other cases stay scoped to the word's last two syllables
     // (isNextLastSyllable): a 3+-syllable Spanish/Italian surname with the
     // doubled r earlier in the word (arriaga, barrera, carrasco, marrero)
     // keeps its open, unreduced vowel there — measured net-negative
@@ -2727,8 +2767,8 @@ export function syllableToIPA(
     if (
       nextSyllable?.[0] === "r" &&
       remaining[0] !== "u" &&
-      remaining[0] !== "i" &&
-      isNextLastSyllable &&
+      (remaining[0] !== "i" || initialCheckedR) &&
+      (isNextLastSyllable || initialCheckedR) &&
       !/^(?:inter|over|under|counter|super)$/.test(head + syllable) &&
       (remaining === "ar" || /^[ei]r$/.test(remaining))
     ) {
@@ -2747,6 +2787,24 @@ export function syllableToIPA(
         // -ture/-dure keep it: the yod palatalizes (gesture tʃɝ) or the
         // lexicon writes dj (endure).
         const onset = phonemes[phonemes.length - 1];
+        // Initial who- has GOOSE, except whole/whorl/whopper and whoosh.
+        // A medial wh is not this root (lawhon); frozen strict/lenient +10/-0.
+        if ((pattern.source === "^o$" || pattern.source === "^o") && sources[sources.length - 1] === "wh" && syllableIndex === 0 && /^who(?![lopr])/.test(syllable + (tail ?? ""))) ipa = "u";
+
+        // Voiced th-/wh- + ere takes SQUARE without changing h-/w-.
+        if (pattern.source === "^ere$" && /^(?:th|wh)$/.test(sources[sources.length - 1] ?? "")) ipa = "ɛɹ";
+        // Stressed p/t/r+oll contrasts with doll and medial pollen/trolley.
+        if (pattern.source === "^o" && syllableIndex === 0 && isStressed && hadDoubledL &&
+          /^ols?$/.test(remaining) && /^(?:[pt]|.*ɹ)$/.test(onset ?? "")) ipa = "oʊ";
+
+        // A single-onset root -ire retains the careful rhotic nucleus.
+        if (pattern.source === "^ire$" && syllableIndex === 0 && isStressed && /^[^aeiouy]ire$/.test(syllable)) ipa = "aɪɝ";
+
+        // The stressed k/l+ost frame is checked (cost/lost); h/p/m
+        // keep the table's long vowel (host/post/most).
+        if (pattern.source === "^ost$" && isStressed && /^[kl]$/.test(onset ?? "")) ipa = "ɑst";
+        // cor- already emitted the coalesced rhotic in the suffix loop.
+        if (match[0] === "r" && !phonemes.length && prevSyllable === "cor" && head === "cor" && !prevStressed && isStressed && COR_ROOT.test(syllable)) ipa = "";
         // Greek sch roots differ from the Germanic sh frame; doubled
         // l and other Dutch/German sch+oo/schol- spellings retain sh.
         if (match[0] === "sch" && (syllableIndex === 0 || /^(?:pre|re|un|dis|non|mis)$/.test(head)) &&
@@ -2775,9 +2833,22 @@ export function syllableToIPA(
 
   // STRUT spelt o after l/b before a final -ve slot (lo·ve, a·bo·ve,
   // glo·ve: 18 ʌ : 5 oʊ in the dict) and before -vern (go·vern: 26 : 3).
+  // c/h before -ver and h/sh before -vel share STRUT; m/pr stay on
+  // GOOSE below and grovel/novel retain their checked LOT vowel.
+  // Nasal frames retain STRUT; come/some yield to vowel-ending loan
+  // linkers (Jacome/glyco-, Greek chromo-), while welcome/threesome join.
   if (
     (/[lb]o$/.test(syllable) && /^ve[sd]?$/.test(nextSyllable ?? "") && isNextLastSyllable) ||
-    (/^[^aeiouy]*o$/.test(syllable) && /^vern/.test(nextSyllable ?? ""))
+    (/^[^aeiouy]*o$/.test(syllable) && /^vern/.test(nextSyllable ?? "")) ||
+    (/^[ch]o$/.test(syllable) && /^ver(?:s|ing|ed|y)?$/.test(nextSyllable ?? "") && isNextLastSyllable) ||
+    (/^(?:h|sh)o$/.test(syllable) && nextSyllable === "vel" && isNextLastSyllable) ||
+    (syllable === "co" && /^l(?:or|our)$/.test(nextSyllable ?? "") && isNextLastSyllable) ||
+    (syllable === "o" && syllableIndex === 0 && /^(?:ven|nions?)$/.test(nextSyllable ?? "")) ||
+    (/^[cd]o$/.test(syllable) && nextSyllable === "zen" && isNextLastSyllable) ||
+    (/^[hm]o$/.test(syllable) && /^neys?$/.test(nextSyllable ?? "") && isNextLastSyllable) ||
+    (/^[cs]o$/.test(syllable) && nextSyllable === "me" && isNextLastSyllable &&
+      (syllable === "co" ? !/[aiouy]$/.test(head) : !head.endsWith("o"))) ||
+    (/^[dn]o$/.test(syllable) && nextSyllable === "ne" && syllableIndex === 0 && isNextLastSyllable)
   ) {
     const i = sources.lastIndexOf("o");
     if (i >= 0) phonemes[i] = "ʌ";
@@ -3003,7 +3074,8 @@ export function syllableToIPA(
     // Latin abs-/ads- before the /s/ onset is the one sub-frame with no
     // majority — 7 æ (absentee, absolute) against 7 ə (absorbent, absurdity) —
     // so it stays in the reduction path.
-    !(syllable.endsWith("b") && nextSyllable?.[0] === "s");
+    !(syllable.endsWith("b") && nextSyllable?.[0] === "s") &&
+    !(syllable === "ad" && nextSyllable === "mit");
 
   // Same frame for <e>, which raises to /ɪ/ rather than reducing to /ə/:
   // sep·tember, bec·kerman, cen·tennial, en·tangle, em·bankment, del·gado.
