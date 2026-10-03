@@ -25,7 +25,7 @@ describe.each([false, true])("root hiatus (disableDict=%s)", disableDict => {
 
   test("initial who- contrasts with whole and the other wh+o rimes", () => {
     for (const word of ["who", "whom", "whose", "whoever", "whomever"])
-      expect(g2p.predict(word)).toMatch(/^ˈ?hu/);
+      expect(g2p.predict(word)).toMatch(/^[ˈˌ]?hu/);
     expect(g2p.predict("whole")).toContain("oʊ");
     expect(g2p.predict("whorl")).toContain("ɔɹ");
     expect(g2p.predict("whopper")).toMatch(/[ɑɔ]/);

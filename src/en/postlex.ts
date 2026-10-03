@@ -29,7 +29,6 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   // a word-initial /r/ onset is the English root (rich), not this suffix.
   [/((?<!^)ɹ|ɝ)ɪtʃ$/, "$1ɪk"],
   [/ɡdʒ$/, "ɡ"],
-  [/(?<=[aɑɔɛiɪouəɝ])dʒɝ$/, "ɡɝ"], // -ger names keep hard g after any vowel (i: eager/kreger 38 vs 3)
   [/ətʃ$/, "ək"],
   [/([bdfɡhklmnpɹstzv])ə(ʃ|dʒ)əs$/, "$1eɪ$2əs"],
   [/([^w])əʃən$/, "$1eɪʃən"],
@@ -37,7 +36,7 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/[ɑə][ɛə]$/, "oʊ"],
   [/oʊ([ntplm])ɪk/g, "ɑ$1ɪk"],
   [/oʊnəm/g, "ɑnəm"],
-  [/oʊmɪtɝ/g, "ɑmɪtɝ"],
+  [/oʊ(m[ɪə]t[ɝɹ])/g, "ɑ$1"],
   [/oʊɡɹəf([iɝ])/g, "ɑɡɹəf$1"],
   [/(?:oʊ|ɑ)mɪnən([ts])/g, "ɑmənən$1"],
   [/oʊdʒɪk$/, "ɑdʒɪk"],
@@ -98,10 +97,15 @@ const GERMANIC_EI_SUFFIX_RE =
   /(?:berg|burg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein|hoff|muth|dorf|tal|ler|ner|sen|born|mark|meier|eier|meister|eister|hardt|ardt|lein|heit|heid|meyer|eyer|weiser|eiser|ecker|decker|elman|eman|hein|eitel|itel|einl|eindl|indl|berger|egger|eiter|iter|wenger|enger|enson|itas|linger|fried|zig|eis|eiden|eider|hold|gold|zel|eineke|eincke|eineck|einke)$/;
 
 const POST_LEX_RULES: PostLexRule[] = [
+  // Hard -ger needs the spelling g; j stays soft before the same rhotic
+  // tail (major). Frozen whole dict: strict/lenient +3/-0.
+  { when: (w) => w.endsWith("ger"), re: /(?<=[aɑɔɛiɪouəɝ])dʒɝ$/, sub: "ɡɝ" },
   // — Latinate / native suffix corrections —
   { when: (w) => w.startsWith("aa"), re: /^æ+/, sub: "ɑ" },
   { when: (w) => w.endsWith("erate") || w.length >= 9, re: /[ɛɔ]ɹeɪt(ɝ?)$/, sub: "ɝeɪt$1" },
   { when: (_w, syl) => syl >= 3, re: /eɪdʒ$/, sub: "ɪdʒ" },
+  // Written -ri-age contracts to one weak nucleus (marriage/carriage).
+  { when: w => /riage$/.test(w), re: /ɪɪdʒ$/, sub: "ɪdʒ" },
   { when: (w) => w.includes("asiv"), re: /æsɪv/, sub: "eɪsɪv" },
   { when: (w) => w.endsWith("ator"), re: /([^w])ətɝ$/, sub: "$1eɪtɝ" },
   // -ctory sits right after the primary, so its /ɔɹ/ reduces: factory

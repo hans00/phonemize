@@ -335,6 +335,8 @@ describe("s voices in the contexts where the dict majority does", () => {
   });
 });
 
+// Stressed photo retains /oʊ/; its contrasting family is covered in
+// en-derived-vowel-boundaries.test.ts (Cambridge photograph pronunciation).
 describe("trisyllabic laxing of a stressed open o/y", () => {
   it.each([
     ["poverty", "ˈpɑvɝti"],
@@ -343,7 +345,6 @@ describe("trisyllabic laxing of a stressed open o/y", () => {
     ["holiday", "ˈhɑɫɪdeɪ"],
     ["monitor", "ˈmɑnɪtɝ"],
     ["tolerant", "ˈtɑɫɝənt"],
-    ["photograph", "ˈfɑtəɡɹəf"],
     ["pyramid", "ˈpɪɹəmɪd"],
     ["synergy", "ˈsɪnɝdʒi"],
     ["typical", "ˈtɪpɪkəɫ"],

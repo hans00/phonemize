@@ -20,6 +20,9 @@
 // from here rather than the reverse, so there's no import cycle between
 // the two files.
 //
+// The caller restricts neutral -ary to complete -ion roots; other -ary
+// spellings stay in their stress-sensitive whole-word frame.
+//
 // Stem attestation: `predictStem` delegates to g2p.ts's `stemPron` (lex(b) ||
 // rule-predict b as literally spelled, gated off the French silent-e
 // "-cre/-tre/-bre" shape a suffix-stripped fabricated stem can
@@ -39,7 +42,10 @@ import { STRESS_NEUTRAL_ROWS } from "./morph-table";
 // stays full — the same join problem the -ily/-ibly adverbs have. On the
 // frame below data/en/dict.json has 78 ə : 22 ɪ, and 9 : 1 over the
 // top-5000 slice; the rule path reaches it in `syllableToIPA`.
-const PRE_SUFFIX_ORTHO_RE = /i[tnmp](?:als?|ous|ants?|ents?)$/;
+// Weak -im/-il before -ize reduces too (minimize/optimize/utilize):
+// frozen full-dict strict +6/-0, lenient +1/-0. Other consonants and
+// ordinary -ic/-ive bases retain their supplied vowels.
+const PRE_SUFFIX_ORTHO_RE = /(?:i[tnmp](?:als?|ous|ants?|ents?)|i[lm]ize)$/;
 export const preSuffixReduce = (ipa: string, word: string): string =>
   PRE_SUFFIX_ORTHO_RE.test(word)
     ? ipa.replace(/(?<![eaɔ])ɪ(?=[^ɑɔæɛɪiʊuʌəɝɚ]*$)/, "ə")
@@ -53,7 +59,9 @@ export const preSuffixReduce = (ipa: string, word: string): string =>
 export function softenBaseFinal(ipa: string, base: string, sfx: string): string {
   if (!/^[eiy]/.test(sfx)) return ipa;
   if (/(?:^|[^g])g$/.test(base)) return ipa.replace(/ɡ$/, "dʒ");
-  if (/(?:^|[^c])c$/.test(base)) return ipa.replace(/k$/, "s");
+  // A final sc cluster coalesces when the front suffix softens c.
+  // This repairs the composition boundary, not consonants inside a stem.
+  if (/(?:^|[^c])c$/.test(base)) return ipa.replace(/k$/, "s").replace(/ss$/, "ʃ");
   return ipa;
 }
 
@@ -62,7 +70,7 @@ export function tryStressNeutralSuffix(
   predictStem: (stem: string, suffix: string, suffixIpa: string) => string | undefined,
 ): string | undefined {
   for (const { suffix, ipa } of STRESS_NEUTRAL_ROWS) {
-    if (!lowerWord.endsWith(suffix) || lowerWord.length <= suffix.length + 2) continue;
+    if (!lowerWord.endsWith(suffix) || lowerWord.length <= suffix.length + (suffix === "ify" ? 1 : 2)) continue;
     const stem = lowerWord.slice(0, -suffix.length);
     const stemPron = predictStem(stem, suffix, ipa);
     if (!stemPron) continue;
