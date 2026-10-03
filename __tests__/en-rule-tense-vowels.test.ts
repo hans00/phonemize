@@ -52,9 +52,9 @@ describe("stressed i in hiatus with the next vowel is tense", () => {
   it.each([
     ["lion", "ˈɫaɪɑn"],
     ["riot", "ˈɹaɪɑt"],
-    ["giant", "ˈdʒaɪænt"],
-    ["dial", "ˈdaɪæɫ"],
-    ["bias", "ˈbaɪæs"],
+    ["giant", "ˈdʒaɪənt"],
+    ["dial", "ˈdaɪəɫ"],
+    ["bias", "ˈbaɪəs"],
     ["bio", "ˈbaɪoʊ"],
     ["die", "ˈdaɪ"],
     ["cries", "ˈkɹaɪz"],

@@ -306,9 +306,12 @@ const isUsableConsonantStem = (ipa: string, base: string): boolean =>
 // a real regression on the metric that gates this fix, so left open.
 // An -ear rime is complete without silent e. Restoring e can select
 // another lexeme (beare), changing the real root vowel in bearing.
+// A complete -sist root keeps its bound-root stress, rather than the
+// different full-word frame of a fabricated assiste/persiste.
+const NO_DROPPED_E = /(?:ear|sist|ia(?:l|s|nt|r)|uel|oe[mt])$/;
 const MAGIC_E_CANDIDATE = (base: string): boolean =>
   !/([bcdfgklmnprst])\1$/.test(base) &&
-  !/(?:gn|ook|ood|ear)$/.test(base) &&
+  !/(?:gn|ook|ood)$/.test(base) && !NO_DROPPED_E.test(base) &&
   (/[aeiouy][bcdfghjklmnpqrstvwxz]$/.test(base) ||
     /[cgsvl]$/.test(base) ||
     /(?:st|th)$/.test(base) ||
@@ -687,7 +690,15 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     // Priority 6: Handle acronyms with or without periods, e.g., "TTS" or "M.L."
-    const spelled = spellInitialism(word);
+    // Three-letter forms with an unlicensed onset are spelled (fbi/cpu),
+    // using letter names. Native digraphs and borrowed onsets stay spoken.
+    const onset = word === lowerWord && lowerWord.length === 3
+      ? /^[bcdfghjklmnpqrstvwxz]{2,}(?=[aeiouy])/.exec(lowerWord)?.[0] : undefined;
+    const unpronounceable = onset && !onset.includes("h") &&
+      !/^(?:ng|sz|zs|vr|sr|[fsvz]{2}|([a-z])\1|[gkmp]n|wr|[pt]s|pt)$/.test(onset) &&
+      !LICIT_ONSETS.has(onset.replace(/c/g, "k").replace(/g/g, "ɡ").replace(/r/g, "ɹ"));
+    const spelled = spellInitialism(word) ?? (unpronounceable
+      ? spellInitialism(word.toUpperCase())?.replace(/ˈ(?=.*ˈ)/g, "ˌ") : undefined);
     if (spelled) return spelled;
 
     // Priority 7: Improved syllabification and rule-based G2P.
@@ -746,20 +757,31 @@ export class EnglishG2P implements LanguageProcessor {
     const FRENCH_RE_STEM_RE = /[cbt]re$/;
     const stemPron = (b: string): string | undefined =>
       lex(b) || (FRENCH_RE_STEM_RE.test(b) ? undefined : this.predictInternal(b, undefined, false));
+    // Before -able/-ance, restore a supplied -y stem or a short root
+    // whose initial stress stays stable. Bound -ci- retains coalescence.
+    const restoreY = (stem: string): string | undefined => {
+      if (!/[^aeiouy]i$/.test(stem) || /ci$/.test(stem)) return undefined;
+      const y = lex(stem.slice(0, -1) + "y");
+      const slots = syllabify(stem);
+      return y || (slots.length <= 2 && assignStress(slots, stem) === 0 ? this.predictInternal(stem.slice(0, -1) + "y", undefined, false) : undefined);
+    };
     // Transparent privative prefixes keep the attested root's stress.
-    // Before a vowel, un- can collide with Latin uni-/unus spellings;
-    // leave that boundary to the whole-word rules. Under- is a distinct
+    // Vowel-initial adjectival/participial stems retain this boundary;
+    // uni-/unus spellings stay on the whole-word path. Under- is a distinct
     // longer prefix. Short remnants are insufficient stem evidence.
-    const privative = /^(un(?!der)(?=[^aeiou])|non|dis)([a-z]{4,})$/.exec(lowerWord);
+    const privative = /^(un(?!der)(?=[^aeiou]|(?=[aeou])[a-z]*(?:able|ible|ed|ing|ual)$)|non|dis)([a-z]{4,})$/.exec(lowerWord);
     if (privative) {
       const base = privative[2];
       // dis- can attach to a verb (disclose); an explicit V reading
       // takes priority over a noun citation form of the same stem.
       const known = (privative[1] === "dis" ? this.homographs[base]?.find(entry => entry.pos === "V")?.pronunciation : undefined) ||
         lex(base) || (privative[1] !== "dis" ? COMPOUND_TAILS[base] : undefined) ||
-        // A rule-exact Cied root may have left the exception table;
-        // keep the same transparent prefix composition (untied).
-        (/^[^aeiouy]ied$/.test(base) ? this.predictInternal(base, undefined, true) : undefined);
+        // Recognized vowel-initial adjective stems can themselves be
+        // derived or rule-exact (usual) after leaving the exception table.
+        (privative[1] === "un" && /^[aeou]/.test(base) ? this.tryMorphologicalAnalysis(base) : undefined) ||
+        // Rule-exact Cied and closed -own roots can leave the table;
+        // preserve their transparent prefix composition (untied/unknown).
+        (/^[^aeiouy]ied$|own$/.test(base) ? this.predictInternal(base, undefined, true) : undefined);
       if (known) return (privative[1] === "un" ? "ʌn" : privative[1] === "dis" ? "dɪs" : "nɑn") + known;
     }
     const sPlural = (p: string): string => p + sAllomorph(p);
@@ -812,7 +834,7 @@ export class EnglishG2P implements LanguageProcessor {
       // Restoring silent e must not select a pronounced-e loanword
       // (pass → passé). Such a stem cannot explain dropped-e spelling.
       const silentE = () => {
-        if (/ear$/.test(base) || /([bcdfgklmnprst])\1$/.test(base)) return undefined;
+        if (NO_DROPPED_E.test(base) || /([bcdfgklmnprst])\1$/.test(base)) return undefined;
         const p = verbStem(base + "e");
         // Silent-e restoration cannot add a syllable to a known
         // monosyllabic root (coat must not become the headword coate).
@@ -832,12 +854,8 @@ export class EnglishG2P implements LanguageProcessor {
       if (basePron) return join(basePron);
       // Doubled-consonant base: the two chars before the suffix are
       // identical (stopped → stop, planned → plan).
-      if (
-        lowerWord.length > 4 &&
-        lowerWord.slice(-(sfxLen + 2), -(sfxLen + 1)) ===
-          lowerWord.slice(-(sfxLen + 1), -sfxLen)
-      ) {
-        const undoubled = lowerWord.slice(0, -(sfxLen + 1));
+      if (lowerWord.length > 4 && base[base.length - 2] === base[base.length - 1]) {
+        const undoubled = base.slice(0, -1);
         // A recovered -s must be lexical, not a newly inferred plural
         // (finessed must not become fines + d). Derived stems such as
         // pedal in pedalled still need the normal morphology lookup.
@@ -948,6 +966,13 @@ export class EnglishG2P implements LanguageProcessor {
           /^[bcdfghjklmnpqrstvwxz]{2,}$/.test(lowerWord.slice(0, -3)))) &&
       lowerWord.length > 2
     ) {
+      // Independently supplied silent-e/f roots license -ves voicing
+      // (knife/knives). Keep gives/hives on their existing v-stem path.
+      if (lowerWord.endsWith("ves")) {
+        const fBase = lowerWord.slice(0, -3) + "fe";
+        const fStem = lex(fBase) || COMPOUND_TAILS[fBase];
+        if (fStem && /f$/.test(fStem)) return sPlural(fStem.replace(/f$/, "v"));
+      }
       // A one-syllable consonant+vowel stem (thi+s, hi+s, ha+s, ye+s)
       // is a lexical coincidence, not a plural: this/his/has/yes/gas
       // are whole words. -o stems (photos, videos) are real plurals.
@@ -1130,7 +1155,7 @@ export class EnglishG2P implements LanguageProcessor {
       // A one-syllable base ending in a single s is almost always a
       // magic-e stem plus -s (uses, cases, roses, houses, nurses), not
       // an -es plural (buses, gases); read it through the silent-e form.
-      if (/^[^aeiouy]*[aeiouy]+[^aeiouys]*s$/.test(base)) {
+      if (!NO_DROPPED_E.test(base) && /^[^aeiouy]*[aeiouy]+[^aeiouys]*s$/.test(base)) {
         const stem = this.predictInternal(base + "e", undefined, true);
         if (stem && !ENDS_IN_VOWEL_RE.test(stem)) return sPlural(stem);
       }
@@ -1146,12 +1171,15 @@ export class EnglishG2P implements LanguageProcessor {
       // sees it whole (viruses, irises; most -us/-is/-ix dict words are
       // one-syllable stems and are already caught by the single-vowel-
       // group branch just above, so this only adds the multi-syllable
-      // remainder). "-ouses" is excluded — house's "ou" digraph plus a
+      // remainder). Complete hiatus rimes also survive -es without a
+      // fabricated silent-e stem (biases → bias, not biase).
+      // "-ouses" is excluded — house's "ou" digraph plus a
       // bare "s" coincidentally spells the same four letters
       // (blockhouses, farmhouses), but it
       // is not the Latin -us suffix and is already handled above, at the
       // single-vowel-group branch this compound's prefix keeps it out of.
-      if (/(?:us|is|ix)es$/.test(lowerWord) && !/ouses$/.test(lowerWord)) {
+      if ((/(?:us|is|ix)es$/.test(lowerWord) && !/ouses$/.test(lowerWord)) ||
+          (NO_DROPPED_E.test(base) && /s$/.test(base))) {
         const p = this.predictInternal(base, undefined, true);
         if (!ENDS_IN_VOWEL_RE.test(p)) return p + "ɪz";
       }
@@ -1217,7 +1245,7 @@ export class EnglishG2P implements LanguageProcessor {
       const verb = this.homographs[restored]?.find(entry => entry.pos === "V")?.pronunciation;
       const agentVerb = verb && !isMonosyllable(verb) &&
         (!restored.endsWith("ate") || /eɪt$/.test(verb)) ? verb : undefined;
-      let magicPron = doubledBase || /ear$/.test(base) || (base.length <= 4 && base.endsWith("th"))
+      let magicPron = doubledBase || NO_DROPPED_E.test(base) || /^[aeiou]ng$/.test(base) || (base.length <= 4 && base.endsWith("th"))
         ? undefined
         : agentVerb || this.wellKnown(restored);
       // A short base can also coincidentally match an unrelated headword
@@ -1347,7 +1375,9 @@ export class EnglishG2P implements LanguageProcessor {
       }
       // Restore an attested adjective's y before -ily; the stripped
       // i fragment can have an unrelated tense vowel (heavily).
-      const basePron = (/[^aeiouy]i$/.test(stem) ? lex(stem.slice(0, -1) + "y") : undefined) || stemPron(stem);
+      // A short -ull root loses one l before -ly (full → fully).
+      const llRoot = /^[^aeiouy]*ul$/.test(stem) ? lex(stem + "l") || COMPOUND_HEADS[stem + "l"] : undefined;
+      const basePron = llRoot || (/[^aeiouy]i$/.test(stem) ? lex(stem.slice(0, -1) + "y") : undefined) || stemPron(stem);
       if (basePron) {
         if (/[lɫ]$/.test(basePron)) return basePron + "i";
         // A consonant+i stem is the -y adjective with its final letter
@@ -1383,6 +1413,14 @@ export class EnglishG2P implements LanguageProcessor {
         if (m) return withAble(m);
       }
       if (able) {
+        // A supplied final-stressed rhotic fragment can mask its real
+        // silent-e root (desir/desire); initial-stressed bound roots stay.
+        const rStem = lex(base);
+        const silent = /r$/.test(base) && rStem && !isMonosyllable(rStem) && FINAL_STRESS_RE.test(rStem)
+          ? lex(base + "e") : undefined;
+        if (silent && isUsableConsonantStem(silent, base)) return withAble(silent);
+        const y = restoreY(base);
+        if (y) return withAble(y);
         // A doubled consonant before -able is orthographic (control →
         // controllable, regret → regrettable): read the single-consonant stem.
         const undoubled = doubledConsonantLex(base);
@@ -1416,6 +1454,12 @@ export class EnglishG2P implements LanguageProcessor {
     }
 
     if (lowerWord.endsWith("logy") && lowerWord.length > 6) {
+      // Keep pretonic -Co- in view: pricing the bound root alone makes
+      // it tense, and loses the initial secondary stress (methodology).
+      const slots = syllabify(lowerWord);
+      if (lowerWord.endsWith("ology") && slots.length >= 4 &&
+          slots.slice(-3, -1).every(slot => /^[^aeiouy]+o$/.test(slot)))
+        return this.renderRuleForm(lowerWord, slots.length - 2);
       const bp = stemPron(lowerWord.slice(0, -4));
       if (bp)
         return lowerWord.slice(-5, -4) === "o"
@@ -1505,10 +1549,14 @@ export class EnglishG2P implements LanguageProcessor {
       lowerWord.length > 7
     ) {
       const b = lowerWord.slice(0, -4),
+        // A pronounced final e (entre) cannot explain silent-e deletion.
+        // Vowel-final roots (continue/issue) keep their own valid hiatus.
+        magic = b.endsWith("id") ? undefined : lex(b + "e"),
         p =
+          (lowerWord.endsWith("ance") ? restoreY(b) : undefined) ||
           lex(b) ||
           (b.endsWith("i") ? lex(b.slice(0, -1) + "y") : undefined) ||
-          (b.endsWith("id") ? undefined : lex(b + "e"));
+          (magic && (/[aeiouy]$/.test(b) || isUsableConsonantStem(magic, b)) ? magic : undefined);
       // An -er verb that carries its own primary on that final syllable
       // keeps it in the noun only when the spelling doubles the boundary
       // consonant (occurrence, deterrence); an undoubled one has retracted
@@ -1522,6 +1570,9 @@ export class EnglishG2P implements LanguageProcessor {
         return undefined;
       if (p) return p + "əns";
     }
+    // Short -sual is a bound hiatus frame; a bare vis/cas/us stem hides
+    // the intervocalic s and can accidentally select a function word.
+    if (/[aeiouy]sual$/.test(lowerWord) && syllabify(lowerWord).length === 2) return this.renderRuleForm(lowerWord);
     if (
       lowerWord.endsWith("ual") &&
       !lowerWord.endsWith("gual") &&
@@ -1561,6 +1612,12 @@ export class EnglishG2P implements LanguageProcessor {
     // so word-final-u rules cannot price it as an independent word.
     // Render the suffix in view while retaining the stem's stress; only
     // reuse the result when the suffix has its regular pronunciation.
+    // Latin sist- retains its root stress after a monosyllabic prefix;
+    // it is not the stress-neutral English profession suffix -ist.
+    if (/^(?:as|con|de|in|per|re|sub)sist(?:[ae]n(?:ce|cy|cies|t(?:s|ly)?)|ive|[eo]rs?|s)?$/.test(lowerWord)) return this.renderRuleForm(lowerWord, 1);
+    // A weak Latin prefix before -tual yields to the complete-word
+    // stress frame (conceptual/perpetual), unlike compound inter-.
+    if (/^(?:con|per|in(?!ter)|ef).*tual$/.test(lowerWord) && syllabify(lowerWord).length >= 3) return this.renderRuleForm(lowerWord, syllabify(lowerWord).length - 2);
     const tableResult = tryStressNeutralSuffix(lowerWord, (stem, suffix, suffixIpa) => {
       // Keep bound -ple and a nucleus-less/vowel-initial -le frame
       // in word context; free silent-le stems keep their citation reading.
@@ -1610,9 +1667,9 @@ export class EnglishG2P implements LanguageProcessor {
       // syllable before it (adversary → adversarial, editor → editorial),
       // which the whole-word stress rule places.
       // A one-syllable stem is the stressed <i> itself (trial, dial). Same
-      // for -al after a polysyllabic -ent/-ant stem: environmental,
+      // for -al after a polysyllabic -ent/-ant/-ont stem: environmental,
       // accidental, fundamental stress the -en- the stem left unstressed.
-      if (sfx === "al" && (b.endsWith("i") || /[ae]nt$/.test(b)) && (b.match(/[aeiouy]+/g)?.length ?? 0) >= 2) continue;
+      if (sfx === "al" && (b.endsWith("i") || /[aeo]nt$/.test(b)) && (b.match(/[aeiouy]+/g)?.length ?? 0) >= 2) continue;
       if (sfx === "al" && !lex(b)) {
         // A doubled consonant before -al is orthographic (refer → referral):
         // read the single-consonant stem, as inflect() does for -ed/-ing.

@@ -202,7 +202,7 @@ const PHONEME_RULES: Array<[RegExp, string]> = [
   // consonant class doesn't discriminate: f/p/t/k appear on both sides).
   // See report for measurement.
   [/^our$/, "aʊɝ"],
-  [/^o(?:u|w(?=[snmk]))/, "aʊ"], // house, about, cloud; cow, down, brown (before consonants)
+  [/^o(?:u|w(?=[sdnmk]))/, "aʊ"], // house, about, cloud; cow, down, brown (before consonants)
   // Merged from three same-output rules (^ow: show, blow, know; ^eau[x]?:
   // plateau/beau + beaux/bordeaux, French eau(x), x silent; ^oa: boat,
   // coat, road). MUST sit here, before ^e[ae] below (in the "i" group) —
@@ -766,6 +766,7 @@ export function assignStress(syllables: string[], word: string): number {
   if (/escence$/.test(lowerWord)) return syllables.length - 3;
   if (/ligible$/.test(lowerWord) && syllables.length >= 4) return syllables.length - 4;
 
+  // -ior/-iour retains penultimate stress (superior/ulterior); short prior does not.
   // Specific suffix stress patterns (-tion/-sion/-cial/-tial/-ese). The
   // `syllables.length <= 1` guard above means length is always >= 2 here,
   // so `syllables.length - 2` can't go negative and needs no Math.max —
@@ -774,12 +775,11 @@ export function assignStress(syllables: string[], word: string): number {
   // abnormality, accessibility). The syllabifier keeps consonant + ity as
   // one final slot (ac·ti·vity), so that syllable is length - 2. -iety
   // (society, anxiety) is a different frame and is left out.
-  if (/(?:tion|sion|cial|tial|ese)$/.test(lowerWord) || /[^aeiouy]ity$/.test(lowerWord))
-    return syllables.length - 2;
   // -ial does the same at 3+ slots (adversarial, editorial, material); at
-  // two the <i> is itself the stressed vowel (denial, trial). -ental/-antal
+  // two the <i> is itself the stressed vowel (denial, trial). -ental/-antal/-ontal
   // likewise (accidental, fundamental, environmental).
-  if ((/[^aeiouy]ial$/.test(lowerWord) || /[ae]ntal$/.test(lowerWord)) && syllables.length >= 3)
+  if (/(?:tion|sion|cial|tial|ese)$/.test(lowerWord) || /[^aeiouy]ity$/.test(lowerWord) ||
+      syllables.length >= 3 && /(?:iou?r|[^aeiouy]ial|[aeo]ntal)$/.test(lowerWord))
     return syllables.length - 2;
   // -ate/-ator put the primary two syllables before their own /eɪt/
   // (abdicate, accelerate, anticipate, and the adjectives accurate,
@@ -2150,7 +2150,10 @@ export function syllableToIPA(
           ipa = "u";
         } else if (/^[ln]$/.test(onset)) ipa = "ju";
       }
-      emit(remaining.slice(0, 2), ipa, `phoneme:^${remaining.slice(0, 2)}`);
+      // Bare -uel retains its weak e nucleus (fuel/duel/cruel/gruel).
+      // Original doubled ll marks the single-nucleus surname rime.
+      const hiatus = isStressed && isLastSyllable && /^uels?$/.test(remaining) && !/ll/.test(syllable);
+      emit(remaining.slice(0, 2), ipa + (hiatus ? "ə" : ""), `phoneme:^${remaining.slice(0, 2)}`);
       remaining = remaining.substring(2);
       continue;
     }
@@ -2218,6 +2221,27 @@ export function syllableToIPA(
       emit("ea", "eɪ", "phoneme:^ea-stop-liquid");
       remaining = remaining.slice(2);
       continue;
+    }
+    // A primary-stressed e before ri+vowel has the NEAR nucleus (period,
+    // material). Match the original single-e slot, leaving aerial/stereo.
+    if (remaining === "e" && /^[^aeiouy]*e$/.test(syllable) && isStressed && /^ri[aeou]/.test(nextSyllable ?? "")) {
+      emit("e", "ɪ", "phoneme:^e-near-hiatus"); remaining = ""; continue;
+    }
+    // Weak -ior/-iour after n/v is a glide (senior/savior), while the
+    // rhotic onset of interior/warrior retains its separate i nucleus.
+    if (!isStressed && /^(?:ior|iour)$/.test(remaining) && /^[nv]$/.test(phonemes[phonemes.length - 1] ?? "")) {
+      emit(remaining, "jɝ", "phoneme:^iour-yod"); break;
+    }
+    // Intervocalic s before weak -ual coalesces and preserves the labial
+    // glide of the hiatus (usual/visual/casual); nasal codas stay outside.
+    if (remaining === "sual" && !isStressed && /[aeiouy]$/.test(prevSyllable ?? "")) {
+      emit(remaining, "ʒəwəl", "phoneme:^sual-coalesce"); break;
+    }
+    // A single-onset oe before bare -m/-t(-ry) retains a weak second
+    // nucleus (poem/poet/poetry); clusters and doubled German codas stay.
+    if (isStressed && isLastSyllable && /^oe(?:ms?|ts?|try)$/.test(remaining) &&
+        /^[^aeiouy]oe/.test(syllable) && !/(.)\1/.test(syllable)) {
+      emit("oe", "oʊə", "phoneme:^oe-hiatus"); remaining = remaining.slice(2); continue;
     }
     // The same silent-g rime as ^ign, seen across a syllable boundary:
     // maximal onset moves the n onto a vowel-initial suffix (de|sig|ner,
@@ -2321,8 +2345,11 @@ export function syllableToIPA(
       ((isStressed && /^i(?=o|a(?:[^aeiouyn]|n[^aeiouy]))/.test(remaining)) ||
         (isTenseIForm && /^i[ao]/.test(remaining)))
     ) {
-      emit("i", "aɪ", "phoneme:^i-hiatus");
-      remaining = remaining.substring(1);
+      // A weak second nucleus before l/s/nt or the rhotic tail: dial,
+      // bias, giant, liar/diary. Obstruent codas (triad/fiat) stay full.
+      const hiatus = isStressed && isLastSyllable && /^ia(?:ls?|s|nts?|r(?:y|ies)?)$/.test(remaining) && !/(.)\1$/.test(syllable);
+      emit(hiatus ? "ia" : "i", hiatus ? "aɪə" : "aɪ", "phoneme:^i-hiatus");
+      remaining = remaining.substring(hiatus ? 2 : 1);
       continue;
     }
     // Unstressed i+vowel after a bare (uncrowded) l/n onset, the syllable
@@ -2487,7 +2514,11 @@ export function syllableToIPA(
       !ineReduces;
     const skip = new Set<string>();
     if (!hadDoubledL) skip.add("^al$");
-    if (gFromDoubling || gFromGetSuffix) skip.add("^g(?=[eiy])");
+    // Onsetless ang-/eng- before weak -er keeps its velar stop (anger),
+    // unlike vowel+nger after an onset or the existing Germanic name class.
+    if (gFromDoubling || gFromGetSuffix || (!isStressed && syllableIndex === 1 &&
+        /^[aeou]n$/.test(head) && !GERMANIC_NAME_ENDING.test(head + syllable + (tail ?? "")) &&
+        (/^ger/.test(syllable) || syllable === "ge" && nextSyllable?.startsWith("r")))) skip.add("^g(?=[eiy])");
     // A position-aware version of this guard (skip the lax default when
     // the syllable is stressed OR word-initial, not just unconditionally)
     // was measured and rejected: it correctly separates rely/apply
@@ -2716,6 +2747,15 @@ export function syllableToIPA(
         // -ture/-dure keep it: the yod palatalizes (gesture tʃɝ) or the
         // lexicon writes dj (endure).
         const onset = phonemes[phonemes.length - 1];
+        // Greek sch roots differ from the Germanic sh frame; doubled
+        // l and other Dutch/German sch+oo/schol- spellings retain sh.
+        if (match[0] === "sch" && (syllableIndex === 0 || /^(?:pre|re|un|dis|non|mis)$/.test(head)) &&
+            /^sch(?:ool|em(?:e$|es$|a$|ing|at)|ol(?:ar|ast|i))/.test(syllable + (tail ?? ""))) ipa = "sk";
+        // Tense -own after these onsets contrasts with down/town and
+        // brown/crown/frown; -owd keeps the diphthong (crowd/powder).
+        if (match[0] === "ow" && (remaining.startsWith("owd") || remaining === "ow" && /^d/.test(tail ?? ""))) ipa = "aʊ";
+        if (match[0] === "ow" && /^own(?:s|$)/.test(remaining) &&
+            /^(?:[bf]l|[ɡθ]ɹ|ʃ|n)?$/.test(onset ?? "")) ipa = "oʊ";
         if (
           /^j[uʊ]/.test(ipa) && longU(onset) === "u" &&
           !(pattern.source === "^ure$" && /[td]$/.test(onset ?? ""))
@@ -2894,6 +2934,21 @@ export function syllableToIPA(
     !isStressed && !isLastSyllable && head + syllable !== "" &&
     ITALIAN_ENDING.test(head + syllable + (tail ?? "")) &&
     vowelGroups(head + syllable + (tail ?? "")) >= 3;
+
+  // Labial short-u and oo rimes retain their root vowel across suffix
+  // boundaries: bull/push, food/mood, blood/flood, foot, wood/wool.
+  if (isStressed && syllableIndex === 0 && /^(?:[bfp]ull|[bp]ush)/.test(syllable + (tail ?? ""))) {
+    const i = sources.lastIndexOf("u");
+    if (i >= 0 && phonemes[i] === "ʌ") phonemes[i] = "ʊ";
+  }
+  if (isStressed && /^(?:[fm]ood|[bf]lood|foot)/.test(syllable + (tail ?? ""))) {
+    const i = sources.findIndex(s => s === "oo" || s === "ood");
+    if (i >= 0 && /^[uʊ]/.test(phonemes[i])) phonemes[i] = phonemes[i].replace(/^[uʊ]/, /^[bf]l/.test(syllable) ? "ʌ" : /^foot/.test(syllable + (tail ?? "")) ? "ʊ" : "u");
+  }
+  if (isStressed && /^woo[dl]/.test(head + syllable + (tail ?? ""))) {
+    const i = sources.lastIndexOf("oo");
+    if (i >= 0 && phonemes[i] === "u") phonemes[i] = "ʊ";
+  }
 
   // Pre-l rounding before dental codas/onsets (salt, bald, false,
   // alter). Match the source a in a single-nucleus slot, not a later
