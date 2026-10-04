@@ -59,7 +59,6 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/məstɝ$/, "mæstɝ"],
   [/ɪ([nlkfvmt])eɪʃən$/, "ə$1eɪʃən"],
   [/ɪ([nk])eɪt$/, "ə$1eɪt"],
-  [/(s|dʒ)ɪbəl$/g, "$1əbəl"],
   [/ʌmɪnəs$/, "umənəs"],
   [/pənənt$/, "poʊnənt"],
   [/ɡɹɛɡeɪt$/, "ɡɹəɡeɪt"],
@@ -100,6 +99,9 @@ const GERMANIC_EI_SUFFIX_RE =
 // vowel reduction (dispatch/mismatch/watch compounds). Frozen strict
 // flat, lenient +4/-0; native stomach/eunuch remain velar.
 const POST_LEX_RULES: PostLexRule[] = [
+  // Only an -able/-ible suffix licenses this weak vowel. Unconditional
+  // IPA matching ate the root KIT in gibble and in newly weak sibyl.
+  { when: w => /[ai]ble$/.test(w), re: /(s|dʒ)ɪbəl$/g, sub: "$1əbəl" },
   { when: w => !/tch$/.test(w), re: /ətʃ$/, sub: "ək" },
   // Hard -ger needs the spelling g; j stays soft before the same rhotic
   // tail (major). Frozen whole dict: strict/lenient +3/-0.
@@ -339,6 +341,9 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.endsWith("urious") && w.length >= 7, re: /^([kf])ʌɹ/, sub: "$1jʊɹ" },
   { when: (w) => /olumn|olemn/.test(w), re: /oʊl([əm])/, sub: "ɑl$1" },
   { when: (w) => w.startsWith("acou"), re: /aʊ/, sub: "u" },
+  // Nasal -ngue has no final stop (tongue/harangue). The e+ngue loan
+  // frame retains g (dengue); ordinary -gue keeps the following rule.
+  { when: w => /[aio]ngue$/.test(w), re: /ŋɡu?$/, sub: "ŋ" },
   {
     when: (w) => w.endsWith("gue") && w.length >= 4 && !/^(?:argue|ague|montague)$/.test(w),
     re: /ɡu$/, sub: "ɡ",
@@ -371,7 +376,7 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.startsWith("orch"), re: /^ɔɹtʃ/, sub: "ɔɹk" },
   { when: (w) => w.includes("chord"), re: /tʃ([ɔɑɝ])/, sub: "k$1" },
   {
-    when: (w) => w.includes("och") && !w.endsWith("och") && !w.endsWith("oche") && !/och[cfpt]/.test(w),
+    when: (w) => w.includes("och") && !/chesters?$/.test(w) && !w.endsWith("och") && !w.endsWith("oche") && !/och[cfpt]/.test(w),
     re: /[ɑɔ]tʃ/g, fn: (m) => m[0] + "k",
   },
   {

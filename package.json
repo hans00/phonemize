@@ -76,7 +76,8 @@
     "dev": "tsx src/index.ts",
     "release": "release-it",
     "pretty": "prettier -w src",
-    "build-eval-set": "tsx scripts/build-eval-set.ts"
+    "build-eval-set": "tsx scripts/build-eval-set.ts",
+    "diagnose:stress": "tsx scripts/diagnose-stress.ts"
   },
   "files": [
     "dist/"

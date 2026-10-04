@@ -665,7 +665,11 @@ export function secondaryStressIndices(
   // the preceding slot is two real syllables away, not one. Consonantal
   // qu in equality is excluded by the existing hiatus classifier.
   const before = primary - (isHiatusSlot(syllables[primary]) && /uality$/.test(syllables.join("")) ? 1 : 2);
-  if (before >= 0 && !(before > 0 && isOpen(before) && isOpen(before + 1)))
+  // A bound a- + geminate verb retains its weak prefix before -ee;
+  // the adjacent root beat supplies its vowel instead of stressing a-.
+  const weakAEE = before === 0 && /^a([^aeiouy])$/.exec(syllables[0])?.[1] === syllables[1]?.[0] && /[aeiouy]ntee(?:d|s)?$/.test(syllables.join(""));
+  if (weakAEE) out.add(primary - 1);
+  else if (before >= 0 && !(before > 0 && isOpen(before) && isOpen(before + 1)))
     out.add(before);
   // A silent-e coda gets its own orthographic slot (ca·pa·ci·tan·ce) but
   // is not a syllable, so the last slot that bears a nucleus is the one
@@ -677,6 +681,8 @@ export function secondaryStressIndices(
   // Closed stems and -ism/-ysm keep their weak vowel. The renderer suppresses
   // adjacent stress marks while using this beat to preserve the nucleus.
   if (last > primary && (/asm$/.test(syllables[last]) || /(?:gram|phragm|log)$/.test(syllables[last]) && isOpen(last - 1))) out.add(last);
+  // The English place suffix -chester retains the independent root vowel.
+  if (/chester$/.test(syllables.join("")) && last > primary) out.add(last - 1);
   const after = primary + 2;
   // A syllable exactly two after the primary, immediately before a
   // word-final -ture/-ure tail (temperature, literature, caricature,
@@ -788,6 +794,15 @@ const FINAL_GRAM_STRESS: Record<string, number> = {
   son: 2, ina: 1, ian: 1, ies: 2, ied: 2, day: 2,
 };
 
+// The final -Cy merge contains two weak nuclei in these three-syllable
+// noun frames (remedy/comedy/parody); it is not a detachable re-/pro- verb.
+export const MERGED_WEAK_DY_ROOT = /^[^aeiouy]*[aeiouy]+[^aeiouy]+[eo]dy$/;
+// A vowel before -tein distinguishes the chemical rime from German -stein.
+export const VOWEL_TEIN_ROOT = /[aeiouy]teins?$/;
+// After a closed initial slot, the longer loan rime carries final stress;
+// native channel/tunnel and open-initial/double-final-l names keep their frames.
+const FINAL_ONNEL_ROOT = /onnel$/;
+
 // Improved stress assignment based on morphological and phonological rules
 export function assignStress(syllables: string[], word: string): number {
   if (syllables.length <= 1) return 0;
@@ -795,6 +810,9 @@ export function assignStress(syllables: string[], word: string): number {
   if (syllables.length === 2 && SILENT_E_SLOT.test(syllables[1])) return 0;
 
   const lowerWord = word.toLowerCase();
+  if (INITIAL_LOAN_ROOT.test(lowerWord)) return 0;
+  if (syllables.length === 2 && MERGED_WEAK_DY_ROOT.test(lowerWord) || VOWEL_TEIN_ROOT.test(lowerWord)) return syllables.length - 2;
+  if (syllables.length >= 3 && FINAL_ONNEL_ROOT.test(lowerWord) && /[^aeiouy]$/.test(syllables[0])) return syllables.length - 1;
   // Bound finite/quisite roots retract ahead of two weak nuclei;
   // free finite compounds retain their separate stress policy.
   if (syllables.length >= 4 && /(?:(?:de|in)finite|quisite)$/.test(lowerWord)) return syllables.length - 4;
@@ -826,6 +844,12 @@ export function assignStress(syllables: string[], word: string): number {
   if (syllables.length === 2 && syllables[0] === "e" && /^[jv][aeiouy][ncr]ts?$/.test(syllables[1])) return 1;
   // Stress-bearing -eer is a loan/agentive ending, not neutral -er.
   if (/eer$/.test(lowerWord)) return syllables.length - 1;
+  // Vowel + n + -tee is a stress-bearing -ee formation.
+  if (syllables.length >= 3 && /[aeiouy]ntee(?:d|s)?$/.test(lowerWord)) return syllables.length - 1;
+
+  // Greek -iatry/-iatrist owns primary on its PRICE nucleus.
+  // Final -ry merges into that slot; -ist keeps a separate final slot.
+  if (/iatr(?:y|ists?)$/.test(lowerWord)) return syllables.length - (lowerWord.endsWith("y") ? 1 : 2);
 
   // British -gramme is the same Greek noun tail as -gram; its extra
   // silent slot must not turn a combining head into a weak prefix.
@@ -956,6 +980,8 @@ export function assignStress(syllables: string[], word: string): number {
   // Romance/Japanese-type loan or name with penult stress (banana, tornado,
   // kawasaki, lasagna): over 3-slot words the dict has the penult 90% (-a),
   // 93% (-o) and 96% (-i) of the time, and 88-96% at 4 slots.
+  // The merged -io tail has two weak nuclei (portfolio/scenario), so
+  // its preceding slot owns the primary just like the other -o endings.
   // Latin/Greek -ica/-ula/-ema/-ico and a few more grams stay antepenult
   // (africa, america, formula, cinema, mexico): each is under 70% penult.
   // Greek -graphy/-nomy/-sophy/-scopy/-pathy/-gamy/-cracy/-tomy/-emy/-etry
@@ -989,10 +1015,10 @@ export function assignStress(syllables: string[], word: string): number {
   // and the -ium/-osis/… family — return the same syllables.length - 2 and
   // share no state, so they OR into one test.
   if (
-    (/[^aeiouy][aoi]$/.test(lowerWord) &&
+    (/[^aeiouy](?:[aoi]|io)$/.test(lowerWord) &&
       !/(?:ic|ul|em|or|ac|om|ig)[aoi]$/.test(lowerWord) &&
       syllables.length >= 3 &&
-      /^[^aeiouy]+[aoi]$/.test(syllables[syllables.length - 1])) ||
+      /^[^aeiouy]+(?:[aoi]|io)$/.test(syllables[syllables.length - 1])) ||
     (/(?:graph|nom|soph|scop|path|gam|crac|tom|em|etr)y$/.test(lowerWord) && syllables.length >= 3) ||
     /(?:ium|osis|itis|ysis|iasis)$/.test(lowerWord)
   )
@@ -1644,6 +1670,15 @@ const NON_INITIAL_SUFFIXES = new Set("^lion$ ^scien$ ^ford$ ^ward$".split(" "));
 // spelling implies, used by the depth tests below.
 const vowelGroups = (s: string): number => s.match(/[aeiouy]+/g)?.length ?? 0;
 
+// Initial-stressed loan frames: ex + open a / geminate weak-ent,
+// back-vowel + labial-era, and a checked rhotic head + labial-ara.
+// Broad era/ate or rhotic splitting lost words and were rejected.
+// Frozen full dict +6 strict/+9 lenient; common +5/+6, zero losses.
+// Reuse complete roots in composition after table eviction.
+export const INITIAL_LOAN_ROOT = /^(?:ex(?:[^aeiouy]+a|[^aeiouy]*[aeiouy]([bcdfghjklmnpqrstvwxz])\1(?:ent|ence|ency))|(?:[^aeiouy]*a|o)[mp]era|[^aeiouy]*[aeiouy]r[bpv]ara)$/;
+// A single full nucleus before checked -yl owns this weak root tail;
+// slot-local matching keeps style and vowel-digraph compounds separate.
+const WEAK_YL_ROOT = /^[^aeiouy]*[aeiou][^aeiouy]+yl$/;
 // A free open-i nite root retains PRICE through compounding.
 export const FREE_I_NITE_ROOT = /^[^aeiouy]+inite$/;
 // Shared root frames preserve transparent composition after table eviction.
@@ -1667,15 +1702,19 @@ export const CHECKED_OPEN_O_ROOT = /^[^aeiouy]*o(?:[bp]ert|[^aeiouyr]ald|stu[^ae
 export const TENSE_A_IE_ROOT = /^[^aeiouy]*a[^aeiouyr]ie$/;
 export const TENSE_OLY_ROOT = /^[hlmnrw]oly$/;
 export const FULL_INITIAL_O_FRAME = /^[flmnrswvy]+o(?=(?:[bkmv](?:[aeouy]|i(?!e))|ca))(?=[^aeiouy]*[aeiouy]+[^aeiouy]+(?!e$)[aeiouy])/;
+const CHECKED_ALF_ROOT = /^[bcdgkpth]alf$/;
 const SOFT_GEMINATE_ROOT = /([^aeiouy])\1[aeiouy][^aeiouy]*[cg]e$/;
-const SPELLING_BORROWED_ROOT_FRAME = /^(?:phys[ioy]|dys[^aeiouy])|yr(?=[a-z]*[^aeiouy]e?$)[dtmn]|yrrh$|ique$|olid$|chard$|oster$|[iy]or(?:y)?$|oulder$|^(?!(?:c|w|sh)ould$)[^aeiouy]+ould$|[aeiouy][a-z]*(?:uum|tia)$|^[^aeiouy]*[aeiouy][^aeiouy]*(?:[gmnv]|([^aeiouy])\1)et$|^[^aeiouy]*[aeio][^aeiouy]*(?:[cp]t|x)im$|^[^aeiouyh]{2,}oic$/;
+const SPELLING_BORROWED_ROOT_FRAME = /^(?:phys[ioy]|psych|dys[^aeiouy])|yr(?=[a-z]*[^aeiouy]e?$)[dtmn]|yrrh$|ique$|olid$|chard$|oster$|[iy]or(?:y)?$|oulder$|^(?!(?:c|w|sh)ould$)[^aeiouy]+ould$|[aeiouy][a-z]*(?:uum|tia)$|^[^aeiouy]*[aeiouy][^aeiouy]*(?:[gmnv]|([^aeiouy])\1)et$|^[^aeiouy]*[aeio][^aeiouy]*(?:[cp]t|x)im$|^[^aeiouyh]{2,}oic$|[^aeiouy]io$|iatr(?:y|ist)s?$|[aeiouy]ntee$|chester$|i(?:ant|lian)$/;
 // These owning frames also license rule-derived stems after eviction.
 // The open-o frame immediately precedes primary: reject secondary
 // native roots, first-stressed fragments (nominat), and fabricated
 // -ie/-u plural bases. Those are not complete roots (noveltie/momentou).
 // Those fragments still need silent-e restoration or the whole suffix.
+// Doubled-Cle roots retain the syllabic-l nucleus through composition;
+// otherwise an evicted gibble/cupple would give gibbles/cupples -ləs.
+// Frozen full dict +3 strict/+3 lenient, zero losses.
 export const BORROWED_ROOT_FRAME = {
-  test: (word: string): boolean => SPELLING_BORROWED_ROOT_FRAME.test(word) || FULL_INITIAL_O_FRAME.test(word) && !/(?:ie|u)$/.test(word) && assignStress(syllabify(word), word) === 1 || SOFT_GEMINATE_ROOT.test(word) || CHECKED_OPEN_O_ROOT.test(word) || TENSE_A_IE_ROOT.test(word) || TENSE_OLY_ROOT.test(word),
+  test: (word: string): boolean => SPELLING_BORROWED_ROOT_FRAME.test(word) || MERGED_WEAK_DY_ROOT.test(word) || VOWEL_TEIN_ROOT.test(word) || FINAL_ONNEL_ROOT.test(word) && /[^aeiouy]$/.test(syllabify(word)[0]) || FULL_INITIAL_O_FRAME.test(word) && !/(?:ie|u)$/.test(word) && assignStress(syllabify(word), word) === 1 || SOFT_GEMINATE_ROOT.test(word) || CHECKED_ALF_ROOT.test(word) || CHECKED_OPEN_O_ROOT.test(word) || TENSE_A_IE_ROOT.test(word) || TENSE_OLY_ROOT.test(word) || INITIAL_LOAN_ROOT.test(word) || WEAK_YL_ROOT.test(syllabify(word).at(-1) ?? "") || /^[^aeiouy]*[aeiouy]([bcdfgkmnprst])\1le$/.test(word),
 };
 
 // Bound Latinate ite has a weak final nucleus; de-/in-finite and
@@ -2024,6 +2063,10 @@ export function syllableToIPA(
       emit("s", "z", "phoneme:desi-prefix-s");
       remaining = remaining.substring(1);
       continue;
+    }
+    // Strong medical -iatr keeps ia as PRICE plus a weak linking vowel.
+    if (isStressed && /^ia/.test(remaining) && /iatr(?:y|ists?)$/.test(syllable + (tail ?? ""))) {
+      emit("ia", "aɪə", "phoneme:strong-iatr"); remaining = remaining.slice(2); continue;
     }
     // A syllable that closes bare on "ear" (nothing left in the syllable
     // after it) takes /ɝ/ when the NEXT syllable opens with n/c —
@@ -2536,6 +2579,10 @@ export function syllableToIPA(
         /^[^aeiouy]oe/.test(syllable) && !/(.)\1/.test(syllable)) {
       emit("oe", "oʊə", "phoneme:^oe-hiatus"); remaining = remaining.slice(2); continue;
     }
+    // Chemical -tein keeps FLEECE; an st onset stays on the German rime.
+    if (isLastSyllable && remaining.startsWith("ei") && /^teins?$/.test(syllable) && /[aeiouy]$/.test(prevSyllable ?? "")) {
+      emit("ei", "i", "phoneme:^vowel-tein"); remaining = remaining.slice(2); continue;
+    }
     // The same silent-g rime as ^ign, seen across a syllable boundary:
     // maximal onset moves the n onto a vowel-initial suffix (de|sig|ner,
     // un|sig|ned, sig|ners), leaving a bare "ig". 12 aɪn : 4 in the dict
@@ -2697,11 +2744,14 @@ export function syllableToIPA(
     // lenient (loses to its own -ly/-cy inflections, which DO glide in
     // the dict: leniently, leniency — a same-lemma inconsistency, not a
     // rule gap) and lilienthal (a German surname).
+    // The narrower -lian extension needs a preceding stressed i and
+    // at least two earlier slots (civilian/reptilian); shorter Julian
+    // and tense-root Mongolian retain hiatus. Broad -lian was net-negative.
     if (
       !isStressed &&
       syllableIndex > 0 &&
       prevStressed &&
-      /^[ln]i(?:o(?=n)|a(?=nt)|e(?=n))/.test(remaining)
+      (/^[ln]i(?:o(?=n)|a(?=nt)|e(?=n))/.test(remaining) || syllableIndex >= 2 && /^[^aeiouy]+i$/.test(prevSyllable ?? "") && /^lians?$/.test(remaining))
     ) {
       const onsetLetter = remaining[0];
       emit(onsetLetter, onsetLetter, "phoneme:^[ln]i[aeo]-glide-onset");
@@ -3160,6 +3210,9 @@ export function syllableToIPA(
         if ((pattern.source === "^a$" || pattern.source === "^a") && !isStressed && !prevStressed && syllableIndex === 2 && syllable === "ra" && nextSyllable === "te" && isNextLastSyllable && weakCheckedRate(syllabify(head + syllable + (tail ?? "")))) ipa = "ə";
         // Greek hier- retains PRICE across arch-/glyph- combining roots.
         if (pattern.source === "^ie" && syllableIndex === 0 && /^hier(?:arch|oglyph)/.test(head + syllable + (tail ?? ""))) ipa="aɪ";
+        // Weak e before geminate l + ent centralizes; a stressed
+        // repellent/excel root keeps its full vowel.
+        if (pattern.source === "^e" && !isStressed && !isSecondary && remaining === "el" && syllable.endsWith("el") && /^lent$/.test(nextSyllable ?? "") && isNextLastSyllable) ipa = "ə";
         // A posttonic -vate link after an open-i root has weak a;
         // -mate and longer -ivate verbs retain their separate frames.
         if ((pattern.source === "^a$" || pattern.source === "^a") && !isStressed && !isSecondary && prevStressed && syllable === "va" && nextSyllable === "te" && isNextLastSyllable && /^[^aeiouy]+i$/.test(prevSyllable ?? "") && !EN_PREFIXES.has(prevSyllable ?? "")) ipa = "ə";
@@ -3198,6 +3251,10 @@ export function syllableToIPA(
         if (pattern.source === "^o" && syllableIndex === 0 && isStressed && hadDoubledL &&
           /^ols?$/.test(remaining) && /^(?:[pt]|.*ɹ)$/.test(onset ?? "")) ipa = "oʊ";
 
+        // A strong final stop/h + alf root loses l (calf/half/behalf).
+        // Onsetless Alf, sonorant Ralf and medial Alfred retain it.
+        // Frozen full dictionary strict +5/-0; lenient unchanged.
+        if (match[0] === "l" && remaining.startsWith("lf") && isStressed && isLastSyllable && CHECKED_ALF_ROOT.test(syllable)) ipa = "";
         // Strong -ier is NEAR; weak carrier/happier retain i+NURSE.
         // Full dict strict +3/-1 (Revier), lenient +7/-0; context and
         // supplied readings still own alternate senses/pronunciations.
@@ -3236,6 +3293,10 @@ export function syllableToIPA(
     }
   }
 
+  // Greek psych- keeps PRICE in short roots too; ordinary psyl-/sy- stays lax.
+  if (syllableIndex === 0 && (syllable === "psy" && /^ch/.test(tail ?? "") || /^psych/.test(syllable))) {
+    const i = sources.indexOf("y"); if (i >= 0) phonemes[i] = "aɪ";
+  }
   // Open a before weak -tient stays FACE across the palatal boundary.
   if (isStressed && /^[^aeiouy]*a$/.test(syllable) && /^tient/.test(tail ?? "")) {
     const i = sources.lastIndexOf("a"); if (i >= 0) phonemes[i] = "eɪ";
@@ -3623,6 +3684,10 @@ export function syllableToIPA(
     if (i >= 0) phonemes[i] = "ə";
   }
 
+  // A checked final -yl is a weak separate nucleus, even in a merged
+  // slot carrying primary on its earlier vowel (ethyl/sibyl/vinyl).
+  // A preceding vowel can be a diphthong (vantuyl), so keep that apart.
+  if ((hasVowelBeforeTerminalY || !isStressed && !isSecondary) && isLastSyllable && /[^aeiouy]yl$/.test(syllable)) { const i = sources.lastIndexOf("y"); if (i >= 0) phonemes[i] = "ə"; }
   // Bound ite remains weak despite the silent-e spelling.
   if (nextSyllable === "te" && isNextLastSyllable && !isStressed && weakLatinIte) {
     const i = sources.lastIndexOf("i"); if (i >= 0) phonemes[i] = "ə";
