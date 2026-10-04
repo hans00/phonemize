@@ -29,9 +29,8 @@
 // coincidentally match — see stemPron's own comment in g2p.ts).
 // The callback also receives the suffix and its IPA so an unknown
 // bound stem can be rendered with its suffix in view; lexical roots
-// retain their supplied readings. No spelling change is undone here
-// (these suffixes attach without one) —
-// that's exactly why they're the safe subset to table-ify first; -al/
+// retain their supplied readings. The caller owns spelling restoration
+// (e.g. adjective y before -hood); composition here is shared. -al/
 // -ular (doubled-consonant undo, magic-e restoration, forced-stress
 // rendering) are NOT in this table.
 import { STRESS_NEUTRAL_ROWS } from "./morph-table";

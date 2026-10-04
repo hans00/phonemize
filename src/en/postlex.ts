@@ -1,4 +1,5 @@
 import { addInitialSecondary } from "./phonotactics";
+import { EN_PREFIXES, LATIN_UTE_ROOT, SHORT_ANCY_ROOT } from "./syllabify";
 
 /**
  * Post-lexical corrections for the rule path.
@@ -29,7 +30,6 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   // a word-initial /r/ onset is the English root (rich), not this suffix.
   [/((?<!^)ɹ|ɝ)ɪtʃ$/, "$1ɪk"],
   [/ɡdʒ$/, "ɡ"],
-  [/ətʃ$/, "ək"],
   [/([bdfɡhklmnpɹstzv])ə(ʃ|dʒ)əs$/, "$1eɪ$2əs"],
   [/([^w])əʃən$/, "$1eɪʃən"],
   [/oʊɹ/g, "ɔɹ"],
@@ -96,7 +96,11 @@ interface PostLexRule {
 const GERMANIC_EI_SUFFIX_RE =
   /(?:berg|burg|stein(?:er)?|heim(?:er)?|bach|wald|feld|brand|mann|kamp|wein|bein|hoff|muth|dorf|tal|ler|ner|sen|born|mark|meier|eier|meister|eister|hardt|ardt|lein|heit|heid|meyer|eyer|weiser|eiser|ecker|decker|elman|eman|hein|eitel|itel|einl|eindl|indl|berger|egger|eiter|iter|wenger|enger|enson|itas|linger|fried|zig|eis|eiden|eider|hold|gold|zel|eineke|eincke|eineck|einke)$/;
 
+// Weak ch may be velar, but written tch is an affricate even after
+// vowel reduction (dispatch/mismatch/watch compounds). Frozen strict
+// flat, lenient +4/-0; native stomach/eunuch remain velar.
 const POST_LEX_RULES: PostLexRule[] = [
+  { when: w => !/tch$/.test(w), re: /ətʃ$/, sub: "ək" },
   // Hard -ger needs the spelling g; j stays soft before the same rhotic
   // tail (major). Frozen whole dict: strict/lenient +3/-0.
   { when: (w) => w.endsWith("ger"), re: /(?<=[aɑɔɛiɪouəɝ])dʒɝ$/, sub: "ɡɝ" },
@@ -130,9 +134,10 @@ const POST_LEX_RULES: PostLexRule[] = [
   // -easure: the ea before the -sure suffix is lax (7:0 in dict) —
   // measure ˈmɛʒɝ, pleasure, treasure.
   { when: (w) => w.endsWith("easure"), re: /iʒɝ$/, sub: "ɛʒɝ" },
-  // -gure: unstressed -ure after g is /jɝ/, not the CURE rime (4:0) —
-  // figure ˈfɪɡjɝ, configure.
-  { when: (w) => w.endsWith("gure"), re: /ɡjʊɹ$/, sub: "ɡjɝ" },
+  // Weak -gure/-dure/-lure and front-vowel + -nure have a NURSE
+  // tail. Prefix + ure and the strong man+ure frame retain CURE.
+  // Frozen full strict +3/-0, lenient +3/-0 with the open-e rule.
+  { when: (w, _syl, finalPrimary) => w.endsWith("gure") || !finalPrimary && /(?:[dl]|[ei]n)ure$/.test(w) && !EN_PREFIXES.has(w.slice(0, -3)), re: /([ɡdlnɫ])j?ʊɹ$/, fn: (_s, c) => c === "d" ? "dʒɝ" : c + "jɝ" },
   { when: (w, syl) => w.endsWith("mony") && syl >= 3, re: /məni$/, sub: "moʊni" },
   // Reduction belongs to a weak polysyllabic ending, never a complete
   // fence/prince root or the primary-stressed tail of pretense/dispense.
@@ -149,10 +154,14 @@ const POST_LEX_RULES: PostLexRule[] = [
   },
   { when: (w) => w.endsWith("unger") || w.endsWith("onger"), re: /ndʒɝ$/, sub: "ŋɡɝ" },
   { when: (w) => w === "ache" || (w.endsWith("ache") && w.length >= 7), re: /[æə]tʃ[əɪ]?$/, sub: "eɪk" },
+  // English weak -chard joins -ard reduction; hard/yard compounds
+  // retain their full nucleus. Frozen full dict strict +9/-0, lenient
+  // +9/-3; the three losses are final-stressed French names, pinned
+  // by the runtime lexicon (archard/burchard/guichard).
   {
     when: (w, syl) =>
       w.endsWith("ard") && syl >= 2 &&
-      !/[yh]ard$/.test(w) && !/card$/.test(w) &&
+      !/(?:yard|(?<!c)hard)$/.test(w) && !/card$/.test(w) &&
       !/(?:(?<!g)gard|guard)$/.test(w) && !/bard$/.test(w),
     re: /ɑɹd$/, sub: "ɝd",
   },
@@ -204,7 +213,9 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => !w.endsWith("cission"), re: /sɪʃən$/, sub: "zɪʃən" },
   { when: (w) => w.length >= 9, re: /ɪɹeɪʃən$/, sub: "ɝeɪʃən" },
   { when: (w) => w.endsWith("iment"), re: /ɪmənt$/, sub: "əmənt" },
-  { when: (w) => w.endsWith("ancy"), re: /ænsi$/, sub: "ənsi" },
+  // A short C+ancy root keeps its stressed TRAP (fancy/chancy);
+  // the longer weak suffix stays on reduction. Frozen strict +11/-0.
+  { when: (w) => w.endsWith("ancy") && !SHORT_ANCY_ROOT.test(w), re: /ænsi$/, sub: "ənsi" },
   { when: (w) => w.endsWith("erage") || w.endsWith("erature"), re: /ɛɹ/g, sub: "ɝ" },
   { when: (w) => w.startsWith("mechan") || w.includes("anchor"), re: /tʃ/, sub: "k" },
 
@@ -435,11 +446,12 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.includes("eich") && w.length >= 5, re: /aɪtʃ/g, sub: "aɪk" },
 
   // — Reduced-vowel quality by spelling (lexicon-measured contexts) —
-  // -et keeps lax ɪ (anklet, badgett) except after c/k/l where the
-  // lexicon reduces (basket, becket, applet). -ec(k) likewise ɪk.
+  // Geminate -ett keeps KIT; native single -et retains the renderer
+  // reduction (planet/target/helmet/velvet), including plural -ets.
+  // Frozen strict +58/-58, lenient +12/-6; common +2/+1. -ec(k) is KIT.
   // German -enberg names reduce the linking vowel (annenberg ənb).
-  { when: (w) => /[^aeiouckl]ett?$/.test(w), re: /ət(s?)$/, sub: "ɪt$1" },
-  { when: (w) => /[^aeiou]et(t?e?)s$/.test(w), re: /əts$/, sub: "ɪts" },
+  { when: (w) => /[^aeiouckl]ett$/.test(w), re: /ət(s?)$/, sub: "ɪt$1" },
+  { when: (w) => /[^aeiou]et(te?)s$/.test(w), re: /əts$/, sub: "ɪts" },
   { when: (w) => /ec[k]?$/.test(w), re: /ək$/, sub: "ɪk" },
   { when: (w) => /enb[eu]rg/.test(w), re: /ɪn(?=b)/, sub: "ən" },
 
@@ -454,7 +466,8 @@ const POST_LEX_RULES: PostLexRule[] = [
   // Word-initial <ex> before a vowel voices to /ɡz/ when the stress
   // falls after the x (76:6 in dict — exam, exact, exist); stressed
   // ex- keeps /ks/ (execute, exercise) and so does medial x (55:24).
-  { when: (w) => /^ex[aeiou]/.test(w), re: /^([aeiouɪɛəʌ]+)ks/, sub: "$1ɡz" },
+  // The bound -ecute verb root retains /ks/ under retracted primary.
+  { when: (w) => /^ex[aeiou]/.test(w) && !LATIN_UTE_ROOT.test(w), re: /^([aeiouɪɛəʌ]+)ks/, sub: "$1ɡz" },
   // <exh> + vowel voices on the same terms and swallows the h. The dict
   // splits it on the prefix vowel, not the spelling: a reduced prefix is
   // /ɡz/ 14:0 (exhibit ɪɡˈzɪbɪt, exhaust, exhort, exhilarate), a full /ɛ/

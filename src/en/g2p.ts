@@ -20,8 +20,16 @@ import { applyPostLexical, applyPostStress, hiatusMarkOffset } from "./postlex";
 import { tryStressNeutralSuffix, softenBaseFinal, preSuffixReduce } from "./morph-parser";
 import {
   assignStress,
+  LATIN_UTE_ROOT,
+  isWeakLatinIte,
+  FREE_I_NITE_ROOT,
+  SILENT_HON_ROOT,
+  SHORT_ANCY_ROOT,
+  BORROWED_ROOT_FRAME,
+  FULL_INITIAL_O_FRAME,
   secondaryStressIndices,
   syllabify,
+  weakCheckedRate,
   syllableToIPA,
   EN_PREFIXES,
   PRO_CHECKED_ROOT,
@@ -64,7 +72,9 @@ export interface TraceResult {
 // licit onset of that run.
 const VOWEL_CHAR = /[aeiouæɑɔəɛɪʊʌɝ]/;
 function suffixPrimary(ipa: string): string {
-  const s = ipa.replace(/ˈ/g, "ˌ");
+  // A nasal-coda prefix before weak -form- centralizes FORCE when the
+  // following -ation takes primary. Vowel-final prefixes retain FORCE.
+  const s = ipa.replace(/ˈ/g, "ˌ").replace(/([nm]s?)(?:ˌ)?fɔɹ(?=meɪ$)/, "$1fɝ");
   const v = s.length - 2;
   let k = v;
   while (k > 0 && !VOWEL_CHAR.test(s[k - 1])) k--;
@@ -136,6 +146,7 @@ const COMPOUND_TAILS_REVERSED: EnDict = Object.assign(
   Object.create(null),
   COMPOUND_PARTS.tailsReversed,
 );
+const VERB_PARTICLE = /^(?:down|up|out|off|over|under|back)$/;
 // Boundary degemination for compound joins (book+kayak style overlaps).
 const COMPOUND_GEMINATE_RE = /([pbtdkɡfvszʃʒθðmnŋɫɹ])(ˌ?)\1/g;
 
@@ -305,7 +316,12 @@ const isUsableConsonantStem = (ipa: string, base: string): boolean =>
 // different full-word frame of a fabricated assiste/persiste.
 // Checked k/l+ost roots cannot be restored as the long-vowel loan/name
 // -oste frame (costed must not take the supplied surname Coste).
-const NO_DROPPED_E = /(?:ear|sist|ia(?:l|s|nt|r)|uel|oe[mt]|[ckl]ost)$/;
+// Longer -bol derivatives are bound Greek roots, including their
+// neutral inflections; short symbol/embol nouns retain citation stress.
+const isBoundBol = (word: string): boolean => /bol(?:ism|ize)$/.test(word) && syllabify(word).length >= 4;
+// Short -ost agents keep complete roots; longer bound Latin stems
+// do not acquire an unrelated free post/host/most reading.
+const NO_DROPPED_E = /(?:ear|sist|ia(?:l|s|nt|r)|uel|oe[mt]|[ckl]ost|^[hmp]ost)$/;
 // Short open Cy/ary roots retain their boundary after rule-exact eviction.
 const OPEN_Y_ROOT = /^[^aeiouy]*(?:o[nsz]y|i(?:[ncz]y|[mn]ary|brary|vory))$/;
 // These complete weak sonorant rimes retain their bare-root frame.
@@ -673,7 +689,8 @@ export class EnglishG2P implements LanguageProcessor {
     // Priority 5: Attempt to decompose the word into known dictionary parts
     const decomposition = this.tryDecomposition(lowerWord);
     if (decomposition && decomposition.length > 1) {
-      const pronunciations = decomposition.map((part) => this.wellKnown(part));
+      const pronunciations = decomposition.map((part) => this.wellKnown(part) ||
+        (BORROWED_ROOT_FRAME.test(part) ? this.predictInternal(part, undefined, true) : FREE_I_NITE_ROOT.test(part) ? this.renderRuleForm(part) : undefined));
       if (pronunciations.every((p) => p)) {
         // Stress in compounds and prefixed forms: exactly one primary
         // stress on the head, secondary on the rest. The head is the
@@ -751,7 +768,7 @@ export class EnglishG2P implements LanguageProcessor {
     const verbStem = (b: string, skipMorphology = false): string | undefined =>
       this.homographs[b]?.find((entry) => entry.pos === "V")?.pronunciation ||
       this.wellKnown(b, undefined, skipMorphology) ||
-      (hasWeakSonorantRime(b) ? this.predictInternal(b, undefined, true) : undefined);
+      ((hasWeakSonorantRime(b) || skipMorphology && BORROWED_ROOT_FRAME.test(b)) ? this.predictInternal(b, undefined, true) : undefined);
     // A suffix-stripped stem ending in the French silent-e "cre"/"tre"/
     // "bre" rime (see syllabify.ts's ^cre$/^tre$/^bre$ PHONEME_RULES
     // entries, candidate c) is never a genuine free word once lex(b) has
@@ -852,9 +869,11 @@ export class EnglishG2P implements LanguageProcessor {
         // Recognized vowel-initial adjectives and co- + rhotic roots
         // can be derived or rule-exact after leaving the exception table.
         (privative[1] === "un" && /^(?:[aeou]|coor[dt])/.test(base) ? this.tryMorphologicalAnalysis(base) : undefined) ||
-        // Rule-exact Cied, closed -own and checked NC-ed roots can leave
+        // Checked-root adjectives retain their weak -rate after table eviction.
+        (weakCheckedRate(syllabify(base)) ? this.renderRuleForm(base) : undefined) ||
+        // Rule-exact finite/weak ite, iol tails, Cied, -own, -ture and checked NC-ed roots can leave
         // the table; preserve their prefix composition (untied/unfenced).
-        (/^[^aeiouy]ied$|own$|^[^aeiouy]+[ei]n[cs]ed$/.test(base) ? this.predictInternal(base, undefined, true) : undefined);
+        (/^[^aeiouy]+iol(?:ent|ence)$|^[^aeiouy]ied$|own$|ture(?:d)?$|^[^aeiouy]+[ei]n[cs]ed$/.test(base) || isWeakLatinIte(base) || FREE_I_NITE_ROOT.test(base) || SILENT_HON_ROOT.test(base) || SHORT_ANCY_ROOT.test(base) || BORROWED_ROOT_FRAME.test(base) ? this.predictInternal(base, undefined, true) : undefined);
       // dis- and an s-initial root share one surface s, including
       // roots whose primary follows it (dissimilar/dissatisfy).
       if (known) return (privative[1] === "un" ? "ʌn" : privative[1] === "dis" ? (/^[ˈˌ]?s/.test(known) ? "dɪ" : "dɪs") : "nɑn") + known;
@@ -1062,9 +1081,11 @@ export class EnglishG2P implements LanguageProcessor {
       // Greek -asis/-esis/-osis/-ysis nouns are not i-stem plurals.
       !/(?:as|es|os|ys)is$/.test(lowerWord) &&
       // Prefer an attested y base or a consonant-only Cy root to a
-      // coincidental -ie headword (carry/Carrie, spy/spie).
+      // coincidental -ie headword (carry/Carrie, spy/spie). A protected
+      // complete -ary root survives eviction too (vocabularies); broad
+      // borrowed-y restoration misreads novelties and was rejected.
       !(lowerWord.endsWith("ies") &&
-        (lex(lowerWord.slice(0, -3) + "y") ||
+        (lex(lowerWord.slice(0, -3) + "y") || /ary$/.test(lowerWord.slice(0, -3) + "y") && BORROWED_ROOT_FRAME.test(lowerWord.slice(0, -3) + "y") || SHORT_ANCY_ROOT.test(lowerWord.slice(0, -3) + "y") ||
           /^[bcdfghjklmnpqrstvwxz]{2,}$/.test(lowerWord.slice(0, -3)))) &&
       lowerWord.length > 2
     ) {
@@ -1088,6 +1109,8 @@ export class EnglishG2P implements LanguageProcessor {
         /sse$/.test(stem) && ENDS_IN_VOWEL_RE.test(lex(stem) || ""))
         ? undefined
         : this.wellKnown(stem) ||
+        // A particle noun retains its compound root after exception eviction.
+        (/(?:down|up|out|off|over|under|back)$/.test(stem) ? this.tryCompoundSplit(stem) : undefined) ||
           // An r-final stem that's gone rule-exact (error, actor, author,
           // doctor, vendor, dollar) has left the exceptions table, so
           // wellKnown() no longer finds it and its plural was falling
@@ -1149,7 +1172,10 @@ export class EnglishG2P implements LanguageProcessor {
             // after eviction too, including plurals absent from the dict.
             // Weak -ine roots retain their own reduction when plural s
             // hides the final silent-e boundary (discipline → disciplines).
-            /(?:r|gn|ion|ient|tain|o[dv]el|ngine|trine|pline|dea|gram|[aeiouy][^aeiouy]*gm|logue|[cg]imen|[cgsv]il)$/.test(stem) ||
+            // Bound weak -ite keeps its final root boundary after eviction.
+            // Bound -ean and neutral -like keep their final root boundary;
+            // bean compounds and jean/mean keep their native single nucleus.
+            /(?:r|gn|ion|ient|tain|o[dv]el|ngine|trine|pline|dea|gram|[aeiouy][^aeiouy]*gm|logue|[cg]imen|[cgsv]il|urrence|gramme|pse|like|oic)$/.test(stem) || /(?:[ou](?!bean$)[^aeiouy]ean|([^aeiouy])\1ean|anean)$/.test(stem) && !/cean$/.test(stem) || isBoundBol(stem) || LATIN_UTE_ROOT.test(stem) || isWeakLatinIte(stem) || SILENT_HON_ROOT.test(stem) || BORROWED_ROOT_FRAME.test(stem) ||
             // A multi-syllable silent-e stem (device, virus is NOT this —
             // it has no e at all) has the identical problem one syllable
             // over: devices resyllabifies as de·vi·ces, and the extra
@@ -1239,7 +1265,9 @@ export class EnglishG2P implements LanguageProcessor {
       }
       // A final -s must not turn the stem's final ow/o into a closed
       // syllable (shows, yellows, photos). Preserve the stem vowel.
-      if (/(?:ow|o)s$/.test(lowerWord)) {
+      // A two-letter spelling is not enough evidence for that plural
+      // fallback (cos/eos/pos); frozen probe: strict +5/-0, lenient +9/-0.
+      if (/(?:ow|o)s$/.test(lowerWord) && stem.length >= 3) {
         return sPlural(this.predictInternal(lowerWord.slice(0, -1), undefined, true));
       }
     }
@@ -1356,9 +1384,11 @@ export class EnglishG2P implements LanguageProcessor {
       const verb = this.homographs[restored]?.find(entry => entry.pos === "V")?.pronunciation;
       const agentVerb = verb && !isMonosyllable(verb) &&
         (!restored.endsWith("ate") || /eɪt$/.test(verb)) ? verb : undefined;
+      // Silent -pse roots preserve their short coda and root stress
+      // after eviction; a bare -ps fragment can be a different lexeme.
       let magicPron = doubledBase || NO_DROPPED_E.test(base) || /^[aeiou]ng$/.test(base) || (base.length <= 4 && base.endsWith("th"))
         ? undefined
-        : agentVerb || this.wellKnown(restored) || (syllabify(restored).length > 2 && ngeStem(base) ? this.renderRuleForm(restored) : undefined);
+        : agentVerb || this.wellKnown(restored) || (isBoundBol(restored) || /pse$/.test(restored) || LATIN_UTE_ROOT.test(restored) ? this.predictInternal(restored, undefined, true) : undefined) || (syllabify(restored).length > 2 && ngeStem(base) ? this.renderRuleForm(restored) : undefined);
       // A short base can also coincidentally match an unrelated headword
       // whose final e IS pronounced (ente "duck" → enter, mete → meter).
       // Reject a vowel-final hit unless the base ends in y/w/r, where that
@@ -1396,10 +1426,15 @@ export class EnglishG2P implements LanguageProcessor {
             : verbStem(base.slice(0, -1), true);
         if (rootPron) return rootPron + 'ɝ';
       // -ther is one morpheme (brother, bother, leather), not broth + -er.
-      } else if ((base.length >= 5 && !base.endsWith("th")) || NO_DROPPED_E.test(base)) {
+      // Closed-class bases cannot license an agent/comparative -er
+      // split (should+er corrupts shoulder and loses both GOAT and l).
+      } else if (!isFunctionWord(base) && ((base.length >= 5 && !base.endsWith("th")) || NO_DROPPED_E.test(base))) {
         // A protected complete rime also survives root eviction.
-        const directPron = this.wellKnown(base, undefined, true) ||
-          (NO_DROPPED_E.test(base) || hasWeakSonorantRime(base) ? this.predictInternal(base, undefined, true) : undefined);
+        // Rhotic -ord/-ort agents inherit an independently supplied verb
+        // reading (recorder/exporter). Extending this to every -er stem
+        // was net-negative in the frozen dict comparison.
+        const directPron = (/or[dt]$/.test(base) ? verbStem(base, true) : this.wellKnown(base, undefined, true)) ||
+          (NO_DROPPED_E.test(base) || hasWeakSonorantRime(base) || BORROWED_ROOT_FRAME.test(base) ? this.predictInternal(base, undefined, true) : undefined);
         if (directPron) return directPron + 'ɝ';
       }
     }
@@ -1493,7 +1528,7 @@ export class EnglishG2P implements LanguageProcessor {
       // A short -ull root loses one l before -ly (full → fully).
       const llRoot = /^[^aeiouy]*ul$/.test(stem) ? lex(stem + "l") || COMPOUND_HEADS[stem + "l"] : undefined;
       const yBase = /[^aeiouy]i$/.test(stem) ? stem.slice(0, -1) + "y" : undefined;
-      const basePron = llRoot || (yBase && (lex(yBase) || (OPEN_Y_ROOT.test(yBase) ? stemPron(yBase) : undefined))) || stemPron(stem);
+      const basePron = llRoot || (yBase && (lex(yBase) || (OPEN_Y_ROOT.test(yBase) || SILENT_HON_ROOT.test(yBase) ? stemPron(yBase) : undefined))) || stemPron(stem);
       if (basePron) {
         if (/[lɫ]$/.test(basePron)) return basePron + "i";
         // A consonant+i stem is the -y adjective with its final letter
@@ -1527,7 +1562,8 @@ export class EnglishG2P implements LanguageProcessor {
       const base = lowerWord.slice(0, -4);
       const withAble = (p: string): string => p.replace(/ə$/, "") + "əbəl";
       if ((able || base.length >= 5) && !/[aeiour]$/.test(base) && !lex(base)) {
-        const m = lex(base + "e");
+        const m = lex(base + "e") ||
+          (LATIN_UTE_ROOT.test(base + "e") ? this.renderRuleForm(base + "e") : undefined);
         if (m) return withAble(m);
       }
       if (able) {
@@ -1672,7 +1708,11 @@ export class EnglishG2P implements LanguageProcessor {
       (lowerWord.endsWith("ance") || lowerWord.endsWith("ence")) &&
       lowerWord.length > 7
     ) {
-      const b = lowerWord.slice(0, -4),
+      const b = lowerWord.slice(0, -4);
+      // A bound double-nucleus iol root keeps its weak suffix context;
+      // the independent musical viol has different vowel/stress behavior.
+      if (/^[^aeiouy]+iol$/.test(b)) return undefined;
+      const
         // A pronounced final e (entre) cannot explain silent-e deletion.
         // Vowel-final roots (continue/issue) keep their own valid hiatus.
         // A vouched -uid-e stem keeps its root diphthong (guide/guidance),
@@ -1745,6 +1785,16 @@ export class EnglishG2P implements LanguageProcessor {
     // stress frame (conceptual/perpetual), unlike compound inter-.
     if (/^(?:con|per|in(?!ter)|ef).*tual$/.test(lowerWord) && syllabify(lowerWord).length >= 3) return this.renderRuleForm(lowerWord, syllabify(lowerWord).length - 2);
     const tableResult = tryStressNeutralSuffix(lowerWord, (stem, suffix, suffixIpa) => {
+      // A longer unattested Greek -bol root is bound: -ism/-ize retain
+      // the whole derivative's antepenultimate stress, not a fabricated
+      // free-stem citation stress. Short supplied symbol/embol roots stay.
+      if ((suffix === "ism" || suffix === "ize") && isBoundBol(lowerWord) && !lex(stem)) return undefined;
+      // Keep a protected nasal-dental rime in word context (lengthwise).
+      if (suffix === "wise" && (/ngth$/.test(stem) || syllabify(stem).length > 2 && !lex(stem) && !isWeakLatinIte(stem) && !FREE_I_NITE_ROOT.test(stem) && !BORROWED_ROOT_FRAME.test(stem) && !/oic$/.test(stem))) return undefined;
+      // An unattested linking a remains inside the whole compound (lookalike).
+      if (suffix === "like" && stem.endsWith("a") && !lex(stem) && !BORROWED_ROOT_FRAME.test(stem)) return undefined;
+      // The -hood spelling replaces a final adjective y with i.
+      if (suffix === "hood" && /[^aeiouy]i$/.test(stem)) return stemPron(stem.slice(0, -1) + "y");
       // A bound prefix is not the free verb that neutral -ment requires.
       if (suffix === "ment" && EN_PREFIXES.has(stem)) return undefined;
       // Only -ion + ary is neutral; retain the root after eviction.
@@ -1796,7 +1846,8 @@ export class EnglishG2P implements LanguageProcessor {
       if (sfx === "al" && /^[^aeiouy]?ation$/.test(b)) return this.renderRuleForm(lowerWord);
       // Longer -inal formations take antepenultimate stress in word context
       // (origin/original); short roots retain citation stress (retinal).
-      if (sfx === "al" && (/[eou]$/.test(b) || lowerWord.endsWith("eral"))) continue;
+      // Bound -ern/-urn roots need the whole adjective's stress too.
+      if (sfx === "al" && (/[eou]$/.test(b) || /[eu]rnal$/.test(lowerWord) || lowerWord.endsWith("eral"))) continue;
       if (sfx === "al" && lowerWord.endsWith("inal") && (b.match(/[aeiouy]+/g)?.length ?? 0) >= 3)
         return this.renderRuleForm(lowerWord, syllabify(lowerWord).length - 3);
       // -ical shifts a longer initial-stressed citation stem onto the
@@ -1812,7 +1863,7 @@ export class EnglishG2P implements LanguageProcessor {
       // Stripping a vowel-initial -al from an unknown one-syllable base
       // closes its syllable (fi|nal → fin, to|tal → tot) and loses the
       // tense vowel; leave those to the whole-word rule path.
-      if (sfx === "al" && /^[^aeiouy]*[aeiouy]+[^aeiouy]+$/.test(b) && !lex(b))
+      if (sfx === "al" && /^[^aeiouy]*[aeiouy]+[^aeiouy]+$/.test(b) && syllabify(b).length === 1 && !lex(b))
         continue;
       // -ial is not stress-neutral like -al: it pulls the primary onto the
       // syllable before it (adversary → adversarial, editor → editorial),
@@ -1878,7 +1929,7 @@ export class EnglishG2P implements LanguageProcessor {
     // Outer suffixes resolve first: preference is not pre + ference.
     // Only an independently attested root licenses this pre- boundary.
     if (lowerWord.startsWith("pre") && lowerWord.length >= 7) {
-      const b = lowerWord.slice(3), base = lex(b) || (b.endsWith("nge") && ngeStem(b.slice(0, -1)) ? this.renderRuleForm(b) : undefined);
+      const b = lowerWord.slice(3), base = lex(b) || (BORROWED_ROOT_FRAME.test(b) ? this.predictInternal(b, undefined, true) : undefined) || (b.endsWith("nge") && ngeStem(b.slice(0, -1)) ? this.renderRuleForm(b) : undefined);
       if (base) return "pɹi" + base;
     }
     return undefined;
@@ -2017,15 +2068,17 @@ export class EnglishG2P implements LanguageProcessor {
     let head: string | undefined;
     let tail: string | undefined;
     let bestScore = -1;
-    for (let i = 2; i <= word.length - 3; i++) {
+    for (let i = 2; i <= word.length - 2; i++) {
       if (word[i - 1] === word[i]) continue;
       const a = word.slice(0, i);
       const b = word.slice(i);
       // Verb prefixes keep their own stress policy; bed/thing are whole
       // tails, not vowel-bearing bases plus the apparent -ed/-ing ending.
-      if (inflectionLength && (EN_PREFIXES.has(a) || /^(?:down|up|out|over|under|back)$/.test(a) ||
+      if (inflectionLength && (EN_PREFIXES.has(a) || VERB_PARTICLE.test(a) ||
           !/[aeiouy]/.test(b.slice(0, -inflectionLength)))) continue;
-      if (COMPOUND_HEADS[a] === undefined || COMPOUND_TAILS[b] === undefined)
+      // A vouched silent-e root + verb particle retains its root boundary.
+      const silentHead = a.length >= 4 && /[aeiou][^aeiouy]e$/.test(a) && syllabify(a).length === 2 && VERB_PARTICLE.test(b);
+      if (COMPOUND_HEADS[a] === undefined || (COMPOUND_TAILS[b] ?? (silentHead ? COMPOUND_HEADS[b] : undefined)) === undefined)
         continue;
       // A checked pro- noun or an inseparable prefix before head-primary
       // -ion is not a stress-neutral compound. Tail-primary attestation
@@ -2091,20 +2144,21 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
     if (head === undefined || tail === undefined) return undefined;
+    const tailPron = COMPOUND_TAILS[tail] ?? COMPOUND_HEADS[tail];
     // A tail attested ONLY tail-primary (see COMPOUND_TAILS_REVERSED) keeps
     // its own primary; the head's demotes instead. Everything else keeps
     // the ordinary head-primary/tail-secondary convention.
     return (
       COMPOUND_TAILS_REVERSED[tail] !== undefined
         ? COMPOUND_HEADS[head].replace(/ˈ/g, "ˌ") + COMPOUND_TAILS_REVERSED[tail]
-        : COMPOUND_HEADS[head] + COMPOUND_TAILS[tail].replace(/ˈ/g, "ˌ")
+        : COMPOUND_HEADS[head] + tailPron.replace(/ˈ/g, "ˌ")
     ).replace(COMPOUND_GEMINATE_RE, "$2$1");
   }
 
   private tryDecomposition(word: string): string[] | undefined {
     if (word.length < 8) return undefined; // Only try decomposition for reasonably long words
 
-    // DP approach to find a valid decomposition into dictionary words.
+    // DP decomposition uses dictionary parts and the supported rule-derived tail.
     const dp: (string[] | undefined)[] = Array(word.length + 1).fill(undefined);
     dp[0] = [];
 
@@ -2112,7 +2166,14 @@ export class EnglishG2P implements LanguageProcessor {
       for (let j = 0; j < i; j++) {
         // Prioritize longer chunks
         const chunk = word.substring(j, i);
-        if (dp[j] !== undefined && chunk.length >= 3 && this.dictionary[chunk]) {
+        // A vouched two-part head can compose a rule-exact free finite
+        // root after eviction; bound de-/in-finite remain whole.
+        // Borrowed roots require a real prefix head; arbitrary pos+tpique
+        // and other invented final-ique fragments must stay out. Greek -ic
+        // adjectives retain the whole-word stress frame (semiphysical);
+        // pretonic full-o roots retain their supplied root frame (semiromantic).
+        if (dp[j] !== undefined && chunk.length >= 3 && (this.dictionary[chunk] ||
+          i === word.length && dp[j]!.length === 1 && (FREE_I_NITE_ROOT.test(chunk) || BORROWED_ROOT_FRAME.test(chunk) && (!/ic(?:al)?$/.test(chunk) || FULL_INITIAL_O_FRAME.test(chunk)) && (EN_PREFIXES.has(dp[j]![0]) || /^(?:semi|multi|meta)$/.test(dp[j]![0]))))) {
           const newDecomposition = [...dp[j]!, chunk];
           // Prefer decompositions with fewer (longer) words.
           if (!dp[i] || newDecomposition.length < dp[i]!.length) {
@@ -2122,6 +2183,9 @@ export class EnglishG2P implements LanguageProcessor {
       }
     }
     const result = dp[word.length];
+    // Bound -ary cannot be an independent compound tail; the complete
+    // word owns suffix stress. Neutral -ionary resolves in morphology.
+    if (result && result[result.length - 1] === "ary") return undefined;
     // A 2-word split needs no further check: both halves cover most of
     // the word, so a coincidental short match is unlikely (breakfast,
     // shoebox). A 3+-word split with a bare 3-letter middle chunk is a

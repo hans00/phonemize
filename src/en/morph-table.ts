@@ -1,7 +1,7 @@
 // A declarative bound-morph table for English's STRESS-NEUTRAL
 // derivational suffixes (including ary after an -ion root):
 // the stem keeps whatever stress it already has
-// (Church 1986's "#"-boundary class — -ness, -less, -ful, -ment, -ist,
+// (Church 1986's "#"-boundary class — -like, -wise, -hood, -ness, -less, -ful, -ment, -ist,
 // -ism, -ize, and the Latinate -tual/-tuous/-ulate/-ulation/
 // -ulator family), as opposed to a "+"-boundary suffix that shifts
 // stress onto itself or the syllable before it (-ity, -ation, -ial,
@@ -28,6 +28,9 @@ export interface MorphRow {
 // -ify shares the suffix composition machinery; its callback establishes
 // the antepenult stem frame and also allows two-letter bound stems.
 export const STRESS_NEUTRAL_ROWS: MorphRow[] = [
+  ["like", "ˌlaɪk"],
+  ["wise", "ˌwaɪz"],
+  ["hood", "ˌhʊd"],
   ["ify", "əˌfaɪ"],
   ["ary", "ɛɹi"],
   ["tual", "tʃuəl"],
