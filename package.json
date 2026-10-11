@@ -68,6 +68,7 @@
     "test:common-coverage": "tsx scripts/evaluate-common-coverage.ts",
     "test:common-accuracy": "tsx scripts/evaluate-common-accuracy.ts",
     "test:homographs": "tsx scripts/evaluate-homographs.ts",
+    "test:ipa": "node --require tsx/cjs scripts/evaluate-context-ipa.ts",
     "typecheck": "tsc -b",
     "build": "rollup -c",
     "build:watch": "rollup -c --watch",

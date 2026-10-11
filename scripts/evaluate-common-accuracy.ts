@@ -16,7 +16,7 @@ import sources = require("./common-accuracy-sources.json");
 
 // Independent reference conversion: do not share the runtime converter or
 // phonotactics, since their bugs must remain visible to this benchmark.
-const PHONES: Record<string, string> = {
+export const PHONES: Record<string, string> = {
   AA: "ɑ", AE: "æ", AH: "ʌ", AO: "ɔ", AW: "aʊ", AY: "aɪ",
   B: "b", CH: "tʃ", D: "d", DH: "ð", EH: "ɛ", ER: "ɝ",
   EY: "eɪ", F: "f", G: "ɡ", HH: "h", IH: "ɪ", IY: "i",

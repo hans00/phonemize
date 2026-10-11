@@ -21,7 +21,7 @@ import { join, resolve } from "path";
 import { createPhonemizer } from "../src/core";
 import EnglishG2P from "../src/en/g2p";
 
-const source: { repo: string; commit: string; license: string; contentSha256: string } =
+export const source: { repo: string; commit: string; license: string; contentSha256: string } =
   JSON.parse(readFileSync(join(__dirname, "homograph-sources.json"), "utf8"));
 const CACHE = resolve(process.env.HOMOGRAPH_BENCHMARK_DIR ?? "scripts/.homograph-cache");
 const BASELINE_PATH = join(__dirname, "homograph-baseline.json");
@@ -31,7 +31,7 @@ const split = splitAt >= 0 ? argv[splitAt + 1] : "eval";
 if (split !== "eval" && split !== "train") throw new Error(`--split must be eval or train, got ${split}`);
 
 // Stable content hash over every data file: path, NUL, bytes, NUL — sorted by path.
-function contentHash(files: Array<[string, Buffer]>): string {
+export function contentHash(files: Array<[string, Buffer]>): string {
   const h = createHash("sha256");
   for (const [path, bytes] of [...files].sort((a, b) => (a[0] < b[0] ? -1 : 1))) h.update(path).update("\0").update(bytes).update("\0");
   return h.digest("hex");
@@ -73,7 +73,7 @@ async function download(): Promise<void> {
 }
 
 // Quoted TSV: every field is "…" with embedded quotes doubled.
-function parseTsv(text: string): string[][] {
+export function parseTsv(text: string): string[][] {
   return text.split(/\r?\n/).filter(Boolean).slice(1)
     .map((line) => line.split("\t").map((f) => f.replace(/^"|"$/g, "").replace(/""/g, '"')));
 }
@@ -117,12 +117,17 @@ function nearest(predicted: string, readings: Map<string, string>): string {
   return scored.length > 1 && scored[0].d === scored[1].d ? "(tie)" : scored[0].wordid;
 }
 
-async function main() {
-  if (argv.includes("--download")) await download();
+export async function loadHomographs(fetchMissing = false) {
+  if (fetchMissing) await download();
   if (!existsSync(join(CACHE, "wordids.tsv"))) throw new Error(`Missing ${CACHE}; run with --download first`);
   const files = listCached();
   if (contentHash(files) !== source.contentSha256) throw new Error(`Source checksum mismatch: ${CACHE}`);
   const byPath = new Map(files);
+  return { files, byPath };
+}
+
+async function main() {
+  const { files, byPath } = await loadHomographs(argv.includes("--download"));
 
   const readings = new Map<string, Map<string, string>>();
   for (const [homograph, wordid, , pron] of parseTsv(byPath.get("wordids.tsv")!.toString("utf8"))) {
@@ -196,4 +201,9 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+if (require.main === module) {
+  const run = argv.includes("--metric")
+    ? require("./evaluate-context-ipa").main()
+    : main();
+  run.catch((e: unknown) => { console.error(e); process.exitCode = 1; });
+}

@@ -1,0 +1,470 @@
+{
+  "metric": "context-ipa-v1",
+  "normalizer": "en-US-phones-v1",
+  "adapter": "reading-upos-v1",
+  "dialect": "en-US",
+  "scope": "Fixed ten-lemma Wikipedia cohort plus five transparent grammatical controls. Three controls cover readings absent from the original eval split, selected by label coverage, not prediction success. Source-checked IPA associations; no human token-UPOS review claim.",
+  "sources": {
+    "cmudict": {
+      "file": "cmudict.dict",
+      "url": "https://raw.githubusercontent.com/cmusphinx/cmudict/74790861f652b15e4ac49015a90074ad62a27690/cmudict.dict",
+      "sha256": "81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22"
+    },
+    "mw-invite": {
+      "url": "https://www.merriam-webster.com/dictionary/invite",
+      "accessed": "2026-10-07",
+      "evidence": "noun first-primary and second-secondary; verb second-primary; short i and PRICE in both. Agent source-checked, not human annotated."
+    }
+  },
+  "readings": {
+    "invite_nou": {
+      "family": "pos-stress",
+      "upos": "NOUN",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "IH1 N V AY2 T",
+          "entry": null,
+          "protected": [
+            0,
+            3
+          ]
+        }
+      ],
+      "evidence": "mw-invite",
+      "review": "source-checked; no human-review claim"
+    },
+    "invite_vrb": {
+      "family": "pos-stress",
+      "upos": "VERB",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "IH2 N V AY1 T",
+          "entry": "invite",
+          "protected": [
+            0,
+            3
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "record_nou": {
+      "family": "pos-stress",
+      "upos": "NOUN",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "R EH1 K ER0 D",
+          "entry": "record(2)",
+          "protected": [
+            1,
+            3
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "record_vrb": {
+      "family": "pos-stress",
+      "upos": "VERB",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "R AH0 K AO1 R D",
+          "entry": "record",
+          "protected": [
+            1,
+            3
+          ]
+        },
+        {
+          "arpabet": "R IH0 K AO1 R D",
+          "entry": "record(3)",
+          "protected": [
+            1,
+            3
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "use_nou": {
+      "family": "pos-segments",
+      "upos": "NOUN",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "Y UW1 S",
+          "entry": "use",
+          "protected": [
+            2
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "use_vrb": {
+      "family": "pos-segments",
+      "upos": "VERB",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "Y UW1 Z",
+          "entry": "use(2)",
+          "protected": [
+            2
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "uses_nou": {
+      "family": "pos-segments",
+      "upos": "NOUN",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "Y UW1 S AH0 Z",
+          "entry": "uses",
+          "protected": [
+            2
+          ]
+        },
+        {
+          "arpabet": "Y UW1 S IH0 Z",
+          "entry": "uses(2)",
+          "protected": [
+            2
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "uses_vrb": {
+      "family": "pos-segments",
+      "upos": "VERB",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "Y UW1 Z AH0 Z",
+          "entry": "uses(3)",
+          "protected": [
+            2
+          ]
+        },
+        {
+          "arpabet": "Y UW1 Z IH0 Z",
+          "entry": "uses(4)",
+          "protected": [
+            2
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "invalid_adj": {
+      "family": "noun-adjective",
+      "upos": "ADJ",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "IH2 N V AE1 L AH0 D",
+          "entry": "invalid(3)",
+          "protected": null
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "invalid_nou": {
+      "family": "noun-adjective",
+      "upos": "NOUN",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "IH1 N V AH0 L AH0 D",
+          "entry": "invalid",
+          "protected": null
+        },
+        {
+          "arpabet": "IH1 N V AH0 L IH0 D",
+          "entry": "invalid(2)",
+          "protected": null
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "learned_adj": {
+      "family": "noun-adjective",
+      "upos": "ADJ",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "L ER1 N IH0 D",
+          "entry": "learned(2)",
+          "protected": null
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "learned_vrb": {
+      "family": "noun-adjective",
+      "upos": "VERB",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "L ER1 N D",
+          "entry": "learned",
+          "protected": null
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "read_past": {
+      "family": "morphology",
+      "upos": "VERB",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {
+        "Tense": "Past"
+      },
+      "variants": [
+        {
+          "arpabet": "R EH1 D",
+          "entry": "read",
+          "protected": [
+            1
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "read_present": {
+      "family": "morphology",
+      "upos": "VERB",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {
+        "Tense": "Pres"
+      },
+      "variants": [
+        {
+          "arpabet": "R IY1 D",
+          "entry": "read(2)",
+          "protected": [
+            1
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "bass": {
+      "family": "sense",
+      "upos": null,
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "B EY1 S",
+          "entry": "bass(2)",
+          "protected": [
+            1
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "bass_corp": {
+      "family": "sense",
+      "upos": null,
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "B AE1 S",
+          "entry": "bass",
+          "protected": [
+            1
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "bow_nou-knot": {
+      "family": "sense",
+      "upos": null,
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "B OW1",
+          "entry": "bow(2)",
+          "protected": [
+            1
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "bow_nou-ship": {
+      "family": "sense",
+      "upos": null,
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "B AW1",
+          "entry": "bow",
+          "protected": [
+            1
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "permit_nou": {
+      "family": "pos-stress",
+      "upos": "NOUN",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "P ER1 M IH2 T",
+          "entry": "permit(2)",
+          "protected": [
+            1,
+            3
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "permit_vrb": {
+      "family": "pos-stress",
+      "upos": "VERB",
+      "posScope": "lexical reading, not independently annotated token UPOS",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "P ER0 M IH1 T",
+          "entry": "permit",
+          "protected": [
+            1,
+            3
+          ]
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "cat_control": {
+      "family": "neutral",
+      "upos": "NOUN",
+      "posScope": "clear syntactic noun in hand-written control sentence",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "K AE1 T",
+          "entry": "cat",
+          "protected": null
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    },
+    "day_control": {
+      "family": "neutral",
+      "upos": "NOUN",
+      "posScope": "clear syntactic noun in hand-written control sentence",
+      "features": {},
+      "variants": [
+        {
+          "arpabet": "D EY1",
+          "entry": "day",
+          "protected": null
+        }
+      ],
+      "evidence": "cmudict",
+      "review": "source-checked; no human-review claim"
+    }
+  },
+  "controls": [
+    {
+      "id": "neutral-cat",
+      "split": "eval",
+      "word": "cat",
+      "gold": "cat_control",
+      "sentence": "We saw a cat.",
+      "start": 9,
+      "end": 12
+    },
+    {
+      "id": "neutral-day",
+      "split": "eval",
+      "word": "day",
+      "gold": "day_control",
+      "sentence": "I work every day.",
+      "start": 13,
+      "end": 16
+    },
+    {
+      "id": "paired-record-verb",
+      "split": "eval",
+      "word": "record",
+      "gold": "record_vrb",
+      "sentence": "We will record the result.",
+      "start": 8,
+      "end": 14,
+      "upos": "VERB"
+    },
+    {
+      "id": "paired-learned-adj",
+      "split": "eval",
+      "word": "learned",
+      "gold": "learned_adj",
+      "sentence": "She is a learned scholar.",
+      "start": 9,
+      "end": 16,
+      "upos": "ADJ"
+    },
+    {
+      "id": "paired-bass-animal",
+      "split": "eval",
+      "word": "bass",
+      "gold": "bass_corp",
+      "sentence": "They caught a bass.",
+      "start": 14,
+      "end": 18,
+      "upos": "NOUN"
+    }
+  ]
+}
