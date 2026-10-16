@@ -14,9 +14,9 @@ describe("Homographs", function() {
       
     });
 
-    // Known tense limitation: /ɹɛd/ is required here. Do not promote the
-    // current /ɹid/ output into gold; context-ipa-v1 counts past-reading errors.
-    it.todo("should pronounce 'I read that book yesterday' with /ɹɛd/");
+    it("should pronounce 'I read that book yesterday' with /ɹɛd/", () => {
+      expect(toIPA("I read that book yesterday")).toContain("ɹɛd");
+    });
 
     it("should correctly pronounce 'lead' based on context", function() {
       // Verb: "Please lead" - correctly identified as verb, uses verb pronunciation

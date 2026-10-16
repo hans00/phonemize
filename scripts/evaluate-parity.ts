@@ -88,8 +88,8 @@ const delta = (now: number, was?: number): string => {
 console.log("--- Runtime parity (default EnglishG2P vs data/en/dict.json) ---");
 if (baseline) console.log(`    baseline: ${baseline.date}`);
 console.log(`Words evaluated: ${words}`);
-console.log(`Strict  (stress-stripped exact): ${result.strictAccuracy.toFixed(2)}%${delta(result.strictAccuracy, baseline?.strictAccuracy)}`);
-console.log(`Lenient (similar-phoneme canon): ${result.lenientAccuracy.toFixed(2)}%${delta(result.lenientAccuracy, baseline?.lenientAccuracy)}`);
+console.log(`Strict  (stress-stripped exact): ${strict}/${words} = ${result.strictAccuracy.toFixed(2)}%${delta(result.strictAccuracy, baseline?.strictAccuracy)}`);
+console.log(`Lenient (similar-phoneme canon): ${lenient}/${words} = ${result.lenientAccuracy.toFixed(2)}%${delta(result.lenientAccuracy, baseline?.lenientAccuracy)}`);
 
 if (updateBaseline) {
   writeFileSync(BASELINE_PATH, JSON.stringify(result, null, 2) + "\n");

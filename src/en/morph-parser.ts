@@ -3,10 +3,10 @@
 // `for (const [sfx, ipa] of [...])` loop for those rows (see
 // tryMorphologicalAnalysis, whose surviving loop now covers only -al
 // and -ular, which need bespoke stem-recovery/forced-stress logic this
-// function doesn't attempt). Behaviour is identical to that old inline
-// loop for the rows it covers — this module's value is "same accuracy,
-// one declarative table instead of an inline array", not a new accuracy
-// win from this suffix family, which the mechanism already predicted
+// function doesn't attempt). The original extraction preserved that
+// inline loop's behaviour; later rows have their own callback guards and
+// pronunciation gates. The extraction itself was not an accuracy gain:
+// the original suffix families were already predicted
 // well: dict-wide "bypass to plain rules" tests on every one of these
 // suffixes came back strongly net-negative (-ment 12:119, -ness 6:173,
 // -less 0:64, -ful 4:41, -ism 2:150, -ist 23:94, -ize 29:72 against

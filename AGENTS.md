@@ -16,8 +16,10 @@ Metric definitions, limits and the evaluation audit are in [docs/BENCHMARK.md](d
 - No whole-word pronunciation maps or per-word exceptions in `src/<lang>/g2p.ts` or the POS tagger.
   User-reported words need an issue regression and a class fix. If no class fix passes every gate,
   use `src-data/en/custom.dict` and record the open class. Foreign proper names are usually coverage gaps.
-- Preserve existing work. Do not change IPA expectations merely to make tests pass; confirm a suspected
-  incorrect expectation with the user. Keep non-obvious rule constraints; remove dead code and explanations.
+- Preserve existing work. Do not change IPA expectations merely to make tests pass. Independently verify
+  corrections against standard authoritative dictionaries; those documented readings need no further
+  user confirmation. Ask only when the evidence is missing or conflicting. Reference/test corrections
+  are not pronunciation gains. Keep non-obvious rule constraints; remove dead code and explanations.
 
 ## Learning and adoption loop
 
@@ -77,8 +79,8 @@ with the same arguments when the `tsx` CLI's IPC is unavailable in the sandbox.
   subsequently removed gram tables. It is not today's no-regression floor and must not be lowered.
 - Normal improvement commits require **>=1 absolute percentage point** of English-subset strict
   improvement over the previous committed baseline, with unchanged denominator and all other gates.
-  For n=6990 this needs at least 70 extra correct words. The last checkpoint (`503f85a`, explicitly
-  requested by the user) has 5120/6990; the next ordinary batch therefore needs >=5190/6990.
+  For n=6990 this needs at least 70 extra correct words. The 2026-10-16 committed baseline
+  has 5200/6990; the next ordinary batch therefore needs >=5270/6990.
 - The completed isolated-word 70% strict /90% lenient checkpoint is unchanged. Long-term English-subset
   targets remain >=80% strict /90% lenient. Context has its own fixed baseline, not that isolated goal.
 - POS-only gains can accumulate without meeting the isolated strict commit threshold. Do not invent

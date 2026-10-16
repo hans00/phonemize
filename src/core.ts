@@ -26,7 +26,7 @@ import type { LanguageProcessor } from "./g2p";
 export type { TokenizerOptions, PhonemeToken };
 export { Tokenizer, useProcessor, LanguageRegistry };
 
-export type { LanguageProcessor } from "./g2p";
+export type { LanguageProcessor, PredictionContext, VerbForm } from "./g2p";
 
 /** Optional second-argument shorthand: bare string is treated as `language`. */
 type PhonemizeArg =

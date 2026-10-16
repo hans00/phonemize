@@ -15,6 +15,13 @@
 
 // === Type Definitions ===
 
+export type VerbForm = "base" | "past" | "participle";
+/** Original token stream; index points to the word being predicted. */
+export interface PredictionContext {
+  readonly words: readonly string[];
+  readonly index: number;
+}
+
 /**
  * A language-bound processor: text normalization plus grapheme-to-phoneme
  * prediction. Each implementation handles a single language's full
@@ -55,14 +62,15 @@ export interface LanguageProcessor {
    * `tagWord` (if any), then passes the returned `pos` into `predict`.
    * Context is the (optional) immediately neighboring tokens in original
    * surface form so taggers that need local cues — preceding determiner,
-   * following particle, etc. — have access to them.
+   * following particle, etc. — have access to them. The optional original
+   * sentence stream supports clause and quotation cues; legacy taggers may ignore it.
    *
    * Implementations that don't model POS should leave this undefined;
    * `predict` will then receive `undefined` for the `pos` argument.
    */
   tagWord?(
     word: string,
-    context?: { prev?: string; next?: string },
+    context?: { prev?: string; next?: string; sentence?: PredictionContext },
   ): { pos: string; confidence: number } | null;
 
   /**
@@ -74,6 +82,9 @@ export interface LanguageProcessor {
    * @returns Phoneme string in IPA format, or null if cannot process
    */
   predict(word: string, language?: string, pos?: string): string | null;
+
+  /** Optional sentence-aware path; legacy processors retain their three arguments. */
+  predictWithContext?(word: string, context: PredictionContext, language?: string, pos?: string): string | null;
 
   /**
    * Add a custom pronunciation for a word
@@ -218,6 +229,7 @@ export class LanguageRegistry {
     word: string,
     language?: string,
     pos?: string,
+    context?: PredictionContext,
   ): string | null {
     let lang = language;
     if (!lang) {
@@ -226,7 +238,9 @@ export class LanguageRegistry {
     }
     const processor = this.findBestProcessor(word, lang);
     if (!processor) return null;
-    const result = processor.predict(word, lang, pos);
+    const result = context && processor.predictWithContext
+      ? processor.predictWithContext(word, context, lang, pos)
+      : processor.predict(word, lang, pos);
     return result && result.trim() ? result : null;
   }
 
@@ -538,8 +552,9 @@ export function predictPhonemes(
   word: string,
   language?: string,
   pos?: string,
+  context?: PredictionContext,
 ): string | null {
-  return languageRegistry.predictPhonemes(word, language, pos);
+  return languageRegistry.predictPhonemes(word, language, pos, context);
 }
 
 export function getRegisteredProcessorIds(): string[] {

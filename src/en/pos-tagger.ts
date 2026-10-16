@@ -1,4 +1,5 @@
 // Simple rule-based POS tagger for homograph disambiguation
+import type { PredictionContext, VerbForm } from "../g2p";
 
 // --- POS Tagging Constants ---
 
@@ -108,6 +109,82 @@ const PREVERBAL_ADVERBS = ["also", "often", "never", "always", "usually", "still
 const DEMONSTRATIVES = ["this", "that", "these", "those"];
 const BE_FORMS = ["am", "is", "are", "was", "were", "be", "being", "been"];
 const HAVE_FORMS = ["have", "has", "had", "having"];
+const CONTRACTED_BE_HAVE = /^(?:(?:he|she|it|that|there|what|who)['‘’]s|i['‘’]m|(?:you|we|they)['‘’]re)$/;
+
+function isNegatedBareAuxiliary(word: string): boolean {
+  return word === "cannot" || /^(?:ca|wo|sha|would|should|could|may|might|must|need|dare|ought|do|does|did)n['‘’]t$/.test(word);
+}
+
+const OPEN_DELIMITER = /^["“«\[({]$/;
+const CLOSE_DELIMITER = /^["”»\])}]$/;
+function precedingContextIndex({ words, index }: PredictionContext): number {
+  return OPEN_DELIMITER.test(words[index - 1] ?? "") && CLOSE_DELIMITER.test(words[index + 1] ?? "")
+    ? index - 2 : index - 1;
+}
+function isQuotedPreviousWord(word: string, sentence?: PredictionContext): boolean {
+  if (!sentence) return false;
+  const index = precedingContextIndex(sentence);
+  return CLOSE_DELIMITER.test(sentence.words[index] ?? "") &&
+    sentence.words[index - 1]?.toLowerCase() === word && OPEN_DELIMITER.test(sentence.words[index - 2] ?? "");
+}
+
+function isVerbAdverb(word: string): boolean {
+  return word === "not" || word === "just" || word === "already" || PREVERBAL_ADVERBS.includes(word) || /ly$/.test(word);
+}
+function isModalAdverb(word: string): boolean {
+  return isVerbAdverb(word) || word === "rather" || word === "later";
+}
+function hasModalAdverbFrame({ words, index }: PredictionContext): boolean {
+  const lower = (i: number) => (words[i] ?? "").toLowerCase().replace(/[‘’]/g, "'");
+  let previous = precedingContextIndex({ words, index });
+  if (!isModalAdverb(lower(previous))) return false;
+  while (previous >= 0 && isModalAdverb(lower(previous))) previous--;
+  if (SUBJECT_PRONOUNS.includes(lower(previous))) {
+    previous--;
+    // Extended preference/time adverbs before a subject may open a mandative clause.
+    while (previous >= 0 && isVerbAdverb(lower(previous))) previous--;
+  }
+  return (/^(?:would|should|could|shall)$/.test(lower(previous)) || isNegatedBareAuxiliary(lower(previous))) &&
+    !DETERMINERS.includes(lower(previous - 1)) && !/['’]s$|s['’]$/.test(lower(previous - 1));
+}
+
+/** Infer inflection separately from POS; no pronunciation or target-word table. */
+export function inferVerbForm({ words, index }: PredictionContext): VerbForm | undefined {
+  const lower = (i: number) => (words[i] ?? "").toLowerCase().replace(/[‘’]/g, "'");
+  // -only attaches to the base operation, not a passive participle.
+  if (lower(index + 1) === "-" && lower(index + 2) === "only") return "base";
+  if (hasModalAdverbFrame({ words, index })) return "base";
+  const adverb = isVerbAdverb;
+  let previous = precedingContextIndex({ words, index });
+  while (previous >= 0 && adverb(lower(previous))) previous--;
+  const subject = lower(previous);
+  let auxiliary = subject;
+  if (SUBJECT_PRONOUNS.includes(subject)) {
+    let beforeSubject = previous - 1;
+    while (beforeSubject >= 0 && adverb(lower(beforeSubject))) beforeSubject--;
+    auxiliary = lower(beforeSubject);
+  }
+  if (["to", "do", "does", "did", ...MODAL_VERBS].includes(auxiliary) || isNegatedBareAuxiliary(auxiliary)) return "base";
+  if (HAVE_FORMS.includes(auxiliary) || BE_FORMS.includes(auxiliary) || CONTRACTED_BE_HAVE.test(auxiliary) || /^(?:have|has|had)n't$|'ve$/.test(auxiliary)) return "participle";
+  // At a clause head, an uninflected verb after he/she/it is past.
+  // Abstain after content words/'that': an embedded mandative may be base.
+  const agreementPast = /^(?:he|she|it)$/.test(subject) && (previous === 0 || /^[,;:"“，；：。！？]$/.test(lower(previous - 1)) ||
+      /^(?:where|when|because|although|while|if|after|before|since|until|once|as|though|unless)$/.test(lower(previous - 1)));
+  let habitual = false;
+  for (const direction of [-1, 1]) {
+    // Bound cue lookup so repeated ambiguous tokens cannot make a long
+    // sentence quadratic. The complete sentence remains available to callers.
+    for (let i = index + direction; i >= 0 && i < words.length && Math.abs(i - index) <= 32; i += direction) {
+      const w = lower(i);
+      if (/^[,;:.!?，；：。！？]$/.test(w) || /^(?:and|but|or|while|whereas)$/.test(w)) break;
+      // Habitual phrases alone do not establish tense; preserve the POS fallback.
+      if (w === "every" && /^(?:day|week|month|year|morning|night|evening)$/.test(lower(i + 1))) habitual = true;
+      if (w === "yesterday" && !PREPOSITIONS.includes(lower(i - 1)) && !/^["“]$/.test(lower(i - 1))) return "past";
+      if (w === "last" && /^(?:night|week|month|year)$/.test(lower(i + 1)) && !PREPOSITIONS.includes(lower(i - 1))) return "past";
+    }
+  }
+  return agreementPast && !habitual ? "past" : undefined;
+}
 
 // Common prepositions that indicate following word might be a noun
 const PREPOSITIONS = [
@@ -242,7 +319,7 @@ export class SimplePOSTagger {
   /**
    * Tag a single word with its most likely POS
    */
-  public tagWord(word: string, context?: string[]): POSResult {
+  public tagWord(word: string, context?: string[], sentence?: PredictionContext): POSResult {
     const lowerWord = word.toLowerCase();
 
     // Check if current word is determiner first
@@ -257,6 +334,11 @@ export class SimplePOSTagger {
         context.length >= 2 ? context[1]?.toLowerCase() : undefined; // Second element is next word
 
       // Enhanced detection patterns - highest priority first
+
+      // Pronoun contractions are auxiliaries, unlike a noun's possessive.
+      if (prevWord && CONTRACTED_BE_HAVE.test(prevWord)) {
+        return { word, pos: "!V", confidence: 0.8 };
+      }
 
       // Possessive before the word -> noun (Hammond's postulate, Mengistu's overthrow)
       if (prevWord && /['’]s$|s['’]$/.test(prevWord)) {
@@ -282,9 +364,12 @@ export class SimplePOSTagger {
       }
 
       // Modal + word -> likely verb (can read, will lead, etc.)
-      if (prevWord && MODAL_VERBS.includes(prevWord)) {
+      if (prevWord && (MODAL_VERBS.includes(prevWord) || isNegatedBareAuxiliary(prevWord) && !isQuotedPreviousWord(prevWord, sentence))) {
         return { word, pos: "V", confidence: 0.9 };
       }
+
+      if (sentence && !isModalAdverb(lowerWord) && isModalAdverb(prevWord ?? "") && hasModalAdverbFrame(sentence))
+        return { word, pos: "V", confidence: 0.8 };
 
       // Subject pronoun + word -> likely verb (I read, he leads, etc.)
       if (prevWord && SUBJECT_PRONOUNS.includes(prevWord)) {
@@ -340,6 +425,12 @@ export class SimplePOSTagger {
       // Previous word is preposition -> likely noun
       if (prevWord && PREPOSITIONS.includes(prevWord)) {
         return { word, pos: "N", confidence: 0.7 };
+      }
+
+      // Unambiguous object pronouns supply a verb's object. Reflexives
+      // also follow nouns (the organ console itself), so are not evidence.
+      if (nextWord && /^(?:me|him|us|them)$/.test(nextWord) && !/^[A-Z]{2,}$/.test(context[1])) {
+        return { word, pos: "V", confidence: 0.7 };
       }
     }
 

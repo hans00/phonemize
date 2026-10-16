@@ -4,7 +4,10 @@
 #HEADWORD should have PRONUNCIATION1 only if it's part-of-speech is POS 
 #Otherwise PRONUNCIATION2 is applied
 A|AX|EY1|!V
-READ|R IY1 D|R EH1 D|V
+#Optional final fields annotate the two existing variants' inflection forms.
+#Cambridge Dictionary read: base /ri:d/, past and past participle /red/.
+#https://dictionary.cambridge.org/dictionary/english/read
+READ|R IY1 D|R EH1 D|V|base|past,participle
 LEAD|L EH1 D|L IY1 D|N
 TEAR|T EH1 R|T IH1 R|V
 WIND|W AY1 N D|W IH1 N D|V

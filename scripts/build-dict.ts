@@ -535,6 +535,7 @@ async function main(): Promise<void> {
 interface HomographEntry {
   pronunciation: string;
   pos: string;
+  forms?: string[];
 }
 
 interface HomographDict {
@@ -549,7 +550,7 @@ function parseHomographs(content: string): HomographDict {
     if (line.startsWith("#") || line.trim() === "") continue;
 
     const parts = line.split("|");
-    if (parts.length !== 4) continue;
+    if (parts.length !== 4 && parts.length !== 6) continue;
 
     const [word, pron1, pron2, pos] = parts;
     const lowerWord = word.toLowerCase();
@@ -561,8 +562,12 @@ function parseHomographs(content: string): HomographDict {
     // The logic is: use pron1 if the POS matches, otherwise use pron2.
     // We can store this as a condition. For simplicity, we store both with their POS triggers.
     // The runtime will decide which to use.
-    homographDict[lowerWord].push({ pronunciation: arpabetToIpa(pron1), pos: pos });
-    homographDict[lowerWord].push({ pronunciation: arpabetToIpa(pron2), pos: `!${pos}` }); // Representing "not POS"
+    for (let i = 0; i < 2; i++) {
+      const forms = parts[4 + i]?.split(",");
+      if (forms?.some(form => !["base", "past", "participle"].includes(form))) throw new Error(`Invalid verb forms: ${line}`);
+      homographDict[lowerWord].push({ pronunciation: arpabetToIpa(i === 0 ? pron1 : pron2),
+        pos: i === 0 ? pos : `!${pos}`, ...(forms ? { forms } : {}) });
+    }
   }
 
   return homographDict;

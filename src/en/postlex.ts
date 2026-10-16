@@ -1,5 +1,5 @@
 import { addInitialSecondary } from "./phonotactics";
-import { EN_PREFIXES, LATIN_UTE_ROOT, SHORT_ANCY_ROOT } from "./syllabify";
+import { EN_PREFIXES, LATIN_E_ROOT, SHORT_ANCY_ROOT, PRICE_HIATUS_ARY_ROOT } from "./syllabify";
 
 /**
  * Post-lexical corrections for the rule path.
@@ -33,17 +33,14 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/([bdfɡhklmnpɹstzv])ə(ʃ|dʒ)əs$/, "$1eɪ$2əs"],
   [/([^w])əʃən$/, "$1eɪʃən"],
   [/oʊɹ/g, "ɔɹ"],
+  // Rhotic ou contracts before the soft-g rime, including stressed -ageous.
+  [/aʊɹ(?=(?:[ɪə]|ˈ?eɪ)dʒ|dʒ$)/g, "ɝ"],
   [/[ɑə][ɛə]$/, "oʊ"],
-  [/oʊ([ntplm])ɪk/g, "ɑ$1ɪk"],
-  [/oʊnəm/g, "ɑnəm"],
-  [/oʊ(m[ɪə]t[ɝɹ])/g, "ɑ$1"],
-  [/oʊɡɹəf([iɝ])/g, "ɑɡɹəf$1"],
+  // These disjoint rimes share GOAT-to-PALM; intervening rules cannot create them.
+  [/oʊ(?=[ntplm]ɪk|nəm|m[ɪə]t[ɝɹ]|ɡɹəf[iɝ]|(?:dʒɪk|leɪt)$)/g, "ɑ"],
   [/(?:oʊ|ɑ)mɪnən([ts])/g, "ɑmənən$1"],
-  [/oʊdʒɪk$/, "ɑdʒɪk"],
-  [/ənoʊ/g, "ɑnoʊ"],
   [/ætɪv$/, "ətɪv"],
   [/ɑɹi$/, "ɛɹi"],
-  [/[æɪ]bli$/, "əbli"],
   [/ɑl([dtskp])/g, "oʊl$1"],
   [/əhl/g, "ɑl"],
   [/([pbtdkɡfvszʃθmnlhjwɫ])ɹoʊst/g, "$1ɹɑst"],
@@ -57,8 +54,7 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/ɡuʃ/g, "ɡwɪʃ"],
   [/mək(ɝ|ɪŋ)$/, "meɪk$1"],
   [/məstɝ$/, "mæstɝ"],
-  [/ɪ([nlkfvmt])eɪʃən$/, "ə$1eɪʃən"],
-  [/ɪ([nk])eɪt$/, "ə$1eɪt"],
+  [/ɪ(?=(?:[nlkfvmt]eɪʃən|[nk]eɪt)$)/, "ə"],
   [/ʌmɪnəs$/, "umənəs"],
   [/pənənt$/, "poʊnənt"],
   [/ɡɹɛɡeɪt$/, "ɡɹəɡeɪt"],
@@ -66,8 +62,6 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/ɝɹeɪʃən$/, "ɝeɪʃən"],
   [/ɪnɪti$/, "ɪnəti"],
   [/ɛntɛɹi$/, "əntɛɹi"],
-  [/ɪtud$/, "ətud"],
-  [/oʊleɪt$/, "ɑleɪt"],
   [/aʊɹ(?=[^aeiouæɛɪɑɔʌʊ])/g, "uɹ"], // French -our- before consonant (belcourt/bournonville)
   [/æ{2,}/g, "ɑ"], // double-a → ɑ (baalbek, baasch, baatz)
   // word-final -ia: sɪnðɪæ→sɪnðiə (cynthia/sylvia). Two rules, because an
@@ -99,17 +93,25 @@ const GERMANIC_EI_SUFFIX_RE =
 // vowel reduction (dispatch/mismatch/watch compounds). Frozen strict
 // flat, lenient +4/-0; native stomach/eunuch remain velar.
 const POST_LEX_RULES: PostLexRule[] = [
+  { when: w => /[oy]al/.test(w), re: /ɔɪæ([lɫ])/, sub: "ɔɪə$1" },
+  { when: w => /asm(?:a|ic|atic)$/.test(w), re: /sm(?=(?:ə|ɪk|ætɪk)$)/, sub: "zm" },
+  { when: w => /sday(?:s|[’']s)?$/.test(w), re: /(?<=[aeiouɑæɛɪɔʊʌəɝmnŋlɫɹbdɡvðzʒ])s(?=deɪz?$)/, sub: "z" },
+  // Weak -ably/-ibly is a spelling suffix, not every IPA /bli/ tail
+  // (Sibley/Shibley preserve their root vowel).
+  { when: w => /[ai]bly$/.test(w), re: /[æɪ]bli$/, sub: "əbli" },
   // Only an -able/-ible suffix licenses this weak vowel. Unconditional
   // IPA matching ate the root KIT in gibble and in newly weak sibyl.
   { when: w => /[ai]ble$/.test(w), re: /(s|dʒ)ɪbəl$/g, sub: "$1əbəl" },
   { when: w => !/tch$/.test(w), re: /ətʃ$/, sub: "ək" },
   // Hard -ger needs the spelling g; j stays soft before the same rhotic
   // tail (major). Frozen whole dict: strict/lenient +3/-0.
-  { when: (w) => w.endsWith("ger"), re: /(?<=[aɑɔɛiɪouəɝ])dʒɝ$/, sub: "ɡɝ" },
+  // NURSE can close a soft-g silent-e root; supplied hard-g stems stay in morphology.
+  { when: (w) => w.endsWith("ger"), re: /(?<=[aɑɔɛiɪouə])dʒɝ$/, sub: "ɡɝ" },
   // — Latinate / native suffix corrections —
   { when: (w) => w.startsWith("aa"), re: /^æ+/, sub: "ɑ" },
-  { when: (w) => w.endsWith("erate") || w.length >= 9, re: /[ɛɔ]ɹeɪt(ɝ?)$/, sub: "ɝeɪt$1" },
-  { when: (_w, syl) => syl >= 3, re: /eɪdʒ$/, sub: "ɪdʒ" },
+  // Only weak -age reduces. Plural -ages differs from -ageous; Greek
+  // -phage is a full-vowel root, including before plural s.
+  { when: (w, syl, finalPrimary) => syl >= 3 && !finalPrimary && (!w.endsWith("s") || w.endsWith("ages") && !w.endsWith("phages")), re: /eɪdʒ(?=(?:[əɪ][sz])?$)/, sub: "ɪdʒ" },
   // Written -ri-age contracts to one weak nucleus (marriage/carriage).
   { when: w => /riage$/.test(w), re: /ɪɪdʒ$/, sub: "ɪdʒ" },
   { when: (w) => w.includes("asiv"), re: /æsɪv/, sub: "eɪsɪv" },
@@ -222,6 +224,7 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.startsWith("mechan") || w.includes("anchor"), re: /tʃ/, sub: "k" },
 
   // — Germanic <ei> → /aɪ/ and hard <g> —
+  // English weigh- has silent gh and retains its FACE nucleus.
   { when: (w) => w.startsWith("ei") && !/^ei(ght|ther)/.test(w), re: /^eɪ/, sub: "aɪ" },
   // Merged from four rules with identical /eɪ/g → "aɪ"; a global replace
   // is idempotent, so OR-ing `when` is equivalent to four separate entries.
@@ -230,7 +233,7 @@ const POST_LEX_RULES: PostLexRule[] = [
       (GERMANIC_EI_SUFFIX_RE.test(w) && w.includes("ei") && !w.includes("eight")) ||
       (w.includes("ei") &&
         (w.startsWith("klein") || w.startsWith("drei") || w.startsWith("breit") ||
-          w.startsWith("mein") || w.startsWith("meio") || w.startsWith("wei") ||
+          w.startsWith("mein") || w.startsWith("meio") || (w.startsWith("wei") && !w.startsWith("weigh")) ||
           (w.startsWith("feig") && !w.startsWith("feigh")) ||
           (w.startsWith("hei") && !/^hei(?:nous|fer|r$|res|ress)/.test(w)) ||
           (w.startsWith("lei") && w.length >= 6 && !/^lei(?:sure|s$)/.test(w)) ||
@@ -460,19 +463,25 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => /ec[k]?$/.test(w), re: /ək$/, sub: "ɪk" },
   { when: (w) => /enb[eu]rg/.test(w), re: /ɪn(?=b)/, sub: "ən" },
 
+  // Velars introduced by hardening also assimilate, before prefix restoration.
+  // Initial en+front/ambiguous g keeps its existing boundary convention.
+  { when: w => !/^eng[eiyql]/.test(w), re: /n([kɡ])/g, sub: "ŋ$1" },
+
   // — Consonant clusters —
   // Nasal assimilation stops at a prefix boundary: in-/en-/un-/conc-
   // before <c/k/q> keeps /n/ (265:26 in dict — include, uncle is the
   // rare monomorphemic exception). con+qu (conquer, conquest) assimilates.
+  // Native en- + hard g before a back vowel/r keeps the same boundary;
+  // front-vowel hard-g names and the ambiguous gq/gl families stay unchanged.
   {
-    when: (w) => w.length >= 5 && /^(?:in|en|un)[ckq]|^conc/.test(w),
-    re: /^(.{1,3}?)ŋk/, sub: "$1nk",
+    when: (w) => w.length >= 5 && (/^(?:in|en|un)[ckq]|^conc/.test(w) || /^eng(?:[aou]|r)/.test(w)),
+    re: /^(.{1,3}?)ŋ([kɡ])/, sub: "$1n$2",
   },
   // Word-initial <ex> before a vowel voices to /ɡz/ when the stress
   // falls after the x (76:6 in dict — exam, exact, exist); stressed
   // ex- keeps /ks/ (execute, exercise) and so does medial x (55:24).
   // The bound -ecute verb root retains /ks/ under retracted primary.
-  { when: (w) => /^ex[aeiou]/.test(w) && !LATIN_UTE_ROOT.test(w), re: /^([aeiouɪɛəʌ]+)ks/, sub: "$1ɡz" },
+  { when: (w) => /^ex[aeiou]/.test(w) && !(LATIN_E_ROOT.test(w) && w.endsWith("ute")), re: /^([aeiouɪɛəʌ]+)ks/, sub: "$1ɡz" },
   // <exh> + vowel voices on the same terms and swallows the h. The dict
   // splits it on the prefix vowel, not the spelling: a reduced prefix is
   // /ɡz/ 14:0 (exhibit ɪɡˈzɪbɪt, exhaust, exhort, exhilarate), a full /ɛ/
@@ -511,11 +520,8 @@ const POST_LEX_RULES: PostLexRule[] = [
   // → dæmkzək, dict ɑdəmtʃæk). 13 of 26 dict -czak words hit this split;
   // all 13 fixed, 0 regressions. A preceding nasal was already
   // assimilated to /ŋ/ before the (still-/k/-shaped) c, so it has to be
-  // restored to /n/ once cz is reunited as the non-velar affricate
-  // (franczak, stanczak) — that repair has to run before the general fix
-  // so the plain one doesn't leave the ŋ behind.
-  { when: (w) => /czak$/.test(w), re: /ŋkz[əæ]?k$/, sub: "ntʃæk" },
-  { when: (w) => /czak$/.test(w), re: /kz[əæ]?k$/, sub: "tʃæk" },
+  // restored to /n/ once cz is reunited as the non-velar affricate.
+  { when: (w) => /czak$/.test(w), re: /(ŋ)?kz[əæ]?k$/, fn: (_s, nasal) => (nasal ? "n" : "") + "tʃæk" },
   // Polish -wicz patronymic: the vowel+w before it is a reduced linking
   // vowel, not an English vowel-w digraph, and the w itself voices to /v/
   // (frankiewicz ˈfɹænkəvɪtʃ, markowicz ˈmɑɹkəvɪtʃ, filipowicz
@@ -785,6 +791,11 @@ export function applyPostStress(ipa: string, word: string): string {
   out = out.replace(GZ_ONSET_RE, "$1ɡ$2z").replace(GZ_CODA_RE, "ɡ$1z");
   if (LOAN_PENULT_ORTHO_RE.test(word))
     out = out.replace(LOAN_PENULT_RE, "ˈ$1i$2$3");
+  // Preserve the assimilated prefix beat after a lexical root is evicted.
+  if (/^irr/.test(word))
+    out = out.replace(/^ɪ(?=ˈɹ)/, "ˌɪ");
+  if (PRICE_HIATUS_ARY_ROOT.test(word))
+    out = out.replace(/(?<![ˈˌ])tɛɹi$/, "ˌtɛɹi");
   if (word.endsWith("ation")) {
     out = out.replace(ATION_SWAP_RE, "ˌ$1ˈeɪʃən");
   } else {

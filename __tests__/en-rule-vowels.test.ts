@@ -129,7 +129,7 @@ describe("nasal assimilation stops at a prefix boundary", () => {
     ["include", "ɪnˈkɫud"],
     ["unclear", "ənˈkɫɪɹ"],
     ["conclude", "kənˈkɫud"],
-    ["encase", "ˈɛnkeɪs"],
+    ["encase", "ɛnˈkeɪs"],
     ["encrypt", "ˈɛnkɹɪpt"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 

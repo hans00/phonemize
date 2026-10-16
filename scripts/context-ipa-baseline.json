@@ -15,20 +15,20 @@
   "cells": {
     "default/auto": {
       "n": 108,
-      "strict": 78,
-      "lenient": 78,
-      "reading": 78,
+      "strict": 80,
+      "lenient": 80,
+      "reading": 80,
       "stress": 104,
-      "segments": 80,
-      "macro": 0.7717948717948718,
-      "balanced": 0.8228354978354979,
-      "phoneErrors": 30,
+      "segments": 82,
+      "macro": 0.7846153846153846,
+      "balanced": 0.8358225108225109,
+      "phoneErrors": 28,
       "referencePhones": 448,
       "slices": {
         "morphology": {
           "n": 13,
-          "strict": 6,
-          "lenient": 6
+          "strict": 8,
+          "lenient": 8
         },
         "neutral": {
           "n": 2,
@@ -129,8 +129,8 @@
         },
         "read_past": {
           "n": 7,
-          "strict": 2,
-          "lenient": 2
+          "strict": 4,
+          "lenient": 4
         },
         "read_present": {
           "n": 6,
@@ -171,20 +171,20 @@
     },
     "default/gold": {
       "n": 108,
-      "strict": 80,
-      "lenient": 80,
-      "reading": 80,
+      "strict": 83,
+      "lenient": 83,
+      "reading": 83,
       "stress": 87,
-      "segments": 80,
-      "macro": 0.7884615384615384,
-      "balanced": 0.7727272727272727,
-      "phoneErrors": 58,
+      "segments": 83,
+      "macro": 0.8076923076923078,
+      "balanced": 0.7922077922077922,
+      "phoneErrors": 55,
       "referencePhones": 448,
       "slices": {
         "morphology": {
           "n": 13,
-          "strict": 6,
-          "lenient": 6
+          "strict": 9,
+          "lenient": 9
         },
         "neutral": {
           "n": 2,
@@ -285,8 +285,8 @@
         },
         "read_past": {
           "n": 7,
-          "strict": 0,
-          "lenient": 0
+          "strict": 3,
+          "lenient": 3
         },
         "read_present": {
           "n": 6,
@@ -641,20 +641,20 @@
   "supportedPosCells": {
     "default/auto": {
       "n": 88,
-      "strict": 74,
-      "lenient": 74,
-      "reading": 74,
+      "strict": 76,
+      "lenient": 76,
+      "reading": 76,
       "stress": 84,
-      "segments": 76,
-      "macro": 0.8882390336935793,
-      "balanced": 0.9001253132832081,
-      "phoneErrors": 14,
+      "segments": 78,
+      "macro": 0.9022250476795932,
+      "balanced": 0.9151629072681705,
+      "phoneErrors": 12,
       "referencePhones": 398,
       "slices": {
         "morphology": {
           "n": 13,
-          "strict": 6,
-          "lenient": 6
+          "strict": 8,
+          "lenient": 8
         },
         "neutral": {
           "n": 2,
@@ -740,8 +740,8 @@
         },
         "read_past": {
           "n": 7,
-          "strict": 2,
-          "lenient": 2
+          "strict": 4,
+          "lenient": 4
         },
         "read_present": {
           "n": 6,
@@ -782,20 +782,20 @@
     },
     "default/gold": {
       "n": 88,
-      "strict": 80,
-      "lenient": 80,
-      "reading": 80,
+      "strict": 83,
+      "lenient": 83,
+      "reading": 83,
       "stress": 87,
-      "segments": 80,
-      "macro": 0.9427844882390336,
-      "balanced": 0.8947368421052632,
-      "phoneErrors": 8,
+      "segments": 83,
+      "macro": 0.9637635092180546,
+      "balanced": 0.9172932330827068,
+      "phoneErrors": 5,
       "referencePhones": 398,
       "slices": {
         "morphology": {
           "n": 13,
-          "strict": 6,
-          "lenient": 6
+          "strict": 9,
+          "lenient": 9
         },
         "neutral": {
           "n": 2,
@@ -881,8 +881,8 @@
         },
         "read_past": {
           "n": 7,
-          "strict": 0,
-          "lenient": 0
+          "strict": 3,
+          "lenient": 3
         },
         "read_present": {
           "n": 6,
@@ -1268,8 +1268,8 @@
       "ˈpɝmɪt",
       "ɹid",
       "ɹid",
-      "ɹid",
-      "ɹid",
+      "ɹɛd",
+      "ɹɛd",
       "ɹid",
       "ɹid",
       "ɹɛd",
@@ -1378,14 +1378,14 @@
       "ˈpɝmɪt",
       "ɹid",
       "ɹid",
+      "ɹɛd",
+      "ɹɛd",
       "ɹid",
       "ɹid",
       "ɹid",
       "ɹid",
       "ɹid",
-      "ɹid",
-      "ɹid",
-      "ɹid",
+      "ɹɛd",
       "ɹid",
       "ɹid",
       "ɹid",

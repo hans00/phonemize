@@ -182,7 +182,8 @@ let acronymsSkipped = 0;
 const originAll: Map<Origin, number> = new Map();
 
 for (const [word, dictIpa] of Object.entries(dict)) {
-  if (!/^[a-z]+$/.test(word)) continue;
+  // Internal apostrophes belong to lexical words too (names and contractions).
+  if (!/^[a-z]+(?:'[a-z]+)*$/.test(word)) continue;
   total++;
   if (isAcronym(word, dictIpa)) {
     initialisms[word] = dictIpa;
@@ -487,8 +488,8 @@ console.log(`  separate initialisms: ${Object.keys(initialisms).length} entries`
 // the second depends on SOME evicted stem. Attribution then narrows
 // that down to the specific stem(s) by testing candidates individually
 // against a per-instance `customDict` (checked by `wellKnown()`, so it
-// reaches every handler above except `tryDecomposition`, which reads
-// `this.dictionary` directly and needs the real file — see Phase 2).
+// follows explicit lexical lookups, including custom-aware decomposition.
+// Phase 2 additionally probes jointly restored decomposition chunks).
 //
 // NOTE: dict-ENABLED runtime (disableDict:false, the actual shipped
 // predict()) is essentially unaffected by this bug: a word whose own
@@ -596,8 +597,7 @@ function attribute(stem: string, word: string): void {
 // words by their first 3 letters finds a derived word's stem(s) without
 // hand-modeling each suffix transform. `addPronunciation()` writes to
 // a per-instance customDict, which `wellKnown()` checks before
-// `this.dictionary` — reaching every handler except `tryDecomposition`
-// (Phase 2). Tried individually only, first match wins: a same-prefix
+// `this.dictionary`. Tried individually only, first match wins: a same-prefix
 // bucket routinely holds a dozen+ evicted words with no real relation
 // to each other (e.g. "con"/"cal"/"conference" all bucket under "con"),
 // so a "try the whole bucket together" fallback was measured and
@@ -652,11 +652,9 @@ console.log(`Phase 1 (customDict) resolved: ${resolvedByPhase1.size}/${flipSet.s
 
 // Phase 2 (file-based, for tryDecomposition): the residual after Phase 1
 // is expected small — `tryDecomposition` only applies to 8+ letter
-// words and never sees a customDict probe, since it indexes
-// `this.dictionary[chunk]` directly rather than going through
-// `wellKnown()`. Reimplementing its DP locally (mirroring g2p.ts's
-// `tryDecomposition` exactly, including the 3+-chunk/<4-letter reject)
-// against `shippedMap ∪ evictedMap` finds the SPECIFIC split it would
+// words and can require several restored chunks together. The legacy lexical
+// DP below only proposes candidate chunks; the real runtime probe must verify
+// them. Its scan against `shippedMap ∪ evictedMap` proposes the split it would
 // choose once eviction no longer hides a chunk from it, so only that
 // split's own chunks are re-pinned — not every substring of the word
 // that happens to be a dict word, which was measured to re-pin whole
@@ -727,11 +725,13 @@ if (stillUnresolved.length > 0) {
 // dictionary scan (a short re-pinned fragment can complete a NEW split
 // for an unrelated word that was blocked before). One reload finds any
 // such regression against the disableDict:true baseline (`correctA`);
-// each regressed word's culprit(s) are re-pinned stems it either starts
+// each regressed word's candidate culprits are re-pinned stems it either starts
 // with (the `lex(base)`/`wellKnown(stem)` collision — "din" re-pinned
 // for one word intercepting "dining"'s own stem lookup) or, for an
 // 8+-letter word, contains as a substring (the decomposition risk
-// above). A stem is dropped only when the regressions it's blamed for
+// above). Each candidate must rescue the word when removed through the real
+// pipeline; spelling overlap alone is not causal evidence. A stem is dropped
+// only when the verified regressions it causes
 // outnumber the flips Phase 1/2 actually attributed to it — the same
 // win/loss adoption test every other rule in this codebase is held to
 // (AGENTS.md) — so a stem responsible for more fixes than damage ships
@@ -747,17 +747,30 @@ for (let round = 0; round < 3; round++) {
   const NetCtor = reloadRuntime();
   const netRuntime = new NetCtor({ disableDict: true });
   const benefit = new Map<string, number>();
+  const withoutStem = new Map<string, InstanceType<typeof NetCtor>>();
   for (const [word, dictIpa] of dictWords) {
     if (!correctA.has(word) || isExactMatch(netRuntime.predict(word, "en"), dictIpa)) continue;
     for (const stem of rePinned.keys()) {
       const culprit = word.startsWith(stem) || (word.length >= 8 && stem.length >= 3 && word.includes(stem));
-      if (culprit) benefit.set(stem, (benefit.get(stem) ?? 0) + 1);
+      if (!culprit) continue;
+      let probe = withoutStem.get(stem);
+      if (!probe) {
+        probe = new NetCtor({ disableDict: true });
+        const table = { ...netCheckMap };
+        delete table[stem];
+        Reflect.set(probe, "dictionary", table);
+        withoutStem.set(stem, probe);
+      }
+      // A spelling overlap is only a candidate; require actual pipeline rescue.
+      if (isExactMatch(probe.predict(word, "en"), dictIpa))
+        benefit.set(stem, (benefit.get(stem) ?? 0) + 1);
     }
   }
   let droppedAny = false;
   for (const [stem, regressions] of benefit) {
     const fixes = attributed.get(stem)?.length ?? 0;
     if (regressions > fixes) {
+      console.log(`Net-check drop ${stem}: ${regressions} verified regressions, ${fixes} attributed fixes`);
       rePinned.delete(stem);
       droppedAny = true;
     }
@@ -786,6 +799,17 @@ const finalMap: Record<string, string> = { ...shippedMap, ...Object.fromEntries(
     postRepinAdded++;
   }
   console.log(`Post-repin refinement: ${postRepinAdded} additional exceptions`);
+}
+
+// Load after the initial empty-table reset: evaluation phone helpers import G2P.
+const { protectOovPlurals } = require("./protect-oov-plurals") as typeof import("./protect-oov-plurals");
+const pluralPins = protectOovPlurals(
+  reloadRuntime(), dict, finalMap, evictedMap,
+  JSON.parse(readFileSync("./data/en/homographs.json", "utf8")),
+);
+for (const [root, ipa] of Object.entries(pluralPins)) {
+  finalMap[root] = ipa;
+  rePinned.set(root, ipa);
 }
 
 // Final sanity pass: re-verify every originally-wrong word against the

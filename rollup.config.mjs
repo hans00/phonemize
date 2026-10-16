@@ -27,7 +27,7 @@ function externalDataPlugin() {
       if (!importer) return null;
       const resolved = resolve(dirname(importer), source);
       if (resolved.startsWith(DATA_DIR) && resolved.endsWith('.json')) {
-        return { id: './' + relative(DATA_DIR, resolved), external: true };
+        return { id: './' + relative(DATA_DIR, resolved), external: true, attributes: { type: 'json' } };
       }
       return null;
     },
@@ -87,6 +87,7 @@ export default {
       entryFileNames: '[name].mjs',
       chunkFileNames: '[name]-[hash].mjs',
       format: 'es',
+      importAttributesKey: 'with',
     },
   ],
   plugins: [

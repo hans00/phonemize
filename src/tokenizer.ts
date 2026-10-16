@@ -11,6 +11,7 @@ import {
   languageRegistry as defaultRegistry,
   LanguageRegistry,
   preProcessByScript,
+  type PredictionContext,
 } from "./g2p";
 import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
 import type ChineseG2P from "./zh/g2p";
@@ -21,7 +22,7 @@ import type ChineseG2P from "./zh/g2p";
 // so that `knight's`, `it's`, and `o'clock` survive as single word tokens
 // regardless of which apostrophe variant the input uses.
 const TOKEN_REGEX =
-  /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+[''\u2018\u2019]?\w*|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
+  /([\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]+|\w+(?:['\u2018\u2019]\w+)*['\u2018\u2019]?|[^\w\s\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff])/g;
 
 // A token is non-spoken punctuation if it contains no word characters,
 // digits, or CJK ideographs. This catches the ASCII PUNCTUATION set AND
@@ -397,8 +398,8 @@ export class Tokenizer {
     return phonemes;
   }
 
-  private _predict(token: string, language?: string, pos?: string): string {
-    const predicted = this.registry.predictPhonemes(token, language, pos);
+  private _predict(token: string, language?: string, pos?: string, context?: PredictionContext): string {
+    const predicted = this.registry.predictPhonemes(token, language, pos, context);
     return this._postProcess(predicted || token);
   }
 
@@ -462,14 +463,19 @@ export class Tokenizer {
     // the user-supplied ja* override at _preprocess time).
     // A sentence-final mark between two words cuts the POS context: the last
     // word of one sentence is not the previous word of the next one.
-    const cleanWords: { token: string; position?: number; sentenceStart: boolean }[] = [];
+    const cleanWords: { token: string; position?: number; sentenceStart: boolean; context: PredictionContext }[] = [];
     let boundary = true;
+    let sentenceWords: string[] = [];
     for (const entry of tokenMatches) {
       if (isPunctuationToken(entry.token)) {
+        sentenceWords.push(entry.token);
         if (/[.!?]/.test(entry.token)) boundary = true;
         continue;
       }
-      cleanWords.push({ ...entry, sentenceStart: boundary });
+      if (boundary) sentenceWords = [];
+      const context = { words: sentenceWords, index: sentenceWords.length };
+      sentenceWords.push(entry.token);
+      cleanWords.push({ ...entry, sentenceStart: boundary, context });
       boundary = false;
     }
     const resolveLang = (token: string): string | undefined => {
@@ -491,15 +497,15 @@ export class Tokenizer {
     const connectedContext = cleanWords.length > 1;
     const cleanInfo = cleanWords.map((entry, i) => {
       const lang = resolveLang(entry.token);
-      if (!connectedContext) return { lang, pos: undefined };
+      if (!connectedContext) return { lang, pos: undefined, context: undefined };
       const proc = this.registry.findBestProcessor(entry.token, lang);
       const prev = i > 0 && !entry.sentenceStart ? cleanWords[i - 1].token : undefined;
       const next =
         i + 1 < cleanWords.length && !cleanWords[i + 1].sentenceStart
           ? cleanWords[i + 1].token
           : undefined;
-      const posRes = proc?.tagWord?.(entry.token, { prev, next });
-      return { lang, pos: posRes?.pos };
+      const posRes = proc?.tagWord?.(entry.token, { prev, next, sentence: entry.context });
+      return { lang, pos: posRes?.pos, context: entry.context };
     });
 
     const results: (PhonemeToken | { phoneme: string })[] = [];
@@ -533,10 +539,10 @@ export class Tokenizer {
         ) as ChineseG2P | null;
         phoneme =
           g2p?.textToZhuyin?.(cleanToken) ??
-          this._predict(cleanToken, detectedLanguage, pos);
+          this._predict(cleanToken, detectedLanguage, pos, info.context);
       } else {
         // Regular IPA/ARPABET processing
-        phoneme = this._predict(cleanToken, detectedLanguage, pos);
+        phoneme = this._predict(cleanToken, detectedLanguage, pos, info.context);
       }
 
 
