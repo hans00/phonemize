@@ -47,10 +47,12 @@ describe.each([false, true])("Strong prefix and agent roots (disableDict=%s)", d
   });
 });
 
-describe("Unchanged default read controls", () => {
+// Oxford read_1: he/she/it reads /ri:dz/, past simple read /red/.
+// https://www.oxfordlearnersdictionaries.com/definition/english/read_1
+describe("Finite read controls", () => {
   const phonemizer = createPhonemizer({ processors: [new EnglishG2P()] });
   it.each([
-    ["She read books every day.", "ɹid"],
+    ["She read books every day.", "ɹɛd"],
     ["They have read the book.", "ɹɛd"],
   ])("preserves %s", (sentence, ipa) => {
     expect(phonemizer.phonemize(sentence, { language: "en-US", returnArray: true })

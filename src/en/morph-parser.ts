@@ -59,7 +59,7 @@ export function softenBaseFinal(ipa: string, base: string, sfx: string): string 
   // A syllabic final m loses its weak nucleus before a vowel suffix
   // (abysm + al, baptism + al); consonant-initial endings keep it.
   if (/sm$/.test(base) && /^[aeiouy]/.test(sfx)) ipa = ipa.replace(/zəm$/, "zm");
-  if (!/^[eiy]/.test(sfx)) return ipa;
+  if (!/^[eiy]/.test(sfx) || sfx === "ish") return ipa;
   if (/(?:^|[^g])g$/.test(base)) return ipa.replace(/ɡ$/, "dʒ");
   // A final sc cluster coalesces when the front suffix softens c.
   // This repairs the composition boundary, not consonants inside a stem.

@@ -25,6 +25,8 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/sʒ/g, "ʃ"],
   [/əɹ/g, "ɝ"],
   [/n([kɡ])/g, "ŋ$1"],
+  // A velar stop bridges the final nasal-fricative coda; medial tails retain their source variants.
+  [/ŋθ(?=s?$)/, "ŋkθ"],
   [/^mk/, "mək"],
   // German -rich stays hard after rhotic coalescence (emerich), while
   // a word-initial /r/ onset is the English root (rich), not this suffix.
@@ -54,13 +56,12 @@ export const POST_PROC_RULES: Array<[RegExp, string]> = [
   [/ɡuʃ/g, "ɡwɪʃ"],
   [/mək(ɝ|ɪŋ)$/, "meɪk$1"],
   [/məstɝ$/, "mæstɝ"],
-  [/ɪ(?=(?:[nlkfvmt]eɪʃən|[nk]eɪt)$)/, "ə"],
+  [/ɪ(?=(?:[nlkfvmt]eɪʃən|[nk]eɪt)$)|(?<=ɪn)ɪ(?=ti$)/, "ə"],
   [/ʌmɪnəs$/, "umənəs"],
   [/pənənt$/, "poʊnənt"],
   [/ɡɹɛɡeɪt$/, "ɡɹəɡeɪt"],
   [/tɪənɛɹi$/, "ʃənɛɹi"],
   [/ɝɹeɪʃən$/, "ɝeɪʃən"],
-  [/ɪnɪti$/, "ɪnəti"],
   [/ɛntɛɹi$/, "əntɛɹi"],
   [/aʊɹ(?=[^aeiouæɛɪɑɔʌʊ])/g, "uɹ"], // French -our- before consonant (belcourt/bournonville)
   [/æ{2,}/g, "ɑ"], // double-a → ɑ (baalbek, baasch, baatz)
@@ -93,8 +94,25 @@ const GERMANIC_EI_SUFFIX_RE =
 // vowel reduction (dispatch/mismatch/watch compounds). Frozen strict
 // flat, lenient +4/-0; native stomach/eunuch remain velar.
 const POST_LEX_RULES: PostLexRule[] = [
+  // Nasal x voices before a PRICE hiatus; weak i+yod retains its stop.
+  { when: w => /nxi[aeiouy]/.test(w), re: /ŋks(?=aɪ)/g, sub: "ŋz" },
+  { when: w => /(?:[ao]b|s)solv/.test(w), re: /s(?=[ɑɔ][lɫ]v)/g, sub: "z" },
+  { when: w => /[aeiouy]sium$/.test(w), re: /([aeiouɑɔæɛɪʊʌəɝ])s(?=[ˈˌ]?[iɪ]əm)/g, sub: "$1z" },
+  { when: w => /nsw/.test(w) && !/^unsw/.test(w), re: /(?<=n)sw(?=ɝ|əɹ)/g, sub: "s" },
+  // The voiced dental + -ern rime laxens MOUTH; agent -er and -ward stay literal.
+  { when: w => /outhern/.test(w), re: /aʊð(?=ɝn)/g, sub: "ʌð" },
+  // High vowel + -ciate and Latin single-e + cie coalesce; vowel teams retain /s/.
+  { when: w => /(?:[aeiou]ciat(?:e[ds]?|ing|ions?|ors?)|(?<![aeiou])ecie)$/.test(w), re: /([iu])s[ɪi](?=[ˈˌ]?eɪ|$)/g, sub: "$1ʃi" },
+  // Final -scle loses the velar; -scul- and initial scl- retain it.
+  { when: w => /scles?$/.test(w), re: /sk(ə[ɫl]z?)$/, sub: "s$1" },
+  // Coalesced ss+yod is one fricative; native mis+sh boundaries remain separate.
+  { when: w => /ssu/.test(w), re: /sʃ(?=u)/g, sub: "ʃ" },
+  // Greek cosm-/seism- voice their own s+m; neighboring native roots stay literal.
+  { when: w => /(?:cosm[eiou]|seism|[a-ce-ln-z]ism(?:a(?:ta)?(?:s|'s)?$|atic|ic|al)|us(?:ic(?![kh])|eum))/.test(w), re: /((?:k[ɑɔə]|koʊ|s[ae]ɪ|(?<![dm])(?<!^[ˈˌ]?)[ɪi])(?=s[ˈˌ]?m[aeiouɑɔæɛɪʊʌəɝ])|(?:ju|u)(?=s[ˈˌ]?[iɪə]))s/g, sub: "$1z" },
   { when: w => /[oy]al/.test(w), re: /ɔɪæ([lɫ])/, sub: "ɔɪə$1" },
-  { when: w => /asm(?:a|ic|atic)$/.test(w), re: /sm(?=(?:ə|ɪk|ætɪk)$)/, sub: "zm" },
+  // Greek sth+m loses the stop; native st+m boundaries retain it.
+  { when: w => /sthm/.test(w), re: /sth?(?=m)/g, sub: "s" },
+  { when: w => /as(?:th)?m(?:a|ic|atic)$/.test(w), re: /sm(?=(?:ə|ɪk|ætɪk)$)/, sub: "zm" },
   { when: w => /sday(?:s|[’']s)?$/.test(w), re: /(?<=[aeiouɑæɛɪɔʊʌəɝmnŋlɫɹbdɡvðzʒ])s(?=deɪz?$)/, sub: "z" },
   // Weak -ably/-ibly is a spelling suffix, not every IPA /bli/ tail
   // (Sibley/Shibley preserve their root vowel).
@@ -247,7 +265,7 @@ const POST_LEX_RULES: PostLexRule[] = [
   // (afterthought, freethinker — the voiced default doesn't cross a
   // compound boundary), moved here from its own entry: identical /ð/g → θ.
   {
-    when: (w) => /(?:thet|theis|thesis|thesia|thentic|theon)/.test(w) || /th(?:ought|ink|ank)/.test(w),
+    when: (w) => /(?:thet|theis|thesis|thesia|thentic|theon)/.test(w) || /th(?:ought|ink|ank|east)/.test(w),
     re: /ð/g, sub: "θ",
   },
   // -lth-/-rth- cluster devoices by default (waltham, carthage, warthen,
@@ -317,7 +335,7 @@ const POST_LEX_RULES: PostLexRule[] = [
     re: /dʒ(ɝz?|ən)$/, sub: "ɡ$1",
   },
   {
-    when: (w) => (w.endsWith("ford") && w.length > 4) || /(?:worth|world|works?)$/.test(w),
+    when: (w, _syl, finalPrimary) => (w.endsWith("ford") && w.length > 4 && !finalPrimary) || /(?:worth|world|works?)$/.test(w),
     re: /ɔɹ(d|θ|ld|ks?)$/, sub: "ɝ$1",
   },
   { when: (w) => w.endsWith("fort") && w.length > 4, re: /fɔɹt$/, sub: "fɝt" },
@@ -480,13 +498,13 @@ const POST_LEX_RULES: PostLexRule[] = [
   // Word-initial <ex> before a vowel voices to /ɡz/ when the stress
   // falls after the x (76:6 in dict — exam, exact, exist); stressed
   // ex- keeps /ks/ (execute, exercise) and so does medial x (55:24).
-  // The bound -ecute verb root retains /ks/ under retracted primary.
-  { when: (w) => /^ex[aeiou]/.test(w) && !(LATIN_E_ROOT.test(w) && w.endsWith("ute")), re: /^([aeiouɪɛəʌ]+)ks/, sub: "$1ɡz" },
+  // The bound -ecute root retains /ks/, including its -ution noun.
+  { when: (w) => /^ex[aeiou]/.test(w) && !(LATIN_E_ROOT.test(w.replace(/utions?$/, "ute")) && /ut(?:e|ions?)$/.test(w)), re: /^([aeiouɪɛəʌ]+)ks/, sub: "$1ɡz" },
   // <exh> + vowel voices on the same terms and swallows the h. The dict
   // splits it on the prefix vowel, not the spelling: a reduced prefix is
   // /ɡz/ 14:0 (exhibit ɪɡˈzɪbɪt, exhaust, exhort, exhilarate), a full /ɛ/
-  // keeps /ks/ + /h/ 8:1 (exhale ɛksˈheɪɫ, exhibition ˌɛksəˈbɪʃən).
-  { when: (w) => /^exh[aeiou]/.test(w), re: /^([ɪə])ksh/, sub: "$1ɡz" },
+  // keeps /ks/. Weak i still silences h (exhibition); exhale retains h.
+  { when: (w) => /^exh[aeiou]/.test(w), re: /^([ɪə])ksh|^(ɛks)h(?=ɪ)/, fn: (_s, reduced, full) => reduced ? reduced + "ɡz" : full },
   // -stle: the t is silent before syllabic l (23:1 in dict — castle,
   // whistle, wrestle), same deletion the ^sten$ suffix rule makes.
   { when: (w) => /stles?$/.test(w), re: /st(ə[lɫ]z?)$/, sub: "s$1" },
@@ -779,6 +797,8 @@ const INFLECTED_ITS_RE = /ə(sts|ts)$/;
 export function applyPostStress(ipa: string, word: string): string {
   let out = ipa;
   if (out.indexOf("ˈ") < 0) return out;
+  // /zm/ splits before m; voicing must preserve the stressed onset after eviction.
+  out = out.replace(/(?:ˈzm|zmˈ)(?=[aeiouɑæɛɪɔʊʌəɝ])/g, "zˈm");
   if (INFLECTED_ITS_ORTHO_RE.test(word))
     out = out.replace(INFLECTED_ITS_RE, "ɪ$1");
   out = out.replace(ONSET_MAX_1_RE, (m, v, c) =>

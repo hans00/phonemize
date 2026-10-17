@@ -563,7 +563,7 @@ function parseHomographs(content: string): HomographDict {
     // We can store this as a condition. For simplicity, we store both with their POS triggers.
     // The runtime will decide which to use.
     for (let i = 0; i < 2; i++) {
-      const forms = parts[4 + i]?.split(",");
+      const forms = parts[4 + i] ? parts[4 + i].split(",") : undefined;
       if (forms?.some(form => !["base", "past", "participle"].includes(form))) throw new Error(`Invalid verb forms: ${line}`);
       homographDict[lowerWord].push({ pronunciation: arpabetToIpa(i === 0 ? pron1 : pron2),
         pos: i === 0 ? pos : `!${pos}`, ...(forms ? { forms } : {}) });

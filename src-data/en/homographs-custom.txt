@@ -3,11 +3,13 @@
 #HEADWORD|PRONUNCIATION1|PRONUNCIATION2|POS
 #HEADWORD should have PRONUNCIATION1 only if it's part-of-speech is POS 
 #Otherwise PRONUNCIATION2 is applied
+#POS may list comma-separated associations; ! excludes every listed association.
 A|AX|EY1|!V
 #Optional final fields annotate the two existing variants' inflection forms.
+#An empty optional field leaves that variant unannotated.
 #Cambridge Dictionary read: base /ri:d/, past and past participle /red/.
 #https://dictionary.cambridge.org/dictionary/english/read
-READ|R IY1 D|R EH1 D|V|base|past,participle
+READ|R IY1 D|R EH1 D|V,N|base|past,participle
 LEAD|L EH1 D|L IY1 D|N
 TEAR|T EH1 R|T IH1 R|V
 WIND|W AY1 N D|W IH1 N D|V
@@ -15,14 +17,18 @@ BOW|B AW1|B OW1|V
 CLOSE|K L OW1 Z|K L OW1 S|V
 LIVE|L IH1 V|L AY1 V|V
 #/waʊnd/ is only ever the verb (past of wind); the noun and the verb "to wound" are /wund/.
-WOUND|W AW1 N D|W UW1 N D|V
+#Oxford wound1_2: the existing /wund/ variant is also the base verb injure.
+#https://www.oxfordlearnersdictionaries.com/us/definition/english/wound1_2
+WOUND|W AW1 N D|W UW1 N D|V||base
 PRESENT|P R IH0 Z EH1 N T|P R EH1 Z AH0 N T|V
 OBJECT|AH0 B JH EH1 K T|AA1 B JH EH0 K T|V
 PERMIT|P ER0 M IH1 T|P ER1 M IH0 T|V
 RECORD|R IH0 K AO1 R D|R EH1 K ER0 D|V
 REFUSE|R IH0 F Y UW1 Z|R EH1 F Y UW0 S|V
 CONDUCT|K AH0 N D AH1 K T|K AA1 N D AH0 K T|V
-CONTENT|K AH0 N T EH1 N T|K AA1 N T EH0 N T|V
+#Cambridge content adjective /kənˈtent/ shares the existing verb reading.
+#https://dictionary.cambridge.org/dictionary/learner-english/content
+CONTENT|K AH0 N T EH1 N T|K AA1 N T EH0 N T|V,ADJ
 CONTRACT|K AH0 N T R AE1 K T|K AA1 N T R AE0 K T|V
 PRODUCE|P R AH0 D UW1 S|P R OW1 D UW0 S|V
 PROGRESS|P R AH0 G R EH1 S|P R OW1 G R EH0 S|V
@@ -53,5 +59,12 @@ CLOSER|K L OW1 S ER0|K L OW1 S ER0|N
 #noun evidence (a learned man, the Blessed Virgin), N scheme. dogged is mostly
 #the adjective: verb only when tagged V, like crooked/jagged/ragged upstream.
 BLESSED|B L EH1 S IH0 D|B L EH1 S T|N
-LEARNED|L ER1 N IH0 D|L ER1 N D|N
+#Cambridge EDUCATED adjective: https://dictionary.cambridge.org/pronunciation/english/learned
+LEARNED|L ER1 N IH0 D|L ER1 N D|N,ADJ
 DOGGED|D AO1 G D|D AO1 G IH0 D|V
+
+#The upstream V entry drops /n/. Retain the existing vouched Misaki phones.
+#Cambridge confirms /n/ in the verb and adjective interchangeable.
+#https://dictionary.cambridge.org/pronunciation/english/interchange
+#https://dictionary.cambridge.org/pronunciation/english/interchangeable
+INTERCHANGE|IH2 N T ER0 CH EY1 N JH|IH1 N T ER0 CH EY2 N JH|V

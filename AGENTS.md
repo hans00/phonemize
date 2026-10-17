@@ -79,8 +79,8 @@ with the same arguments when the `tsx` CLI's IPC is unavailable in the sandbox.
   subsequently removed gram tables. It is not today's no-regression floor and must not be lowered.
 - Normal improvement commits require **>=1 absolute percentage point** of English-subset strict
   improvement over the previous committed baseline, with unchanged denominator and all other gates.
-  For n=6990 this needs at least 70 extra correct words. The 2026-10-16 committed baseline
-  has 5200/6990; the next ordinary batch therefore needs >=5270/6990.
+  For n=6990 this needs at least 70 extra correct words. The 2026-10-17 committed baseline
+  has 5270/6990; the next ordinary batch therefore needs >=5340/6990.
 - The completed isolated-word 70% strict /90% lenient checkpoint is unchanged. Long-term English-subset
   targets remain >=80% strict /90% lenient. Context has its own fixed baseline, not that isolated goal.
 - POS-only gains can accumulate without meeting the isolated strict commit threshold. Do not invent
@@ -109,7 +109,7 @@ with the same arguments when the `tsx` CLI's IPC is unavailable in the sandbox.
   retain before/after evidence and re-score unchanged prediction snapshots. `--update-baseline` must
   refuse regressions under an unchanged contract. A new evaluator baseline is not a runtime improvement.
 - The past `/ɹid/` expectation for “I read that book yesterday” was false and removed previously.
-  Required `/ɹɛd/` remains a pending engine regression; the context scorer already penalizes it.
+  Required `/ɹɛd/` is now covered by the auxiliary-context regression; preserve both past-time and modal controls.
 
 ## Measurement traps
 
@@ -130,11 +130,11 @@ with the same arguments when the `tsx` CLI's IPC is unavailable in the sandbox.
 
 Count all five rule modules: `g2p.ts`, `syllabify.ts`, `postlex.ts`, `morph-table.ts`, `morph-parser.ts`.
 Do not evade the trigger by relocating rule code. Count code with block-comment awareness; omit
-blank lines, `//` comments and whole block comments. Last pass: **3245** code lines (2026-10-04).
+blank lines, `//` comments and whole block comments. Last neutral pass: **3386** code lines (2026-10-17; merged prefix-s branches and shared agent-root recovery; retained cap unchanged).
 
 Run compression when any trigger fires:
 
-- `g2p.ts` exceeds 1150 code lines, or five-module total exceeds **3395** (+150 since last pass).
+- `g2p.ts` exceeds 1150 code lines, or five-module total exceeds **3395** (retained cap after the latest neutral pass).
 - A session adds >=3 `PHONEME_RULES`/`SUFFIX_RULES` entries.
 - The same grapheme is a top hit in >=2 failure clusters.
 - A new morphology handler duplicates existing base lookup/allomorph logic.

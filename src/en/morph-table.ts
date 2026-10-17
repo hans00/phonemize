@@ -19,6 +19,7 @@
 // attempt to replicate — see AGENTS.md's 2026-09-30 note for the
 // dict-wide bypass measurements that justify limiting the table to
 // exactly this stress-neutral subset).
+// -ification transfers the actual -ify root into its stressed nominal suffix.
 // -ify shares the suffix composition machinery; its callback establishes
 // the antepenult stem frame and also allows two-letter bound stems.
 export const STRESS_NEUTRAL_ROWS = [
@@ -29,6 +30,9 @@ export const STRESS_NEUTRAL_ROWS = [
   ["hood", "ˌhʊd"],
   ["ify", "əˌfaɪ"],
   ["ary", "ɛɹi"],
+  ["ous", "əs"],
+  ["ish", "ɪʃ"],
+  ["ification", "əfəˈkeɪʃən"],
   ["tual", "tʃuəl"],
   ["tuous", "tʃuəs"],
   ["ulation", "jəleɪʃən"],

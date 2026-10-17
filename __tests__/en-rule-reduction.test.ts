@@ -29,7 +29,8 @@ describe("unstressed <i> two groups from the end reduces before f/g/m/n/s/z", ()
   it.each([
     ["organization", "ˌɔɹɡənəˈzeɪʃən"],
     ["investigate", "ɪnˈvɛstəˌɡeɪt"],
-    ["acidification", "əsɪdəfəˈkeɪʃən"],
+    // Merriam-Webster acidification: ə-ˌsi-də-fə-ˈkā-shən.
+    ["acidification", "əˌsɪdəfəˈkeɪʃən"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
 

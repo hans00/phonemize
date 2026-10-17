@@ -86,6 +86,14 @@ function applyRPRules(word: string, ipa: string): string {
     out = out.replace(/^(ˈ?)su(?!ʃ)/, "$1sjuː");
   }
 
+  // Historical long-u retains yod in the due/dur/dut, new/neu and tun spelling frames.
+  if (/^(?:du[ert]|n(?:ew|eu)|tun)/.test(word)) out = out.replace(/^([ˈˌ]?[dnt])(?=[uʊ])/, "$1j");
+
+  // British sth+m retains the voiceless s after Greek cluster simplification.
+  if (/asthm/.test(word)) out = out.replace(/z(?=[ˈˌ]?m)/, "s");
+
+  // RP retains the full nucleus in the corresponding weak -tune rime.
+  if (/tune[sd]?$/.test(word)) out = out.replace(/tʃən([dz]?)$/, "tʃuːn$1");
   return out;
 }
 

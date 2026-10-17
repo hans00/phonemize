@@ -44,6 +44,9 @@ const SCALES: NumberWords = {
   1000000000000: "trillion",
 };
 
+const CARDINAL_WORDS = new Set([...Object.values(ONES), ...Object.values(TENS), ...Object.values(SCALES)]);
+export const isCardinalToken = (word: string): boolean => /^\d+$/.test(word) || CARDINAL_WORDS.has(word);
+
 function numberToWords(n: number): string {
   if (n === 0) return "zero";
   if (n < 0) return "negative " + numberToWords(-n);
