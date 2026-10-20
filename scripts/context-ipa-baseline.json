@@ -15,14 +15,14 @@
   "cells": {
     "default/auto": {
       "n": 108,
-      "strict": 86,
-      "lenient": 86,
-      "reading": 86,
-      "stress": 105,
-      "segments": 87,
-      "macro": 0.8307692307692308,
-      "balanced": 0.8732503607503607,
-      "phoneErrors": 23,
+      "strict": 87,
+      "lenient": 87,
+      "reading": 87,
+      "stress": 106,
+      "segments": 88,
+      "macro": 0.8383449883449883,
+      "balanced": 0.8777958152958153,
+      "phoneErrors": 20,
       "referencePhones": 448,
       "slices": {
         "morphology": {
@@ -47,8 +47,8 @@
         },
         "pos-stress": {
           "n": 31,
-          "strict": 29,
-          "lenient": 29
+          "strict": 30,
+          "lenient": 30
         },
         "sense": {
           "n": 21,
@@ -139,8 +139,8 @@
         },
         "record_nou": {
           "n": 10,
-          "strict": 9,
-          "lenient": 9
+          "strict": 10,
+          "lenient": 10
         },
         "record_vrb": {
           "n": 1,
@@ -641,14 +641,14 @@
   "supportedPosCells": {
     "default/auto": {
       "n": 88,
-      "strict": 82,
-      "lenient": 82,
-      "reading": 82,
-      "stress": 85,
-      "segments": 83,
-      "macro": 0.9525746980292434,
-      "balanced": 0.958500417710944,
-      "phoneErrors": 7,
+      "strict": 83,
+      "lenient": 83,
+      "reading": 83,
+      "stress": 86,
+      "segments": 84,
+      "macro": 0.9608391608391608,
+      "balanced": 0.9637635756056809,
+      "phoneErrors": 4,
       "referencePhones": 398,
       "slices": {
         "morphology": {
@@ -673,8 +673,8 @@
         },
         "pos-stress": {
           "n": 31,
-          "strict": 29,
-          "lenient": 29
+          "strict": 30,
+          "lenient": 30
         },
         "sense": {
           "n": 1,
@@ -750,8 +750,8 @@
         },
         "record_nou": {
           "n": 10,
-          "strict": 9,
-          "lenient": 9
+          "strict": 10,
+          "lenient": 10
         },
         "record_vrb": {
           "n": 1,
@@ -1283,7 +1283,7 @@
       "ˈɹɛkɝd",
       "ˈɹɛkɝd",
       "ˈɹɛkɝd",
-      "ɹɪˈkɔɹd",
+      "ˈɹɛkɝd",
       "ˈɹɛkɝd",
       "ˈɹɛkɝd",
       "ˈɹɛkɝd",

@@ -366,7 +366,7 @@ const primaryCount = (s: string): number => (s.match(/ˈ/g) ?? []).length;
 // rule keeps it but the dict dropped it, don't memorize the corrupt dict
 // value; the rule's /nt/ form is the better pronunciation.
 const ntDropped = (c: Cand): boolean =>
-  c.word.includes("nt") &&
+  /nt(?!h)/.test(c.word) &&
   norm(c.predIpa).includes("nt") &&
   !norm(c.dictIpa).includes("nt") &&
   c.dictIpa.includes("n");
@@ -650,6 +650,44 @@ for (const [word, dictIpa] of flipSet) {
 }
 console.log(`Phase 1 (customDict) resolved: ${resolvedByPhase1.size}/${flipSet.size}`);
 
+// Phase 1b (prefix + inflection): an outer privative prefix hides the
+// inflection stem's first letters from the shared-prefix buckets above
+// (un-herald-ed → herald). Derive only regular suffix candidates, then let
+// the real runtime probe establish whether that stem actually fixes the
+// flip. This is dependency attribution, not a spelling-to-pronunciation
+// rule; ambiguous silent-e clusters remain excluded below.
+const resolvedByPrefixedInflection = new Set<string>();
+const residualAfterPrefixes: string[] = [];
+for (const word of residual) {
+  const match = /^(?:un|dis|non)([a-z]{4,})ed$/.exec(word);
+  if (!match) {
+    residualAfterPrefixes.push(word);
+    continue;
+  }
+  const inflected = match[1] + "ed";
+  const stem = inflected.slice(0, -2);
+  const roots = new Set<string>([stem]);
+  if (/([bcdfgklmnprst])\1$/.test(stem)) roots.add(stem.slice(0, -1));
+  if (/[^aeiouy]i$/.test(stem)) roots.add(stem.slice(0, -1) + "y");
+  if (/[bcdfghjklmnpqrstvwxz]$/.test(stem)) roots.add(stem + "e");
+  let found = false;
+  for (const root of roots) {
+    if (!evictedMap.has(root) || AMBIGUOUS_CLUSTER_E.test(root)) continue;
+    const probe = new AttribCtor({ disableDict: true });
+    probe.addPronunciation(root, evictedMap.get(root)!);
+    if (isExactMatch(probe.predict(word, "en"), flipSet.get(word)!)) {
+      attribute(root, word);
+      found = true;
+      break;
+    }
+  }
+  if (found) resolvedByPrefixedInflection.add(word);
+  else residualAfterPrefixes.push(word);
+}
+if (resolvedByPrefixedInflection.size > 0) {
+  console.log(`Phase 1b (prefixed inflection stems) resolved: ${resolvedByPrefixedInflection.size}/${residual.length}`);
+}
+
 // Phase 2 (file-based, for tryDecomposition): the residual after Phase 1
 // is expected small — `tryDecomposition` only applies to 8+ letter
 // words and can require several restored chunks together. The legacy lexical
@@ -686,7 +724,7 @@ function localTryDecomposition(
 }
 const chunkExists = (c: string): boolean => Object.prototype.hasOwnProperty.call(shippedMap, c) || evictedMap.has(c);
 const resolvedByPhase2 = new Set<string>();
-for (const word of residual) {
+for (const word of residualAfterPrefixes) {
   const dictIpa = flipSet.get(word)!;
   const decomp = localTryDecomposition(word, chunkExists);
   if (!decomp || decomp.length < 2) continue;
@@ -708,10 +746,10 @@ for (const word of residual) {
     resolvedByPhase2.add(word);
   }
 }
-if (residual.length > 0) {
-  console.log(`Phase 2 (tryDecomposition, file-based) resolved: ${resolvedByPhase2.size}/${residual.length}`);
+if (residualAfterPrefixes.length > 0) {
+  console.log(`Phase 2 (tryDecomposition, file-based) resolved: ${resolvedByPhase2.size}/${residualAfterPrefixes.length}`);
 }
-const stillUnresolved = residual.filter((w) => !resolvedByPhase2.has(w));
+const stillUnresolved = residualAfterPrefixes.filter((w) => !resolvedByPhase2.has(w));
 if (stillUnresolved.length > 0) {
   console.log(
     `  unresolved (flip cause not found by either phase, not re-pinned): ${stillUnresolved.slice(0, 20).join(", ")}` +

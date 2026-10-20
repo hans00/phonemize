@@ -688,3 +688,25 @@ previous contents are preserved in [the historical archive](AGENTS-history-2026-
 The archive's obsolete miner instructions are superseded: `build-pipeline.ts`
 does not run stress/vowel gram miners. No production rules or data were changed
 by this audit. Reproduction logs are under `/tmp/phonemize-evaluation-audit/`.
+
+
+## 13. Rerelease reference check (2026-10-17)
+
+The fixed WikipediaHomographData wordids prescribe noun primary stress on the
+first syllable and verb primary stress on the last. A nominal-prefix candidate
+matched 34 additional TRAIN cases with zero TRAIN losses, but was rejected:
+[Cambridge](https://dictionary.cambridge.org/dictionary/english/rerelease)
+explicitly gives /ˌriː.rɪˈliːs/ for both noun and verb;
+[Collins](https://www.collinsdictionary.com/us/dictionary/english/rerelease) and
+[Random House](https://www.dictionary.com/browse/rerelease) also support final
+stress for both. The existing noun output is therefore dictionary-supported.
+
+The legacy metric rejects this supported noun variant. Its failed cases must
+not be described as established pronunciation errors, and a score increase
+obtained only by imposing the uncorroborated contrast is not an accepted gain.
+No gold labels, cohort, scorer, baselines or runtime were changed by this check.
+The legacy gate remains intact; any later reference revision needs a separate
+version and unchanged-prediction re-scoring, not a reset of release progress.
+Local evidence: /tmp/phonemize-next-release/after-c2dd9aa-nominal-reiteration-probe.
+
+套件驗證：open-i 批次已從全新打包的 81 個安全成員解壓，CJS／ESM 的 main、core、English 入口在 default／rules 路徑全部通過；包含大小寫、詞根衍生、句中讀音及 issue #28 控制。

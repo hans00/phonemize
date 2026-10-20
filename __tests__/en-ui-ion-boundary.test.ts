@@ -21,8 +21,8 @@ describe.each([false, true])("ui before -ition (disableDict=%s)", disableDict =>
   ])("preserves the unaffected frame in %s", (word, ipa) => {
     expect(engine.predict(word)).toBe(ipa);
   });
-  it("preserves each route’s existing acquisition vowel", () => {
-    expect(engine.predict("acquisition")).toBe(disableDict ? "ˌækwɪˈzɪʃən" : "ˌækwəˈzɪʃən");
+  it("uses the standard weak acquisition vowel on both routes", () => {
+    expect(engine.predict("acquisition")).toBe("ˌækwəˈzɪʃən");
   });
   it("preserves supplied roots and complete noun/adjective/verb context", () => {
     const custom = new EnglishG2P({ disableDict });

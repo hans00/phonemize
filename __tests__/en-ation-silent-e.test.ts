@@ -21,6 +21,21 @@ describe.each([false, true])("Supplied silent-e roots before -ation (disableDict
     expect(engine.predict(word)).toBe(ipa);
   });
 
+  it("carries a weak-vowel -mit root's rules reading into -mitation", () => {
+    expect(engine.predict("limitation")).toBe("ˌɫɪmɪˈteɪʃən");
+    expect(engine.predict("imitation")).toBe("ˌɪməˈteɪʃən");
+    expect(engine.predict("gravitation")).toBe("ˌɡɹævɪˈteɪʃən");
+  });
+
+  it("keeps the root and derived noun distinct in connected text", () => {
+    const tokens = api.phonemize("They limit the imitation and discuss the limitation.", {
+      language: "en-US", returnArray: true,
+    });
+    expect(tokens.find(t => t.word === "limit")?.phoneme).toBe(disableDict ? "ˈɫɪmɪt" : "ˈɫɪmət");
+    expect(tokens.find(t => t.word === "imitation")?.phoneme).toBe("ˌɪməˈteɪʃən");
+    expect(tokens.find(t => t.word === "limitation")?.phoneme).toBe("ˌɫɪmɪˈteɪʃən");
+  });
+
   it("preserves the stem, verb and participial adjective in a full sentence", () => {
     const tokens = api.phonemize("We compile the compilation from compiled records.", {
       language: "en-US", returnArray: true,

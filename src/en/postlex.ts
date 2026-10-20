@@ -1,3 +1,4 @@
+import { isAuxiliaryOrPossessiveDeterminer, isFunctionWord } from "./pos-tagger";
 import { addInitialSecondary } from "./phonotactics";
 import { EN_PREFIXES, LATIN_E_ROOT, SHORT_ANCY_ROOT, PRICE_HIATUS_ARY_ROOT } from "./syllabify";
 
@@ -94,6 +95,11 @@ const GERMANIC_EI_SUFFIX_RE =
 // vowel reduction (dispatch/mismatch/watch compounds). Frozen strict
 // flat, lenient +4/-0; native stomach/eunuch remain velar.
 const POST_LEX_RULES: PostLexRule[] = [
+  // Only the grammatical root's first dental voices after KIT; longer lexical tails remain separate.
+  { when: w => isFunctionWord(w) || isFunctionWord(/^([a-z]+th)(?=[aeiouy]+[^aeiouy]*$)/.exec(w)?.[1] ?? ""), re: /^([^θð]*ɪ)θ/, sub: "$1ð" },
+  // Auxiliary/possessive s voices after voiced phones; lexical and demonstrative codas stay literal.
+  { when: w => w.endsWith("s") && isAuxiliaryOrPossessiveDeterminer(w), re: /(?<=[aeiouɑɔæɛɪʊʌəɝbdɡɹlɫmnŋvðʒ])s$/, sub: "z" },
+  { when: w => /(?:^|[aeiouy])log(?:ue)?s?$/.test(w), re: /([lɫ])ɑɡ(?=[sz]?$)/g, sub: "$1ɔɡ" },
   // Nasal x voices before a PRICE hiatus; weak i+yod retains its stop.
   { when: w => /nxi[aeiouy]/.test(w), re: /ŋks(?=aɪ)/g, sub: "ŋz" },
   { when: w => /(?:[ao]b|s)solv/.test(w), re: /s(?=[ɑɔ][lɫ]v)/g, sub: "z" },
@@ -233,6 +239,11 @@ const POST_LEX_RULES: PostLexRule[] = [
   // -ion (non-tion/-sion): unstressed -i- before -ən should be /i/ not /ɪ/ (carrion/clarion/ganglion)
   { when: (w) => /ion$/.test(w) && !/(?:tion|sion)$/.test(w), re: /ɪən$/, sub: "iən" },
   { when: (w) => !w.endsWith("cission"), re: /sɪʃən$/, sub: "zɪʃən" },
+  // Cambridge US acquisition: weak <qui> is /kwə/ in the -acquisition morpheme.
+  { when: (w) => w.includes("acquisition"), re: /kwɪ(?=zɪʃ)/, sub: "kwə" },
+  // Weak /ɪ/ before final /meɪt/ reduces to schwa in the -imate frame
+  // (animate, estimate); a vowel-team /aɪ/ in climate is not this sequence.
+  { when: (w) => w.endsWith("imate"), re: /([nt])ɪmeɪt$/, sub: "$1əmeɪt" },
   { when: (w) => w.length >= 9, re: /ɪɹeɪʃən$/, sub: "ɝeɪʃən" },
   { when: (w) => w.endsWith("iment"), re: /ɪmənt$/, sub: "əmənt" },
   // A short C+ancy root keeps its stressed TRAP (fancy/chancy);
@@ -285,7 +296,7 @@ const POST_LEX_RULES: PostLexRule[] = [
   // maximal-onset syllabification leaves the r as its own /ɹ/ rather than
   // merging into /ɝ/ (news+worthy → nuz-wɔɹði, not wɝði).
   {
-    when: (w) => !/[lr]th(?:ers?|erly|ern|ests?|ings?|e|ey)$|orthy$/.test(w),
+    when: (w) => !/[lr]th(?:ers?|erly|ern|ests?|ings?|e|ey)$|orthy$|though$/.test(w),
     re: /([lɹ])ð/g, sub: "$1θ",
   },
   { when: (w) => /ach(?:en|er)$/.test(w), re: /tʃ([ɛəɪ])/, sub: "k$1" },
@@ -413,8 +424,7 @@ const POST_LEX_RULES: PostLexRule[] = [
     re: /[æɑ]tʃ([ɛəɪi]n|n)/, fn: (m, s) => m[0] + "k" + s,
   },
   {
-    when: (w) =>
-      /^arch[aeiou]/.test(w) && !w.startsWith("archen") && !/^arch(?:er|ery|es|ie|ies|ed)$/.test(w),
+    when: (w) => /^arch[aeiou]/.test(w) && !w.startsWith("archen") && !/^arch(?:er|ery|es|ie|ies|ed)$/.test(w),
     re: /^ɑɹtʃ/, sub: "ɑɹk",
   },
   { when: (w) => w.endsWith("chter") && w.length >= 6, re: /tʃtɝ$/, sub: "ktɝ" },
@@ -431,8 +441,7 @@ const POST_LEX_RULES: PostLexRule[] = [
   },
   { when: (w) => w.endsWith("lich") && w.length >= 6 && !/[auo]lich$/.test(w), re: /tʃ$/, sub: "k" },
   {
-    when: (w) =>
-      /(?:achel|ichel|echel)$/.test(w) && w.length >= 6 && !/(?:rachel|michael|machel)$/.test(w),
+    when: (w) => /(?:achel|ichel|echel)$/.test(w) && w.length >= 6 && !/(?:rachel|michael|machel)$/.test(w),
     re: /tʃ([əɛɪ][lɫ]?)$/, sub: "k$1",
   },
   {
@@ -486,13 +495,13 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: w => !/^eng[eiyql]/.test(w), re: /n([kɡ])/g, sub: "ŋ$1" },
 
   // — Consonant clusters —
-  // Nasal assimilation stops at a prefix boundary: in-/en-/un-/conc-
+  // Nasal assimilation stops at a prefix boundary: in-/en-/un-/non-/conc-
   // before <c/k/q> keeps /n/ (265:26 in dict — include, uncle is the
   // rare monomorphemic exception). con+qu (conquer, conquest) assimilates.
   // Native en- + hard g before a back vowel/r keeps the same boundary;
   // front-vowel hard-g names and the ambiguous gq/gl families stay unchanged.
   {
-    when: (w) => w.length >= 5 && (/^(?:in|en|un)[ckq]|^conc/.test(w) || /^eng(?:[aou]|r)/.test(w)),
+    when: (w) => w.length >= 5 && (/^(?:(?:in|en|un)[ckq]|conc|non)/.test(w) || /^eng(?:[aou]|r)/.test(w)),
     re: /^(.{1,3}?)ŋ([kɡ])/, sub: "$1n$2",
   },
   // Word-initial <ex> before a vowel voices to /ɡz/ when the stress
@@ -614,8 +623,7 @@ export function hiatusMarkOffset(tail: string): number {
   if (i >= tail.length) return 0;
   const hasOnset = i > 0;
   i += KNOWN_DIPHTHONGS.has(tail.slice(i, i + 2)) ? 2 : 1;
-  if (i >= tail.length || !IPA_V.includes(tail[i])) return 0;
-  if (hasOnset && tail.slice(i, i + 2) === "oʊ") return 0;
+  if (i >= tail.length || !IPA_V.includes(tail[i]) || hasOnset && tail.slice(i, i + 2) === "oʊ") return 0;
   return i;
 }
 
@@ -686,8 +694,7 @@ function addSecondary(ipa: string, suffixRe: RegExp): string {
     onset = m.index;
   if (onset > 0 && (ipa[onset - 1] === "ˌ" || ipa[onset - 1] === "ˈ")) return ipa;
   const pi = ipa.indexOf("ˈ");
-  if (pi < 0 || pi > onset) return ipa;
-  if (nucleiBetween(ipa, pi, onset) < 2) return ipa;
+  if (pi < 0 || pi > onset || nucleiBetween(ipa, pi, onset) < 2) return ipa;
   return ipa.slice(0, onset) + "ˌ" + ipa.slice(onset);
 }
 
@@ -795,7 +802,8 @@ const INFLECTED_ITS_RE = /ə(sts|ts)$/;
  * fix the inflected -its/-ists vowel.
  */
 export function applyPostStress(ipa: string, word: string): string {
-  let out = ipa;
+  // Negative-prefix morphology can weaken /-ed/ after /t/; the joined /oʊə/ hiatus also hides the initial beat in inflected coalesc-/coalition forms.
+  let out = ipa; if (/^(?:un|dis|non).+ted$/.test(word)) out = out.replace(/təd$/, "tɪd"); if (/^(?:coalesc(?:ed|ence|ing)|coalitions)$/.test(word) && !out.includes("ˌ")) out = "ˌ" + out;
   if (out.indexOf("ˈ") < 0) return out;
   // /zm/ splits before m; voicing must preserve the stressed onset after eviction.
   out = out.replace(/(?:ˈzm|zmˈ)(?=[aeiouɑæɛɪɔʊʌəɝ])/g, "zˈm");

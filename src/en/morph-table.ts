@@ -23,12 +23,9 @@
 // -ify shares the suffix composition machinery; its callback establishes
 // the antepenult stem frame and also allows two-letter bound stems.
 export const STRESS_NEUTRAL_ROWS = [
-  ["ie", "i"],
-  ["let", "lət"],
-  ["like", "ˌlaɪk"],
-  ["wise", "ˌwaɪz"],
-  ["hood", "ˌhʊd"],
-  ["ify", "əˌfaɪ"],
+  ["ie", "i"], ["let", "lət"],
+  ["like", "ˌlaɪk"], ["wise", "ˌwaɪz"],
+  ["hood", "ˌhʊd"], ["ify", "əˌfaɪ"],
   ["ary", "ɛɹi"],
   ["ous", "əs"],
   ["ish", "ɪʃ"],

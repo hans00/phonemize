@@ -323,6 +323,70 @@ if (argv.includes("--structural")) {
   }
 }
 
+// Expanded but still interpretable interactions for a second family-CV
+// screen. These let a spelling/rime context differ by stress or adjacent
+// phoneme slot without introducing whole-word features.
+if (argv.includes("--expanded")) {
+  if (!argv.includes("--structural")) throw new Error("--expanded requires --structural");
+  const bases: Array<[string, (c: TemplateCtx) => string]> = [
+    ["left2", c => c.left2], ["right2", c => c.right2],
+    ["suffixClass", c => c.suffixClass], ["slotFromEnd", c => c.slotFromEnd],
+    ["prefix", c => c.prefix], ["syllableCount", c => c.syllableCount],
+    ["heavy", c => c.heavy],
+  ];
+  const contexts: Array<[string, (c: TemplateCtx) => string]> = [
+    ["stressStatus", c => c.stressStatus], ["leftClass", c => c.leftClass],
+    ["rightClass", c => c.rightClass], ["position", c => c.position],
+  ];
+  for (const [baseName, baseValue] of bases) {
+    for (const [contextName, contextValue] of contexts) {
+      TEMPLATES.push({
+        name: `${baseName}+${contextName}`,
+        complexity: 4,
+        value: c => `${baseValue(c)},${contextValue(c)}`,
+      });
+    }
+  }
+}
+
+// Experimental three-way contexts: a structural frame conditioned by two
+// independent local/stress cues, or two structural cues conditioned by one
+// local/stress cue. Kept behind a research-only flag; family-held-out replay
+// remains the adoption screen, not a runtime rule generator.
+if (argv.includes("--triples")) {
+  if (!argv.includes("--structural")) throw new Error("--triples requires --structural");
+  const bases: Array<[string, (c: TemplateCtx) => string]> = [
+    ["left2", c => c.left2], ["right2", c => c.right2],
+    ["suffixClass", c => c.suffixClass], ["slotFromEnd", c => c.slotFromEnd],
+    ["prefix", c => c.prefix], ["syllableCount", c => c.syllableCount],
+    ["heavy", c => c.heavy],
+  ];
+  const cues: Array<[string, (c: TemplateCtx) => string]> = [
+    ["stressStatus", c => c.stressStatus], ["leftClass", c => c.leftClass],
+    ["rightClass", c => c.rightClass], ["position", c => c.position],
+  ];
+  for (const [baseName, baseValue] of bases) {
+    for (let i = 0; i < cues.length; i++) for (let j = i + 1; j < cues.length; j++) {
+      const [firstName, firstValue] = cues[i], [secondName, secondValue] = cues[j];
+      TEMPLATES.push({
+        name: `${baseName}+${firstName}+${secondName}`,
+        complexity: 6,
+        value: c => `${baseValue(c)},${firstValue(c)},${secondValue(c)}`,
+      });
+    }
+  }
+  for (let i = 0; i < bases.length; i++) for (let j = i + 1; j < bases.length; j++) {
+    const [firstName, firstValue] = bases[i], [secondName, secondValue] = bases[j];
+    for (const [cueName, cueValue] of cues) {
+      TEMPLATES.push({
+        name: `${firstName}+${secondName}+${cueName}`,
+        complexity: 6,
+        value: c => `${firstValue(c)},${secondValue(c)},${cueValue(c)}`,
+      });
+    }
+  }
+}
+
 // ─────────────────────── per-word record ────────────────────────────────
 interface WordRec {
   word: string;

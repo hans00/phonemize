@@ -24,6 +24,17 @@ describe.each([false, true])("Greek theta and loan plurals (disableDict=%s)", di
   test.each(["this", "his", "has", "yes"])("%s is not a false vowel-stem plural", word => {
     expect(g2p.predict(word, "en")).not.toMatch(/(?:aɪ|eɪ|i)z$/);
   });
+  test("yes keeps its voiceless final sibilant instead of borrowing the ye stem", () => {
+    expect(g2p.predict("yes", "en")).toBe("ˈjɛs");
+  });
+  test.each([["this", "ˈðɪs"], ["his", "ˈhɪz"], ["has", "ˈhæz"], ["gas", "ˈɡæs"], ["photos", "ˈfoʊtoʊz"], ["videos", "ˈvɪdioʊz"]])(
+    "%s retains its independent final sibilant", (word, ipa) => {
+      expect(g2p.predict(word, "en")).toBe(ipa);
+    },
+  );
+  test.each([["types", "ˈtaɪps"], ["bytes", "ˈbaɪts"]])("%s keeps its silent-e stem", (word, ipa) => {
+    expect(g2p.predict(word, "en")).toBe(ipa);
+  });
 });
 
 test.each(["therapy", "therapeutic", "theoretical", "skis"])("%s is preserved through the public API", word => {

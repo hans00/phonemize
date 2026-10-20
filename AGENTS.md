@@ -130,7 +130,7 @@ with the same arguments when the `tsx` CLI's IPC is unavailable in the sandbox.
 
 Count all five rule modules: `g2p.ts`, `syllabify.ts`, `postlex.ts`, `morph-table.ts`, `morph-parser.ts`.
 Do not evade the trigger by relocating rule code. Count code with block-comment awareness; omit
-blank lines, `//` comments and whole block comments. Last neutral pass: **3386** code lines (2026-10-17; merged prefix-s branches and shared agent-root recovery; retained cap unchanged).
+blank lines, `//` comments and whole block comments. Last neutral pass: **3395** code lines (2026-10-20; grouped adjacent stress-neutral morphology rows and combined a declaration after a byte-identical 1,296,352-row prediction snapshot; retained cap unchanged).
 
 Run compression when any trigger fires:
 

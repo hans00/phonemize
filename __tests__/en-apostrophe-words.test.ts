@@ -33,6 +33,39 @@ describe("Issue #28: lexical apostrophes", () => {
     expect(processor.predict("O’Reily's", "en-US")).toBe(processor.predict("O'Reily", "en-US") + "z");
   });
 
+  it.each([false, true])("composes an unattested O' surname independent of casing (rules=%s)", disableDict => {
+    const processor = new EnglishG2P({ disableDict });
+    const name = processor.predict("O'Reily", "en-US")!;
+    for (const spelling of ["O'Reily", "o'reily", "O’Reily", "o’reily"]) {
+      expect(processor.predict(spelling, "en-US")).toBe(name);
+    }
+    for (const spelling of ["O'Reily's", "o'reily's", "O’Reily’s", "o’reily’s"]) {
+      expect(processor.predict(spelling, "en-US")).toBe(`${name}z`);
+    }
+    expect(processor.trace("O'Reily", "en-US").path).toBe("rules");
+    expect(processor.trace("o'reily", "en-US").path).toBe("rules");
+    expect(processor.predict("O'Clair", "en-US")).toBe(processor.predict("o'clair", "en-US"));
+    // The capitalized contraction must not be mistaken for the Irish prefix.
+    expect(processor.predict("O'Clock", "en-US")).toBe(processor.predict("o'clock", "en-US"));
+  });
+
+  it("preserves O' names and possessives as sentence tokens", () => {
+    const tokens = phonemizer.phonemize("We saw O'Reily's store beside O'Reilly's store.", {
+      language: "en-US", returnArray: true,
+    });
+    expect(tokens.find(token => token.word === "O'Reily's")?.phoneme).toBe("oʊˈɹiɫiz");
+    expect(tokens.find(token => token.word === "O'Reilly's")?.phoneme).toBe("oʊˈɹaɪɫiz");
+  });
+
+  it("keeps issue #28 O'Brien and O'Reilly Media correct in sentences", () => {
+    const tokens = phonemizer.phonemize("I met O'Brien yesterday. O'Reilly Media sells technical books.", {
+      language: "en-US", returnArray: true,
+    });
+    expect(tokens.find(token => token.word === "O'Brien")?.phoneme).toBe("oʊˈbɹaɪɪn");
+    expect(tokens.find(token => token.word === "O'Reilly")?.phoneme).toBe("oʊˈɹaɪɫi");
+    expect(tokens.find(token => token.word === "Media")?.phoneme).toBe("ˈmidiə");
+  });
+
   it.each([
     ["I'm", "ˈaɪm"], ["we'll", "ˈwil"], ["you've", "ˈjuv"],
     ["island's", "ˈaɪɫəndz"], ["dogs'", "ˈdɑɡz"],
