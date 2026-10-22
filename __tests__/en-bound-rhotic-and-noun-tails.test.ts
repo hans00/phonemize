@@ -42,7 +42,7 @@ describe.each([false, true])("bound rhotic and noun tails (disableDict=%s)", dis
 
 test("a silent trace step does not displace the following vowel's trace", () => {
   const trace = new EnglishG2P({ disableDict: true }).trace("currency");
-  expect(trace.steps.find(step => step.rule === "phoneme:^rhotic-ence-double-r")?.phoneme).toBe("");
+  expect(trace.steps.find(step => step.rule === "phoneme:^rhotic-ur-double-r")?.phoneme).toBe("");
   expect(trace.steps.find(step => step.grapheme === "e")?.phoneme).toBe("ə");
   expect(trace.steps.find(step => step.grapheme === "n")?.phoneme).toBe("n");
 });

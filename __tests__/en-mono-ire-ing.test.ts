@@ -19,6 +19,9 @@ describe.each([false, true])("rule-derived unprefixed -ire before -ing (disableD
   it("retains the unrelated agent's rhotic nucleus", () => {
     expect(engine.predict("lawyering")).toMatch(/ɝɪŋ$/);
   });
+  it("keeps the stem rhotic separate from the agent suffix in acquirer", () => {
+    expect(engine.predict("acquirer")).toBe("əˈkwaɪɹɝ");
+  });
   it.each(["hire", "hir", "wire", "wir"])("preserves caller-owned %s", root => {
     const custom = new EnglishG2P({ disableDict });
     const access = custom as unknown as { dictionary: Record<string, string> };

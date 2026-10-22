@@ -5,20 +5,28 @@ common-word populations. Passing the previous 70% checkpoint does not satisfy
 this release target. References, filters, normalization and denominators stay
 fixed; no runtime model, name lexicon or whole-word G2P/POS exceptions are added.
 
-## Release requirements and latest validated working tree
+## Release requirements and latest measured working tree (2026-10-22; rebuilt)
 
 | Metric | Release requirement | Current |
 |---|---:|---:|
-| English common rules strict | >=6292/6990 | 5339/6990 (76.38%) |
-| Common top-5000 slice rules strict | >=3256/3617 | 2877/3617 (79.54%) |
-| Public CMU default segments | >=4739/5000 | 4750/5000 (95.00%); rules 4137/5000 (legacy 90% floor still fails) |
-| Context default/automatic strict | >=87/108 | 87/108 |
-| Homograph eval | >=1454/1615 | 1454/1615 |
+| English common rules strict | >=6292/6990 | 5459/6990 (78.10%) |
+| Common top-5000 slice rules strict | >=3256/3617 | 2947/3617 (81.48%) |
+| Public CMU default segments | >=4739/5000 | 4745/5000 (94.90%); rules 4179/5000 (legacy 90% floor still fails) |
+| Context default/automatic strict | >=87/108 | 88/108 |
+| Homograph eval | >=1454/1615 | 1455/1615 |
 | Issue #28 apostrophe-name handling | Class regression and packaged verification | Passed |
 
-Remaining strict gaps: 953 common words and 379 top-slice words. The context
+Remaining strict gaps: 833 common words and 309 top-slice words. The context
 and homograph thresholds are now met. These counts are release gaps, not a
-claim that independent isolated fixes will transfer to full sentences.
+claim that independent isolated fixes will transfer to full sentences. The
+latest behavior changes include the `-rry`/`-riage`, `-cialty`, Greek
+`-terion/-teria`, rhotic `-urrent/-urrant`, weak initial `celebr-`, temporal
+`now` rime, and doubled-z inflection classes below; their
+snapshots, rebuilds, metric gates and paired controls passed. The `current`
+dictionary row was separately corrected to Cambridge US /ˈkɝː.ənt/; gains
+from that source/reference correction are not counted as rule gains.
+The final release gate still requires a fresh dictionary rebuild and complete
+acceptance run after the next adopted behavior change.
 
 ## Adopted accumulated batch (2026-10-16)
 
@@ -2732,9 +2740,14 @@ was rendered with the wrong stress and vowel. The current pinned dictionary give
 `Brien` /ˈbɹaɪɪn/ and `O'Brien` /oʊˈbɹaɪɪn/; a sentence-level regression checks
 that the full name remains one token and keeps that reading. `O'Reilly Media`
 is covered as the user's related brand example: `O'Reilly` keeps its separately
-attested /oʊˈɹaɪɫi/ reading and `Media` remains a separate token. The generic O'
-fallback composes names from their root only when the complete name is absent;
-no O'Brien or O'Reilly pronunciation mapping was added.
+attested /oʊˈɹaɪɫi/ reading, which agrees with Cambridge US's
+[/oʊˈraɪ.li/ transcription](https://dictionary.cambridge.org/us/pronunciation/english/o-reilly),
+and `Media` remains a separate token. `O'Reily` was an
+illustrative similar spelling, not the publisher's name or an alternative
+brand spelling. The generic O' fallback composes names from their root only
+when the complete name is absent; no O'Brien or O'Reilly pronunciation
+mapping was added.
+
 
 Issue: https://github.com/hans00/phonemize/issues/28#issuecomment-6155246927
 
@@ -3192,6 +3205,28 @@ strict-table disagreements; changing them would lower independently verified
 US pronunciation quality. The route report and win/loss rows are in
 `/tmp/phonemize-route-diagnosis/report.json`; the full postlex ablation is in
 `/tmp/phonemize-postlex-diagnosis/results.json`.
+
+A second suffix-level replay tested the apparent final `-ity` vowel class:
+rewrite only final rule-path `/əti/` to `/ɪti/` for spellings ending in
+`-ity`. On the exact evaluator populations (105,065 full, 6,990 common,
+3,617 top-5,000), it produced 86 strict wins against 165 losses overall,
+13/45 in the common cohort, and 7/24 in top-5,000; the class is rejected.
+A parallel `-ical` replay changed `/ɪkəl/` to `/əkəl/`: it produced 28/89
+full-dictionary wins/losses, 10/27 common, and 6/13 top-5,000. That suffix
+also contains mixed readings and is rejected. No source or runtime change was
+made. Frozen predictions for both replays are in
+`/tmp/phonemize-aging-class-20261022/`.
+
+The parity-population difference is now identified: compared with the frozen
+100,806-word 2026-10-21 dump, today's 100,804-word population omits
+`bennetts`, `evened`, and `evens`, while adding `acquirers`. The former three
+still receive the same pronunciations through the current default pipeline
+(`/ˈbɛnɪts/`, `/ˈivənd/`, `/ˈivənz/`); `acquirers` is present after the
+independently verified `acquirer` reference correction. This is a population
+membership change, so the current raw parity score cannot qualify against the
+unchanged baseline denominator. The word-level comparison is reproducible with
+`/tmp/phonemize-goal-20261021-parity.tsv` and
+`/tmp/phonemize-final-parity.tsv`.
 
 The user clarified that `O'Reilly Media` is an example of a real brand, not a
 misspelling to normalize. Keep its attested brand reading through ordinary
@@ -5018,6 +5053,49 @@ into a regression even though the public `office` output is already correct.
 No runtime rule or evaluation reference was changed; see
 `/tmp/phonemize-next-release/office-family-current.log` for the route trace.
 
+A follow-up tested mapping the weak final `fi` in `-fice` from /ə/ to /ɪ/.
+It fixed rules-only `office`, but also changed the already-wrong rules readings
+of `suffice` and `sacrifice`; the suffix stress assignment needs a broader
+class diagnosis before those can serve as unaffected controls. Cambridge
+supports /ˈɑː.fɪs/ for [office](https://dictionary.cambridge.org/us/pronunciation/english/office),
+and [Cambridge grammar](https://dictionary.cambridge.org/us/grammar/british-grammar/possessives)
+states possessive `’s` follows the same pronunciation rule as plural endings,
+yielding /ɪz/ after final /s/. Correcting the CMU `office's`
+reference alone exposed the unresolved rules error and lowered full-dictionary
+strict from 62,254 to 62,253. The source and generated dictionary were restored
+to their frozen hashes; no pronunciation rule, reference, or baseline change
+was retained. Candidate replay: `/tmp/phonemize-fice-scan.cjs`.
+
+### Common `-age` failures are CMU-vs-Cambridge vowel disagreements
+
+The current common strict mismatch report has 27 non-foreign `-age` failures,
+many where rules predict final /ɪdʒ/ and CMU expects /ədʒ/ (damage, cottage,
+luggage, village). Cambridge US explicitly gives /ɪ/ in [damage], [cottage],
+[luggage] and [village], so replacing the spelling-class output with schwa
+would reduce pronunciation correctness to chase the pinned reference. This
+cluster is not an adoption candidate unless the reference contract is
+independently re-versioned; no source rule or score was changed.
+
+[damage]: https://dictionary.cambridge.org/us/pronunciation/english/damage
+[cottage]: https://dictionary.cambridge.org/us/pronunciation/english/cottage
+[luggage]: https://dictionary.cambridge.org/us/pronunciation/english/luggage
+[village]: https://dictionary.cambridge.org/us/pronunciation/english/village
+
+A source-overlay trial then added Cambridge US readings for those four roots,
+plus `message`, `package`, and `passage`. The rebuilt tables changed 93
+snapshot rows, mostly derived forms. Common strict moved 5,373/6,990 to
+5,375/6,989, with five derived-word regressions; `cottages` was trimmed after
+the root correction, so the fixed denominator was lost. Runtime parity also
+fell 94,778/100,805 → 94,777/100,804, and public CMU rules fell 4,168→4,166.
+The seven overlays were removed and the full build restored the prior source,
+dictionary, and exception hashes. This remains source evidence, not an adopted
+rule gain; any future reference revision must preserve the fixed cohort and
+pass every no-regression gate.
+
+[message]: https://dictionary.cambridge.org/us/pronunciation/english/message
+[package]: https://dictionary.cambridge.org/us/pronunciation/english/package
+[passage]: https://dictionary.cambridge.org/us/pronunciation/english/passage
+
 ### Weak posttonic `<i>` in unprefixed `con-ti-n` frames (2026-10-20)
 
 The rules now centralize the posttonic `<i>` in the unprefixed
@@ -5051,6 +5129,22 @@ Paired rule tests preserve the listed neighboring forms. Full Jest passes
 CJS/ESM main/core/English smoke checks for issue #28 and both corrected words,
 and the full strict evaluator was rerun. No baseline was refreshed or commit
 made.
+
+
+### Rejected blanket final `-ire` rhotic-vowel change (2026-10-21)
+
+The structural learner repeatedly proposed changing final `/aɪɹ/` to
+`/aɪɝ/`; one fold's replay fixes *acquire, desire, empire,* and *require* but
+breaks *inquire* and *vampire*. Cambridge US confirms the class is not uniform:
+[acquire](https://dictionary.cambridge.org/us/pronunciation/english/acquire)
+has `/əˈkwaɪɚ/`, while [desire](https://dictionary.cambridge.org/us/pronunciation/english/desire),
+[empire](https://dictionary.cambridge.org/us/pronunciation/english/empire),
+[inquire](https://dictionary.cambridge.org/us/pronunciation/english/inquire),
+[require](https://dictionary.cambridge.org/pronunciation/english/require),
+[retire](https://dictionary.cambridge.org/pronunciation/english/retire), and
+[vampire](https://dictionary.cambridge.org/us/pronunciation/english/vampire)
+use `/aɪr/`. This spelling class is therefore source-contradicted; no runtime
+change was made.
 
 ### Full-length common structural learner replay (2026-10-20)
 
@@ -5177,3 +5271,4471 @@ stress-neutral morphology table and combined two declarations. The frozen
 `tsx`-based prebuild because the sandbox rejected the local IPC pipe with
 `EPERM`; the dictionary had already been rebuilt through the documented
 direct Node sequence before gates were rerun.
+
+### Common-set learner replay after the 2026-10-20 batch
+
+The current route audit verified all 6,990 common predictions and compared
+actual dispatch with morphology disabled and with the unsplit alternative.
+The structural learner then replayed ten spelling-family folds over 5,099
+rule-path words. It accepted 49 fold-local corrections; zero passed its
+TRAIN-only filter, and mean held-out strict remained 74.64% before and after
+filtered candidates. No candidate was adopted.
+
+The apparent `-ire` change (`/ɹ/` → `/ɝ/`) looked strongest in the top-5,000
+slice (25 fixes, no reference breaks), but each fold affected only 6–8 words,
+below the 20-word support floor, and overall common training traded 33 fixes
+for 16 breaks. Cambridge US agrees with the existing `/aɪr/` for [desire],
+[empire] and [vampire]; its [acquire] entry gives `/əˈkwaɪɚ/`, which reflects
+a transcription distinction rather than evidence for a general `-ire` vowel
+rule. The separate `<c>`-before-weak-`i` proposal would repair Cincinnati,
+explicit and medicine reference rows, but also breaks appreciate and associate;
+it fails the filter in every fold and conflicts with Cambridge US readings
+already recorded above. This replay added no runtime candidate or baseline
+change.
+
+The postlexical ablation audit replayed 107,645 words, including long forms and
+recursive stems. It found no postlex rule whose removal improves both all-word
+and common strict without a paired loss. Removing the conditional -ett
+reduction could gain one common strict match but loses 32 full-dictionary
+strict matches; the `/nð$/` rule has no common-set effect and removing it costs
+one full-dictionary lenient match. No postlex change was made. Full results:
+`/tmp/phonemize-next-release/postlex-20261020/results.json`.
+
+### Follow-up: `every-` root split (2026-10-20)
+
+Cambridge US confirms /ˈev.ri/ for [every](https://dictionary.cambridge.org/pronunciation/english/every), [everyone](https://dictionary.cambridge.org/pronunciation/english/everyone), [everybody](https://dictionary.cambridge.org/pronunciation/english/everybody), [everything](https://dictionary.cambridge.org/pronunciation/english/everything), [everywhere](https://dictionary.cambridge.org/pronunciation/english/everywhere) and [everyday](https://dictionary.cambridge.org/pronunciation/english/everyday). The isolated rules path split `every` as `e · very` and reduced the second syllable's `er` to /ɝ/. A narrow root-boundary rule now retains /ɹ/; `very`, `verywell`, `several`, `cleverly`, `delivery`, `reverie` and `everydayness` are paired controls. Tests also cover everyone, everybody, everything, everywhere, everyplace, everyday and possessive everywhere's.
+
+The morphological compounds first reused the dictionary's old `every` stem,
+so the rule alone fixed `every` but did not carry through every compound. The
+existing custom overlay now supplies one source-checked stem reading,
+`EH1 V R IY0`, which lets the existing general composition handler carry the
+pronunciation to the compounds. After the full dictionary/exception rebuild,
+common rules strict is 5,345/6,990 (+5), top-5,000 is 2,882/3,617 (+4), and
+lenient counts are unchanged. Full rules strict/lenient is 62,250/83,628;
+runtime parity is 94,775/100,806 and 100,678/100,806. Stress-aware phonemic is
+54,690 (+7), homographs remain 1,454/1,615, context remains 87/85/53/49, and
+public CMU default/rules are 4,750/5,000 and 4,142/5,000. The rules-only CMU
+legacy 90% floor still fails. The rebuild made 508 dependency-aware re-pins
+(520 resolved, 5 retained net-positive regressions). The isolated `every`
+change is independently backed by Cambridge; it is recorded as a lexical stem
+correction, not a broad -ery spelling rule.
+
+The behavior-neutral syllabifier compression reduces the five-module count
+from 3,395 to 3,394. Before/after dumps contain 1,296,352 predictions and are
+byte-identical (SHA-256 `9fefd3b0b50b95b65ac138c288d66c470d2b5fcab3d7961bd6eeb90f1bb2f07d`).
+Full Jest passed 359 suites / 6,729 tests, typecheck passed, and Rollup built
+all packages. The follow-up default API and sentence-context regressions pass
+as part of the focused 17-case `en-every-root` suite. The release remains an
+accumulating batch: the next ordinary commit still needs +70 common strict
+words from the committed 5,340 baseline (65 more beyond this candidate); the
+90% release targets remain unmet (947 common words and 374 top-5,000 words
+short).
+
+### Follow-up: `compan-` STRUT (2026-10-20)
+
+Cambridge US lists /ˈkʌm.pə.ni/ for [company](https://dictionary.cambridge.org/us/pronunciation/english/company) and /əˈkʌm.pə.ni/ for [accompany](https://dictionary.cambridge.org/pronunciation/english/accompany). The rule path previously gave LOT /ɑ/ in their `com` syllable. A constrained `compan-` root frame now selects STRUT /ʌ/; the existing weak-vowel reduction keeps `companion` at /kəmˈpæn.jən/. Paired controls cover companies, accompanied, accompanying, companionship, Germany, compare, community, communal and companionable. The frozen 1,296,352-row route dump changed in five predictions, all company/accompany forms; no neighboring control changed.
+
+After rebuilding dictionaries and exceptions, common rules strict is 5,346/6,990 (+1 from the prior candidate; +6 vs committed baseline), top-5,000 is 2,883/3,617 (+1), and lenient counts remain 6,370/6,990 and 3,351/3,617. Full rules strict/lenient is 62,253/105,067 and 83,629/105,067 (+3/+1); runtime parity remains 94,775/100,806 and 100,678/100,806. Stress-aware phonemic is 54,692 (+2), homographs remain 1,454/1,615, and context remains 87/85/53/49 across default/rules x auto/gold POS. Public CMU default/rules are 4,750/5,000 and 4,143/5,000; the rules-only legacy 90% floor remains unmet. Every tracked metric is nondecreasing against the pre-candidate run. Full Jest passed 360 suites / 6,744 tests, typecheck passed, and direct Rollup succeeded. The ordinary commit threshold remains 5,410 common strict words, so this accumulating batch is not yet ready to commit.
+
+The follow-up `accompanist` check confirmed Cambridge US /əˈkʌm.pə.nɪst/, but its `-ist` morphology handler composes the whole form through a separate route; the underlying `ac·com·pa·nist` syllable render already has /ʌ/. A proposed general y-stem + -ist composition replayed 42 dictionary forms and produced only 4 strict wins against 13 losses, so it was rejected; extending the `compan-` syllable frame also did not change this dispatched morphology output. The attempted paired test was removed and no suffix-handler change was adopted. Fresh common structural learning accepted 41 fold-local candidates across ten spelling-family folds, with zero passing the training filter; mean held-out strict remained 74.68%. Route ablation confirms morphology is strongly positive overall (5,346/6,990 vs 4,709 without morphology), so no broad dispatch bypass is viable. These results leave `accompanist` as a separate narrow morphology diagnosis, not a mapping candidate.
+
+### Expanded triple-feature learner and unstressed `-tin` source check (2026-10-20)
+
+The expanded, triple-feature learner replayed the 7,097-word common population
+with ten spelling-family folds. It accepted 99 fold-local candidates, but none
+passed the TRAIN-only selection filter; mean held-out strict stayed 74.42%.
+Its leading weak-vowel proposal affected only a handful of `-tin` forms per
+fold and did not generalize to held-out families. Cambridge US supports schwa
+in [bulletin](https://dictionary.cambridge.org/us/pronunciation/english/bulletin),
+[Martin](https://dictionary.cambridge.org/pronunciation/english/martin),
+[platinum](https://dictionary.cambridge.org/us/pronunciation/english/platinum)
+and [satin](https://dictionary.cambridge.org/pronunciation/english/satin),
+but retains /ɪ/ in [Latin](https://dictionary.cambridge.org/pronunciation/english/latin).
+This small mixed set is not a general spelling rule, so no source rule or
+reference was changed. Full fold report:
+`/tmp/phonemize-next-release/learn-expanded-triples-20261021/cv-common-report.json`.
+
+### Follow-up: secondary-stressed `bio-` (2026-10-20)
+
+Cambridge US gives /ˌbaɪ.oʊ.məˈtɪr.i.əl/ for [biomaterial](https://dictionary.cambridge.org/us/pronunciation/english/biomaterial) and /ˌbaɪ.oʊ.dɪˈvɝ.sə.ti/ for [biodiversity](https://dictionary.cambridge.org/us/pronunciation/english/biodiversity). The rules path used /ɑ/ for the `o` in their secondary-stressed `bio` syllable. A context-limited spelling rule now retains /oʊ/ only in secondary-stressed `bio`; biology, biography, biological, biomedical, biopic and the already-correct biochemistry path are paired controls. `biomaterials` continues through morphology with /oʊ/.
+
+The before/after all-route snapshot contains 1,296,352 predictions. Source changes corrected two dictionary words (biomaterial and biodiversity) and changed twelve generated morphology forms; post-rebuild review found the additional `biomateriales` synthetic suffix form, whose pronunciation change is an exception-table re-pin effect. Full diff: `/tmp/phonemize-next-release/bio-secondary-20261020/`. The behavior-neutral morphology-table compression was byte-identical to the prior snapshot; the five-module count remains at the 3,395 cap.
+
+After rebuilding dictionaries and exceptions (508 dependency-aware re-pins; 520 resolved, 5 retained net-positive regressions), common strict remains 5,346/6,990 and lenient improves to 6,371/6,990; top-5,000 remains 2,883/3,617 strict and 3,351/3,617 lenient. Full rules strict/lenient improves to 62,254/105,067 and 83,631/105,067. Runtime parity remains 94,775/100,806 and 100,678/100,806; stress-aware phonemic improves to 54,693/90,310. Homographs remain 1,454/1,615, context remains 87/85/53/49, and public CMU default/rules remain 4,750/5,000 and 4,143/5,000. Full Jest passed 361 suites / 6,753 tests, typecheck passed, and Rollup succeeded. No baseline was refreshed; common strict is still 64 below the 5,410 commit floor and 946 below the 90% release target.
+
+### Rejected unbounded initial `e` + root rule (2026-10-20)
+
+A rules-only replay tested changing the initial vowel to /i/ whenever the
+syllabifier produced exactly `e` plus one syllable. In the 6,990-word common
+set this yields 3 strict wins (`email`, `ebay`, `event`) and 19 strict losses;
+the top-5,000 slice has 3 wins and 14 losses. Cambridge confirms /iː/ for
+[email](https://dictionary.cambridge.org/pronunciation/english/email) but /ɪ/
+for [event](https://dictionary.cambridge.org/us/pronunciation/english/event),
+so `event` is a false benchmark win as well as a false-positive boundary: it
+is not the letter-name prefix found in `e-mail`/`e-book`. The pattern therefore
+cannot safely recover the fused `e-` compounds without a lexical boundary
+signal. No source rule or baseline changed. Reproduction:
+`/tmp/phonemize-next-release/e-prefix-20261020/scan.cjs` and `report.txt`.
+
+### Rejected broad unstressed `re-` KIT-vowel candidate (2026-10-20)
+
+A second rules-only replay changed initial /i/ to /ɪ/ when the first
+syllabifier slot was `re` and primary stress fell later. This nets 7 strict
+wins against 44 losses in top-5,000 and 15 against 83 across the full common
+set. Cambridge US supports /rɪ-/ for [review](https://dictionary.cambridge.org/us/pronunciation/english/review),
+[result](https://dictionary.cambridge.org/pronunciation/english/result),
+[repeat](https://dictionary.cambridge.org/pronunciation/english/repeat), and
+[reveal](https://dictionary.cambridge.org/pronunciation/english/reveal), but
+other `re-` words keep /ri-/ in the pinned cohort. The spelling and stress
+frame alone cannot distinguish them; no source change was adopted. Reproduce
+with `/tmp/phonemize-next-release/re-prefix-20261020-scan.cjs` and
+`re-prefix-20261020-report.txt`.
+
+### Current common-set dispatch replay (2026-10-20)
+
+Instrumented dispatch was checked against the unmodified predictor for all
+6,990 common test words. The fresh 2026-10-20 report has strict/lenient
+5,348/6,371; the top-5,000 slice is 2,884/3,617 strict. Removing morphology
+falls to 4,709/5,902, and disabling both morphology and compounds falls to
+4,595/5,825. No route-removal alternative improves aggregate strict accuracy,
+so the next search remains targeted at correcting individual morphological
+classes with paired stem and inflection controls, not bypassing the existing
+dispatch. Full changed-word evidence and source hashes:
+`/tmp/phonemize-next-release/routes-current-20261020/report.json`.
+
+The user clarified that `O'Reilly Media` is a real technical-book publisher and
+an example of a brand. `O'Reily` is only an illustrative spelling pattern,
+not a second brand or a request for a brand-specific reading. Existing issue
+regressions exercise O'Reilly in sentences, with straight and curly
+apostrophes and possessives; pronunciation still comes from ordinary
+dictionary lookup and no brand-specific mapping is needed. A temporary
+`advance` custom-dictionary probe was removed after confirming it did not
+change the actual rules route. A simulated broad initial unstressed `/æd/` to
+`/əd/` rewrite produced 11 common strict wins against 28 losses (1/10 in the
+top slice), so it was rejected. No source pronunciation or baseline changed.
+The source dictionary and generated tables were rebuilt without that probe;
+common strict remains 5,346/6,990, parity 94,775/100,806, and stress-aware
+phonemic 54,693/90,310. Full Jest passed 361 suites / 6,756 tests and
+typecheck passed. The focused apostrophe/issue regressions were rerun after the
+clean rebuild.
+
+### Structural distance learner and final `-ine` / `-ire` checks (2026-10-21)
+
+The spelling-family structural learner was rerun with the distance objective on
+the same 6,990-word common population. It accepted 20 fold-local proposals, but
+none passed the existing TRAIN-only selection filter. Replaying all accepted
+proposals reduced held-out strict from 3,807/5,098 to 3,799/5,098, confirming
+they are not adoption candidates. Full report:
+`/tmp/phonemize-next-release/learn-distance-20261021/cv-common-report.json`.
+
+A simulated final `-ine` `/ɪn/` to `/in/` change fixes three common references
+(`Christine`, `magazine`, `vaccine`) and breaks three (`examine`, `Maine`,
+`Ukraine`); other final-`-ine` cases include `/aɪn/`, `/ən/`, and `/un/`
+readings. Cambridge US confirms `/iːn/` for
+[vaccine](https://dictionary.cambridge.org/us/pronunciation/english/vaccine),
+[magazine](https://dictionary.cambridge.org/pronunciation/english/magazine),
+and [routine](https://dictionary.cambridge.org/us/pronunciation/english/routine),
+but routine also needs unrelated vowel and stress repairs, so this is not a
+safe spelling-only class. The learner's final `-ire` proposal also failed its
+filter: Cambridge US gives `/aɪɚ/` for
+[acquire](https://dictionary.cambridge.org/us/pronunciation/english/acquire)
+but `/aɪr/` for
+[desire](https://dictionary.cambridge.org/us/pronunciation/english/desire)
+and [empire](https://dictionary.cambridge.org/us/pronunciation/english/empire).
+No rule, reference, or baseline changed.
+
+### CMU `-age` strict misses are dialect/reference conflicts (2026-10-21)
+
+The common mismatch report repeatedly flags rule-path `/ɪdʒ/` against CMU's
+`/ədʒ/` for endings such as `message`, `damage`, `package`, and `coverage`.
+Cambridge US independently gives `/ɪdʒ/` in
+[message](https://dictionary.cambridge.org/us/pronunciation/english/message),
+[damage](https://dictionary.cambridge.org/us/pronunciation/english/damage),
+[package](https://dictionary.cambridge.org/us/pronunciation/english/package),
+and [coverage](https://dictionary.cambridge.org/us/pronunciation/english/coverage).
+The current rules are correct for those readings; this spelling cluster is a
+CMU strict-score conflict, not evidence for changing the pronunciation rule.
+No reference or source rule changed.
+
+The route-ablation report also identifies a large `-ed` benchmark conflict.
+Removing regular-inflection morphology creates a favorable CMU strict reading
+for some forms (`cited`, `collected`, `wanted`) but produces 208 strict losses
+for 38 wins across all changed common words. Cambridge US marks the suffix
+`/ɪd/` in [collected](https://dictionary.cambridge.org/pronunciation/english/collected)
+and [wanted](https://dictionary.cambridge.org/us/pronunciation/english/wanted),
+matching the current rule output; replacing it with CMU's schwa convention
+would worsen these standard readings. Preserve the morphology handler and keep
+these mismatches out of the pronunciation-gain tally.
+
+### Rejected candidate: multisyllabic final `-zine` (2026-10-21)
+
+Merriam-Webster supports /iːn/ in [benzine](https://www.merriam-webster.com/dictionary/benzine)
+and [hydrazine](https://www.merriam-webster.com/dictionary/hydrazine); Cambridge
+US supports /iːn/ in [magazine](https://dictionary.cambridge.org/pronunciation/english/magazine).
+A rule for the multisyllabic `zi|ne` split, with standalone `zine` and unrelated
+`-ine` controls, improved a frozen-table replay by five full-dictionary strict
+words and one common/top-5000 strict word, with no lenient change.
+
+The required rebuild evicted `magazine` as an exact rule entry. Its dictionary
+entry also supplies a lexical stem for `magaziner` and related derived forms;
+eviction caused three full-dictionary lenient regressions. The existing
+dependency miner checks contrastive primary stress when preserving stems,
+whereas this release's strict scorer strips stress, so its current dependency
+contract did not retain the root. A trial that removed the stress check caused
+stress-aware accuracy to fall by 24 words. Both the rule and that trial were
+reverted; no baseline was refreshed. This candidate is not adopted until a
+dependency fix can preserve all accuracy gates. No authoritative source was
+found for `methazine`, so that rare form is not an independently verified gain.
+
+### Adopted final multisyllabic `-zine` rime with strict stem retention (2026-10-21)
+
+The source-backed segmental rule is now retained for multisyllabic final
+`zi|ne`: Merriam-Webster gives /iːn/ in [benzine](https://www.merriam-webster.com/dictionary/benzine)
+and [hydrazine](https://www.merriam-webster.com/dictionary/hydrazine), and
+Cambridge US gives /iːn/ in [magazine](https://dictionary.cambridge.org/us/pronunciation/english/magazine).
+Standalone [zine](https://dictionary.cambridge.org/us/dictionary/english/zine)
+keeps its /aɪn/ rime; paired controls also cover unrelated `-ine` spellings.
+The class only changes the final vowel. Cambridge's final stress in *magazine*
+differs from the pinned CMU stress, so this counts as a segmental correction,
+not a stress improvement. `methazine` is affected by the spelling rule but is
+not counted as a source-verified gain.
+
+The exception miner now has a secondary stem-attribution pass for stress-stripped
+strict wins whose primary stress remains mismatched. It preserves those stems
+only when removing any one would not regress a previously stress-correct word.
+This retains `magazine` for regular derived forms without a whole-word runtime
+map. The rebuilt exception table contains 525 dependency re-pins, 17 above the
+previous 508; the safety pass reports 520 rescued dictionary words and five
+net-positive residual stress regressions. All fixed accuracy gates below held.
+
+The frozen 1,296,352-row snapshot changed 177 predictions (6 dictionary, 31
+rules, 140 generated morphology rows). Among changed rules/morphology forms
+with pinned dictionary gold, paired scoring found 24 strict and 13 lenient wins,
+with zero losses. Rebuilt evaluation versus the preceding working tree is:
+common strict/lenient 5,348/6,371→5,350/6,372; top-5,000 strict/lenient
+2,884/3,351→2,886/3,352; full-dictionary strict/lenient +19/+9; stress-aware
+phonemic/exact +4/+2. Runtime parity remained 94,775/100,806 strict and
+100,678/100,806 lenient; public CMU default stayed 4,750/5,000, rules-only
+rose 4,144→4,146; context stayed 87/108 and homographs 1,454/1,615. All 364
+Jest suites / 6,777 tests, typecheck and `git diff --check` passed. Snapshot
+and baseline hashes are recorded under
+`/tmp/phonemize-next-release/zine-class-20261021/`.
+
+The full `yarn build-dict` pipeline could not refresh its upstream base sources:
+`raw.githubusercontent.com` returned DNS `EAI_AGAIN`. Its base English dictionary
+and compound-parts hashes matched the frozen inputs, so the exception miner was
+rerun directly over those unchanged sources. Retry the complete pipeline once
+GitHub DNS is available before release packaging or commit qualification. This
+two-word common gain remains below the ordinary 70-word commit threshold and
+stays uncommitted.
+
+### Bound `patho-` allomorph before `-ology` (2026-10-20)
+
+Cambridge US lists `/pəˈθɑːlədʒi/` (also `/pæ-/`) for
+[pathology](https://dictionary.cambridge.org/us/pronunciation/english/pathology)
+and `/pəˈθɑːlədʒɪst/` for
+[pathologist](https://dictionary.cambridge.org/pronunciation/english/pathologist).
+The generic `-ology` morphology route had composed the stressed standalone
+`patho` root, producing `/ˌpæˈθɑːlədʒi/`. It now uses the weak `/pəθo-/`
+allomorph only in that bound `-ology` environment. Paired controls retain `/pæθ/`
+in [pathogenesis](https://dictionary.cambridge.org/us/pronunciation/english/pathogenesis)
+and [pathological](https://dictionary.cambridge.org/us/pronunciation/english/pathological),
+and the rule-only regression covers `pathology` and `pathologies`.
+
+After rebuilding generated data, common strict rose 5,346→5,347/6,990, the
+full-dictionary rule strict count rose by one, and stress-aware correct rose by
+one. All other tracked counts held: top-5000 2,883/3,617; runtime parity
+94,775/100,806; CMU public API 4,750/5,000 (rules-only 4,143); context
+87/108; homographs 1,454/1,615. The rebuilt snapshot had three changes: the
+intended `pathology` correction and two synthetic nonword suffix forms. The
+subsequent morphology-block compaction produced a byte-identical 1,296,352-row
+snapshot; parity dumps were identical. Focused tests, the full Jest suite
+(362 suites / 6,761 tests), and typecheck passed. This one-word gain is kept in
+the accumulating batch; it does not meet the 70-word commit threshold, so no
+baseline was refreshed.
+
+The follow-up common-set `--cluster` report shows the largest initial-vowel
+clusters are mixed proper names, acronyms and ordinary words, so they do not
+license a broad vowel rewrite. Current 10-fold strict rule learning accepted
+28 fold-local proposals and passed 0 through the existing train-only filter;
+the most repeated `ire` and unstressed `i→ə` candidates still carry paired
+losses. Route diagnosis also confirms the major morphology routes protect many
+more common strict readings than they lose, and postlex ablation yields no
+class-wide removal candidate. A structural strict-learning pass accepted 41
+fold-local proposals, also with 0 passing; replaying all proposals lowered
+held-out strict from 3,807/5,098 to 3,794/5,098. The recurring `-ire` candidate
+changes final /ɹ/ to /ɝ/, but Cambridge US transcribes [empire] as `/ˈem.paɪr/`,
+so the CMU-driven correction conflicts with an independently attested US
+reading. These are diagnostics only; no additional rule or baseline changed.
+
+A rule-path experiment that pluralized any suffix stem accepted by the
+compound splitter changed 4,553 snapshot rows. It gained 12 full-dictionary
+strict and four lenient matches, but common strict stayed 5,347/6,990 and the
+public CMU default rose 10 while runtime parity fell 1 strict / 2 lenient; the
+candidate was rejected. Narrowing it to verified compound `-cast` stems changed
+only 11 derived/OOV forms (including `broadcasts`, `podcasts`, and
+`forecasts`) but moved no tracked accuracy count, so that branch was also
+removed. Cambridge US attests `/kæst/` in [podcast](https://dictionary.cambridge.org/us/pronunciation/english/podcast)
+and [broadcast](https://dictionary.cambridge.org/us/dictionary/english/broadcast);
+the `forecasts` CMU reference omits /t/, which explains why a correct `/kæsts/`
+does not improve that fixed reference score.
+
+### Fresh common strict scan (2026-10-20)
+
+The pinned-population evaluator was rerun against the current rebuilt tables:
+common strict/lenient is 5,347/6,371 of 6,990, and top-5,000 is 2,883/3,351
+of 3,617. The ordinary ten-fold strict learner accepted 28 fold-local
+proposals, but none passed the TRAIN-only filter; filtered held-out strict
+remains 74.68% on average. Its broadest repeat, final `-ire` (`ɹ` to `ɝ`),
+has only 7.6 affected words per fold on average and fails every fold's filter.
+No rule or baseline changed. Full diagnostics are in
+`/tmp/phonemize-next-release/common-fresh-20261020.log` and
+`/tmp/phonemize-next-release/learn-strict-fresh-20261020.log`.
+
+A structural distance-objective rerun accepted 20 fold-local proposals, but
+none passed the same train-only filter. Replaying every proposal lowered the
+unchanged held-out sample from 3,807 to 3,799 strict and 4,568 to 4,566
+lenient, while mean edit distance worsened from 2,197 to 2,209. No candidate
+was adopted; evidence is in
+`/tmp/phonemize-next-release/learn-distance-20261020/cv-common-report.json`.
+
+### Rejected broad compound `-land` reduction (2026-10-20)
+
+The fresh mismatch report flags `highland`, `iceland`, `oakland` and
+`portland`: the compound route assigns secondary stress to `land` and keeps
+/lænd/, while Cambridge gives weak /lənd/ in
+[Highland](https://dictionary.cambridge.org/dictionary/english/highland),
+[Iceland](https://dictionary.cambridge.org/pronunciation/english/iceland) and
+[Portland](https://dictionary.cambridge.org/us/pronunciation/english/portland).
+The related [Finland](https://dictionary.cambridge.org/us/pronunciation/english/finland)
+and [Queensland](https://dictionary.cambridge.org/pronunciation/english/queensland)
+rules routes already produce the Cambridge /lənd/ reading, though fixed CMU
+expects /lænd/ there. A blanket
+secondary-stress removal would also change ordinary lexical compounds:
+Cambridge gives /lænd/ in
+[homeland](https://dictionary.cambridge.org/us/pronunciation/english/homeland),
+[mainland](https://dictionary.cambridge.org/us/dictionary/english/mainland)
+and [wonderland](https://dictionary.cambridge.org/us/dictionary/english/wonderland).
+Replacing final `/ɫænd/` with `/ɫənd/` in frozen rules-only outputs across the
+common population simulates four strict wins and four losses (net zero), with
+`land`, `Thailand`, `mainland` and `homeland` among the CMU regressions. This
+output-level scan is only a candidate screen; the spelling alone does not
+distinguish geographic bound `-land` from the stressed noun compound, so this
+is not a safe generalized rule. Reproduction is in
+`/tmp/phonemize-next-release/land-scan.cjs` and
+`/tmp/phonemize-next-release/land-scan-20261020.json`. No source change or
+reference change was made.
+
+### Weak-vowel inheritance in regular `-icals` plurals (2026-10-20)
+
+`chemicals` was a common strict error on the rules-only route: its lexical
+`chemical` stem supplied weak /ə/, while the spelling rules give /ɪ/. Cambridge
+US independently records /ˈkem.ɪ.kəl/ for [*chemical*](https://dictionary.cambridge.org/pronunciation/english/chemical),
+and the same distinction appears in its US readings of [*radical*](https://dictionary.cambridge.org/us/pronunciation/english/radical),
+[*cervical*](https://dictionary.cambridge.org/pronunciation/english/cervical)
+and [*hierarchical*](https://dictionary.cambridge.org/pronunciation/english/hierarchical).
+A narrowly structural plural fallback adjusts only the final weak /ə/ to /ɪ/
+when the lexical and rule readings otherwise agree; it preserves the lexical
+stress pattern and adds no word map. An exact replay on the pinned 6,990 / 3,617
+common populations found one change, `chemicals`, which is a strict win in both
+slices and no losses. The full morphology snapshot records 34 additional
+derived -icals forms; controls preserve `biologicals`, `cyclicals`,
+`evangelicals` and `agrochemicals`, and a stress-paired hierarchical control
+retains its secondary stress. The frozen before snapshots and replay script are in
+`/tmp/phonemize-next-release/ical-plurals-batch-20261020/`. This single gain is
+not an adoption qualification or release target; all post-build gates remain
+required, and it does not meet the 70-word ordinary commit threshold.
+
+The stem-preserving implementation passed all gates after a fresh rebuild.
+The frozen 1,296,352-row snapshot changed 36 rows (two rules-only rows and 34
+derived forms); paired snapshot scoring gives full-dict strict 62,255→62,256,
+common strict 5,347→5,348, and top-5,000 strict 2,883→2,884, with all three
+lenient counts unchanged. Runtime parity stayed 94,775/100,806, default CMU
+accuracy stayed 4,750/5,000, rules-mode CMU accuracy rose 4,143→4,144, the
+stress-aware headline stayed 54,694, context stayed 87/108, and homographs
+stayed 1,454/1,615. Rebuild re-pinned 508 entries, matching the prior build's
+count. The 6,990-word common strict score is still 13.49 points short of the
+requested >90% goal; this is only one validated increment in the open batch.
+
+The latest rebuilt checkout has since reached 5,348/6,990 common strict and
+2,884/3,617 top-5,000 strict. A second structural strict learner run across
+the same 10 spelling-family folds accepted 41 proposals, but none passed the
+TRAIN-only filter; filtered held-out strict stayed at a 74.68% mean. The
+largest repeated candidate changes final `-ire` /ɹ/ to /ɝ/ and has independent
+US dictionary counterevidence (for example *empire*), so it remains rejected.
+The broad suffix error scan also found `-ed` mismatches, but the affected
+forms mix morphological, stress and dictionary-notation differences; the
+previous blanket /ɪd/ to /əd/ replay already reduced common strict. No new
+pronunciation rule or baseline was changed in this diagnostic pass. Details:
+`/tmp/phonemize-next-release/learn-strict-20261020/cv-common-report.json`
+and `/tmp/phonemize-suffix-errors-top10.cjs`. Issue #28's apostrophe and
+O'Reilly Media brand regression file passes all 24 tests, including straight
+and curly apostrophes, possessives and complete-sentence tokenization.
+
+An adjacent `-ically` extension was measured and rejected: its lexical
+reference endings differ across *chemically*, *radically*, *numerically* and
+*typically*, and the candidate did not improve common strict. It remains out of
+the rule until a narrower evidence-backed class preserves those contrasts.
+
+### Current route and postlex replay (2026-10-20)
+
+The instrumented dispatch replay verified all 6,990 predictions against the
+unmodified predictor: removing morphology lowers strict/lenient to 4,709/5,902,
+and removing compound dispatch as well lowers them to 4,595/5,825. Full
+postlex ablation replayed 107,645 words across 176 rules. Its only rule removal
+with positive common strict delta is the final `-ett` rewrite: removing it fixes
+`Bennett` in the common slice but loses 32 full-dictionary strict words (11
+wins, 43 losses overall), mostly surname readings with mixed `/ɪt/` and `/ət/`.
+Neither broad route removal nor this proper-name-heavy ablation is safe to
+adopt. Reports are in `/tmp/phonemize-next-release/route-accuracy-goal-20261020/`
+and `/tmp/phonemize-next-release/postlex-accuracy-goal-20261020/`.
+
+The accumulated source crossed the 3,395-line compression trigger, so I
+coalesced sequential declarations and compacted the new `-icals` check without
+changing behavior. The five-module count is now 3,391. Before/after dumps are
+byte-identical at 1,296,352 predictions; all 363 Jest suites / 6,768 tests and
+typecheck pass. Evidence is in
+`/tmp/phonemize-next-release/ical-plurals-batch-20261020/`.
+
+### Rejected plural dictionary correction (2026-10-20)
+
+Cambridge records `/t/` in the US noun readings of [project](https://dictionary.cambridge.org/us/pronunciation/english/project)
+and [impact](https://dictionary.cambridge.org/us/pronunciation/english/impact),
+and the rules correctly preserve it in `projects` and `impacts`. A temporary
+custom-dictionary correction exposed that the generated dictionary trimmer
+then evicted those two words, changing the runtime-parity population from
+100,806 to 100,804 and failing its fixed-baseline gate. The correction was
+reverted and the generated tables rebuilt; no source or score change is retained.
+
+### Rejected global dark-L normalization screen (2026-10-20)
+
+A full rules-path simulation replaced every output `/ɫ/` with `/l/` to test
+whether the strict mismatch count was mostly a notation artifact. It reduced
+full-dictionary strict from 62,256/105,067 to 40,281 and common strict from
+5,348/6,990 to 3,742/6,990. The change breaks large numbers of entries whose
+stored readings explicitly use dark L, so this is not a safe phoneme-class
+repair and was not adopted. Reproduction: `/tmp/phonemize-l-dark-l-screen.cjs`.
+
+### Rejected final `-ease` s-voicing class (2026-10-20)
+
+Traces show the rules-only `/se/` ending predicts /s/ in *please*, *ease*,
+*tease*, *appease* and *disease*, while the standard US pronunciations use
+/z/ ([please](https://dictionary.cambridge.org/us/pronunciation/english/please),
+[ease](https://dictionary.cambridge.org/us/pronunciation/english/ease),
+[tease](https://dictionary.cambridge.org/us/pronunciation/english/tease),
+[appease](https://dictionary.cambridge.org/us/pronunciation/english/appease),
+[disease](https://dictionary.cambridge.org/us/pronunciation/english/disease)).
+The same spelling ending remains /s/ in *cease*, *crease*, *grease* and
+*lease* ([cease](https://dictionary.cambridge.org/pronunciation/english/cease),
+[crease](https://dictionary.cambridge.org/dictionary/english/crease),
+[grease](https://dictionary.cambridge.org/us/pronunciation/english/grease),
+[lease](https://dictionary.cambridge.org/us/pronunciation/english/lease));
+*increase*, *decrease* and *release* also retain the unvoiced sibilant.
+The suffix spelling alone cannot predict voicing, so no class rule was added.
+Adding these words to `custom.dict` would not affect the rule-evaluation
+population's direct rule path (`disableDict: true`), and the ordinary dictionary
+route already supplies the attested readings; no exception entries were kept.
+
+### Rejected `auto-` vowel reduction (2026-10-20)
+
+The compound route predicts `/ɔtoʊ/` in *automotive* and *autograph*, while
+Cambridge US gives `/ɑtə/`; *automobile* also needs `/ɑtəmoʊ/`. But Cambridge
+records the combining form `auto-` as `/ɑtoʊ-/`, and the related stress patterns
+are not uniform: *autocratic* has `/ɑtə/`, while *autocracy* has `/ɑtɑ/`.
+The shared spelling is not enough to license a blanket `/oʊ/` to `/ə/` rule;
+the relevant vowel depends on the lexical stress and formation. The rule-only
+traces for *auto*, *autonomy* and *autobiography* further show distinct routes.
+No pronunciation rule or per-word mapping was added. Sources: Cambridge US
+[auto / auto-](https://dictionary.cambridge.org/us/pronunciation/english/auto),
+[automotive](https://dictionary.cambridge.org/us/pronunciation/english/automotive),
+[automobile](https://dictionary.cambridge.org/pronunciation/english/automobile),
+[autograph](https://dictionary.cambridge.org/us/pronunciation/english/autograph),
+[autocratic](https://dictionary.cambridge.org/pronunciation/english/autocratic),
+and [autocracy](https://dictionary.cambridge.org/us/pronunciation/english/autocracy).
+
+### Rejected three-feature strict learner batch (2026-10-20)
+
+The ten-fold spelling-family run with structural triples accepted 86 candidates,
+but none passed the TRAIN-only win/loss filter. Mean held-out strict stayed
+74.68% before and after filtering. The strongest-looking top-5,000 candidate
+centralized unstressed `/ɪ/` before final `t...in` (+14 / -0), but the spelling
+class is not uniform: Cambridge US has `/ɪ/` in *bulletin* and *Latin*, `/ə/`
+in *satin*, and a reduced vowel or elision in *platinum*. It is not a class
+repair. The full report, including frozen hashes, is
+`/tmp/phonemize-next-release/triples-strict-20261020/cv-common-report.json`;
+no runtime rule or baseline changed.
+
+### Rejected broad `-age` stem-vowel inheritance before `-ing` (2026-10-20)
+
+An exact dispatcher census found three common morphology-route strict misses
+where lexical `/ə/` in the stored `-age` stem propagates into the derived form:
+*imaging*, *messaging* and *packaging* (predicted `/ə/`, fixed reference
+`/ɪ/`). Cambridge US independently supports `/ɪ/` in
+[image](https://dictionary.cambridge.org/us/pronunciation/english/image) and
+[imaging](https://dictionary.cambridge.org/pronunciation/english/imaging),
+[message](https://dictionary.cambridge.org/us/pronunciation/english/message)
+and [messaging](https://dictionary.cambridge.org/us/pronunciation/english/messaging),
+and [package](https://dictionary.cambridge.org/pronunciation/english/package),
+[packaging](https://dictionary.cambridge.org/us/pronunciation/english/packaging)
+and [packaged](https://dictionary.cambridge.org/us/pronunciation/english/packaged).
+But Cambridge US supports `/ə/` for [manage](https://dictionary.cambridge.org/us/pronunciation/english/manage)
+and its regular participle *managing*. Cambridge US also supports `/ɪ/` in
+[discouraging](https://dictionary.cambridge.org/pronunciation/english/discouraging),
+while the fixed reference uses `/ə/` there. No general spelling/morphology
+condition separates these root readings, so changing how all `-age` stems
+compose would trade a small group of fixed-reference wins against other forms
+and source conventions. No source rule, dictionary entry or baseline changed.
+Current common route totals remain 1,292 rules, 312 morphology and 38 compound
+strict errors; the three target forms are included in the morphology count.
+
+A frozen in-memory trial changed the `image`, `message`, `package` and `damage`
+stem entries to their Cambridge US `/ɪ/` readings, then replayed the existing
+dispatcher against the original CMU-derived gold. This fixes *imaging*,
+*messaging* and *packaging*, but changes five common correct forms to misses:
+*damaged*, *damages*, *images*, *messages* and *packages*. Common strict falls
+5,348→5,346 and top-5,000 falls 2,884→2,882; full-dictionary strict holds at
+62,256 with six wins and six losses. The trial failed the fixed common gates,
+so no custom-dictionary entries or source rules were changed. Per-word replay:
+`/tmp/phonemize-next-release/age-root-fix-20261020/before/age-root-candidate-replay.json`.
+
+A narrower 2026-10-21 in-memory rule trial changed only regular `-ing` forms
+whose lexical and spelling-rule stems differed solely by `/ə/` versus `/ɪ/`
+before `/dʒ/`. The frozen 1,296,341-row snapshot changed six predictions:
+`damaging`, `imaging`, `messaging`, `packaging`, and `savaging` became CMU
+matches, while `managing` stopped matching its pinned US reading. Cambridge US
+supports the `/ɪ/` targets but gives `/ə/` for `managing`, so the sibling is a
+real pronunciation control failure. Common strict rose 5,365→5,367/6,990 and
+top-5,000 rose 2,898→2,899/3,617; rules-only CMU rose by one and default CMU
+stayed 4,753/5,000. Since no spelling condition separates `managing`, the
+narrow rule was also rejected and removed. Frozen inputs and the replay are in
+`/tmp/phonemize-age-ing-before/`.
+
+### `-ution` CMU mismatch cluster checked against Cambridge US (2026-10-20)
+
+A frequency-ranked suffix screen found five strict misses among ten common
+`-ution` words. This is not a blanket reduction opportunity: the current
+rules-only `/ɪ/` in [contribution](https://dictionary.cambridge.org/us/pronunciation/english/contribution)
+and [distribution](https://dictionary.cambridge.org/us/pronunciation/english/distribution)
+matches Cambridge US, while the pinned CMU entries use `/ə/`. Cambridge US
+also supports the current rules-only `/ə/` in [institution](https://dictionary.cambridge.org/us/pronunciation/english/institution)
+and the `/ə/` in [constitution](https://dictionary.cambridge.org/us/pronunciation/english/constitution),
+though CMU uses `/ɪ/` in *institution*. These source contrasts disqualify
+suffix-wide vowel changes as accuracy gains. No runtime rule, dictionary entry
+or benchmark reference changed; the candidate screen was read-only.
+
+### Rejected blanket common `-ect` repair (2026-10-20)
+
+The frequency-ranked top-5,000 contains 16 `-ect` forms, nine with rules-path
+strict misses. The final `-ect` spelling does not identify one vowel or stress
+pattern: Cambridge US distinguishes noun and verb *subject* and *affect*, and
+records /əˈfekt/ for *effect*, /ɪnˈfekt/ for *infect*, and /ˈdiːfekt/ versus
+/dɪˈfekt/ for noun/verb *defect*. The pinned CMU readings also disagree with
+Cambridge on *effect* and noun *subject*, while the current rules route chooses
+different defaults for several homographs. A general ending rewrite would mix
+POS selection and source conventions with spelling-to-sound errors. No `-ect`
+rule was adopted. Sources: Cambridge US [effect](https://dictionary.cambridge.org/us/pronunciation/english/effect),
+[subject](https://dictionary.cambridge.org/us/pronunciation/english/subject),
+[affect](https://dictionary.cambridge.org/pronunciation/english/affect),
+[infect](https://dictionary.cambridge.org/pronunciation/english/infect),
+and [defect](https://dictionary.cambridge.org/pronunciation/english/defect).
+
+
+### Rechecked rule candidates and route ownership (2026-10-21)
+
+The updated structural strict learner replayed the actual rules dispatcher over
+the fixed 6,990 common-word population, with ten spelling-family folds and
+TRAIN-only selection. It accepted 48 fold-local proposals; none passed the
+TRAIN-only win/loss filter. Applying all proposals reduced held-out strict from
+3,807 to 3,796 / 5,097 and lenient from 4,567 to 4,554, so none were adopted.
+The highest-ranked repeated proposal changes unstressed `/ɪ/` to `/ə/` in a
+`c...i` grapheme environment; its aggregate TRAIN replay has 54 strict wins and
+27 losses, which is not a safe class. The final `-ire` `/ɹ/` to `/ɝ/` candidate
+also remains rejected under the documented dictionary counterevidence.
+
+Full route replay verified all 107,645 dictionary predictions. Removing
+morphology reduced strict/lenient from 63,608/85,536 to 57,891/80,603; the
+unsplit alternative scored 54,899/79,001. Its only positive common strict
+delta was one word (`transmittal`), paired with a common lenient loss
+(`referral`); this route change therefore fails the no-regression gate. Full
+postlex ablation also found no safe common-word rule removal. The detailed
+reports and frozen hashes are in
+`/tmp/phonemize-next-release/learn-current-20261021/`,
+`/tmp/phonemize-next-release/routes-all-20261021/`, and
+`/tmp/phonemize-next-release/postlex-current-20261021/`.
+
+No pronunciation rule or baseline changed during this diagnostic pass. The
+current 5,350/6,990 strict score is 10 words above the 10/20 committed baseline
+and 60 words below the next ordinary 5,410-word commit threshold; it remains
+942 words below the release threshold. Issue #28's clarified
+O'Reilly Media brand example and the illustrative `O'Reily` spelling remain
+covered by the paired apostrophe regressions; both focused suites pass all 33
+tests.
+
+
+### Standard-reading audit of frequent CMU mismatches (2026-10-21)
+
+A source check of high-ranked failures confirms that several strict misses are
+reference disagreements rather than rule defects. Rules-only `actual`
+`/ˈæktʃuəl/`, `Michigan` `/ˈmɪʃɪɡən/`, and `mortgage` `/ˈmɔɹɡɪdʒ/` match
+Cambridge US, while the pinned CMU readings differ; `added` rules-only
+`/ˈædɪd/` also matches Cambridge US. See Cambridge US
+[actual](https://dictionary.cambridge.org/us/pronunciation/english/actual),
+[Michigan](https://dictionary.cambridge.org/us/pronunciation/english/michigan),
+[mortgage](https://dictionary.cambridge.org/us/pronunciation/english/mortgage),
+and [added](https://dictionary.cambridge.org/us/pronunciation/english/added).
+These are not rule regressions to repair toward CMU.
+
+`referral` is a genuine rules-path miss: its rules-only output is
+`/ɹəˈfɝəɫ/`, while both pinned CMU and Cambridge US use `/ɹɪˈfɝəɫ/`.
+Cambridge US also gives `/ɹɪˈfɝ/` for [refer](https://dictionary.cambridge.org/us/pronunciation/english/refer)
+and `/pɹɪˈfɝ/` for [prefer](https://dictionary.cambridge.org/us/pronunciation/english/prefer),
+whereas the runtime lexical stems carry CMU's reduced-vowel readings. Changing
+those roots would change public dictionary output and the CMU common-API score;
+a suffix-specific code exception would violate the general-rule policy. No
+change was made. This leaves a source-backed open class for a future solution
+that preserves both public API and rules-only gates.
+
+
+### Rejected initial open-e reduction candidate (2026-10-21)
+
+Cambridge US verifies `/ɪ/` in [estate](https://dictionary.cambridge.org/us/pronunciation/english/estate),
+[escape](https://dictionary.cambridge.org/pronunciation/english/escape),
+[evade](https://dictionary.cambridge.org/pronunciation/english/evade), and
+[elude](https://dictionary.cambridge.org/us/pronunciation/english/elude).
+A broad initial open-e `/ɛ/`→`/ɪ/` rule would repair the rules-path outputs for
+*escape* and *estate*, but the paired replay regresses seven other common words:
+*eligible, enable, estimate, everywhere, evidence, execute,* and *existence*.
+The fixed common strict score falls 5,350→5,345/6,990 and lenient falls
+6,372→6,371; top-slice strict falls 2,886→2,883/3,617 and lenient falls
+3,352→3,351. This spelling condition was rejected without source changes.
+The in-memory replay and exact win/loss list are in
+`/tmp/phonemize-next-release/weak-initial-e-20261021/candidate-sim.json`;
+its before snapshot is the frozen 1,296,352-row file recorded in that directory.
+
+
+### Rejected low-support structural candidates (2026-10-21)
+
+Lowering the structural learner's minimum support from five to two produced
+300 fold-local proposals (67 distinct classes) across the ten spelling-family
+folds; none passed its TRAIN-only win/loss filter. The highest repeated
+`-age` proposal changed `/ɪ/` to `/ə/` in *dosage, message, passage,* and
+*usage* to match pinned CMU readings. Cambridge US explicitly gives `/ɪ/` in
+all four, so these are reference disagreements and the proposed correction
+would move away from the independently checked US readings. Other high-ranked
+proposals were similarly narrow (for example, *keith/key* and *across/cross*)
+or had material training losses; none was adopted. The fixed common subset
+remains 5,350/6,990 strict and 6,372/6,990 lenient, with 2,886/3,617 and
+3,352/3,617 respectively on the top-5,000 slice. Reports:
+`/tmp/phonemize-next-release/learn-min2-20261021/cv-common-report.json` and
+the report-only `g2p-mismatches-common-report.txt` generated by
+`yarn test:eval --subset common --cluster`. Cambridge US sources:
+[dosage](https://dictionary.cambridge.org/us/pronunciation/english/dosage),
+[message](https://dictionary.cambridge.org/us/pronunciation/english/message),
+[passage](https://dictionary.cambridge.org/us/pronunciation/english/passage),
+and [usage](https://dictionary.cambridge.org/us/pronunciation/english/usage).
+
+
+### Rejected blanket regular `-ed` reduction (2026-10-21)
+
+An output-level screen changed final `/ɪd/` to `/əd/` for every common word
+spelled `-ed` whose rules-path output ended in `/ɪd/` (144 eligible words).
+It lowered full common strict from 5,350 to 5,344 / 6,990; top-5,000 stayed
+2,886 / 3,617. The apparent CMU wins such as *added, created,* and
+*estimated* are offset by losses including *applied, associated,* and
+*reported*. Cambridge US uses final `/ɪ/` for words in adjacent reduced-vowel
+clusters such as [artist](https://dictionary.cambridge.org/us/pronunciation/english/artist)
+and [medical](https://dictionary.cambridge.org/us/pronunciation/english/medical),
+and schwa for [charity](https://dictionary.cambridge.org/us/pronunciation/english/charity),
+showing why the suffix spelling alone cannot select the vowel. This was a
+read-only post-output candidate screen, not an actual dispatcher replay; no
+rule or baseline changed.
+
+
+### Rejected blanket `-ment` vowel change (2026-10-21)
+
+A read-only dispatcher replay changed `/mənt/` to `/mɛnt/` for common words
+spelled `-ment` whenever the current output ended in that sequence. It changed
+66 outputs, fixing only *comment* and *document* against the pinned readings,
+while reducing common strict from 5,350 to 5,296 / 6,990 and top-5,000 from
+2,886 to 2,853 / 3,617. Cambridge US confirms `/mɛnt/` for *comment* and for
+verb *document*, but `/mənt/` for noun *document*; the noun/verb distinction
+also makes POS and sentence context material. See [comment](https://dictionary.cambridge.org/us/pronunciation/english/comment)
+and [document](https://dictionary.cambridge.org/us/pronunciation/english/document).
+The broad spelling class was rejected without source changes.
+
+
+### Rejected blanket final `-ent` vowel change (2026-10-21)
+
+A second read-only output screen changed final `/ənt/` to `/ɛnt/` in every
+common word spelled `-ent` with that output. It lowered full common strict
+from 5,350 to 5,267 / 6,990 and top-5,000 from 2,886 to 2,836 / 3,617.
+Although it fixed *accent, comment, content, document, frequent,* and
+*percent* against the pinned entries, it broke many more correct readings.
+The source audit confirms the surface class also hides lexical and POS
+differences: Cambridge gives `/mɛnt/` for *comment*, and distinguishes noun
+`/mənt/` from verb `/ment/` in *document*. See [comment](https://dictionary.cambridge.org/us/pronunciation/english/comment)
+and [document](https://dictionary.cambridge.org/us/pronunciation/english/document).
+No source rule was changed.
+
+
+### Bound `guarant-` /ɛr/ rime (2026-10-21)
+
+The learner's spelling-family replay proposed changing the first <a> in the
+stressed `guar` syllable before `ran` from `/æ/` to `/ɛ/`. Cambridge US supports
+the vowel in [guarantee](https://dictionary.cambridge.org/us/pronunciation/english/guarantee),
+[guaranty](https://dictionary.cambridge.org/us/pronunciation/english/guaranty),
+and [guarantor](https://dictionary.cambridge.org/us/dictionary/english/guarantor).
+The rule is limited to stressed or secondarily stressed syllables; the
+unstressed `guarantor` rules path remains unchanged. Paired controls
+[guard](https://dictionary.cambridge.org/us/pronunciation/english/guard) and
+[guardian](https://dictionary.cambridge.org/us/pronunciation/english/guardian)
+retain `/ɑɹ/`.
+
+Frozen full rules-path snapshots changed only the `guarant-` spelling family.
+Against the exact 105,067-word full-dictionary evaluator population, strict
+rose 62,275→62,280 and lenient held at 83,640; the common subset rose
+5,350→5,352 / 6,990 and its top slice 2,886→2,888 / 3,617. Public CMU rules
+rose 4,143→4,148 / 5,000, while the default API stayed 4,750 / 5,000. The
+stress-aware headline rose 54,698→54,700 / 90,310; context stayed 87/108,
+homographs 1,454/1,615, and parity stayed unchanged. Typecheck and all 365
+Jest suites / 6,782 tests pass. This small gain remains in the accumulating
+working batch; it does not meet the 70-word ordinary commit threshold.
+
+The next ten-fold structural learner pass proposed 48 fold-local corrections;
+none passed the required TRAIN win/loss filter, so no additional class was
+adopted. Its most repeatable candidate (`c`-conditioned unstressed `/ɪ/` to
+`/ə/`) accumulated 54 strict wins against 27 losses on TRAIN and 27 wins
+against 18 losses in top-5,000, so it remains rejected. Report:
+`/tmp/phonemize-rule-corrections/cv-common-report.json`.
+
+
+### Rejected blanket secondary-stressed `-mate` reduction (2026-10-21)
+
+A post-output replay changed final secondary-stressed `/meɪt/` to `/mət/` in
+words ending in `-mate`. It fixed *ultimate* but broke *approximate* and
+*estimate* against the fixed English-subset reference, taking strict from
+5,352 to 5,351 / 6,990. The fixed CMU rules slice did not gain a strict match
+under replay. Cambridge US supports `/mət/` in
+[climate](https://dictionary.cambridge.org/us/pronunciation/english/climate),
+[ultimate](https://dictionary.cambridge.org/pronunciation/english/ultimate),
+and adjective [intimate](https://dictionary.cambridge.org/pronunciation/english/intimate),
+but gives `/meɪt/` for the verb *estimate* and `/mət/` for its noun. Since spelling
+and secondary stress alone do not distinguish the required reading, no runtime
+change was made.
+
+
+### Fresh `-ire` class replay and retained apostrophe coverage (2026-10-21)
+
+A separate ten-fold distance-objective learner pass proposed 21 fold-local
+corrections; none passed the required TRAIN filter. Its recurring final
+`-ire` `/ɹ/`→`/ɝ/` candidate improves some pinned entries, but also breaks
+*inquire* and *vampire*. Cambridge US directly distinguishes the latter two:
+[inquire](https://dictionary.cambridge.org/pronunciation/english/inquire)
+ends in `/aɪr/`, as does [vampire](https://dictionary.cambridge.org/us/pronunciation/english/vampire).
+No spelling-wide rule was adopted. Full-fold report:
+`/tmp/phonemize-rule-corrections/distance-20261021/cv-common-report.json`.
+
+The unchanged common rules score remains 5,352/6,990 strict (76.57%) and
+6,372/6,990 lenient; top-5,000 remains 2,888/3,617 strict and 3,352/3,617
+lenient. Default public CMU accuracy is 4,750/5,000; rules-only is 4,148/5,000.
+Runtime parity is 94,775/100,806 strict and 100,678/100,806 lenient, the
+stress-aware headline is 54,700/90,310, context IPA is 87/108 in default/auto,
+and homographs are 1,454/1,615. The focused issue #28 suite passes all 24
+tests, including O'Reilly Media, its possessive, curly apostrophes, and the
+illustrative O'Reily form. No pronunciation source or baseline changed.
+
+Frozen prediction and parity dumps and source/data/baseline hashes are in
+`/tmp/phonemize-next-release/i-ce-weak-vowel-20261021/`; this directory records
+the before-state for the next candidate replay.
+
+A read-only morphology-output screen also tested `/zəz/`→`/zɪz/` after voiced
+sibilants. Replaying against the fixed release dictionary lowered common strict
+from 5,352 to 5,346 / 6,990 (one win, seven losses) and top-5,000 from 2,888
+to 2,886 / 3,617 (zero wins, two losses). Similar `/tʃəz/` and `/dʒəz/`
+screens introduced 12 and 21 common strict regressions respectively. The
+CMU top-5,000 reference accepts some alternate `/ɪz/` readings, but those do
+not improve the fixed release metric and cannot justify a source change. The
+official scorer does not merge `/ɫ/` with `/l/`; using its exact normalization
+corrects an earlier quick-screen count of 18 `/dʒəz/` regressions to 21.
+
+The fresh failure clustering still concentrates on initial `i` (194 words),
+initial `a` (136), and initial `e` (172 across three outputs); direct samples
+are mostly names, places, abbreviations, and loans with different readings.
+A broad initial `ir` `/ɪɹ/`→`/aɪɹ/` screen fixed *Irish* but broke
+*irrigation*, leaving the common strict count unchanged. These results do not
+support a shared spelling rule; neither source nor baselines changed.
+
+### Rejected final `-ed` schwa after `/d/` (2026-10-21)
+
+A fixed-reference replay changed final `/ɪd/` to `/əd/` in rules-only forms
+spelled `-ed` whose stem ended in `/d/`. It would raise common strict by 10
+(13 wins, 3 losses) and top-5,000 strict by 4 (7 wins, 3 losses), but it is
+not a pronunciation improvement: Cambridge US records `/ɪd/` in [added](https://dictionary.cambridge.org/us/pronunciation/english/added),
+[needed](https://dictionary.cambridge.org/us/pronunciation/english/needed),
+and [decided](https://dictionary.cambridge.org/us/pronunciation/english/decided),
+including forms the fixed replay counts as wins for schwa. This follows the
+regular English `/ɪd/` past-tense allomorph after `/d/`; the fixed reference's
+weak-vowel spellings are not a basis for changing the rule. No source or
+baseline changed.
+
+### Rejected weak-prefix replay for the `-fer` family (2026-10-21)
+
+The rules-only morphology route inherits `/ə/` in forms such as *referral* and
+*referring*, although Cambridge US records `/ɪ/` in [referral](https://dictionary.cambridge.org/pronunciation/english/referral)
+and [refer](https://dictionary.cambridge.org/us/pronunciation/english/refer).
+A read-only class replay changed the initial `/rə, prə, də/` to `/rɪ, prɪ,
+dɪ/` for the `refer-/prefer-/defer-` family. It fixes *referral* and
+*referring* but breaks *referred* and *preferred* under the pinned CMU
+reference, producing zero common strict net gain and two top-5,000 regressions.
+Cambridge US also supports `/ɪ/` in [preferred](https://dictionary.cambridge.org/us/pronunciation/english/preferred),
+so these two losses expose another reference disagreement rather than a
+phonetic counterexample. Still, the unchanged-contract rules-mode and top-slice
+gates reject this class; no rule, reference or baseline changed. Replay is
+recorded at `/tmp/phonemize-fer-family-20261021.json`.
+
+A follow-up restricted the same vowel substitution to `-fer` forms ending in
+`-al` or `-ing`; it changes only *referral* and *referring* in the common list
+(+2 strict, no losses; top-5,000 unchanged). That suffix boundary excludes
+*referred* and *preferred* despite their shared weak-prefix environment, so it
+does not establish a productive phonological condition. Do not add this
+benchmark-shaped restriction as a runtime rule; the open class remains the
+whole `refer-/prefer-/defer-` family pending a source-supported distinction.
+
+### `financial` root-vowel diagnosis (2026-10-21)
+
+The common-list rules-only miss for *financial* is `/fɪˈnænʃəl/` against the
+fixed `/faɪˈnænʃəl/`. Cambridge records `/faɪ-/` as a US reading and also
+records `/fə-/`; its [finance](https://dictionary.cambridge.org/us/pronunciation/english/finance)
+entry has `/faɪ-/` in both US and UK. The live dictionary therefore confirms
+the root-family relationship but also shows the fixed reference is narrower
+than all accepted US readings.
+
+Trace shows the default *financial* is an exception-table hit; the rules-only
+route syllabifies it `fi · nan · cial`, assigning `/ɪ/` to the first `i`.
+The generic `-ial` handler deliberately remains outside the stress-neutral
+morphology table, and the generated dictionary has only three `-ancial`
+spellings: *financial* and its two compounds. The finance family itself has
+different rule-only routes (`finance` `/fɪnəns/`, `financing`
+`/ˈfaɪˌnænsɪŋ/`, `financial` `/fɪˈnænʃəl/`), so extending a single spelling
+rule across it risks replacing one lexical stem behavior with another. No
+multi-word productive class with paired controls was evidenced, and no
+whole-word map was added. This remains an open common-list error; no score or
+baseline changed.
+
+### Rejected long `ad·ja-` reduction extension (2026-10-21)
+
+Cambridge US confirms weak `/əˈdʒeɪ-/` in [adjacent](https://dictionary.cambridge.org/us/pronunciation/english/adjacent)
+and [adjacency](https://dictionary.cambridge.org/pronunciation/english/adjacency),
+while [adjective](https://dictionary.cambridge.org/us/pronunciation/english/adjective)
+has stressed `/ˈædʒ-/`. I replayed an extension of the existing unstressed
+`ad-` reduction to longer initial `ad·ja-` syllable sequences, preserving its
+original *adjoin* condition. It produced no strict gain in the fixed 6,990-word
+common subset (5,352/6,990 remained unchanged), and *adjacent* still had a
+second-vowel error (`/æ/` vs Cambridge `/eɪ/`). The first probe accidentally
+narrowed the original *adjoin* guard and lost one strict case; that probe was
+discarded and the pre-existing guard restored. No source change or baseline
+change remains from this candidate.
+
+### `comparison` morphology diagnosis (2026-10-21)
+
+The rules-only route gives *comparison* `/ˈkɑmpɝɪsən/`, while the pinned
+reference is `/kəmˈpɛɹəsən/`. Cambridge independently gives US
+`/kəmˈperɪsən/` for [comparison](https://dictionary.cambridge.org/us/pronunciation/english/comparison)
+and `/kəmˈper/` for [compare](https://dictionary.cambridge.org/us/pronunciation/english/compare);
+its related [comparative](https://dictionary.cambridge.org/pronunciation/english/comparative)
+has a different vowel (`/kəmˈperətɪv/`). The trace confirms that compare and
+its inflections already take the correct bound `com-` stress, but the less
+productive `comparison` formation is split `com · pa · ri · son` and falls
+through to unrelated open-syllable defaults. A `-ison` composition rule would
+need to reconstruct this specific `compare` stem, and the tested neighboring
+compare forms do not establish a productive suffix class. No source change or
+word map was made; this remains a high-frequency class candidate without a
+safe generalization.
+
+### Common strict error spot-check against Cambridge (2026-10-21)
+
+The current common report flags several high-rank rule predictions that
+Cambridge accepts. For example, rules produce `/prəˈdʌkʃən/` for *production*,
+`/ɪˈdɪʃən/` for *edition*, and `/dɪˈrɛkʃən/` for *direction*. Cambridge gives
+those same forms for [production](https://dictionary.cambridge.org/pronunciation/english/production)
+and [edition](https://dictionary.cambridge.org/pronunciation/english/edition),
+and lists both `/dɪ-/` and `/daɪ-/` US variants for
+[direction](https://dictionary.cambridge.org/us/pronunciation/english/direction).
+These remain misses against the pinned single-reading CMU subset, but changing
+the rules to chase those rows would move away from independently attested US
+pronunciations. No reference or scoring contract changed.
+
+### Rejected global `-lity` vowel change (2026-10-21)
+
+A real-pipeline replay changed the final `-lity` rule from `/ləti/` to
+`/lɪti/`. It changed 140 rule-path dictionary predictions and reduced common
+strict from 5,352 to 5,344 / 6,990, and top-5,000 from 2,888 to 2,886 / 3,617.
+The fixed subset had 4 wins and 12 losses overall (3 wins, 5 losses in the top
+slice). Cambridge US explicitly gives `/ə/` in [ability](https://dictionary.cambridge.org/us/pronunciation/english/ability),
+[facility](https://dictionary.cambridge.org/us/pronunciation/english/facility),
+[liability](https://dictionary.cambridge.org/us/pronunciation/english/liability),
+and [stability](https://dictionary.cambridge.org/us/pronunciation/english/stability),
+so the change would make several standard readings less accurate. The candidate
+was removed and the common score returned to 5,352 / 6,990. Before/after actual
+rule-route dumps and their comparison are at
+`/tmp/phonemize-next-release/lity-20261021/` and
+`/tmp/phonemize-next-release/i-ce-weak-vowel-20261021/pre.tsv`.
+
+### `-gine` family check (2026-10-21)
+
+The common rule-path error *imagine* is `/ˈɪməˌdʒaɪn/` against the pinned
+`/ˌɪˈmædʒən/`. Cambridge US gives `/ɪˈmædʒɪn/` for
+[imagine](https://dictionary.cambridge.org/pronunciation/english/imagine),
+so both the route stress/vowels and the pinned final schwa differ from that
+independent source. A spelling census of final `-gine` roots in the shipped
+dictionary is mixed: *engine* and *imagine* have `/ən/` in the pinned table,
+while *aborigine*, *aubergine*, *Georgine*, and *peragine* have `/ɪdʒəni/`,
+`/dʒin/`, `/dʒin/`, and `/dʒini/`; Cambridge also records `/ɪ/` in
+[engine](https://dictionary.cambridge.org/us/pronunciation/english/engine)
+and `/iː/` in [hygiene](https://dictionary.cambridge.org/us/pronunciation/english/hygiene).
+The same spelling therefore does not justify one generic final-vowel rule, and
+the `imagine` family lacks a second independent stem to support a productive
+class fix. No one-word rule or reference change was made.
+
+### Post-rebuild gate refresh (2026-10-21)
+
+The complete `yarn build-dict` pipeline was rerun against its upstream sources;
+the final exception table contains 54,005 entries after 525 dependency-aware
+re-pins (520 resolved, five retained net-positive regressions). The rebuilt
+candidate remains at 5,352/6,990 common strict and 2,888/3,617 top-5,000 strict;
+lenient counts are 6,372/6,990 and 3,352/3,617. These exceed the committed
+5,340 common strict baseline but remain below the 5,410 ordinary commit floor
+and the 90% release targets.
+
+Post-build runtime parity is unchanged at 94,775/100,806 strict and
+100,678/100,806 lenient. Public `toIPA` CMU accuracy remains 4,750/5,000
+(90% gate passes); rules-only remains 4,148/5,000, unchanged from its known
+below-90% result. Stress-aware phonemic accuracy is 54,700/90,310 (+17 vs
+baseline). Homographs remain 1,454/1,615. Context IPA remains 87/108 strict
+in default/automatic-POS, 85/108 in default/gold-POS, 53/108 in rules/automatic,
+and 49/108 in rules/gold-POS. Typecheck and the full Jest suite pass (365
+suites, 6,782 tests), including all 24 issue #28 apostrophe regressions.
+No baseline was refreshed and no commit was made because the ordinary strict
+commit threshold has not been reached.
+
+The high-frequency `business` mismatch was also source-checked: Cambridge US
+gives /ˈbɪz.nɪs/ ([entry](https://dictionary.cambridge.org/pronunciation/english/business)),
+while the candidate rule output places the unstressed vowel before /n/. The
+suffix is not uniform (`happiness` retains its stem vowel), so no broad
+`-iness` rule was adopted.
+
+### Fresh route and postlex ablations (2026-10-21)
+
+The mandated common failure clustering again ranks individual initial-vowel
+spellings, names, and irregular forms rather than one uniform vowel rule. The
+actual-dispatch route replay verified all 6,990 predictions: disabling
+morphology drops strict/lenient to 4,712/5,902, and bypassing both morphology
+and compound splitting drops them to 4,598/5,825. The largest apparently
+reversible route subset is the regular-inflection handler, but bypassing it
+trades 38 strict matches for 208 losses; most of the wins are CMU's `/əd/`
+rendering of past-tense `-ed`, whereas standard US speech uses the productive
+`/ɪd/` allomorph after `/t,d/`. It is not safe to remove or broadly rewrite
+that path to optimize this exact-string reference.
+
+The full postlex ablation replay covered 107,645 words (including long forms)
+and 176 fired rules. No single removal improves both full-dictionary and
+common strict, so no postlex change was adopted. Route win/loss details are in
+`/tmp/phonemize-next-release/route-diagnosis-20261022/report.json`; postlex
+details are in `/tmp/phonemize-next-release/postlex-20261022/results.json`.
+
+### Fresh family-held-out learner replay (2026-10-21)
+
+The expanded structural learner completed ten spelling-family folds over the
+fixed 6,990-word population. Across 96 fold-local accepted candidates, zero
+passed the training-only win/loss filter; held-out strict stayed 74.73% before
+and after filtered candidates. The best repeated single-grapheme proposal
+changed unstressed `/ɪ/` to `/ə/` in a final `<tin>` environment, but its scope
+is not phonetic: Cambridge US gives `/ɪ/` in [Latin](https://dictionary.cambridge.org/pronunciation/english/latin),
+[bulletin](https://dictionary.cambridge.org/us/pronunciation/english/bulletin),
+and [credit](https://dictionary.cambridge.org/us/pronunciation/english/credit),
+while the candidate's apparent CMU wins are schwa-rendering differences.
+Another proposed weak-`<i>` change before `<c>` breaks *appreciate* and
+*calcium*. No candidate was adopted. Full report:
+`/tmp/phonemize-next-release/learner-20261022/cv-common-report.json`.
+
+The subsequent `be-` silent-e replay was also rejected. Requiring a verified
+monosyllabic compound root improved common/top-5,000 strict by one each
+(5,353/6,990 and 2,889/3,617), but changed *Benites* on the shipped dictionary
+route and lowered runtime parity from 94,775 to 94,774 strict. The extra
+spelling restriction still admitted the false split; source and focused tests
+were removed, and common/parity returned to their frozen before-state. Snapshot
+and row-level diff: `/tmp/phonemize-next-release/i-ce-weak-vowel-20261021/`.
+
+### Woman/women plural-vowel rule (2026-10-21)
+
+The spelling-conditioned `<wo>` rime now selects /ʊ/ before the `<man>`
+morpheme and /ɪ/ before `<men>`, matching Merriam-Webster's woman/women
+pronunciations. Regressions cover womanly, womanhood, chairwoman/chairwomen,
+fireman/firemen, possessives, sentence context and shipped dictionary readings.
+This rule does not alter the default dictionary route. Cambridge US independently
+records /wʊmən/ and /wɪmɪn/.
+
+After the real dictionary rebuild, common rules strict/lenient improved from
+5,352/6,372 to 5,354/6,373 out of 6,990; the top-5,000 slice improved from
+2,888/3,352 to 2,890/3,353 out of 3,617. Full rules, stress-aware and CMU
+rules-only counts also increased. Runtime parity remained 94,775/100,806 strict
+and 100,678 lenient; CMU default remained 4,750/5,000; homographs remained
+1,454/1,615; context cells remained 87/85/53/49. The normal commit threshold
+is still unmet, so no baseline was refreshed and this remains in the working
+batch. Focused regressions, all 6,796 tests across 366 suites, typecheck and
+`git diff --check` pass.
+
+The release gaps are now 936 common words and 364 top-slice words. The source
+rule snapshot changes only woman, women and their possessives; the full rebuilt
+data delta also includes generated table re-pins. Evidence:
+`/tmp/phonemize-next-release/i-ce-weak-vowel-20261021/`.
+
+### Fresh structural learner audit after woman/women (2026-10-21)
+
+Reran the fixed ten-family-fold structural learner against the current checkout:
+5,097/6,990 words were in its direct rule-rendering scope. Of 48 fold-local
+greedy candidates, none passed the train-only legacy win/loss filter; applying
+all accepted candidates lowered held-out strict from 3,811/5,097 to 3,800/5,097.
+Filtered held-out strict was unchanged. Before the separately replayed `-ire`
+candidate, fixed-population scores were 5,354/6,990 strict and 6,373 lenient;
+top-5,000 was 2,890/3,617 strict and 3,353 lenient. Public CMU was 4,750/5,000
+default and 4,150/5,000
+rules-only (the latter remains below its legacy floor).
+
+The top repeated `<ci>` proposal (`ɪ` to `ə`) repairs forms such as *acid*,
+*Francis* and *medicine*, but breaks *appreciate* and *calcium*; it is not one
+sound spelling class. The learner's broad `<ire>` proposal was rejected: it
+also changes secondary-stressed controls such as *vampire*, and its isolated
+rule hook scores *inquire* on a route the production dispatcher does not use.
+After full route replay, a narrower primary-stressed final `<ire>` rule was
+retained for forms such as *acquire*, *admire*, *desire* and their regular
+inflections; a general morphology/postlexical repair keeps the stem /ɹ/ in
+`-ire + -er` forms such as *acquirer*. Merriam-Webster records optional schwa in [acquire](https://www.merriam-webster.com/dictionary/acquire),
+[desire](https://www.merriam-webster.com/dictionary/desire),
+[require](https://www.merriam-webster.com/dictionary/require) and
+[entire](https://www.merriam-webster.com/dictionary/entire); the rule leaves
+secondary-stressed *empire* and *vampire* unchanged. After the complete
+dictionary rebuild, common strict rose to 5,356/6,990 and top-slice strict to
+2,892/3,617; full-dictionary strict rose by 1 and lenient by 1. Runtime
+parity, default CMU, homograph and all context cells held or improved; the
+rules-only CMU result rose by 1 and remains below its legacy floor. Existing
+`-ire + -ing` and en/in + quire tests pass. The 90% common strict target is
+still 935 words away; this is an accumulating gain, not a release-ready
+checkpoint.
+
+Separately, the generated IPA-Dict reference had `acquirer` as /aɪɝɝ/. The
+source now applies the same general `-ire + -er` normalization used by runtime,
+following Merriam-Webster's /ə-ˈkwī(-ə)r-ər/. That changes the full-dictionary
+denominator from 105,067 to 105,068 and restores strict parity; this reference
+correction is reported separately and is not counted as a rule gain.
+
+Evidence: `/tmp/phonemize-rule-corrections/cv-common-report.json`, the current
+`g2p-mismatches-common-report.txt`, and `/tmp/phonemize-next-release/ire-rhotic-20261021/`.
+No evaluation baseline changed.
+
+### Rejected `-cted` weak-vowel replay (2026-10-21)
+
+An output-level replay changed final `/ɪd/` to `/əd/` only in spellings ending
+`-cted`. Against the fixed common references it scored 5,364/6,990 strict
+(+8) and 2,897/3,617 top-5,000 (+5), but it still breaks *suspected* and
+*unexpected*. More importantly, the candidate is wrong for standard US
+pronunciation: Cambridge records `/tɪd/` in [collected](https://dictionary.cambridge.org/pronunciation/english/collected),
+[expected](https://dictionary.cambridge.org/pronunciation/english/expected),
+[suspected](https://dictionary.cambridge.org/pronunciation/english/suspected),
+and [unexpected](https://dictionary.cambridge.org/us/pronunciation/english/unexpected).
+The apparent strict gains expose a disagreement in the pinned IPA-Dict rows,
+not a pronunciation improvement, so no source rule or reference was changed.
+The replay and every changed row are preserved at
+`/tmp/phonemize-next-release/cted-replay-20261021/`.
+
+### Introductory `-ductory` stress class (2026-10-21)
+
+The generic adjectival `-ductory` stress rule now assigns primary stress to the
+`-duct` root, matching standard US /ˌɪntrəˈdʌktəri/ in
+[Cambridge's introductory entry](https://dictionary.cambridge.org/pronunciation/english/introductory).
+This fixes `introductory` without a whole-word mapping; controls include
+`introductorily`, `introduction`, `laboratory`, `satisfactory` and `territory`.
+The frozen 1,296,363-row prediction snapshot changes exactly one row, the
+rules-only `introductory` prediction. The generated base dictionary hash and
+exception table hash are unchanged.
+
+After rebuilding, common strict rose from 5,356 to 5,357/6,990; common lenient
+remained 6,374. Top-slice strict/lenient remained 2,892/3,354. Full rules
+strict rose by one with lenient unchanged; stress-aware correct rose by one.
+Runtime parity remained 94,776/100,807 strict and 100,679 lenient; CMU default
+remained 4,750/5,000, rules-only rose by one to 4,151/5,000 (still below its
+legacy 90% floor), homographs stayed 1,454/1,615, and all context cells stayed
+87/85/53/49. All 6,802 tests across 367 suites and typecheck pass. Build-time
+dependency re-pinning was 523 entries (521 resolved; five net-positive
+regressions retained), with no order-of-magnitude change. No baseline was
+refreshed; the ordinary commit threshold remains 5,413/6,990, so this small
+gain stays in the accumulated working batch.
+
+Evidence: `/tmp/phonemize-next-release/ductory-20261021/`.
+
+### Post-change structural learner and route audit (2026-10-21)
+
+Reran the ten-fold family-held-out structural learner after the `-ductory`
+change on the same 6,990-word population. It accepted 33 fold-local proposals,
+but none passed the train-only win/loss filter; filtered held-out strict stayed
+74.83%. The most repeated `<c>` before unstressed `<i>` schwa proposal had 46
+training fixes and 23 breaks across folds and still failed the filter. The
+other repeated unstressed schwa proposals also had losses and no accepted
+filter passes, so none is safe to promote from this replay.
+
+The full-dictionary actual-route audit verified all 107,646 predictions,
+including long entries. The current full rule baseline is 63,619/107,646
+strict and 85,539 lenient; removing morphology or bypassing compounds loses
+more strict matches than it gains. No dispatcher change was adopted. Reports:
+`/tmp/phonemize-next-release/ductory-20261021/learner/cv-common-report.json`
+and `/tmp/phonemize-next-release/ductory-20261021/routes/report.json`.
+
+### Rejected `-cket` lax-vowel replay and learner variants (2026-10-21)
+
+Cambridge US marks the final vowel as /ɪ/ in [bracket](https://dictionary.cambridge.org/pronunciation/english/bracket),
+[packet](https://dictionary.cambridge.org/pronunciation/english/packet),
+[pocket](https://dictionary.cambridge.org/pronunciation/english/pocket),
+[racket](https://dictionary.cambridge.org/pronunciation/english/racket),
+[jacket](https://dictionary.cambridge.org/pronunciation/english/jacket),
+[ticket](https://dictionary.cambridge.org/us/pronunciation/english/ticket),
+and [socket](https://dictionary.cambridge.org/us/pronunciation/english/socket).
+The rules path currently reduces this `<e>` to /ə/. A broad `-cket` output
+replay would fix `bracket` against the pinned table but break seven other
+common entries; common strict falls 5,357→5,351/6,990 and top-slice strict
+falls 2,892→2,888/3,617. This class is therefore not adopted under the fixed
+benchmark no-regression gate; the Cambridge readings and pinned IPA-Dict rows
+disagree on the terminal vowel.
+
+Three further ten-fold family-held-out learner runs—structural strict,
+unstructured strict and structural distance objective—accepted 33, 20 and 12
+fold-local proposals respectively, but none passed the train-only win/loss
+filter. Filtered held-out strict remained 74.83% in all three runs. Their
+reports are under `/tmp/phonemize-next-release/ductory-20261021/learner/`,
+`learner-general/` and `learner-distance/`.
+
+An independent suffix-conditioned, single-phone replay found apparently
+positive strict deltas for `-ded` (+10 common, +4 top-5,000), `-nded` (+6,
++4), `-cted` (+8, +5) and `-ican` (+4, +4). These are not pronunciation
+gains: Cambridge records /ɪd/ in [added](https://dictionary.cambridge.org/us/pronunciation/english/added),
+[handed](https://dictionary.cambridge.org/us/pronunciation/english/handed)
+and [extended](https://dictionary.cambridge.org/pronunciation/english/extended),
+and /ɪ/ in [American](https://dictionary.cambridge.org/us/pronunciation/english/american),
+[African](https://dictionary.cambridge.org/us/pronunciation/english/african)
+and [Mexican](https://dictionary.cambridge.org/pronunciation/english/mexican),
+where these candidate transforms replace it with /ə/. The apparent gains are
+fixed-reference disagreements, so no runtime or scoring change was made.
+Complete frozen common predictions used by this suffix sweep are at
+`/tmp/phonemize-next-release/ductory-20261021/common-preds.json`.
+
+### Behavior-neutral rule compression (2026-10-21)
+
+The five rule modules reached 3,401 comment/blank-excluded code lines, six
+above the retained 3,395 cap. Adjacent hiatus, suffix and stress guards plus
+postlex checks with identical control flow were combined; a tempting same-IPA
+`s`/`x` rule merge was reverted after the snapshot exposed different internal
+matching behavior. The final 3,395-line result has a byte-identical
+1,296,363-row snapshot (SHA256
+`90e864faf732c76e2b949b554091fe237273ed0572b72244ee8ed9dec5c62aa6`). All
+6,802 tests across 367 suites, typecheck and `git diff --check` pass. No
+pronunciation metric or baseline changed. Frozen evidence:
+`/tmp/phonemize-next-release/compression-20261021/`.
+
+### Internal Spanish-loan `<jua>` frame (2026-10-21)
+
+Added a position- and syllable-conditioned `<jua>` → /wɑ/ rule for an internal
+open-vowel + `<jua>` followed by `<na>`. Cambridge's US entries give /ˌmer.əˈwɑː.nə/
+for [marijuana](https://dictionary.cambridge.org/us/pronunciation/english/marijuana)
+and /ˌtiː.əˈwɑː.nə/ for [Tijuana](https://dictionary.cambridge.org/us/dictionary/english/tijuana?topic=city-names-and-their-inhabitants).
+Collins also records a US /tiˈwɑnə/ variant for [Tijuana](https://www.collinsdictionary.com/us/dictionary/english/tijuana).
+The regression checks marijuana, Tijuana and a contrastive set of initial
+`<jua>`/`<ju>` forms; no whole-word pronunciation map was added. The frozen
+1,296,363-row snapshot changes seven rows: two direct rules entries and five
+generated Tijuana forms. Those out-of-vocabulary morphology probes are not
+counted in the common-word benchmark; their generated stress remains open for
+future morphology review.
+
+After the dictionary rebuild, common strict stayed 5,357/6,990 and top-slice
+strict stayed 2,892/3,617; common lenient rose by one to 6,375 and top-slice
+lenient stayed 3,354. Full-dictionary strict/lenient rose by one/two over the
+frozen before-run. Runtime parity remained 94,776/100,807 strict and 100,679
+lenient; public CMU default stayed 4,750/5,000 and rules-only stayed 4,151;
+stress-aware results were 54,711/90,311 phonemic and 45,478 exact; homographs
+stayed 1,454/1,615; context cells stayed 87/85/53/49. The denominator change
+in the stress-aware report is retained as a limitation against the prior
+baseline. All 6,812 tests across 368 suites and typecheck pass; CJS and ESM
+package smokes preserve the issue #28 O'Reilly Media reading. No baseline was
+refreshed because common strict did not improve. Evidence and snapshots are
+under `/tmp/phonemize-next-release/`; the scoped snapshot SHA256 is
+`aae23a01658ffe875f208978ece7341973a999824b8eaf7446dcf772a47b8145`.
+
+### Postlex and actual-route ablation replay (2026-10-21)
+
+Replayed all 107,646 testable dictionary words through the instrumented
+pipeline and postlex table. Neither removing morphology nor bypassing compound
+and decomposition dispatch has a net-positive common strict result; the
+full-route baseline verified at 63,620 strict / 85,541 lenient. No wholesale
+route bypass is eligible for promotion.
+
+Postlex ablation found no single removal that preserves both full-dictionary
+and common strict counts. Removing rule 171 (`/ət(s?)$/`) fixes only Bennett
+in the common slice (+1 common strict) while losing 32 full-dictionary strict
+matches; removing rule 53 (`/sʃ(?=u)/g`) loses one common strict and two full
+strict. No postlex table change was made. Reports:
+`/tmp/phonemize-routes-active-20261021/report.json` and
+`/tmp/phonemize-postlex-active-20261021/results.json`.
+
+### High-frequency `-inger` and `<ngu>` follow-up (2026-10-21)
+
+The frequency-ranked common mismatch report exposed `finger` at rank 4,903:
+the rules path emits /ˈfɪŋɝ/ while the pinned row expects /ˈfɪŋɡɝ/. Cambridge
+US independently confirms /ŋɡ/ in [finger](https://dictionary.cambridge.org/pronunciation/english/finger)
+and [linger](https://dictionary.cambridge.org/us/pronunciation/english/linger).
+The same spelling tail does not define one safe pronunciation class:
+[singer](https://dictionary.cambridge.org/pronunciation/english/singer)
+and [hanger](https://dictionary.cambridge.org/us/pronunciation/english/hanger)
+have /ŋ/ without /ɡ/, while *ginger* has a different soft-g reading. The
+existing `-inger` postlex rule intentionally collapses the suffix in true
+`-ing + -er` forms; deciding when that boundary is real needs morphological
+evidence the spelling-only rule path does not currently retain. No broader
+rewrite or per-word runtime exception was adopted.
+
+The earlier apparent `<ngu>` candidate was also rejected after checking the
+actual trace: the rules path already emits /ˈɫæŋɡwɪdʒ/ for *language*, so its
+pinned /ɡ/ omission is a reference disagreement. A fresh ten-fold,
+spelling-family-held-out common-word learner run accepted 20 fold-local
+proposals, but none passed its train-only win/loss filter; held-out strict
+remained 74.83%. The current common evaluation remains 5,357/6,990 strict and
+2,892/3,617 top-slice strict. No source behavior or baseline changed. Evidence:
+`/tmp/phonemize-rule-corrections/cv-common-report.json` and
+`g2p-mismatches-common-report.txt`.
+
+### `<velop>` inflections and corrected `even` reference (2026-10-21)
+
+The issue #28 clarification identifies O'Reilly Media as the brand example;
+O'Reily was illustrative spelling, not a separate brand. Existing apostrophe
+class regressions retain both spellings, possessives, sentence tokenization,
+and straight/curly apostrophes without brand-specific runtime mappings.
+
+Cambridge US and Merriam-Webster attest /ˈiːvən/ for *even*, so the custom
+reference now corrects IPA-Dict's short-vowel form. A general `<velop>`
+inflection route uses the attested bare root for `develop(ed|ing)` and
+`envelop(ed|ing)`, fixing the silent-e over-restoration; paired controls cover
+`envelope`, `development`, `hoped`, and `hopping`. Cambridge also confirms the
+changed `undeveloped` prediction. No whole-word code map was added.
+
+The frozen common strict count is 5,358/6,990 (+1 source/reference correction;
+not a rule gain), with top-5,000 at 2,893/3,617. Public CMU accuracy is
+4,751/5,000; rules-only is 4,153/5,000 (the established legacy 90% floor still
+fails). Context remains 87/85/53/49 and homographs 1,454/1,615. The corrected
+root causes dictionary trimming to remove `evened` and `evens`, both now
+verified through rules and public routes. That shifts runtime parity from
+94,776/100,807 to 94,774/100,805 and stress-aware phonemic count from
+54,711/90,311 to 54,709/90,309. Those two counts therefore do not meet the
+frozen-population no-regression gates; this batch is not qualified for a
+baseline refresh or commit. Keep the source correction and candidate evidence
+separate until evaluation can compare an unchanged population. Evidence and
+snapshots are under `/tmp/phonemize-even-sourcecheck-20261021/`; final snapshot
+SHA256 is `2c2c54f21e9e9fd65e7d045bf7857e80562d71c502f7f8fa730d274229f114b5`.
+
+All 370 Jest suites / 6,824 tests, typecheck, Rollup, context IPA gate, and
+`git diff --check` pass. After adding the `undeveloped` paired case, the four
+focused `<velop>`, `even`, apostrophe, and issue #28 suites pass all 41 tests.
+The common target remains far below 90%; no baselines were refreshed.
+
+### Checked short `<i>` before a final `-ce` slot (2026-10-21)
+
+The syllabifier assigns silent-e `<e>` to a separate final `-ce` syllable in
+`office`, `notice`, `practice`, `justice`, `service`, and `apprentice`. Its
+open-`i` rule therefore incorrectly treated the preceding checked vowel as
+magic-e `/aɪ/`, and the generic `-ce` reduction then centralized it. A
+stress-aware spelling-frame guard now keeps unstressed checked `<i>` as `/ɪ/`
+and leaves stressed contrasts out. Cambridge US confirms `/ɪ/` in
+[office](https://dictionary.cambridge.org/us/pronunciation/english/office),
+[notice](https://dictionary.cambridge.org/us/pronunciation/english/notice),
+[practice](https://dictionary.cambridge.org/pronunciation/english/practice),
+[justice](https://dictionary.cambridge.org/pronunciation/english/justice),
+[service](https://dictionary.cambridge.org/pronunciation/english/service),
+and [apprentice](https://dictionary.cambridge.org/pronunciation/english/apprentice).
+Regression cases cover these roots and regular `-s/-ed/-ing` forms, while
+`malice`, `sacrifice`, and `suffice` guard adjacent spellings/stress routes.
+
+This remains an evidence-backed candidate, not a qualifying improvement.
+Against the frozen before-run on the unchanged 6,990 / 3,617 cohorts, strict
+fell from 5,358 to 5,349 and from 2,893 to 2,887; lenient stayed 6,375 and
+3,354. The full-dictionary rules strict count was unchanged (59,936), with
+13 exact wins and 13 losses across changed predictions. Runtime parity is
+94,748/100,805, below its committed baseline, while context remains 87/85/53/49
+and homographs 1,454/1,615. Public CMU default is 4,748/5,000; rules-only is
+4,151/5,000, still below its legacy floor. Do not refresh baselines or count
+the standards-based reference disagreements as accuracy gains. The complete
+suite passes (371 suites, 6,838 tests), as do typecheck, direct Rollup, and
+diff-check. `build-dict` could not run because it fetches IPA-Dict and
+homograph source files, and network DNS is unavailable in this environment.
+The before snapshots remain under
+`/tmp/phonemize-reference-audit-20261021/before/`; current predictions are in
+`checked-i-ce-after.tsv`.
+
+### Root stress for initial weak `es-` families (2026-10-21)
+
+The common mismatch trace showed *estate* (frequency rank 450), *escape*
+(rank 4,430), and *establish* with a syllabic initial `e` incorrectly carrying
+primary stress. Cambridge US records /ɪˈsteɪt/, /ɪˈskeɪp/, and /ɪˈstæblɪʃ/.
+A morphology-root stress rule now covers the `estate`, `escape`, and
+`establish` families and their regular forms; controls retain the initial-stress
+frames of *escalate*, *estimate*, *escapade*, and *escapee*. The full frozen
+rule dump changed five dictionary predictions: five strict wins, zero losses.
+The hyphenated phrase *real-estate* also needs its independently attested
+primary/secondary pattern; its pinned CMUdict form is now recorded in
+`src-data/en/custom.dict` so the standalone root rule cannot define phrase
+stress.
+
+Against the immediately preceding frozen candidate, full-dictionary rules
+strict/lenient moved from 62,293/83,664 to 62,297/83,665. Common strict moved
+from 5,349/6,990 to 5,352; Top-5,000 moved from 2,887/3,617 to 2,890, with
+lenient +1 on each. Public CMU default stayed 4,748/5,000 and rules-only rose
+4,151→4,154. Runtime parity stayed 94,748/100,805; stress-aware phonemic
+count rose 54,710→54,713; context stayed 87/85/53/49 and homographs stayed
+1,454/1,615. The earlier checked-`i` candidate still leaves the combined
+common score six below its frozen 5,358 before-run, so no baseline refresh or
+commit is eligible. The 90% strict targets remain unmet.
+
+The new focused tests pass (25 tests), and the full suite passes (372 suites,
+6,850 tests), typecheck, direct Rollup, and `git diff --check`. The generated
+dictionary could not be rebuilt because the build fetches upstream files and
+network DNS remains unavailable. Therefore the new `real-estate` source entry
+and final acceptance gates still require a rebuild when the source network is
+available. Current before/after dumps and gates are under
+`/tmp/phonemize-next-release-next-20261021/`.
+
+After that candidate, a behavior-neutral compression pass reduces the five
+English rule modules to 3,392 code lines (`g2p` 1,142, `syllabify` 1,708,
+`postlex` 496, `morph-table` 20, `morph-parser` 26), below the retained 3,395
+cap. The complete 1,296,341-row rule snapshot before and after compression is
+byte-identical (SHA-256
+`649fe8cf1853cba9d713e942ffd1d9282d8de0cdfc3b5ba5e3b4412ff99aabe3`). All 372
+Jest suites / 6,850 tests, typecheck, and `git diff --check` pass after the
+compression. Current common strict/top counts are 5,352/6,990 and 2,890/3,617;
+the full-dictionary rules count is 62,297/105,066. Runtime parity remains
+94,748/100,805, below its committed baseline; no baseline was refreshed.
+
+The next screening pass did not yield another safe rule class. The structural
+learner replayed actual `predict()` dispatch over 5,098/6,990 common words,
+using ten spelling-family folds; 39 candidates were selected in training, but
+none passed the legacy support/fix-rate/top-slice filter, and the pooled held
+score fell from 3,814 to 3,803. Full-dictionary postlex removal diagnosis
+replayed 107,644 words; candidate rule removals such as the all-sibilant
+`-es` weak-vowel rewrite have mixed common/dictionary wins and losses, so they
+are not adopted without a paired class that preserves both populations.
+Reports are at `/tmp/phonemize-learn-rules-20261021/` and
+`/tmp/phonemize-postlex-20261021/`. The next batch remains open; the saved
+candidate outputs and current fixed gates are the comparison point.
+
+Direct Rollup after compression also succeeds. Packaged CJS and ESM entry
+smokes preserve the CMU-supported O'Brien / O'Reilly readings, keep O'Reilly
+Media as two sentence tokens with the expected Media reading, retain the
+possessive, and reproduce issue #28's Seann/Sean behavior. A fresh
+`build-dict` later succeeded and synchronized source-only custom entries.
+
+### Vouched be- roots and common irregular source entries (2026-10-21)
+
+A three-slot weak `be-` form now shifts stress to the silent-e root only when
+the existing exception table independently supplies that root's pronunciation.
+This avoids treating surname fragments admitted only by compound-part mining
+as lexical roots (`Benites` remains unchanged). The final rule snapshot changes
+four rule-route words (`become`, `behave`, `belove`, `Bethune`), with 3 full-dict
+strict wins, no full-dict losses, and one rules-only prediction already aligned
+with the table. Common strict rose 5,352→5,353/6,990 and Top-5,000
+2,890→2,891/3,617; CMU rules rose 4,154→4,155/5,000. The full rule count is
+62,300/105,066. The 1,296,341-row snapshot before and after the follow-up code
+compression is byte-identical (SHA-256
+`05e267ac66e70f436f03f311792a34b4a4a2bd19ddb020d839db9dc8c439032e`); the five
+English rule modules total 3,394 code lines, below the 3,395 cap.
+
+The frequency-ranked CMU report also identified lexical exceptions such as
+`said` /sed/ and `now` /naʊ/. I briefly staged them in `custom.dict`, then
+removed them after confirming that the rules-only evaluator does not load that
+overlay and the default dictionary already has the readings. They produced no
+eligible improvement and remain open as rule-path exceptions; no scores count
+them. The 2026-10-21 `build-dict` run subsequently completed and synchronized
+the retained custom entries into generated runtime data.
+
+Current gates after the rule candidate: public CMU default 4,751/5,000 (pass),
+rules 4,155/5,000 (legacy 90% floor still fails), runtime parity 94,774/100,805
+(unchanged from this before-run, still below committed baseline), stress-aware
+54,716/90,309, context 87/85/53/49, and homographs 1,454/1,615. All 373 Jest
+suites / 6,866 tests and typecheck pass. No baseline was refreshed; the
+next-release target remains open.
+
+### Rejected checked-`i` final-`-ce` inflection follow-up (2026-10-21)
+
+Cambridge US confirms /ɪ/ in [notice](https://dictionary.cambridge.org/us/pronunciation/english/notice),
+[practice](https://dictionary.cambridge.org/pronunciation/english/practice),
+[practiced](https://dictionary.cambridge.org/pronunciation/english/practiced),
+[service](https://dictionary.cambridge.org/us/pronunciation/english/service),
+[servicing](https://dictionary.cambridge.org/pronunciation/english/servicing),
+[apprentice](https://dictionary.cambridge.org/us/pronunciation/english/apprentice),
+and [jaundice](https://dictionary.cambridge.org/pronunciation/english/jaundice).
+A temporary rule tried to carry that checked vowel through regular `-s`, `-ed`
+and `-ing` forms when a mined stem's /ə/ differed from its rule reading. The
+same frozen dictionary replay changed 54 predictions and yielded four strict
+wins but nine strict losses, including cited `notice`/`practice` forms where
+the pinned IPA-Dict readings differ from Cambridge. Under the unchanged
+benchmark adoption gate, the candidate was removed; references and baselines
+were not edited. This remains a documented source-versus-reference
+disagreement, not a pronunciation gain. The regenerated table currently scores
+62,306/105,066 full rules strict, 5,357/6,990 common strict, and 2,894/3,617
+top-slice strict. Public CMU default/rules are 4,751/5,000 and 4,155/5,000;
+context remains 87/85/53/49, homographs 1,454/1,615, and parity is
+94,774/100,805, still below its committed baseline. Focused issue #28 tests,
+typecheck and `git diff --check` pass; full Jest passed immediately before
+removing the rejected candidate. It now passes after removal as well: 372
+suites / 6,852 tests. Direct Rollup and packaged CJS/ESM issue #28 smokes pass.
+No baseline was refreshed.
+
+The post-rebuild route replay again verified all 6,990 common words and showed
+no morphology or unsplit alternative with a safe strict gain. Postlex ablation
+replayed 107,644 forms; removing the only common strict positive, conditional
+`-ett` reduction, loses 32 full-dictionary strict matches. A fresh ten-fold
+structural learner replay accepted 43 fold-local candidates but none passed the
+legacy filter; held-out strict stayed 74.81% before and after filtered rules.
+Reports are in `/tmp/phonemize-route-diagnosis/report.json`,
+`/tmp/phonemize-postlex-20261021-rebuilt/results.json`, and
+`/tmp/phonemize-rule-corrections/cv-common-report.json`. No candidate passed
+the adoption gates, so the 90% release target remains open.
+
+The post-rebuild common failure-cluster report is dominated by single-vowel
+differences, so the top-ranked misses were checked through actual dispatch.
+At rank 411, `article` takes the rules-only `/ɪ/` path while the pinned table
+expects `/ə/`; Cambridge US records `/ɪ/` for that syllable. At rank 437,
+`credit` likewise differs in the weak vowel, but Cambridge gives `/ɪ/` for the
+noun and `/ə/` for the verb, which the isolated-word cohort cannot resolve
+without POS. These are source/POS contract differences, not evidence for a
+general vowel rewrite; no rule was changed. [Cambridge: article](https://dictionary.cambridge.org/us/pronunciation/english/article),
+[credit](https://dictionary.cambridge.org/pronunciation/english/credit).
+
+### Initial `what` root vowel (2026-10-21)
+
+The existing w-final-onset short-`a` rule gave the grammatical root `what` the
+LOT vowel (`/ɑ/`). A narrow spelling-frame condition now gives `wh-at` the
+STRUT vowel (`/ʌ/`) in the root and its regular contractions, while retaining
+the prior `/ɑ/` route for neighboring `wham`, `whack`, `whale`, `wharf`, and
+the surname `Whatley`. Cambridge's US entry lists `/hwʌt/` among the accepted
+American pronunciations of *what* ([Cambridge Dictionary](https://dictionary.cambridge.org/us/dictionary/english/what)).
+
+The rebuilt rule replay changes eight rows versus the frozen pre-candidate
+snapshot: three common-cohort strict wins (`what`, `what's`, `what're`), no
+strict losses, and five other rule/morph rows outside that cohort. `Whatley`
+remains unchanged. The real rebuilt gates report common strict 5,358/6,990
+(76.65%) and top slice 2,895/3,617 (80.04%), one additional success in each
+population; full rules strict is 62,309/105,066 and stress-aware phonemic
+correct is 54,717/90,309. Public CMU default is 4,751/5,000, rules-only
+4,159/5,000 (its legacy 90% floor still fails); context is 87/85/53/49 across
+the four cells, and homographs are 1,454/1,615. Runtime parity remains
+94,774/100,805, below its committed baseline. No baseline was refreshed.
+
+The focused what-root and soever suites pass (42 tests), as do typecheck, all
+373 Jest suites / 6,854 tests, direct Rollup, packaged CJS/ESM smoke for `what`
+and `O'Reilly Media`, and `git diff --check`. Five English rule modules total
+3,395 code lines, exactly at (not above) the retained compression trigger.
+The issue #28 apostrophe behavior remains covered by generic rules and package
+smokes; no company-specific pronunciation map was added. Evidence and final
+snapshot are under `/tmp/phonemize-what-root-20261021/`.
+
+This is an accumulating validated gain, not release acceptance: common strict
+still needs 934 more correct words and the top slice 361 more to exceed 90%.
+A fresh post-candidate, ten-fold structural learner pass selected 43 TRAIN
+corrections and none passed the existing filter. Applying them all lowered
+held-out strict from 3,815 to 3,791/5,098; the filtered set is empty and leaves
+the held-out score unchanged. No learner proposal was adopted. The report is
+`/tmp/phonemize-learn-rules-post-what-20261021/cv-common-report.json`; continue
+screening actual spelling classes with paired controls and full-pipeline replay.
+
+Manual authoritative-dictionary screening rejects the learner's strongest
+local candidate (`c` before unstressed `i`, changing `/ɪ/` to `/ə/`): the
+rules-only `/ɪ/` readings of [acid](https://dictionary.cambridge.org/us/pronunciation/english/acid)
+and [explicit](https://dictionary.cambridge.org/pronunciation/english/explicit)
+match Cambridge US, so matching the current IPA-Dict entries would make them
+less accurate. The common mismatch report also has dense final `-ed` and
+`-ated` clusters, but that is not enough evidence for a uniform change.
+Preserve current predictions and references while screening for a class whose
+gains are independently attested and survive paired full-pipeline replay.
+
+### Fresh rebuilt gates and route replay (2026-10-21)
+
+After restoring the source overlay to its pre-screening entries, `build-dict`
+recreated the prior frozen English dictionary (`data/en/dict.json` SHA-256
+`b98822901aea458a0ca57eb6a785092477ad3ba678b41ab182cc54108efc0e28`). Seed
+and compound data were regenerated; dependency-aware re-pin retained 523
+entries and rebuilt `exceptions.json` to 53,977 entries. The fixed common
+cohort remains 5,358/6,990 strict and 6,376 lenient; the fixed top slice is
+2,895/3,617 strict and 3,355 lenient. Full-dictionary rules are
+62,310/105,066 strict and 83,667 lenient. No baseline was refreshed.
+
+Current acceptance gates: public CMU default 4,751/5,000 and rules-only
+4,159/5,000; stress-aware phonemic 54,717/90,309; context default/auto
+87/108, default/gold-POS 85/108, rules/auto 53/108, rules/gold-POS 49/108;
+homographs 1,454/1,615. Runtime parity is 94,774/100,805, one below the
+committed strict baseline. Re-pinning restores CMU default from 4,749 to 4,751
+and parity from 94,769 to 94,774. The public default CMU floor, context target
+and homograph target pass; common-word release targets and parity against the
+committed baseline do not.
+
+Replayed `diagnose-routes` against all 6,990 common words after rebuild. Neither
+the morphology-disabled nor unsplit alternative produces a safe net gain;
+the largest paired alternatives have substantially more strict losses than
+wins. `diagnose-postlex --all --include-long` replayed 107,644 words: no rule
+removal improves both full-dictionary and common strict counts. Removing the
+conditional `-ett` reduction gains one common strict match but loses 32 full
+strict matches, so it remains. Reports: `/tmp/phonemize-route-diagnosis/report.json`
+and `/tmp/phonemize-postlex-diagnosis/results.json`.
+
+A temporary `-it` silent-e guard was also rejected after full snapshot replay:
+the spelling shape includes genuine dropped-e verbs (`bite`, `cite`, `invite`)
+alongside checked-vowel roots (`edit`, `credit`, `audit`), so the guard changed
+both classes and lowered common strict from 5,358 to 5,357. The code and its
+temporary test were removed; the candidate snapshot is retained at
+`/tmp/phonemize-it-inflection-after.tsv` for future diagnosis.
+
+The complete Jest suite passes (373 suites / 6,854 tests), as do typecheck and
+`git diff --check`. The `yarn build` wrapper cannot start tsx's IPC pipe in
+this sandbox (`EPERM`), so each build-pipeline step was run directly with
+`node --require tsx/cjs`; direct Rollup then succeeded. CJS and ESM dist
+smokes verify `O'Brien`, `O'Reilly Media` and `Media` in the issue #28 sentence.
+Rollup still emits its existing mixed-export and
+external `pinyin-pro` warnings.
+
+### Re-pinned common-word learner and e-prefix replay (2026-10-21)
+
+The 10-fold structural learner was rerun against the rebuilt exception table
+and unchanged 6,990/3,617 populations. It selected 43 fold-local corrections;
+none passed the train-only legacy filter. Applying every selected correction
+reduced pooled held-out strict from 3,815 to 3,791/5,098, while the filtered
+set left it unchanged at 3,815/5,098. The strongest `/ɪ/→/ə/` proposals match
+several IPA-Dict rows but conflict with checked Cambridge US readings (see the
+acid/explicit screening above). Report:
+`/tmp/phonemize-learn-rules-after-repin-20261021/cv-common-report.json`.
+
+A generic unhyphenated `e` + known compound-tail split was simulated over the
+fixed common cohort. It changed eight words: three strict wins (`email`,
+`ebay`, `event`) and four strict losses (`estate`, `equal`, `earn`, `escape`),
+with one additional non-scoring change. The spelling alone cannot distinguish
+electronic `e-` compounds from ordinary roots, so this rule was not adopted.
+
+Cambridge US records weak `/əˈr/` starts in [arise](https://dictionary.cambridge.org/pronunciation/english/arise),
+[around](https://dictionary.cambridge.org/us/pronunciation/english/around),
+[arrest](https://dictionary.cambridge.org/us/pronunciation/english/arrest),
+and [arrange](https://dictionary.cambridge.org/us/pronunciation/english/arrange),
+while the pinned IPA-Dict uses rhotic-schwa notation for this frame. A
+compound-tail replay would fix `around` against its pinned row, but change four
+already exact common rows (`array`, `arrival`, `arise`, `arrange`); its net
+strict effect is therefore negative. No broad rule or reference edit was
+adopted.
+
+### Cambridge word corrections and `-ocus` inflections (2026-10-21)
+
+The user clarified that the brand example is **O'Reilly Media**; `O'Reily` was
+only illustrative. Existing issue #28 regressions cover the actual brand,
+straight/curly apostrophes, possessives, contextual tokens, and the Seann/Sean
+behavior. No brand-specific runtime map was added.
+
+Added a general no-dropped-e spelling guard for `-ocus` inflections. It fixes
+`focused`, `focusing`, `refocused`, `refocusing`, and `refocuses` in both
+dictionary and rules modes. Cambridge US records [focus as /ˈfoʊ.kəs/ and
+focused as /ˈfoʊ.kəst/](https://dictionary.cambridge.org/us/pronunciation/english/focused).
+Paired controls `accused`, `accusing`, `refused`, `used`, and `using` remain
+unchanged. The targeted tests pass 38/38, including issue #28.
+
+The fixed common strict counts remain 5,358/6,990 and 2,895/3,617, so this
+candidate does not advance the 90% subset target. Public CMU accuracy improves
+from 4,751 to 4,752/5,000 in both default and rules-only mode; the stress-aware
+phonemic count rises from 54,717 to 54,718/90,309. Full-dictionary strict is
+unchanged at 62,310/105,066; lenient is 83,671. Context remains 87/108,
+85/108, 53/108, and 49/108; homographs remain 1,454/1,615. The CMU rules-only
+result remains below its legacy 90% floor and is accepted only for
+nondecreasing comparison.
+
+Cambridge US confirms [eventual as /ɪˈven.tʃu.əl/](https://dictionary.cambridge.org/us/dictionary/english/eventual)
+and [eventually as /ɪˈven.tʃu.ə.li/](https://dictionary.cambridge.org/us/pronunciation/english/eventually).
+Their prior pinned entries had a different onset/segment sequence, so those
+two source readings were corrected in `src-data/en/custom.dict`; the stale
+`eventually` test expectation was corrected from Cambridge evidence. This is
+a source/reference correction, not a generalized rule gain. It raises full
+lenient by four but not common strict. It also leaves the sole runtime-parity
+strict loss at `eventual`: the corrected runtime has coda /ɫ/, while the
+custom CMU transcription emits light /l/. Current parity is 94,773/100,805,
+one below the committed 94,774 baseline; no baseline was refreshed. This
+parity conflict keeps the batch below the full adoption gate.
+
+An exploratory Cambridge correction for `genuine` was removed: although the
+base-word source reading was independently confirmed, it changed the derived
+`genuinely` rules path and reduced full-dictionary strict by one without a
+paired rules fix. It is not part of the retained candidate.
+
+Final validation: 374 Jest suites / 6,862 tests pass; typecheck and direct
+Rollup pass; `git diff --check` passes. The `yarn build` wrapper still cannot
+open tsx's sandbox IPC pipe (`EPERM`), so the prescribed build-pipeline steps
+were run directly with `node --require tsx/cjs`; Rollup succeeded with the
+existing mixed-export and external `pinyin-pro` warnings. No baseline was
+updated. The 90% target remains open: the common subset needs 934 additional
+strict matches and its top-5,000 slice needs 361. Snapshots and reports are in
+`/tmp/phonemize-next-release/` and the latest `/tmp/phonemize-final-accuracy-parity.tsv`.
+Final frozen data hashes: `data/en/dict.json`
+`bd6f1702c774e9f0322a58e387bd66170423c6e37d2579f979dad8efcdffc5d9`,
+`data/en/exceptions.json`
+`26921efbccd4df7316d3dea964606560710cbefe9b47f54d7c6d8bef1fa3a1da`,
+`data/en/homographs.json`
+`0f6372b64b571c0c8a157810b30d8e9d4fbf03abad40ad012332222a2b12e611`, and
+`src-data/en/custom.dict`
+`24670ee434ad35fcd48e4048cc03dc52758b67cdd52ec4b7129d7fc77fa0f1c1`.
+
+### Current-hash common learner rerun (2026-10-21)
+
+The 10-fold structural strict learner was rerun against the rebuilt dictionary
+(`data/en/dict.json` SHA-256 above), the fixed 6,990/3,617 common populations,
+and the unchanged frequency/baseline inputs. It accepted 43 train-only
+corrections and passed zero through the train-only regression filter; filtered
+held-out strict stayed 74.83% (3,815/5,098), while applying all accepted
+corrections fell to 74.36% (3,791/5,098). The leading repeated `/ɪ/` to `/ə/`
+candidate before `<c>` has 51 fixes and 24 breaks in pooled training, with
+Cambridge-backed counterexamples such as *acid* and *explicit*. No candidate
+was adopted. Full report and the frozen 1,296,341-row source/rule/morph/POS
+snapshot are under `/tmp/phonemize-next-release/continuation-20261021/`; the
+fixed frequency and baseline SHA-256 values are respectively
+`981c776dc7e8996accb256e5fea9d241331b9602efe0c977285734890e1ae729` and
+`ce64d1fe7370d949198a5bb24fff83dd228414b53795ca37a8b02fbb659615ed`.
+The rebuilt common strict gates remain 5,358/6,990 and 2,895/3,617; all other
+release gates and no-regression checks remain required.
+
+### Common suffix denominator scan: final `-ate` (2026-10-21)
+
+A fresh scan over every fixed common-cohort word (not just the mismatch file)
+found 19 strict mismatches among 73 `-ate` spellings. The tempting reduction
+`/eɪ/` to `/ə/` is not a safe suffix rule: Cambridge US confirms `/ət/` in
+[climate](https://dictionary.cambridge.org/us/pronunciation/english/climate)
+and [pirate](https://dictionary.cambridge.org/us/pronunciation/english/pirate),
+while paired `-ate` controls such as *create*, *locate*, *template*, and
+*private* retain different vowels according to stress and morphology.
+[Candidate](https://dictionary.cambridge.org/us/pronunciation/english/candidate)
+also lists both `/dət/` and `/deɪt/`; the fixed one-reading strict scorer marks
+one of those accepted forms wrong. Other errors in the `-ate` group concern
+root vowels or stress, so the suffix count does not support one shared sound
+change. No rule or expectation was changed; a future attempt needs a
+POS/morpheme-conditioned class and full contextual controls.
+
+An optimistic route-output simulation reduced final `/eɪt/` to `/ət/` only
+when no corresponding `<base>ation` entry or verified compound split existed.
+It changed 254 full-dictionary predictions, with 30 strict wins and 97 losses;
+the fixed common cohort had 4 wins and 13 losses (top slice 4/7). That simple
+morphology signal cannot distinguish lexicalized nouns such as *climate* and
+*pirate* from verbs such as *translate* or compound heads such as *template*.
+This was an offline screen, not a source-rule replay, and was rejected before
+implementation.
+
+### Initial `<wol.f>` rime correction (2026-10-21)
+
+The rules-only path predicted *wolf* as `/wɑlf/`; Cambridge US gives
+`/wʊlf/`. Collins US gives `/ˈwʊlfrəm/` for *wolfram*, supporting the same
+root vowel in a transparent compound. A grapheme/syllable condition now selects
+/ʊ/ for initial `<wolf>` roots, including *wolfish*, *wolfman*, *wolfram*,
+and possessives. It does not alter the established neighboring controls
+*wold*, *golf*, *wool*, *wood*, and *woman*. No whole-word map or runtime name
+entry was added.
+
+The frozen 1,296,341-row snapshot changed 45 predictions across rules and
+morphology routes. Of 19 changed dictionary words, 15 gained strict matches,
+zero lost strict matches, and the remaining four were already strict misses;
+lenient had one additional win and zero losses. Only *wolf* intersects the
+fixed non-foreign common cohort, moving full-subset strict from 5,358 to
+5,359/6,990; the top-5,000 slice is unchanged at 2,895/3,617. Full-dictionary
+rules strict/lenient rose from 62,310/83,671 to 62,325/83,675. Dictionary,
+exceptions, homographs, and custom-dictionary SHA-256 values are unchanged
+from the frozen build. The byte-identical compression pass returned the five
+rule modules to the 3,395-line cap; its output snapshot is identical to the
+pre-compression candidate (`after-wolf.tsv` and `after-compression.tsv` under
+`/tmp/phonemize-next-release/continuation-20261021/`).
+
+Post-build gates: public CMU default 4,752/5,000 (pass), rules-only 4,160/5,000
+(unchanged legacy floor failure); stress-aware phonemic 54,728/90,309 (+45);
+homographs 1,454/1,615 (unchanged); context IPA remains 87/108, 85/108, 53/108,
+and 49/108; all other reported counts match the before-run or improve. Runtime
+parity remains at 94,773/100,805, one below the committed 94,774 baseline due
+to the previously documented `eventual` notation conflict; the frozen
+snapshot confirms this rule changed no default dictionary-route prediction.
+The full suite passes (375 suites / 6,873 tests), as do typecheck, Rollup,
+focused issue #28/O'Reilly tests (39 tests), and `git diff --check`. No
+baselines were refreshed; the 90% common strict target remains open.
+
+### Follow-up route diagnostics (2026-10-21)
+
+The common failure clusters remain dominated by name/place spellings and
+context-sensitive short words. Route ablation confirms current morphology is
+net helpful on the fixed common set: removing morphology drops strict/lenient
+from 5,359/6,377 to 4,716/5,907; the unsplit route drops them to 4,602/5,830.
+Full postlex removal had no safe common-wide candidate: removing the
+`/sʃ/ → /ʃ/` rule fixes *tissue* leniently but breaks *issue* strictly, while
+the `<ett>` KIT rule helps only *Bennett* among common words and is embedded in
+a wider spelling class with mixed full-dictionary results. Neither was
+changed. The route and postlex win/loss reports are under
+`/tmp/phonemize-route-diagnosis/` and `/tmp/phonemize-postlex-diagnosis/`.
+
+### Expanded common-rule learner screen (2026-10-21)
+
+The family-held-out learner was rerun with `--expanded --triples`, retaining
+actual runtime replay and TRAIN-only selection. Across 10 folds it accepted
+110 candidates and passed zero through the existing filter; applying all
+accepted candidates reduced held-out strict from 3,816/5,098 to 3,800/5,098
+and lenient from 4,572 to 4,551. The report is under
+`/tmp/phonemize-next-release/continuation-20261021/learner-expanded/`.
+
+Its largest top-5,000 candidate changes an unstressed `/ɪ/` after `t` to `/ə/`
+before `ic` in a penultimate syllable. Although the pooled TRAIN count is
+29 fixes and zero breaks in the top slice, held-out evidence is mixed and the
+candidate misses support/fix-rate thresholds. More importantly, authoritative
+Cambridge US readings agree with the current `/ɪ/` output for
+[*article*](https://dictionary.cambridge.org/us/dictionary/english/article),
+[*notice*](https://dictionary.cambridge.org/us/pronunciation/english/notice),
+and [*practice*](https://dictionary.cambridge.org/us/pronunciation/english/practice);
+Cambridge also gives `/ɪ/` for [*erotica*](https://dictionary.cambridge.org/us/pronunciation/english/erotica),
+which this broad spelling condition would change. The apparent strict gains
+therefore include a reference-variant conflict and are not evidence for
+changing the general `<ti.c>` class. No source pronunciation or expectation
+was changed.
+
+### Final-`<ow>` class probe (2026-10-21)
+
+The common mismatch cluster also points to final `<ow>` words such as *now*
+and *cow*. Cambridge US confirms MOUTH in [*now*](https://dictionary.cambridge.org/us/pronunciation/english/now)
+and [*cow*](https://dictionary.cambridge.org/us/pronunciation/english/cow),
+while [*know*](https://dictionary.cambridge.org/us/pronunciation/english/know)
+and [*snow*](https://dictionary.cambridge.org/us/pronunciation/english/snow)
+have GOAT. The current rules already preserve the broader control families,
+including *mow*, *tow*, *show*, and *slow*. No simple onset-wide `<ow>` rule
+can safely cover these contrasts, so no candidate was adopted from this
+cluster without a broader spelling-family explanation.
+
+### Initial-`<w>ow` rule replay (2026-10-21)
+
+Cambridge US gives MOUTH for [*wow*](https://dictionary.cambridge.org/pronunciation/english/wow)
+and [*wowed*](https://dictionary.cambridge.org/us/dictionary/english/wowed).
+The rules path had GOAT for *wow* and *wowie*, while the morphology route
+already preserved MOUTH in *wowed*, *wowing*, and *wows*. A spelling-frame
+condition for initial `<w>ow` now changes the rules-path forms without adding a
+word map. The paired regression keeps GOAT for *mow*, *tow*, *low*, *know*,
+*snow*, *show*, *slow*, and their tested forms. The full snapshot changed only
+seven rule/morph predictions: *wow*, *wow's*, *wowie*, and four derived forms;
+the earlier broader replay also exposed unwanted changes in *powwow* and
+*Karwowski*, so the condition is limited to the initial syllable.
+
+After dictionary rebuild, full-dictionary rules strict/lenient is
+62,328/83,675 (+3/+0); common strict/lenient is 5,360/6,377 (+1/+0) of 6,990,
+and top-5,000 is 2,896/3,356 (+1/+0) of 3,617. CMU rules-only is 4,161/5,000
+(+1; its legacy 90% floor still fails); default public API remains 4,752/5,000.
+Stress-aware phonemic is 54,730/90,309 (+47). Homographs remain 1,454/1,615;
+context IPA remains 87/108, 85/108, 53/108, and 49/108. Runtime parity remains
+94,773/100,805, one below the committed baseline. Dictionary, homograph, and
+custom dictionary hashes match the frozen inputs. The new paired tests, all
+376 Jest suites / 6,890 tests, typecheck, and Rollup pass. `yarn build` still
+hits the sandbox's tsx IPC `EPERM`; the required dictionary rebuild succeeded
+through direct Node execution and Rollup passed directly. No baseline was
+refreshed; the 90% common strict target and +1-point commit threshold remain
+open.
+
+The follow-up structural learner screen (`learn-rule-corrections.ts
+--structural`) accepted 43 fold-local candidates but none passed the existing
+held-out win/loss filter; mean held-out strict stayed 74.87% before and after
+filtering. No further candidate from that screen was adopted. Its report is at
+`/tmp/phonemize-rule-corrections/cv-common-report.json`.
+
+A fresh actual-route ablation confirms morphology is essential to the common
+score: removing it lowers strict/lenient from 5,360/6,377 to 4,717/5,907;
+forcing the unsplit route lowers them further to 4,603/5,830. The largest
+current trace cluster remains initial `i` (200) and `a` (136), with examples
+dominated by names and acronyms. One ordinary-word error, *disease*, predicts
+`dɪˈsiz` in the rule/morphology path against Cambridge US
+[`dɪˈziːz`](https://dictionary.cambridge.org/us/pronunciation/english/disease).
+The nearby [*disagree*](https://dictionary.cambridge.org/us/pronunciation/english/disagree)
+and [*disengage*](https://dictionary.cambridge.org/us/pronunciation/english/disengage)
+retain `/s/`, so voicing every `dis-` before a vowel is a regression; narrowing
+it to `dis-ease` would be a single-root exception. No unsafe rule was adopted.
+
+The all-dictionary postlex replay covered 107,644 words and 176 rules. No
+rule-removal candidate improves both the common set and full dictionary. The
+only common strict win without a common loss is removing the `<ett>` schwa rule
+for *Bennett*; across the full dictionary the same removal fixes 11 and breaks
+43. That is an isolated name/reference conflict, not a generalizable class.
+Full win/loss evidence is in `/tmp/phonemize-postlex-all-20261021/results.json`.
+
+A surface-alignment screen of the common mismatch report found 240 single-phone
+`/ə/`-gold versus `/ɪ/`-rule differences. Cambridge US explicitly supports
+the current `/ɪ/` for [*acid*](https://dictionary.cambridge.org/us/pronunciation/english/acid),
+[*added*](https://dictionary.cambridge.org/pronunciation/english/added),
+[*artist*](https://dictionary.cambridge.org/us/pronunciation/english/artist),
+and [*article*](https://dictionary.cambridge.org/us/pronunciation/english/article).
+This is a major CMU-versus-dictionary convention cluster, not a safe blanket
+weak-vowel correction; candidates must be narrowed to independently supported
+spelling families before changing the rule path.
+
+### Narrow `con|cen|tr` weak-vowel replay (2026-10-21)
+
+Cambridge US gives schwa in [*concentrate*](https://dictionary.cambridge.org/us/dictionary/english/concentrate)
+and [*concentrator*](https://dictionary.cambridge.org/us/pronunciation/english/concentrator),
+while *concentric* has stressed `/ɛ/`. The rule now limits schwa to an
+unstressed `cen` syllable after `con` and before a `tr` syllable. Against the
+frozen 1,296,341-row route snapshot, only `rule/concentrate` changed; default,
+morphology and POS predictions were identical. The prior broader replay's
+collateral words and derived-form stress loss are not present in this narrow
+candidate. The rules-only common score is 5,361/6,990 strict (+1), 6,377
+lenient (unchanged); top-5,000 remains 2,896/3,617 strict and 3,356 lenient.
+Full-dictionary rules strict is 62,329/105,066 (+1), lenient 83,675. Stress-aware
+phonemic and full-IPA exact counts are unchanged at 54,730 and 45,503; the
+stress-only error bucket rises by one while the vowel-only bucket falls by one.
+Public CMU default/rules are 4,752/5,000 and 4,161/5,000, respectively. Context
+remains 87/108, 85/108, 53/108 and 49/108; homographs remain 1,454/1,615.
+Runtime parity remains 94,773/100,805, one below its committed baseline because
+of the existing `eventual` notation conflict. The dictionary rebuild retained
+the frozen English dictionary and homograph hashes. All 377 Jest suites / 6,901
+tests, typecheck, Rollup and `git diff --check` pass. Five rule modules total
+3,394 code lines. No baseline was refreshed; the 90% strict goal remains open
+by 931 common words and 360 top-slice words, and this batch remains below the
+ordinary +70-word commit threshold.
+
+### Silent-s PRICE `isle` spelling family (2026-10-21)
+
+The common failure cluster includes *island* (`/ˈɪsɫənd/`) and *isle*
+(`/ˈaɪsɫə/`) on the rules path. Cambridge US confirms [*island*]
+(https://dictionary.cambridge.org/us/pronunciation/english/island) and
+[*isle*](https://dictionary.cambridge.org/us/pronunciation/english/isle) have
+initial PRICE with silent `s`; [*islet*](https://dictionary.cambridge.org/us/pronunciation/english/islet)
+shares the root, while *Iceland* preserves `/s/`. A bounded orthographic
+`isl + e/et/and` root rule fixes `isle`, `islet`, `island`, and the regular
+`island` compounds without touching *Islam* or *Iceland*. The 1,296,341-row
+snapshot changed 10 rows, all on the root/compound route or synthetic suffix
+replays; scored full-dictionary changes were `island`, `island's`, `isle`, and
+`islet` (strict +3/−0, lenient +4/−0). Common strict/lenient is 5,363/6,379 of
+6,990; top-5,000 is 2,897/3,357 of 3,617. CMU public default/rules is
+4,752/5,000 and 4,162/5,000. Full rules are 62,332/83,679 strict/lenient;
+stress-aware headline/full IPA exact are 54,733/45,505. Context stays
+87/108, 85/108, 53/108, and 49/108; homographs stay 1,454/1,615. Runtime parity
+is unchanged at 94,773/100,805, one below its committed baseline. The rebuilt
+dictionary hashes are unchanged. All 378 suites / 6,911 tests, typecheck,
+Rollup, and `git diff --check` pass. Rule-module code remains at the 3,395-line
+cap. No baseline was refreshed; common/top 90% strict remain 929/359 words
+away, and the batch is below the ordinary +70-common-word commit threshold.
+
+### Dark-L normalization counterfactual (2026-10-21)
+
+The current strict mismatch inventory contains light/dark lateral notation
+differences, so a frozen-snapshot counterfactual replaced every `/ɫ/` with
+`/l/` only in rules predictions while leaving the pinned references and scorer
+unchanged. On the fixed common cohort strict fell from 5,363 to 3,754/6,990;
+top-5,000 fell from 2,897 to 2,083/3,617. Lenient was unchanged; strict had
+1,611 losses against two wins in the full cohort. The emitted dark-l convention
+matches the current pinned table broadly; global light-l rewriting is not a
+valid accuracy shortcut. No source, reference, or baseline changed.
+
+### Rejected broad syllabic `-es` KIT conversion (2026-10-21)
+
+The common mismatch set includes plural/3sg forms whose final syllabic `-es`
+is emitted as `/əz/` while a pinned CMU variant uses `/ɪz/`. Cambridge US
+confirms `/ɪz/` in *natural resources* and `/ɪ/` in the base *service*,
+*notice*, *practice*, and *office*. However, changing every final `/əz/` to
+`/ɪz/` in the fixed top-5,000 report would turn 16 mismatches into matches and
+18 matches into mismatches. The current phonotactic rule reflects its wider
+dictionary tally (359 `/əz/` vs 107 `/ɪz/` syllabic `-es` readings), so the
+surface pattern does not identify the correct vowel reliably. No broad
+allomorph or reference change was adopted; a future candidate must separate a
+productive morphological class with paired controls before replaying the
+acceptance gates. Cambridge sources: [natural resources](https://dictionary.cambridge.org/pronunciation/english/natural-resources),
+[service](https://dictionary.cambridge.org/us/pronunciation/english/service),
+[notice](https://dictionary.cambridge.org/us/pronunciation/english/notice),
+[practice](https://dictionary.cambridge.org/pronunciation/english/practice),
+and [office](https://dictionary.cambridge.org/pronunciation/english/office).
+
+### Rejected final `/ɪdʒ/` to `/ədʒ/` conversion (2026-10-21)
+
+A frozen rules-route replay replaced a word-final `/ɪdʒ/` sequence with
+`/ədʒ/` wherever it occurred, then compared unchanged predictions and golds
+with the normal stress-stripped strict scorer. Of 339 testable dictionary
+rows affected, the full cohort had 49 wins and 179 losses. The common cohort
+had 20 wins and 22 losses; the fixed top-5,000 slice had 12 wins and 12
+losses. Words such as *damage*, *image*, *message*, *package*, *usage*, and
+*village* favored schwa, while *advantage*, *college*, *footage*, *garbage*,
+and *vintage* already had the correct `/ɪ/`. The suffix alone therefore does
+not identify a safe pronunciation class. No source rule, table, reference, or
+baseline changed.
+
+### Rejected generic hard-G recovery before final `-in` (2026-10-21)
+
+The common rule trace marks *login* and *plugin* with soft `/dʒ/`, while
+Cambridge US gives hard `/ɡ/` for [*login*](https://dictionary.cambridge.org/pronunciation/english/login).
+Simply changing every `-gin` after an independently listed `g`-final root
+would also affect 11 dictionary entries that are not transparent `root + in`
+compounds, including surname/place readings such as *Bogin*, *Cragin*, *Elgin*,
+*Magin*, and *Ragin*. In the 13-word whole-dictionary route screen, a final
+`/dʒ/`→`/ɡ/` substitution produced 3 strict wins and 5 strict losses; several
+other affected words remained mismatches because their root vowels also
+differed. *Begin* is a required hard-G control for the spelling, but it does
+not establish a productive `-gin` rule ([Cambridge US](https://dictionary.cambridge.org/pronunciation/english/begin)).
+No spelling-wide code change was adopted; the remaining *login/plugin* errors
+need a productive compound boundary signal that does not classify unrelated
+names as compounds.
+
+### CMU yod conflict in high-frequency `new`/`knew` (2026-10-21)
+
+The rules path emits `/nu/` for *new*, *knew*, and *renew*, while the pinned
+CMU row for *new* and *knew* carries `/nju/`. Cambridge explicitly gives US
+`/nuː/` and UK `/njuː/` for [*new*](https://dictionary.cambridge.org/pronunciation/english/new)
+and [*knew*](https://dictionary.cambridge.org/us/dictionary/english/knew);
+its US entry for [*renew*](https://dictionary.cambridge.org/us/dictionary/english/renew)
+also has `/nuː/`. These are correct US rule outputs that strict CMU scoring
+counts as errors, so adding a yod to the rules or changing the pinned gold to
+manufacture a gain would be inappropriate. Keep the source distinction visible
+when analyzing the remaining common-word strict gap.
+
+### Monosyllabic `-uth` long-U rime (2026-10-21)
+
+The rules path used STRUT in stressed, monosyllabic `-uth` forms such as
+*truth* and *Ruth*. A narrow syllable rule now gives `/u/` to the stressed
+single-syllable `-uth`/`-uths` rime, including productive plural stems; it
+does not apply to multisyllabic *bismuth*, the `/aʊ/` `-outh` set (*south*,
+*mouth*), or `ou` in *uncouth*. Cambridge US gives `/truːθ/` for
+[*truth*](https://dictionary.cambridge.org/us/pronunciation/english/truth),
+and its [*Ruth* pronunciation](https://dictionary.cambridge.org/pronunciation/english/ruth)
+is `/ruːθ/`. Tests pair both targets with *youth*, *sleuth*, *tooth*,
+*uncouth*, *bismuth*, `truths`, `ruths`, `truthful`, `untruth`, possessive
+`Ruth's`, and full-sentence controls.
+
+The frozen common cohort rose from 5,363 to 5,365 strict (6,990 items), and
+the top-5,000 slice from 2,897 to 2,898 strict (3,617 items). Full-dictionary
+rules strict rose 62,332→62,347 and lenient 83,679→83,680. Public CMU rules
+accuracy rose 4,162→4,163/5,000; default stayed 4,752/5,000. Stress-aware
+headline/full-IPA exact rose 54,733→54,746 and 45,505→45,517. Default context
+remains 87/108, homographs 1,454/1,615, and runtime parity 94,773/100,805;
+the latter retains its previously documented one-word baseline shortfall.
+The rebuild re-pinned 525 entries (523 resolved, five retained net-positive
+regressions); common/top counts did not move beyond the rule wins. Five
+default parity rows changed only secondary-stress placement, leaving their
+segments and primary stress unchanged; the concentration regression checks
+now enforce those stable properties because Cambridge US marks no secondary
+stress for the cited forms. All 379 Jest suites / 6,926 tests, typecheck,
+Rollup, and `git diff --check` pass. No baseline was refreshed: the common
+strict score is 927 words below the requested 6,292/6,990 threshold and the
+top slice is 358 below 3,256/3,617. The batch remains below the ordinary
+70-word commit minimum relative to the current committed baseline.
+
+### Structural candidate replay after the `-uth` batch (2026-10-21)
+
+The TRAIN-only structural learner was rerun on the fixed 6,990-word common
+cohort with spelling-family folds and actual pipeline replay. It selected 43
+fold-local corrections, but none passed the legacy training filter in any
+fold; held-out strict remained 74.97% on average before and after filtering.
+Its leading proposal changed unstressed `/ɪ/` to `/ə/` after `c` before `i`
+and appeared in 9/10 accepted-fold sets, but passed the filter in 0/10 folds.
+This is not adoption evidence. In the frozen error report, apparent
+`-age` and `-ist` clusters also reflect pinned-reference transcription
+differences: Cambridge US gives `/ɪ/` in *package* and *artist*, matching the
+current output where the pinned IPA rows use `/ə/`. No rule, reference,
+baseline, or runtime data changed in this replay.
+
+### Full-dictionary postlex ablation after the `-uth` batch (2026-10-21)
+
+The required `--all --include-long` postlex diagnostic replayed 107,644 words
+through the real pipeline and tested removal of all 176 postlex rules. No
+single-rule removal improved the tracked full-dictionary and common strict
+and lenient counts together. The only removal with a common strict gain was
+the guarded `-ett` `/ɪt/` rule: it gains one common word but loses 32 strict
+words across the full dictionary, so it was retained. No postlex rule was
+changed.
+
+The top-ranked common mismatches also contain individually irregular words
+whose pinned readings agree with current authoritative US entries, such as
+*now* `/naʊ/`, strong *have* `/hæv/`, *from* `/frʌm/` or weak `/frəm/`, and
+*said* `/sɛd/`, while the spelling rules emit a different reading. These are
+valid word-level reading gaps, not a supported suffix/onset class; adding a
+spelling-wide rule from them would overfit. Cambridge sources: [now](https://dictionary.cambridge.org/us/pronunciation/english/now), [have](https://dictionary.cambridge.org/us/pronunciation/english/have), [from](https://dictionary.cambridge.org/us/pronunciation/english/from), and [said](https://dictionary.cambridge.org/us/pronunciation/english/said).
+
+### Structural distance-objective replay (2026-10-21)
+
+The same frozen common cohort and spelling-family folds were replayed with
+the learner's partial-distance objective. It accepted 18 fold-local rules,
+but again none passed the train-only adoption filter. Held-out strict stayed
+at 74.97% before and after filtering. Its leading candidate changed the
+unstressed output after `m` in a few words: it repeatedly repairs *image* and
+*climate* but breaks *estimate* and *approximate*. Those words do not support
+one productive environment, and the proposal fails the minimum-support and
+fix-rate requirements. No source rule or baseline changed.
+
+### Orthographic splits for final syllabic `-es` (2026-10-21)
+
+To check whether spellings could rescue the rejected global `/əz/`→`/ɪz/`
+change, the full rules-only dictionary and fixed common cohort were replayed
+by final letter groups. Replacing the final vowel only for `-ches`, `-shes`,
+`-sses`, `-ses`, `-xes`, `-zes`, `-ges`, or `-ces` did not improve strict in
+any cohort. Full/common/top-5000 strict deltas were respectively
+`-38/-12/-5`, `-29/-1/0`, `-32/-9/-5`, `-85/-27/-15`, `-7/-2/-2`,
+`-13/-1/-1`, `-40/-18/-9`, and `-65/-27/-15`. The orthographic endings do
+not separate the dictionary's competing vowel conventions; no allomorph
+change was made.
+
+### Neutral rule-module compression (2026-10-21)
+
+After the repeated-grapheme cluster trigger, grouped the adjacent syllabifier
+initialization declarations without changing their values or order. The
+complete snapshot remained byte-identical across 1,296,341 dict, rule,
+morphology, and POS predictions. All 379 Jest suites / 6,926 tests and
+typecheck pass. The five rule modules now total 3,394 code lines
+(`g2p` 1,144, `syllabify` 1,708, `postlex` 496, `morph-table` 20,
+`morph-parser` 26), one below the retained cap. A separate attempted adjacent
+`/z/` rule merge was rejected because the full snapshot exposed its syllable-
+position guard; that merge was reverted.
+
+### Regular-inflection route ablation after compression (2026-10-21)
+
+The current common-cohort route replay verified all 6,990 baseline
+predictions. Removing the regular-inflection dispatcher branch at
+`tryMorphologicalAnalysis:L1612` changed 321 predictions: 38 strict wins and
+208 strict losses (lenient +6/-162). A large share of its apparent wins are
+CMU `/ə/` versus rule `/ɪ/` in the syllabic `-ed` ending; Cambridge US
+explicitly gives `/ɪd/` for [*wanted*](https://dictionary.cambridge.org/us/pronunciation/english/wanted)
+and [*coated*](https://dictionary.cambridge.org/us/pronunciation/english/coated).
+The remaining changes combine unrelated stem-vowel and stress differences.
+This ablation does not support a general inflection or suffix change, and no
+rule or reference was changed.
+
+### Rebuild and packaged release-gate refresh (2026-10-21)
+
+Rebuilt the generated tables from the pinned upstream sources, then ran Rollup.
+The dependency-aware exception miner re-pinned 525 entries (523 resolved, five
+retained net-positive regressions). The rebuilt common rules scores are
+unchanged at 5,365/6,990 and 2,898/3,617; default/rules CMU accuracy is
+4,752/5,000 and 4,163/5,000. Context cells remain 87/108, 85/108, 53/108,
+49/108; homograph eval remains 1,454/1,615; stress-aware headline/exact remain
+54,746/45,517. Runtime parity remains 94,773/100,805, equal to the frozen
+pre-rebuild run and still one strict word below its committed baseline. All
+379 Jest suites / 6,926 tests, typecheck, Rollup, and `git diff --check` pass.
+
+An extracted npm tarball also passes CJS and ESM package checks for O'Brien,
+O'Reilly Media, and the complete sentence `O'Reilly Media published the book.`
+The pronunciation stays `/oʊˈɹaɪɫi/` and `Media` remains a separate token. No
+baseline was refreshed and no release was published; the 90% rules targets
+remain unmet.
+
+### Lexical velar `-ed` syllables (2026-10-21)
+
+The postlexical regular-past rule was collapsing dictionary readings of
+*crooked*, *naked*, *wicked*, *ragged*, *rugged*, and *legged* to `/kt/` or
+`/gd/`, although Cambridge US gives the lexical syllable `/kɪd/` or `/ɡɪd/`
+for these adjective readings ([*crooked*](https://dictionary.cambridge.org/us/pronunciation/english/crooked),
+[*naked*](https://dictionary.cambridge.org/us/pronunciation/english/naked),
+[*wicked*](https://dictionary.cambridge.org/us/pronunciation/english/wicked),
+[*ragged*](https://dictionary.cambridge.org/pronunciation/english/ragged),
+[*rugged*](https://dictionary.cambridge.org/us/pronunciation/english/rugged),
+[*legged*](https://dictionary.cambridge.org/us/dictionary/english/legged)).
+The general postlexical correction now keeps a syllabic ending only when the
+complete word has a matching lexical dictionary reading and the supplied POS
+is not verbal. Verb-tagged readings still use the regular past allomorph, and
+OOV inflections such as `bryked` continue through the productive rule. This
+avoids a spelling-only exception or a per-word map.
+
+The frozen 1,296,341-prediction snapshot changes only those six lexical words
+and their six possessives; the earlier OOV changes (`bryked`, `dyked`,
+`lynked`, `trygged`, `wyked`) are absent. Common rules strict remains
+5,365/6,990 and top-5000 2,898/3,617. Public CMU default rises from
+4,752 to 4,753/5,000; rules-only remains 4,163/5,000. Runtime parity rises
+from 94,773 to 94,778/100,805. Full rules strict/lenient remain
+62,347/83,680; stress-aware remains 54,746/45,517; context remains
+87/85/53/49; homographs remain 1,454/1,615. The combined gains do not meet
+the 70-word common strict commit minimum, and the 90% targets remain open.
+
+Validation: all 379 Jest suites / 6,929 tests, typecheck, the common/full
+rules evaluators, default and rules CMU checks, stress-aware, context,
+homograph, and parity gates pass their unchanged-contract comparisons. No
+baseline was refreshed. Direct Rollup succeeded with its existing mixed-export
+and external `pinyin-pro` warnings. A freshly extracted npm tarball passes CJS
+and ESM checks for the lexical readings and O'Reilly Media. The five rule
+modules total 3,395 code lines, at the retained cap.
+
+### Rejected final `-land` reduction (2026-10-21)
+
+A candidate that reduced secondary-stressed `/ˌlænd/` to `/lənd/` for words
+spelled `-land` would repair four common-cohort mismatches (`highland`,
+`Iceland`, `Oakland`, `Portland`) but break three currently correct controls
+(`Thailand`, `mainland`, `homeland`), for only one net strict gain and three
+paired regressions. Cambridge US supports `/lənd/` in [*Highlands*](https://dictionary.cambridge.org/pronunciation/english/highlands),
+[*Iceland*](https://dictionary.cambridge.org/pronunciation/english/iceland),
+[*Portland*](https://dictionary.cambridge.org/us/pronunciation/english/portland),
+[*Finland*](https://dictionary.cambridge.org/pronunciation/english/finland),
+and [*Cleveland*](https://dictionary.cambridge.org/dictionary/english/cleveland),
+but the spelling class does not separate the correct reference forms in the
+fixed cohort. The experiment changed no source or expectations and was
+rejected under the zero-control-regression gate.
+
+### Current structural learner and `-ative` replay (2026-10-21)
+
+Reran the 10-fold, spelling-family-held-out structural learner against the
+current generated dictionary, fixed 6,990-word frequency population, and
+current runtime. All 43 fold-selected corrections failed the train-only
+legacy filter. Applying all selected corrections reduced pooled held-out
+strict from 3,822 to 3,798/5,098; the filtered set is empty. No proposal was
+adopted. A separate `-ative` composition simulation that reused the matching
+`-ate` stem plus `/ɪv/` found no strict common-word wins and three regressions
+among eleven tested forms (`alternative`, `negative`, `relative`), because
+stress and stem allomorphy do not transfer uniformly. This class was also
+rejected. The current fixed common scores remain 5,365/6,990 and 2,898/3,617;
+the next search remains focused on productive root/morphology contexts with
+paired unchanged controls.
+
+A final `-age` `/ɪ/→/ə/` simulation had 18 strict wins and 18 losses over the
+46 common words in that spelling class, so the net gain was zero. Cambridge US
+explicitly records `/ɪdʒ/` for [*message*](https://dictionary.cambridge.org/us/pronunciation/english/message),
+[*package*](https://dictionary.cambridge.org/pronunciation/english/package),
+and [*passage*](https://dictionary.cambridge.org/us/pronunciation/english/passage),
+whose pinned reference entries use schwa. The apparent strict wins therefore
+include reference-convention disagreements rather than established rule
+errors; neither the rule nor the references were changed.
+
+### Initial `ex-` vowel replay (2026-10-21)
+
+Changing initial rule-path `/ɪk/` to `/ɛk/` across the 47 common `ex-` words
+where the pattern occurs yields 7 strict wins and 34 losses. The wins include
+stressed noun readings (`export`, `excerpt`, `extract`), while unchanged
+controls such as `expect`, `except`, `expense`, `experience`, and `exchange`
+require the current weak `/ɪ/`. This prefix spelling alone cannot identify
+the intended vowel or citation POS; no blanket `ex-` rule was adopted.
+
+### Weak stem `/ɪ/` before `-ation` replay (2026-10-21)
+
+Tested centralizing a weak root `/ɪ/` immediately before a secondary-stressed
+syllable when a supplied `-ate` root composes into `-ation`. Across the
+full-dictionary set this changes 21 forms: 4 strict wins and 11 losses. The
+common cohort changes four forms (one win, two losses); top-5000 changes six
+(two wins, three losses). Although it repairs `legislation` and
+`consolidation`, it breaks forms such as `administration` and
+`liquidation`. The root environment does not determine the derived weak vowel,
+so this class was rejected without changing the rule or gold readings.
+
+### Final `-ower` rime replay (2026-10-21)
+
+Changing rule-path final `/oʊɝ/` to `/aʊɝ/` for `-ower` spellings repairs
+`flower`, `tower`, and `shower` in the fixed common cohort, but breaks the
+correct `lower`. Across the full testable non-foreign dictionary it repairs
+12 and breaks 23 words, including agent nouns such as `blower`, `grower`, and
+`mower`. The spelling does not distinguish the `/aʊ/` lexical rime from
+productive `-er` forms with `/oʊ/`; accepting the common +2 net would violate
+the zero-regression control gate. No source rule or reference was changed.
+
+The spelling-family 10-fold learner was also rerun with its partial-distance
+objective over the same 5,098 rule-path words. It accepted 18 fold-local
+corrections, but none passed the train-only adoption filter. Applying all 18
+reduced pooled held-out strict from 3,822 to 3,813/5,098 (74.97% to 74.79%);
+the filtered set is empty. The leading `/eɪ/→/ə/` proposal after `m` had
+10 train fixes and 9 breaks and still failed its filter in all five folds
+where selected. No learner proposal was adopted.
+
+### `-ated` past-tense vowel replay (2026-10-21)
+
+Replacing final rule-path `/tɪd/` with `/təd/` for spellings ending `-ated`
+would repair 17 and break 25 common-cohort words; the top-5000 slice changes
+six to correct and eight to incorrect, and the full testable non-foreign
+dictionary changes 72 to correct and 292 to incorrect. The largest apparent
+wins (`heated`, `created`, `coated`) retain the productive `/ɪd/` past-tense
+allomorph supported by Cambridge US, which explicitly gives `/ˈhiːtɪd/` for
+[*heated*](https://dictionary.cambridge.org/us/pronunciation/english/heated).
+This is not a safe suffix correction, and matching CMU's schwa in these cases
+would trade away an independently attested reading. No rule or gold reading
+was changed.
+
+### Common-cohort error route split (2026-10-21)
+
+Reclassified the current 1,625 common strict mismatches through `trace()` on
+the same rules-only runtime. There are 1,276 direct-rule, 310 morphology, and
+39 compound-route failures. The spelling-family learner's 5,098-word scope
+therefore excludes 1,892 common cases, including 349 current errors; after
+the learner produced no accepted corrections, the remaining useful search
+surface is stem selection and composition on those excluded routes. The
+largest morphology ending is `-ed` (95 errors); representative pairs include
+`presented`, `embedded`, `expected`, `recorded`, and `heated`. Many `-ed`
+differences are vowel-reduction/reference conventions rather than verified
+stem bugs, so future candidates must be isolated by root reading and checked
+against POS and context controls before adoption.
+
+### `-ening` schwa deletion probe and refreshed common gates (2026-10-21)
+
+A screen of generated dictionary entries routed through morphology found nine
+`-ening` outputs where deleting the weak vowel before /nɪŋ/ would change the
+result. It repairs `evening` against the pinned reference and Cambridge US
+(/ˈiːv.nɪŋ/), but breaks `softening`, `clendening`, and `glendening`;
+`opening` is covered by the runtime exception table and was outside this
+rules-only dictionary screen. Cambridge also gives `busyness` with an intervening /i/,
+unlike `business`, so neither a general `-ening` nor an `-iness` deletion is
+licensed. The screen is diagnostic only; no rule, reference, or runtime map
+changed. Sources: [Cambridge *evening*](https://dictionary.cambridge.org/us/pronunciation/english/evening),
+[*business*](https://dictionary.cambridge.org/us/pronunciation/english/business),
+and [*busyness*](https://dictionary.cambridge.org/us/pronunciation/english/busyness).
+
+The refreshed rules-only common strict report is 5,365/6,990 (76.75%) and
+2,898/3,617 (80.12%) on top-5000. Public API CMU segment accuracy remains
+4,753/5,000 (95.06%) and passes its 90% gate; rules-only is 4,163/5,000
+(83.26%), below its documented legacy floor and required only to avoid a
+decrease. `yarn test:eval --subset common --cluster` completed. The `tsx`
+CLI could not create its sandbox IPC socket, so both common-accuracy modes
+were rerun successfully with `node --require tsx/cjs`. No baseline was
+refreshed and this evidence does not qualify as a pronunciation-gain commit.
+
+### Rejected broad `environ-` stem rewrite (2026-10-21)
+
+A full snapshot was frozen at `/tmp/phonemize-environ-before-20261021/` before
+screening. A rule-only IPA reanalysis of the current `/ɛnvɝən/` stem to
+`/ɪnˈvaɪɹən/` would fix `environment` and `environmental` in the common set
+(+2 strict, no common losses) and also align `environments`/derived forms
+already correct through morphology. However, Cambridge US distinguishes the
+bare verb *environ* (/enˈvaɪrən/) from *environment* and *environmental*
+(/ɪnˈvaɪrən/, /ɪnˌvaɪrənˈmentəl/); *environs* also has a noun reading with
+/ɪn/. A spelling-only root rewrite would erase this suffix/POS distinction,
+and the only safe implementation found would be a narrowly gated lexical
+family exception rather than a productive grapheme rule. No source behavior
+or reference changed. Sources: [Cambridge *environ*](https://dictionary.cambridge.org/pronunciation/english/environ),
+[*environmental*](https://dictionary.cambridge.org/us/pronunciation/english/environmental),
+and [*environs*](https://dictionary.cambridge.org/us/dictionary/english/environs).
+
+### Suffix-conditioned `environment-` stem allomorph (2026-10-21)
+
+The bare `environ` verb and `environs` were kept outside the broad rewrite.
+Added a spelling-conditioned surface rule for `environment-` derivatives only:
+when the current output still has `/ɛnvɝən/`, emit the attested weak initial
+`/ɪn/` plus PRICE `/aɪɹ/`, carrying the existing stress level onto the stem.
+Cambridge US independently supports `/ɪnˈvaɪɹənmənt/` for *environment* and
+`/ɪnˌvaɪɹənˈmɛntəl/` for *environmental*. The paired tests preserve bare
+*environ*, noun/verb *environs*, the hyphenated *environment-friendly* control,
+and already-correct *environmentally*.
+
+Frozen `/tmp/phonemize-environ-before-20261021/snapshot.tsv` contains 1,296,341
+predictions. After the rule and full dictionary rebuild, exactly nine rows
+changed: three dictionary-word rules and six morphology-derived spellings;
+no default-dictionary or POS snapshot rows changed. The six morphology rows
+are also recorded in the full snapshot for future derived-form review. The
+rebuilt exception table has 53,930 entries with 526 dependency-aware re-pins;
+its five net-positive stem regressions are `caterings`, `fared`,
+`instituting`, `provance`, and `provence`.
+
+Post-rebuild common rules strict/lenient is 5,366/6,380 of 6,990, with
+2,899/3,358 of 3,617 on top-5000. Full-dictionary rules strict/lenient is
+62,348/83,681 of 105,066 (+1/+1 versus the frozen snapshot). Public CMU
+default/rules is 4,753/4,165 of 5,000 (default unchanged, rules +2); runtime
+parity remains 94,778/100,805 and 100,681 lenient. Stress-aware phonemic/exact
+is 54,747/45,518 of 90,309. Context remains 87/85/53/49 across default/rules
+and auto/gold POS; homographs remain 1,454/1,615. All 379 Jest suites / 6,935
+tests, typecheck, Rollup and extracted npm-package CJS/ESM smokes pass; the
+packed artifact correctly phonemizes O'Reilly Media and the two changed forms.
+
+No baseline was refreshed: the main strict gain is one word, leaving the batch
+47 words below the 5,413 ordinary commit threshold and 926 below release
+target. No user work was staged or committed. Sources: [Cambridge
+*environment*](https://dictionary.cambridge.org/us/pronunciation/english/environment)
+and [*environmental*](https://dictionary.cambridge.org/us/pronunciation/english/environmental).
+
+### Follow-up candidate screen (2026-10-21)
+
+Replayed the current 6,990-word common set through route and postlex diagnostics,
+then ran both spelling-family-folded rule learners (structural and grapheme
+only). Neither learner produced a candidate passing its train-only legacy
+filter; held-out strict stayed 74.97% before and after. The most repeated
+proposal changes unstressed /ɪ/ to /ə/ after `c` before `i` (train +51/-24,
+top-5000 +25/-16 across fold acceptances), so it was rejected. It conflicts
+with authoritative US pronunciations such as Cambridge's /ˈæs.ɪd/ for
+[acid](https://dictionary.cambridge.org/us/pronunciation/english/acid) and
+/ˈmed.ɪ.sən/ for [medicine](https://dictionary.cambridge.org/us/pronunciation/english/medicine),
+and the actual paired replay also breaks words including `appreciate`,
+`associate`, and `calcium`. No rule, expectation, or baseline changed. Current
+runtime checks remain CMU default 4,753/5,000, context default/auto 87/108, and
+homographs 1,454/1,615; the unresolved work is the two strict common-word
+targets, not a reason to relax their frozen reference contract.
+
+The required full postlex replay (`--all --include-long`) exposed one apparent
+common-word win from removing the guarded geminate `-ett` rule: `Bennett` would
+match the current IPA-Dict `/ə/` reference, but removal loses 32 full-dictionary
+strict cases and two lenient cases. Cambridge US gives Bennett `/ˈben.ɪt/`,
+which supports the shipped `/ɪ/` output, so neither the rule nor its reference
+was changed. This remains a recorded source disagreement, not a pronunciation
+gain: [Cambridge Bennett](https://dictionary.cambridge.org/pronunciation/english/bennett).
+
+### Morphology-route `-nded` replay (2026-10-21)
+
+Replayed the apparent weak-vowel discrepancy after morphology composition, in
+`applyPostStress` where the `-ed` forms actually pass. Converting `/ndɪd/` to
+`/ndəd/` for every `-nded` spelling raises common strict from 5,366 to 5,372
+and full-dictionary strict from 62,348 to 62,356, but lowers full-dictionary
+lenient from 83,681 to 83,680. The spelling also includes controls such as
+`comprehended` and `heavyhanded`; this blanket environment therefore fails the
+no-regression gate. The apparent wins partly reflect IPA-Dict's weak-vowel
+notation: Merriam-Webster records `ended` as `/ˈen-dəd/`, while productive
+past-tense `/ɪd/` remains a standard reading. The trial was removed; no source,
+reference, or baseline changed.
+
+### Rule-derived `-ility` plural vowel inheritance (2026-10-21)
+
+The `-ies` morphology path can pick an exception-table stem whose weak
+`/ɪ/` disagrees with the ordinary rule rendering of the singular in `-ility`.
+For `disabilities`, `facilities`, and `liabilities`, the rule-derived bases
+end in `/ləti/`, while the plural path was returning `/lɪtiz/`. The plural now
+inherits the rule stem only when its phone sequence differs from the selected
+stem solely at that weak vowel. Cambridge US independently records schwa in
+the corresponding singular suffixes for [disability](https://dictionary.cambridge.org/dictionary/learner-english/disability),
+[facility](https://dictionary.cambridge.org/pronunciation/english/facility),
+[liability](https://dictionary.cambridge.org/pronunciation/english/liability),
+and [vulnerability](https://dictionary.cambridge.org/pronunciation/english/vulnerability).
+The root comparison preserves the `/ɪ/` in `instabilities` and other patterns
+whose ordinary rule stem does not have the weak schwa.
+
+The frozen pre-change snapshot recorded 1,296,341 predictions. This rule
+changes four valid `rule` outputs: three common strict wins
+(`disabilities`, `facilities`, `liabilities`) and `vulnerabilities`, whose
+IPA-Dict form uses `/ɪ/` although Cambridge US supports the rule's schwa
+variant. It leaves dictionary, POS, and valid derived-form predictions alone.
+Eight additional snapshot differences after `build-dict` are artificial
+double-inflections such as `facilitiesed`; they arise from the regenerated
+exception table and are outside the English word population.
+
+After the required rebuild (526 dependency re-pins: 524 resolved, five
+retained net-positive regressions), common rules strict/lenient is
+5,369/6,380 of 6,990; top-5000 is 2,901/3,358 of 3,617. Full testable-dict
+rules strict rises from 62,348 to 62,351 while lenient remains 83,681.
+CMU default/rules remains 4,753/4,165 of 5,000; stress-aware phonemic/exact
+is 54,747/45,520 of 90,309; context remains 87/85/53/49; homographs remain
+1,454/1,615; runtime parity remains 94,778/100,805 strict and 100,681 lenient.
+All 380 Jest suites / 6,944 tests, typecheck, Rollup, and extracted npm-package
+CJS/ESM checks pass, including O'Reilly Media. No baseline was refreshed: the
+three-word strict gain remains below the 70-word qualifying commit minimum and
+the 90% release targets remain open.
+
+### Explicit verb POS in homographic -s inflections (2026-10-21)
+
+When a caller supplies POS `V`, the regular `-s` path previously selected a
+vouched verb reading only for a finite-object frame or roots ending in /s z v/.
+That missed homographic stems such as `combine`, `console`, and `produce`, even
+though their V readings are independently labelled in the existing homograph
+table. The branch now selects that reading for any V-labelled stem when POS is
+explicit. Cambridge US distinguishes the verb/noun stress in [combine](https://dictionary.cambridge.org/us/pronunciation/english/combine),
+[console](https://dictionary.cambridge.org/us/pronunciation/english/console),
+and [produce](https://dictionary.cambridge.org/us/pronunciation/english/produce).
+
+An explicit-V snapshot over 13,301 dictionary `-s` forms changed 28 outputs;
+each changed stem has an existing V-labelled homograph entry. Paired tests cover
+`combines`, `consoles`, and `produces` as verbs, with noun readings for `combines`
+and `consoles` retained in sentence context. After `build-dict`, common and
+top-5,000 strict remained 5,369/6,990 and 2,901/3,617; full-dictionary strict /
+lenient remained 62,351/83,681; runtime parity remained 94,778/100,805 strict
+and 100,681 lenient; CMU default/rules remained 4,753/4,165; stress-aware
+phonemic/exact remained 54,747/45,520; context remained 87/85/53/49; and
+homographs remained 1,454/1,615. The default context cohort does not contain
+these inflected targets, so this is a paired POS/context correction and not a
+gain on the isolated common-word target. All 381 Jest suites / 6,946 tests,
+typecheck, `test:ipa`, and Rollup pass. No baseline was refreshed.
+
+### `-tory` dictionary/rules route check (2026-10-21)
+
+Checked whether plural `territories` needed another `-ies` morphology correction.
+The default output is already `/ˈtɛɹəˌtɔɹiz/`, matching the Cambridge US
+schwa in [territory](https://dictionary.cambridge.org/us/pronunciation/english/territory).
+The singular dictionary route still returns `/ˈtɛɹɪˌtɔɹi/`, while the rules
+route returns `/ˈtɛɹəˌtɔɹi/`. The proposed plural rewrite therefore added no
+common strict gain: the common evaluation remains 5,369/6,990 strict and
+6,380/6,990 lenient (top-5,000: 2,901/3,617 strict, 3,358/3,617 lenient).
+No runtime mapping or reference change was made; a general `-tory` correction
+needs paired checks for roots with different vowel and stress patterns.
+
+The refreshed spelling-family CV learner accepted 23 fold-local candidates,
+but none passed its legacy filter in any fold; held-out strict stayed 74.97%
+before and after filtering. The full postlex replay covered 107,644 words and
+176 rules; its tempting `-ət(s?)` removal gives one common strict win but loses
+32 full-dictionary strict cases and two lenient cases, so it remains rejected.
+
+### Rejected CMU-driven weak-vowel suffix rewrites (2026-10-21)
+
+An output-only replay on the fixed 6,990/3,617 cohorts tested common suffix
+substitutions before touching runtime rules. Replacing final `/ɪkəl/` with
+`/əkəl/` for `-ical` words scored 10 wins and 27 losses (top-5,000: +6/−13);
+changing `-ity` `/əti/` to `/ɪti/` scored +12/−45; and changing `-age`
+`/ɪdʒ/` to `/ədʒ/` scored +18/−18 (top-5,000: +11/−9). These screens do not
+support a safe broad rule. Cambridge US independently supports the existing
+`/ɪ/` in [message](https://dictionary.cambridge.org/us/pronunciation/english/message),
+[dosage](https://dictionary.cambridge.org/us/pronunciation/english/dosage),
+and [usage](https://dictionary.cambridge.org/us/pronunciation/english/usage),
+while the pinned CMU-derived IPA-Dict labels these examples with `/ə/`. That
+mismatch makes the apparent `-age` strict wins unsuitable as pronunciation
+improvements. No rules, gold readings, or baselines changed.
+
+### Rejected `re-` + `union` prefix composition (2026-10-21)
+
+A narrower replay of the earlier `re-u` trial allowed the existing prefix
+composer to recognize `re-` plus the attested root `union`. The resulting rules
+reading for `reunion` was `/ˌɹiˈjunjən/`, consistent with Cambridge US
+[reunion](https://dictionary.cambridge.org/pronunciation/english/reunion) and
+[union](https://dictionary.cambridge.org/us/pronunciation/english/union), while
+controls such as `reunite` and `Reuben` stayed unchanged. However, fixed
+CMU-derived rules strict remained 5,369/6,990 and 2,901/3,617; full-dictionary
+strict and lenient remained 62,351 and 83,681. The extra `/j/` differs from the
+pinned `reunion` reading, so this pronunciation correction does not advance the
+strict gates and was removed. Existing prefix-context tests pass.
+
+### Common strict error-route refresh (2026-10-21)
+
+A fresh `trace()` pass over the 6,990-word common cohort places 1,276 strict
+errors on the pure-rules route, 306 on morphology, and 39 on compound dispatch.
+The largest spelling-ending bins include `-age` (27), `-ion` (26), `-ent` (24),
+`-ity` (21), `-tion` (20), `-son` (18), `-ate` (17), and `-ian`/`-ine` (16
+each). These bins mix different stress/POS readings and source variants; they
+are screening leads, not adoption classes.
+
+A broad output-only change from final `/eɪt/` to `/ət/` on every `-ate` spelling
+fails decisively: full-dictionary strict falls 62,351→61,998, common strict
+falls 5,369→5,321, and top-5,000 falls 2,901→2,880. The useful-looking gains
+(`climate`, `senate`, `ultimate`) do not offset verb losses such as `create`,
+`estimate`, `communicate`, and `operate`. No runtime rule changed.
+
+### `-rry` stem carry-through before `-age` (2026-10-21)
+
+The rules path previously reset the root vowel when y-final `-rry` stems
+spelled the derivative with `-riage`: `marry` was `/ˈmɛɹi/`, but `marriage`
+became `/ˈmæɹɪdʒ/`. A conditional stem composition now carries the attested or
+rule-rendered `-rry` root into `-riage`; it accepts an unstressed `re-` stem
+such as `remarry`, while secondary-stressed `intermarry`, `miscarriage`, and
+other spellings such as `triage` retain their established routes. Cambridge
+records US `marriage` `/ˈmer.ɪdʒ/` and an alternate US `carriage`
+`/ˈkær.ɪdʒ/`, supporting these root vowels in
+[marriage](https://dictionary.cambridge.org/us/dictionary/english/marriage)
+and [carriage](https://dictionary.cambridge.org/us/pronunciation/english/carriage).
+
+After `build-dict`, the 1,296,341-row prediction snapshot changed six rows:
+the intended `marriage` and `remarriage` rules outputs and four generated
+`-es`/`-ing` probes under the newly recovered stems. The full rule-path strict
+count rose by two to 62,353/105,066; lenient stayed at 83,681. Common strict
+rose to 5,370/6,990 and top-5,000 to 2,902/3,617; both lenient counts stayed
+at 6,380 and 3,358.
+Runtime parity stayed 94,778/100,805 strict and 100,681 lenient. The
+stress-aware phonemic/exact counts rose to 54,749/45,522. Default context
+remains 87/108 (known-POS 85/108); homographs remain 1,454/1,615; public API
+CMU accuracy remains 4,753/5,000, while rules mode rises to 4,166/5,000 and
+continues to miss its legacy 90% floor. All 382 Jest suites / 6,948 tests,
+typecheck, Rollup and `git diff --check` pass. The behavior-neutral compression
+snapshot is byte-identical at 3,395 five-module code lines. The spelling-family
+learner accepted 24 ordinary and 47 structural candidates across its folds;
+none passed its held-out legacy filter, leaving held-out strict at 74.99%.
+No baseline was refreshed; the current common strict gain is below the
+ordinary +70-word commit minimum, and both 90% strict release targets remain
+unmet.
+
+### `-cialty` stem carry-through (2026-10-21)
+
+Rules-only `specialty` was being syllabified as `spe·cialty`, yielding
+`/ˈspisiəlti/`; its plural inherited `/eɪ/` from that wrong route. Cambridge's
+US reading is `/ˈspeʃ.əl.ti/`, so a generic `-cial + -ty` composition now
+reuses the independently generated `-cial` stem for `specialty` and
+`specialties`. The surrounding `special`, `specially`, `spatial`, `racial`,
+and `official` controls retain their former rules readings. The runtime change
+is spelling-class logic in morphology; it adds no word mapping.
+
+After `build-dict`, only those two rows change in the frozen rule snapshot.
+Full-dictionary strict/lenient rose to 62,354/83,682; the common cohort rose
+to 5,371/6,990 strict and 6,381/6,990 lenient; top-5,000 remained 2,902/3,617
+strict and 3,358/3,617 lenient. Runtime parity remained 94,778/100,805 strict
+and 100,681 lenient. Stress-aware phonemic/exact rose to 54,750/45,523. CMU
+public API remained 4,753/5,000 in default mode; rules mode rose to 4,167/5,000
+and still misses its legacy 90% floor. Context remains 87/85/53/49 and
+homographs 1,454/1,615. The rebuild re-pinned 526 entries (524 fixes, five
+known unrelated regressions); the final exception table has 53,926 entries.
+
+All 383 Jest suites / 6,956 tests, typecheck, Rollup, and `git diff --check`
+pass. A behavior-neutral compression reduced the five-module source count by
+one line to 3,394; all 1,296,341 frozen predictions are byte-identical across
+that compression. The focused class test passes 7/7 and issue #28 remains in
+the full passing suite. No baseline was refreshed: strict common accuracy is
+still 921 words below 90%, and top-5,000 is 354 words below 90%.
+
+### Greek `criterion` root PRICE (2026-10-21)
+
+The spelling-class rule previously read the initial `cri` as `/krɪ/` in
+`criterion` and `criteria`; both common-cohort entries therefore missed by
+one segment. The Greek `-terion/-teria` root now keeps PRICE in that initial
+slot, including transparent `criterial` and `criterium` forms. It does not
+apply to unrelated `cri` spellings such as `crime`, `critical`, `cricket`, or
+`cried`. Cambridge US gives `/kraɪˈtɪr.i.ən/` for
+[criterion](https://dictionary.cambridge.org/us/pronunciation/english/criterion)
+and `/kraɪˈtɪr.i.əm/` for
+[criterium](https://dictionary.cambridge.org/pronunciation/english/criterium).
+
+The frozen full prediction dump changed two dictionary rule rows (`criterion`
+and `criteria`). Dictionary rebuilding then evicted those newly rule-exact
+entries, changing only their dependent generated morphology probes in
+addition to those two rows; paired tests cover the canonical forms, transparent
+derivatives, and neighboring `cri` words. After rebuilding, full-dictionary
+strict/lenient rose to 62,356/83,682. Common strict rose to 5,373/6,990 and
+top-5,000 to 2,903/3,617; both lenient slices stayed 6,381 and 3,358.
+Runtime parity stayed 94,778/100,805 strict and 100,681 lenient. Stress-aware
+phonemic/exact rose to 54,752/45,525. Public API default/rules scored
+4,753/5,000 and 4,168/5,000; context and homographs stayed 87/85/53/49 and
+1,454/1,615. The rebuild re-pinned 526 entries (524 fixes, five unrelated
+known regressions) and left 53,924 exceptions.
+
+All 384 Jest suites / 6,964 tests, typecheck, `test:ipa`, Rollup, and
+`git diff --check` pass; issue #28 remains covered by the full suite. No
+baseline was refreshed: the common strict target remains 919 words away and
+top-5,000 remains 353 away.
+
+A separate attempt to correct the shipped `specialty` table entry to
+Cambridge's `/ɛ/` was reverted: the generated dictionary records plain `/l/`,
+while the default pipeline produces dark `/ɫ/`, lowering runtime parity strict
+from 94,778 to 94,777. The source override therefore remains open behind the
+no-regression gate; the validated `-cialty` rules fix remains. The five-module
+code count is back at the 3,395-line cap.
+
+### `-ine` common-error screening (2026-10-21)
+
+The current common mismatch list has sixteen words ending in `-ine`, but they
+do not share one pronunciation or stress pattern: it includes `imagine`,
+`routine`, `marine`, `gasoline`, `medicine`, and `vaccine`. Cambridge US gives
+/ruːˈtiːn/ for [routine](https://dictionary.cambridge.org/us/pronunciation/english/routine)
+and /vækˈsiːn/ for [vaccine](https://dictionary.cambridge.org/us/pronunciation/english/vaccine),
+while the rules path currently returns `/ˈɹaʊtɪn/` and `/ˈvæksɪn/`.
+These are independently verified rule-path misses, but the shared spelling
+ending alone does not justify a general rewrite: it would conflate distinct
+vowels, syllabification, and stress. No runtime change or accuracy gain is
+claimed; any follow-up must identify a narrower productive morphology and
+replay its full controls.
+
+### Rejected learned and postlex candidates (2026-10-21)
+
+Fresh family-folded spelling-rule learning over the fixed 6,990-word common
+population accepted 22 local and 44 structural candidates across ten folds;
+none passed the existing TRAIN-only filter in any fold. Held-out strict stayed
+at 75.04% before and after. The strongest local candidate changed unstressed
+`/ɪ/` to `/ə/` after `c`, but had 45 training fixes against 21 breaks and
+23 top-5,000 fixes against 14 breaks. Adding syllable structure did not remove
+the losses. Reports are in
+`/tmp/phonemize-next-release/learn-rules-current-2/` and
+`/tmp/phonemize-next-release/learn-rules-structural-current/`.
+
+The required full-dictionary postlex removal replay covered 107,644 words and
+176 rules. Its only rule removal with a positive common strict delta was the
+final `-ett` `/ɪt/` adjustment: removing it fixes common `Bennett`, but the
+full dictionary loses 32 strict and two lenient cases across 66 changed words.
+The unrelated surname controls make that removal fail the no-regression gate.
+No postlex rule was changed. The complete win/loss report is in
+`/tmp/phonemize-next-release/postlex-after-current-learner/results.json`.
+
+### `-ity` strict-error source check (2026-10-21)
+
+The 24 common errors ending in `-ity` are not evidence for changing the
+productive suffix vowel. The rules path gives `/ə/` in this unstressed slot
+for `charity`, `facility`, `stability`, and `personality`; Cambridge US likewise
+transcribes `/ə/` in [charity](https://dictionary.cambridge.org/us/pronunciation/english/charity),
+[facility](https://dictionary.cambridge.org/us/pronunciation/english/facility),
+[stability](https://dictionary.cambridge.org/us/pronunciation/english/stability),
+and [personality](https://dictionary.cambridge.org/pronunciation/english/personality).
+The pinned CMU-derived common reference instead records `/ɪ/` for these cases.
+This is a strict-reference disagreement, not a pronunciation gain; keep the
+runtime suffix rule and frozen scorer unchanged. `celebrity` has a separate
+initial-vowel difference (`/ɪ/` from rules vs Cambridge `/ə/`) that should be
+screened independently rather than bundled into an `-ity` rewrite.
+
+### Plural subjects across PPs and bare compound objects (2026-10-21)
+
+The POS tagger now recovers a nearby plural subject across a bounded, unpunctuated
+prepositional phrase and recognizes a bounded two-content-word bare object before
+a following preposition. This resolves three train-only verb readings of `permit`
+in frames such as “states with low population densities commonly permit bicycle
+use on interstate freeways.” Compared with the frozen train report, default/auto
+improves 739 to 742/918 with exactly three wins and no losses; default/gold and
+both rules cells are unchanged. Paired noun controls and the punctuation-sensitive
+“papers in Israel, Haaretz uses …” control remain covered in
+`__tests__/en-finite-modified-objects.test.ts`.
+
+After `yarn build-dict`, all fixed adoption metrics are nondecreasing: full-dict
+strict/lenient remain 62,356/83,682; common strict remains 5,373/6,990
+(top-5,000 2,903/3,617); parity 94,778/100,805,
+CMU default 4,753/5,000 and rules-only 4,168/5,000, stress-aware phonemic/exact
+54,752/45,525, context eval 87/85/53/49 across its four cells, and homographs
+1,454/1,615. The default/auto context eval remains at its fixed 87/108 gate.
+The isolated prediction and parity dumps are byte-identical to the frozen
+pre-candidate files. All 384 Jest suites / 6,966 tests, typecheck, Rollup, and
+the focused apostrophe regression suite pass; it continues to cover O'Reilly Media
+and the illustrative O'Reily spelling. No baseline was refreshed: common strict
+is 5,373/6,990, only 33 words above the current 5,340 baseline and below the
+5,410 ordinary-commit threshold. The POS/context gain itself does not change
+isolated-word accuracy. The strict 90% target remains 919 words away. A separate
+behavior-neutral one-line guard compression brings the five rule modules to
+3,394 code lines; its 1,296,341-row prediction dump is byte-identical
+(SHA-256 `bf2e2bf1c829bff1a03b32ac5fc72395fab308890d2214de681c9e4807da4df3`).
+
+The refreshed common-error cluster report still groups 197 failures under
+word-initial `i` and 135 under word-initial `a`; these are route labels, not
+shared pronunciation classes. A suffix scan found 31 `-tion` mismatches with
+different vowel, stress, and segment errors. No broad spelling change is
+supported by those aggregates; the next strict-accuracy pass needs narrower
+morphological families with paired unchanged controls.
+
+The same family-folded learner was rerun with long words enabled, first with
+local spelling features and then with structural features. Coverage increased
+to 5,120/7,097 pure-rules cases (72.14%); neither run passed a candidate in any
+of ten folds. The strongest local candidate (`c` before unstressed `i`,
+`/ɪ/→/ə/`) had 51 training fixes against 24 breaks and 25 top-5,000 fixes
+against 16 breaks. Adding structural features still produced zero passing
+candidates; the strongest positional candidate had 41/30 fixes/breaks and
+20/12 top-5,000 fixes/breaks. These routes mix distinct vowel environments,
+so no runtime rule was added. Reports:
+`/tmp/phonemize-next-release/learner-include-long-current/cv/cv-common-report.json`
+and `/tmp/phonemize-next-release/learner-structural-include-long-current/cv/cv-common-report.json`.
+
+### Rejected `-cted` schwa rewrite (2026-10-21)
+
+A full-6,990 screening of a proposed final `/ɪd/→/əd/` rewrite on `-cted`
+found 10 strict reference matches and 2 breaks (5 wins / 0 breaks in the
+top-5,000 slice). However, Cambridge US independently gives `/kəˈlek.tɪd/`
+for [collected](https://dictionary.cambridge.org/pronunciation/english/collected)
+and `/ɪkˈspek.tɪd/` for
+[expected](https://dictionary.cambridge.org/pronunciation/english/expected),
+matching the current rule output's suffix. Thus the apparent gain comes from
+the pinned CMU-derived transcription difference, not an English pronunciation
+error; retain `/ɪd/` and the frozen reference. The exact 13-word win/loss replay
+and input hashes are in `/tmp/phonemize-next-release/cted-reference-screen-20261021.json`.
+
+### Rejected weak `-can` schwa rewrite (2026-10-21)
+
+A position-based `/ɪ/→/ə/` proposal for words ending in `-can` yields 5 strict
+reference matches and 1 break (4 wins / 0 breaks in the top-5,000 slice).
+Cambridge US instead records `/ɪ/` in [African](https://dictionary.cambridge.org/us/pronunciation/english/african),
+[American](https://dictionary.cambridge.org/us/pronunciation/english/american),
+[Mexican](https://dictionary.cambridge.org/pronunciation/english/mexican), and
+[Republican](https://dictionary.cambridge.org/pronunciation/english/republican),
+matching the current output on four of the five apparent wins. The aggregate is
+again driven by CMU transcription differences and is too small and heterogeneous
+to justify a general rule. Exact rows and input hashes:
+`/tmp/phonemize-next-release/can-reference-screen-20261021.json`.
+
+### Apostrophe issue and O'Reilly Media verification (2026-10-21)
+
+The issue's real brand example is O'Reilly Media; O'Reily was only an
+illustrative spelling. Cambridge's US entry gives O'Reilly /oʊˈraɪli/, and
+O'Reilly Media's own naming guide confirms the brand form “O'Reilly.” The
+existing lexical-apostrophe regression returns `/oʊˈɹaɪɫi/` for O'Reilly and
+`/oʊˈɹaɪɫiz/` for its possessive in sentence context with straight, left-curly,
+and right-curly apostrophes. It also covers O'Reily as an unattested Irish-O
+surname composition and keeps `o'clock` on its contraction path. All 24 focused
+tests passed on 2026-10-21; this is issue coverage, not a common-word accuracy
+gain. Sources: [Cambridge O'Reilly pronunciation](https://dictionary.cambridge.org/pronunciation/english/o-reilly)
+and [O'Reilly Media naming guide](https://www.oreilly.com/about/logos/).
+
+### Rhotic `-urrent/-urrant` continuation (2026-10-21)
+
+The rule path had emitted a second `/ɹ/` in the unstressed continuation after
+`ur` in `current`, `currant`, and related `-current` forms. Cambridge US
+supports `/ˈkɝː.ənt/` for [current](https://dictionary.cambridge.org/pronunciation/english/current),
+`/ˈkɝː.ənt/` for [currant](https://dictionary.cambridge.org/pronunciation/english/currant),
+and `/kənˈkɝː.ənt/` for [concurrent](https://dictionary.cambridge.org/pronunciation/english/concurrent).
+The generalized unstressed `-ence/-ency/-ent/-ant` continuation suppresses
+only the duplicate written `r`; paired controls retain `currency`, `curriculum`,
+`burrito`, `surreal`, `overrun`, and `overreach`. Its direct common-rule replay
+had no strict changes, one lenient regression on `current` against the old
+source row, and six strict wins in the full dictionary. Separately, the
+Cambridge-verified `current` entry in `src-data/en/custom.dict` corrects the
+source pronunciation; that reference correction is not a rule gain. Rebuilt
+common rules report 5,375/6,990 strict and 6,382 lenient, top slice 2,905/3,617
+strict and 3,359 lenient. The class tests and full test suite pass. Frozen
+snapshots and changed-word rows are under
+`/tmp/phonemize-next-release/urrent-candidate-20261021/` and
+`/tmp/phonemize-next-release/urrent-final-20261021/`.
+
+### Weak initial `ce-` in the celebr- family (2026-10-21)
+
+The unstressed first syllable of `celebrity` and `celebratory` was producing
+/sɪ/ in the rules path. Cambridge US gives `/səˈleb.rə.t̬i/` for
+[celebrity](https://dictionary.cambridge.org/us/pronunciation/english/celebrity)
+and `/ˈsel.ə.brəˌtɔːr.i/` for
+[celebratory](https://dictionary.cambridge.org/us/pronunciation/english/celebratory).
+The correction is limited to weak initial `<ce>` in the `celebr-` root family;
+stressed `celebrate`, `celebrant`, and `celibate`, plus the distinct
+`celestial` frame, retain their paired outputs. The 1,296,341-row snapshot has
+10 changed predictions, including seven generated morphology probes. Rebuilt
+common strict remains 5,375/6,990 and top strict 2,905/3,617; lenient improves
+by one in each slice (6,383 and 3,360). Full-dictionary rules strict/lenient
+improves to 62,365/83,687. This is an accumulating gain, not enough for a
+baseline refresh or commit. A broader `celer-` condition was rejected because
+it also rewrote synthetic `celery` morphology probes; `celerity` remains an
+independent open root rather than widening this class. Evidence is under
+`/tmp/phonemize-next-release/celebr-frozen-20261021/` and
+`/tmp/phonemize-next-release/celebr-candidate-20261021/`.
+The four-line addition was folded into the existing weak-vowel guard to stay
+within the retained 3,395-line five-module cap; the post-compression 1,296,341-row
+snapshot is byte-identical to the rebuilt candidate. After compression, all
+386 Jest suites / 6,991 tests, typecheck, Rollup, and `git diff --check` pass.
+Parity stays 94,778/100,805 strict and 100,681 lenient; stress-aware phonemic
+accuracy is 54,754/90,309; context remains 87/85/53/49 and homographs
+1,454/1,615. Public CMU default remains 4,753/5,000 and rules-only 4,170/5,000.
+
+### Temporal `now` MOUTH rime (2026-10-21)
+
+The rules path treated final `<ow>` in the temporal root `now` as GOAT. Cambridge
+US records `/naʊ/` for [now](https://dictionary.cambridge.org/pronunciation/english/now)
+and `/ˈnaʊ.ə.deɪz/` for
+[nowadays](https://dictionary.cambridge.org/us/pronunciation/english/nowadays).
+The shared rule now covers the standalone root and its `nowadays` compound;
+`know`, `snow`, `nowhere`, `nowaday`, and surname spellings keep their earlier
+routes. The frozen snapshot changed exactly three outputs: `now`, `now's`, and
+`nowadays`, with zero losses. After rebuilding, common strict rises by one to
+5,376/6,990 and top-5,000 by one to 2,906/3,617; lenient, context, homograph,
+stress-aware, and runtime parity counts do not fall. Rules-only public API rises
+to 4,171/5,000, while default stays 4,753/5,000. All 387 Jest suites / 6,994
+tests, typecheck, Rollup, and `git diff --check` pass. This remains below the
+ordinary +70 strict-word commit threshold; no baseline was refreshed or commit
+made. Frozen and rebuilt evidence is under
+`/tmp/phonemize-next-release/now-frozen-20261021/` and
+`/tmp/phonemize-next-release/now-candidate-20261021/`.
+
+### Rejected broader `ou` and syllabic `-es` changes (2026-10-21)
+
+The current rules correctly distinguish `ou` classes including `/aʊ/` in
+`out/cloud`, `/ʌ/` in `trouble/country`, and `/u/` in `soup/group`. Several
+common rule-path misses (`routine`, `rouge`, `gourmet`, `boulevard`, `cuisine`,
+`Louise`) are French loans with different vowel, stress, or syllabification
+patterns; they do not establish one spelling-class repair. No `ou` rule change
+was adopted.
+
+An initial suffix scan also surfaced reference mismatches in plural and
+third-person `-es` forms (`references`, `releases`, `searches`, `resources`,
+`colleges`, and others): the runtime applies its existing `/əz/` allomorph,
+while the pinned CMU-derived rows frequently encode `/ɪz/`. The current
+phonotactics rule is backed by the full dictionary's 359:107 preference for
+`/əz/` over `/ɪz/`; singular dictionary entries also do not attest the full
+plural realization. The scan is therefore insufficient evidence to change
+this class, and no pronunciation rule or reference table was altered.
+
+### `-age` CMU mismatch screen (2026-10-21)
+
+The high-ranked common errors `message`, `image`, `package`, and `storage`
+looked like possible `/ɪdʒ/` to `/ədʒ/` gains against CMU, but Cambridge US
+independently records `/ɪdʒ/` for
+[message](https://dictionary.cambridge.org/us/pronunciation/english/message),
+[image](https://dictionary.cambridge.org/us/pronunciation/english/image),
+[package](https://dictionary.cambridge.org/pronunciation/english/package), and
+[storage](https://dictionary.cambridge.org/us/pronunciation/english/storage).
+Those are reference differences, not a pronunciation class to rewrite. No
+suffix rule or expected IPA was changed.
+
+### Particle-before-object POS frame (2026-10-21)
+
+The automatic tagger missed the verb in “Firecats invite back coaches …” because
+its direct object follows the verb particle. The bounded finite-object frame now
+skips a recognized verb particle before checking for an object. Cambridge gives
+the US verb `invite` /ɪnˈvaɪt/ and noun /ˈɪn.vaɪt/, matching the checked
+reading-specific reference. The paired sentence “The invite came by email”
+retains the noun reading; existing noun, adjective, and finite-verb controls
+remain unchanged.
+
+After rebuilding, default/automatic context strict improves 87→88/108, with the
+`invite_vrb` reading 7→8/9. The other three context cells, every other reading,
+class and fixed subset are unchanged. Homograph evaluation improves 1454→1455/1615.
+Common rules remain 5376/6990 strict and 6383 lenient; the top-5000 slice remains
+2906/3617 strict and 3360 lenient. Public default remains 4753/5000; rules-only
+is 4171/5000. Full-dictionary counts remain 62367 strict / 83687 lenient,
+runtime parity 94778/100805 strict / 100681 lenient, and stress-aware phonemic
+accuracy 54755/90309. All 1,296,341 snapshot rows match the prior post-`now`
+snapshot both before and after rebuilding. All 387 test suites / 6,996 tests,
+typecheck, direct Rollup, and `git diff --check` pass. The regular `yarn build`
+wrapper could not start its `tsx` prebuild under the sandbox (`listen EPERM`);
+the pinned dictionary build and Rollup bundle were run directly and passed.
+
+Evidence: `/tmp/phonemize-next-release/particle-object-frame-20261021/`.
+Source: [Cambridge US pronunciation of invite](https://dictionary.cambridge.org/us/pronunciation/english/invite).
+This POS-only gain accumulates toward release acceptance; isolated-word gains
+remain below the ordinary +70 strict-word commit threshold, so baselines were
+not refreshed.
+
+### Rejected negative-adjective head lookahead (2026-10-21)
+
+The source-checked `invalid` adjective in “an invalid nomen nudum” suggested
+using any following nominal head to select an attributive adjective. The broad
+condition also changed the established “The invalid employer spoke” noun
+control. Since the two readings cannot be distinguished by this local frame
+alone, the candidate and its test were removed rather than adding a word map or
+changing the existing control. Cambridge records separate
+[adjective and noun pronunciations](https://dictionary.cambridge.org/us/pronunciation/english/invalid).
+
+### Lower-support learner and `parent`-rime screen (2026-10-21)
+
+The family-folded structural learner was rerun on the fixed 7,097-word common
+population with minimum support lowered from five to three. Its pure-rules
+coverage is 5,120/7,097 (72.14%). Across ten spelling-family folds it accepted
+286 proposals, but none passed the existing training filter; applying all
+accepted proposals lowers held-out strict from 3,832 to 3,783/5,120 and lenient
+from 4,582 to 4,555. Lower support therefore did not uncover a safe general
+letter rule. Report: `/tmp/phonemize-next-release/learner-minsupport3-20261021/`.
+
+The leading narrow `/æ/→/ɛ/` proposal conflated `parent`, `comparative`, and
+`para`, while also breaking `Paris`. A family-folded replay of the more specific
+stressed `<pa>` before `<rent>` frame changed only `parent` and its possessive;
+it yields one strict win in each common population and two full-dictionary wins.
+Cambridge US confirms the /ɛr/ vowel in
+[parent](https://dictionary.cambridge.org/us/pronunciation/english/parent),
+but this evidence supports only a narrow root exception, so it was not added
+under the no-per-word-map rule. A route-tagged common-error scan partitions all
+1,614 strict common misses into 1,270 direct-rule, 305 morphology, and 39
+compound-path cases. Within morphology-path misses, the largest short endings
+are `-ed` (95), `-es` (34), `-al` (28), and `-ing` (25); these counts
+are route diagnostics, not adoptable classes, and mix distinct phoneme/stress
+errors with source-vs-reference variants. Next strict-accuracy work should
+diagnose those morphology families against paired controls rather than lower
+the scorer or widen local spelling substitutions.
+
+### Morphology and initial-`i` mismatch audit (2026-10-21)
+
+A direct replay of the 305 common morphology-path strict misses confirms that
+their shared suffix counts do not identify a shared phonological error:
+`-ed` mixes stem-vowel differences with reference `/əd/` vs `/ɪd/` conventions,
+while `-es`, `-al`, and `-ing` each combine unrelated lexical, stress, and
+vowel errors. No generalized suffix edit was supported by this scan.
+
+The largest direct-rule cluster remains the initial `<i>` route (197 cases in
+the fresh common report), with examples such as `Missouri`, `Michael`,
+`Niagara`, and `Antigua`. This is a mixed lexical population, not evidence for
+a general initial-`<i>` change; such a change would damage ordinary controls.
+Keep both groups as diagnosis populations, not candidate mappings. The full
+regression suite and `yarn typecheck` pass on this accumulated worktree; this
+audit produced no runtime change or new accuracy claim.
+
+### Three-way learner lower-support replay (2026-10-21)
+
+A separate `--structural --triples --min-support 3` family-folded run accepted
+300 fold-local proposals across 10 folds; none passed the existing TRAIN-only
+adoption filter. Applying all accepted rules reduced held-out strict from
+3,832/5,120 (74.84%) to 3,792/5,120 (74.06%), while filtered-only replay was
+unchanged. The leading apparent gains again include reference-vowel
+disagreements such as `article` and `notice`; no runtime or reference change
+was made. Full report:
+`/tmp/phonemize-next-release/learner-triples-20261021/cv-common-report.json`.
+
+### High-frequency `one` spelling family screen (2026-10-21)
+
+The current rule path misses three frequent forms for distinct reasons:
+`one` predicts `/oʊn/` vs Cambridge US `/wʌn/`, `once` predicts `/ɑns/` vs
+`/wʌns/`, and `only` predicts `/ɑnli/` vs `/oʊnli/`. The shared `<on>` or
+`<one>` spelling does not support one vowel/onset rule: `only` has a different
+vowel from the numeral, while `stone`, `phone`, `gone`, and the valid
+`someone`/`anyone`/`everyone` morphology are controls for broad `<one>` edits.
+Cambridge confirms the distinct readings for [one](https://dictionary.cambridge.org/pronunciation/english/one),
+[once](https://dictionary.cambridge.org/pronunciation/english/once), and
+[only](https://dictionary.cambridge.org/pronunciation/english/only).
+These are not adopted as separate spelling exceptions; no paired class fix
+was established.
+
+### Compound-route common miss replay (2026-10-21)
+
+A fresh replay of the fixed common cohort finds 39 strict misses on the
+compound route. They include a repeated `-land` geography pattern, already
+rejected because its spellings cannot separate geographic weak `/lənd/` from
+stressed or lexicalized `/lænd/`; the remaining forms (`bargain`, `breakfast`,
+`necklace`, `surface`, `automotive`, `webpage`, and others) mix name/brand,
+lexicalized compound, dialect-vowel, and syllabification errors. Removing
+compound dispatch globally is not a viable fix: the frozen route ablation
+reduces common strict by 763 words. This screen found no shared candidate to
+replay beyond the previously rejected `-land` class; no runtime behavior
+changed.
+
+The related initial-letter-name `<e>` hypothesis was also screened: changing
+initial `/ɛ, ɪ/` to `/i/` when the remaining spelling is itself attested in the
+dictionary produces three reference wins (`ebay`, `email`, `event`) but breaks
+12 common forms, including `ebony`, `echo`, `every`, `escape`, and `estate`
+(top-5,000: +3/-9). Cambridge confirms `/iː/` for [email](https://dictionary.cambridge.org/pronunciation/english/email),
+but `/ɪ/` for [event](https://dictionary.cambridge.org/us/pronunciation/english/event),
+so at least one of the three apparent wins is a reference disagreement. The
+component-attestation condition does not identify electronic `e-` compounds
+and was rejected without changing runtime behavior.
+
+### `-pital` weak-vowel replay (2026-10-21)
+
+The morphology-path `/ə/` in `hospital` suggested retaining `/ɪ/` across the
+`-pital` spelling. On the fixed common cohort this changes only `hospital`
+and `capital`: it fixes the former against the pinned reference and breaks the
+latter, for zero strict gain (top-5,000: +1/-1). The spelling family does not
+justify changing the current composition rule or its reference; no runtime
+change was made.
+
+### Rejected single-`l` `all-` compound expansion (2026-10-21)
+
+The common rules miss *almost* as `/æɫ/` where its lexical compound reading is
+`/ɔɫ/`. A replay expanded initial `<al>` to `<all>` and asked the existing
+compound splitter to handle the tail. It changed 32 full-dictionary
+predictions: strict fell 62,367→62,362 (−5), while lenient rose by four.
+The fixed common slice fell 5,376→5,375 strict, and top-5000 stayed 2,906/3,617.
+It repairs *almost* but misparses unrelated `al-` words including *alarm* and
+*alpine* as `all-` compounds. The spelling contraction is not a general enough
+signal for compound dispatch, so the candidate was rejected without changing
+runtime rules, references, or baselines. Current independent release gates
+remain public CMU default 4,753/5,000, context default/auto 88/108, and
+homographs 1,455/1,615.
+
+### `language` dictionary velar-stop correction (2026-10-21)
+
+The existing `custom.dict` override for *language* omitted /ɡ/, making the
+default runtime output /ˈlæŋwɪdʒ/ even though Cambridge US records
+/ˈlæŋ.ɡwɪdʒ/. The rules route already supplies /ɡ/; this corrects the shipped
+lexical reading and its source reference rather than introducing a new rule.
+The override now includes ARPAbet `G`. [Cambridge US pronunciation](https://dictionary.cambridge.org/us/pronunciation/english/language)
+also explicitly lists /ŋ/, /ɡ/, and /w/ in sequence.
+
+After the complete data pipeline and dependency-aware re-pin, the full
+before/after prediction dump changed 21 rows: *language*, *languages*, and
+their derived forms, plus synthetic probe forms under *celebratory* and *now*.
+The latter are generated probe forms rather than members of the scored common
+cohort. Fixed common rules strict stayed 5,376/6,990 and top-5,000 stayed
+2,906/3,617; lenient rose by one in each slice (6,384/6,990 and 3,361/3,617).
+Default public CMU accuracy rose 4,753→4,754/5,000. Runtime parity remained
+94,778/100,805; context remained 88/108 and homographs 1,455/1,615. The
+stress-aware headline rose by one, while exact IPA stayed 45,529; treat that as
+a lexical-source/re-pin effect, not a new spelling-rule gain. No baselines were
+refreshed. The focused paired test, typecheck, and all 388 suites / 6,999 tests
+pass. Evidence: `/tmp/phonemize-next-release/language-velar-20261021/`.
+
+### Apostrophe clarification and fresh distance-objective replay (2026-10-21)
+
+The user clarified that `O'Reilly Media` is the brand example; `O'Reily` was
+only an illustrative similar spelling. Existing issue #28 coverage already
+tests O'Reilly Media in sentences, as a possessive, and with straight and curly
+apostrophes. The focused apostrophe and paired `language` regressions pass
+(27 tests). No brand-specific runtime mapping is needed.
+
+A fresh family-folded `--structural --objective distance` learner run on the
+current 5,096-word direct pure-rules scope accepted 15 fold-local candidates;
+none passed the TRAIN-only adoption filter. Replaying all candidates reduced
+held-out strict from 3,826/5,096 to 3,822/5,096 and raised phone distance errors
+from 2,162 to 2,169. Filtered candidates leave held-out unchanged. This is
+diagnostic evidence only; no rule, reference, or baseline changed. Full report:
+`/tmp/phonemize-next-release/learner-distance-current-after-language/cv-common-report.json`.
+
+The fresh `node --require tsx/cjs scripts/evaluate.ts --subset common --cluster`
+run reproduces 5,376/6,990 strict and 2,906/3,617 top-5,000 strict. Its leading
+clusters remain heterogeneous initial-vowel routes: 197 initial `<i>` cases
+(including *Missouri*, *Michael*, *Niagara* and *Antigua*), 135 initial `<a>`
+cases, and 73 initial `<e>` cases. They mix names, acronyms, and ordinary
+words, so cluster size alone does not support changing a general vowel rule.
+The fresh full-dictionary postlex ablation also finds no safe common class:
+removing the narrow `-ett` schwa adjustment gains the single common word
+*Bennett* against the pinned primary CMU reading but loses 32 strict words
+overall, while *Bennett* itself has a second CMU pronunciation variant. This
+does not establish a spelling-class correction; no source or runtime edit was
+made from the diagnostic.
+
+### Current release-gate recheck and lower-support screen (2026-10-21)
+
+The fixed common evaluation remains 5,376/6,990 strict and 2,906/3,617
+top-5,000 strict. Independent gates currently pass their requested floors:
+public default CMU 4,754/5,000, default context 88/108, and homographs
+1,455/1,615. Public CMU rules mode is 4,171/5,000, unchanged from the last
+recorded run and still below its legacy 90% floor. The rules/auto context cell
+is 53/108; the user-requested context floor is the default/auto cell.
+
+An exploratory family-fold run with structural features and minimum support 2
+was stopped after the first three folds because all 30 selected rules in each
+fold failed the TRAIN-only legacy adoption filter. This partial run is not a
+cross-validation result and supplied no candidate for replay or adoption.
+
+A targeted replay of the `-erages` spelling also found no general fix: the
+fixed common cohort contains *beverages*, while *averages* is a contrasting
+verb/noun form with different stress. Reconstructing both from the singular
+would either leave *beverages* wrong or break *averages*; no word exception or
+runtime change was made.
+
+### Rule-path `-idential` replay (2026-10-21)
+
+Added a class rule for `<ident> + ial`: it predicts the `-ident` base through
+the spelling rules, retains that base's vowel pattern, and shifts its primary
+stress to `-ential`. Cambridge US supports `/ɪ/` in *presidential* and
+`/ə/` in *confidential*; its Academic Content pronunciation also supports
+the `/ɪ/` variant of *residential*. The rule-path result for *presidential*
+therefore keeps `/ɪ/`; it is not counted as a gain against the pinned
+ipa-dict gold, which uses `/ə/` there. See [Cambridge presidential](https://dictionary.cambridge.org/pronunciation/english/presidential),
+[confidential](https://dictionary.cambridge.org/pronunciation/english/confidential),
+and [residential](https://dictionary.cambridge.org/pronunciation/english/residential).
+
+Against the frozen rule snapshot, *confidential* and *residential* are strict
+wins and no scored dictionary word regresses. Full-dictionary rule accuracy is
+62,369/105,066 strict and 83,689/105,066 lenient, from 62,367 and 83,688.
+The fixed common cohort moves from 5,376/6,990 to 5,378/6,990 strict and from
+6,384 to 6,385 lenient; top-5,000 strict moves from 2,906/3,617 to 2,907/3,617.
+Public CMU rules mode is 4,172/5,000 (one above the frozen 4,171, still below
+its known legacy 90% floor); default CMU remains 4,754/5,000. Runtime parity,
+context IPA (88/108 default/auto), and homographs (1,455/1,615) are unchanged.
+
+The complete snapshot changes only seven rule-path forms: strict wins
+*confidential* and *residential*; *presidential* and *presidential's* remain
+IPA-dict mismatches but take the Cambridge-aligned `/ɪ/`; plus
+*non-residential*, *nonresidential*, and *vice-presidential*. The
+post-compression snapshot is byte-identical to its pre-compression candidate.
+`yarn build-dict` regenerated the same data files; the dictionary hash remains
+`e04de89a06c5a2164f6a3715e5953a54c64c71d329b1bd2f41e7a5596301c813`. All 389
+Jest suites (7,007 tests), typecheck, and Rollup build pass. The five rule
+modules are at the retained 3,395-line cap after a behavior-neutral
+compression. This is a small accumulated gain, below the 70-word commit
+threshold; no baseline was reset.
+
+A follow-up common-failure screen found the same source-variant problem in
+`-ical`: current rule readings of *chemical* and *radical* use `/ɪ/`, which
+Cambridge records, while the pinned ipa-dict gold uses `/ə/`. No rule or gold
+change was made because this is not a verified pronunciation gain. See
+[Cambridge chemical](https://dictionary.cambridge.org/pronunciation/english/chemical)
+and [radical](https://dictionary.cambridge.org/us/pronunciation/english/radical).
+
+### Final `-ate` replay (2026-10-21)
+
+A fresh common-failure scan surfaced a plausible short-vowel adjustment for
+some unstressed final `<a>` in `-ate` words: the rules path returns
+`/ˈklaɪmeɪt/` and `/ˈsɛneɪt/` for *climate* and *senate*, while Cambridge US
+records `/ˈklaɪmət/` and `/ˈsenət/`. But replacing final `/eɪt/` with `/ət/`
+for all `-ate` words changes 684 testable dictionary predictions: strict
+`+32/-385` overall, `+4/-52` in common, and `+4/-25` in top-5,000. Restricting
+it to 3+ syllables without secondary stress still changes 104 words and
+regresses strict `51` overall, `9` common, and `4` top-5,000. Control losses
+include *donate*, *locate*, *translate*, and *template*. Cambridge also gives
+separate adjective/noun and verb pronunciations for *intimate*, showing that
+POS matters within this spelling class. The candidate was rejected; no
+runtime rule or reference changed. See [Cambridge climate](https://dictionary.cambridge.org/us/pronunciation/english/climate),
+[senate](https://dictionary.cambridge.org/us/pronunciation/english/senate),
+and [intimate](https://dictionary.cambridge.org/pronunciation/english/intimate).
+
+### Common-error IPA-Dict/CMU consensus check (2026-10-21)
+
+Cross-checked all 1,614 current strict errors in the fixed 6,990-word common
+cohort against every pinned CMUdict variant, after removing stress/length,
+normalizing /ɫ/ to /l/, and treating /ʌ/ and /ə/ as equivalent for this
+diagnostic. IPA-Dict and CMUdict support the same gold reading in 1,612 cases.
+In one case, *around*, CMUdict supports the current rules reading /ɝˈaʊnd/
+while IPA-Dict gives /əˈɹaʊnd/; Cambridge US independently supports the latter.
+The other outlier is *Chicago*, where neither CMUdict's /ʃəkɑɡoʊ/ nor the rules
+output matches IPA-Dict's /ʃɪˈkɑˌɡoʊ/. This check found broad reference
+agreement but no justified general rule by itself.
+
+The *around* mismatch prompted a check of all dictionary `arou-` forms. The
+rules and IPA-Dict agree on rhotic /ɝ/ for *arouse*, *arousal*, *aroused*, and
+*arousing*, while Cambridge gives /əˈraʊz/ for *arouse* and /ə/ plus /r/ for
+*around*. This is not evidence for changing the whole `arou-` spelling class;
+no runtime or reference change was made. See [Cambridge around](https://dictionary.cambridge.org/us/pronunciation/english/around)
+and [arouse](https://dictionary.cambridge.org/pronunciation/english/arouse).
+
+### Fresh route and structural-candidate replay (2026-10-21)
+
+The current frozen common result is 5,378/6,990 strict and 2,907/3,617 on the
+top-5,000 slice. Fresh `diagnose:routes` confirms morphology is essential to
+the current result: disabling morphology falls to 4,727/6,990; bypassing both
+morphology and compound splitting falls to 4,613/6,990. The largest individual
+morphology ablations are net losses, so they do not identify a removable
+general rule.
+
+The 10-fold, family-grouped `learn:rules --structural` replay accepted 50
+fold-local candidates representing 15 distinct readings; none passed the
+TRAIN-only adoption filter. Mean held-out strict stayed 75.12% before and
+after filter-passed candidates. Its most recurrent proposal changes
+unstressed `/ɪ/` to `/ə/` after `<c>`; although it repairs examples such as
+*acid* and *explicit* against IPA-Dict, Cambridge US gives `/ˈæsɪd/` for
+*acid* and `/ɪ/` in *explicit*. The proposal also breaks paired forms and
+top-5,000 words, so it is not an evidence-backed pronunciation improvement.
+No source rule or baseline changed. [Cambridge acid](https://dictionary.cambridge.org/pronunciation/english/acid)
+and [explicit](https://dictionary.cambridge.org/pronunciation/english/explicit).
+
+The current independent gates were rerun on this checkout: public default CMU
+is 4,754/5,000, context default/auto is 88/108, and homograph eval is
+1,455/1,615. Public CMU rules mode is 4,172/5,000, one above its last recorded
+run but below the legacy 90% floor. No baselines were refreshed because no
+pronunciation class passed adoption.
+
+### Compound-route win/loss follow-up (2026-10-21)
+
+The route dump's nine common wins from bypassing compound splitting do not
+form a single class. Cambridge confirms rule-path wins for *acrobat*
+(`/ˈæk.rə.bæt/`), *automotive* (`/ˌɑː.t̬əˈmoʊ.t̬ɪv/`), and *necklace*
+(`/ˈnek.ləs/`), but their spellings and morphology do not supply one general
+dispatch condition. The four `-land` wins (*Highland*, *Iceland*, *Oakland*,
+*Portland*) also resist a blanket vowel reduction: replaying `/lænd/` → `/lənd/`
+on every matching rule-path item changes 106 full-dictionary words (+52/-47),
+9 common words (+4/-4), and 4 top-5,000 words (+1/-2); *homeland*, *mainland*,
+and *Thailand* are paired full-vowel controls. No rule was adopted. See
+[Cambridge acrobat](https://dictionary.cambridge.org/us/pronunciation/english/acrobat),
+[automotive](https://dictionary.cambridge.org/us/pronunciation/english/automotive),
+and [necklace](https://dictionary.cambridge.org/us/pronunciation/english/necklace).
+
+A broad structural replay bypassed compound splitting for every form ending
+in the letters `-ace` (including words whose actual split tail is `-place`).
+It changed 35 full-dictionary predictions (+2/-23), 7 common predictions
+(+2/-5), and 3 top-5,000 predictions (+1/-2): it repaired *surface* and
+*necklace* but broke real compounds such as *aerospace*, *fireplace*,
+*marketplace*, *myspace*, and *workplace*. This broad suffix guard is not safe;
+the two repairs need a narrower structural signal. No component table or
+runtime split rule changed.
+
+A narrower full replay bypassing compound splitting for `-face` and
+`-lace` except `-place` changes eight full-dictionary predictions: two gains
+(*surface*, *necklace*) and six losses. Common strict rises by two (no losses)
+and top-5,000 rises by one (no losses), but full-dictionary strict regresses,
+so it fails the required gate. Separating the suffixes does not reveal a
+general class: `-face` is +1/-3 (*surface* vs *boldface*, *scarface*,
+*typeface*), while `-lace` excluding `-place` is +1/-3 (*necklace* vs
+*Lovelace*, *shoelace*, *shoelaces*). The spelling alone cannot distinguish
+the lexicalized outcomes from productive compounds; no route change was made.
+
+### High-frequency `-ed` and `-age` source-variant replay (2026-10-21)
+
+The fixed common mismatch set contains 96 rule errors ending in `-ed` and 27
+ending in `-age`. The pinned CMUdict has an IPA-Dict-matching variant for 90
+of those `-ed` cases and 25 of those `-age` cases; many also list the current
+rules reading. This is a transcription/variant concentration, not grounds for
+replacing the rule vowel wholesale. For example, Cambridge US gives /ɪ/ in
+*collected*, *damage*, *message*, and *package*, matching the current rule
+outputs rather than the IPA-Dict schwa spellings.
+
+An explicit end-of-word replay changing `/ɪd/` to `/əd/` for every rules-path
+`-ed` form changes 1,042 full-dictionary predictions (+245/-621), 144 common
+words (+60/-66), and 64 top-5,000 words (+28/-28). The corresponding
+`-age` `/ɪdʒ/` to `/ədʒ/` replay changes 226 full-dictionary predictions
+(+45/-104), 45 common words (+18/-19), and 27 top-5,000 words (+11/-10).
+Both fail the no-regression gate; no source rule or reference changed. See
+[Cambridge collected](https://dictionary.cambridge.org/pronunciation/english/collected),
+[damage](https://dictionary.cambridge.org/us/pronunciation/english/damage),
+[message](https://dictionary.cambridge.org/us/pronunciation/english/message),
+and [package](https://dictionary.cambridge.org/us/pronunciation/english/package).
+
+The same cluster was replayed against the exact fixed populations rather than
+inferred from suffix frequency alone. Converting final `/ɪd/` to `/əd/` only
+on spellings ending `-ed` is net `-6` common strict (`+60/-66`) and neutral
+on top-5,000 (`+28/-28`); converting `/ɪdʒ/` to `/ədʒ/` only on `-age` is net
+`-1` common (`+18/-19`) and net `+1` top-5,000 (`+11/-10`), while losing
+59 strict words over the full testable dictionary. Neither meets the shared
+no-regression contract, so the existing `-ed` and `-age` outputs remain.
+
+### Low-support structural learner replay (2026-10-21)
+
+Completed the full family-grouped 10-fold `learn:rules --structural
+--min-support 2 --max-rules 30` run on the frozen 6,990-word common
+population. Each fold selected 30 rules from roughly 6.7k-7.3k candidates;
+across folds, 300 fold-local candidates represented 69 distinct readings.
+Zero of the 300 passed the learner's TRAIN-only legacy adoption filter in
+their fold. Mean held-out strict remained 75.12% before and after the
+filter-passed candidates (zero). Lowering candidate support therefore did
+not reveal an adoptable class; no rule, runtime data, or baseline changed.
+The complete diagnostic report is `/tmp/phonemize-rule-corrections/cv-common-report.json`.
+
+The leading recurrent proposal was a structural `t` candidate for unstressed
+`/ɪ/` → `/ə/` in an `i` left-letter context (accepted in 5/10 folds, passed
+adoption in 0/10, aggregate train wins/losses +63/-45). It repairs examples
+such as *citizen*, *credit* and *digit*, but breaks *audit*, *British* and
+*exhibit*. A three-syllable `m` candidate for `/eɪ/` → `/ə/` was accepted in
+8/10 folds and passed in 0/10 (+24/-7). Even a low-support `tr` candidate
+accepted in all 10 folds (+27/-0) failed the filter because its affected
+population was too small. These are search leads only, not source-verified
+pronunciation classes; applying them would violate the existing evidence and
+paired-regression gates.
+
+### Highest-frequency mismatch source audit (2026-10-21)
+
+Sorted the 1,614 strict common errors by the pinned frequency-list order. The
+first entries include *from* (#21), *have* (#26), *one* (#45), *here* (#70),
+*business* (#71), and *said* (#186). Source checks separate real engine errors
+from scoring/variant disagreements: Cambridge US lists strong `/frʌm/` and
+weak `/frəm/` for *from*, and `/hɪr/` for *here*, matching the engine's
+`/frɑm/` after STRUT normalization and `/hɪɹ/` respectively. It lists `/hæv/`
+for *have* and `/sɛd/` for *said*, confirming those predictions are wrong.
+Cambridge syllabifies *business* as `/ˈbɪz.nɪs/`, unlike IPA-Dict's
+`/ˈbɪznəs/`; this is not a justified syllable-reduction rule. See [from](https://dictionary.cambridge.org/us/pronunciation/english/from),
+[have](https://dictionary.cambridge.org/us/pronunciation/english/have),
+[said](https://dictionary.cambridge.org/pronunciation/english/said),
+[here](https://dictionary.cambridge.org/pronunciation/english/here), and
+[business](https://dictionary.cambridge.org/pronunciation/english/business),
+and [one](https://dictionary.cambridge.org/pronunciation/english/one).
+
+In this sample, *have*, *said*, and *one* are confirmed engine errors, but
+their pronunciations are irregular spelling/morphology cases: *have* within
+final `-ave`, *said* as the irregular past of *say*, and *one* itself. A
+general transformation for either spelling family risks changing productive
+words such as *save/gave* or *paid/laid*; no broad rule was replayed or adopted
+from these examples. No whole-word mapping or reference change was introduced.
+The gap remains 914 common and 349 top-slice strict words; frequency ranking
+guides future investigation, but does not relax the 90% release gate.
+
+### High-frequency `-ity` reference-variant probe (2026-10-21)
+
+The frozen mismatch report has 24 strict errors ending in `-ity`. A source
+probe of three common members—*facility*, *celebrity*, and *humanity*—finds
+Cambridge US `/fəˈsɪl.ə.t̬i/`, `/səˈleb.rə.t̬i/`, and `/hjuːˈmæn.ə.t̬i/`,
+which support the engine's reduced `/ə/` nuclei and conflict with the pinned
+IPA-Dict `/ɪ/` readings in those positions. This is not evidence to broaden
+the `-ity` rule or change the fixed gold set: the current evaluator remains
+the release contract, while source/reference corrections must be independently
+versioned and never counted as pronunciation gains. [Cambridge facility](https://dictionary.cambridge.org/us/pronunciation/english/facility),
+[celebrity](https://dictionary.cambridge.org/us/pronunciation/english/celebrity),
+and [humanity](https://dictionary.cambridge.org/us/pronunciation/english/humanity).
+
+### Unstressed-`/æ/` reduction replay (2026-10-21)
+
+Tested a broad rules-output rewrite of unmarked `/æ/` to `/ə/` both across
+all syllables and only at the first vowel, using the fixed dictionary golds.
+Across all unstressed positions it changes 1,645 full-dictionary words
+(+119/-578), 86 common words (+5/-51), and 36 top-5,000 words (+3/-26).
+Restricting it to the first vowel still changes 1,070 full-dictionary words
+(+67/-429), 55 common words (+2/-42), and 26 top-5,000 words (+2/-22).
+The broad weak-vowel hypothesis therefore fails every relevant no-regression
+check; initial `a` mixes reduced prefixes with ordinary `/æ/` roots. No source
+rule was changed. The replay is diagnostic and does not establish a supported
+phonological class.
+
+### `-nded` replay and refreshed failure-cluster scan (2026-10-21)
+
+Replayed the `/ndɪd/` → `/ndəd/` hypothesis on the current rules-only path.
+Full-dictionary strict rises 62,369→62,377 (+18/-10 changed correct words),
+but lenient falls 83,689→83,688. The common subset rises 5,378→5,384 strict
+(+6/-0), and top-5,000 rises 2,907→2,911 (+4/-0); the full-dictionary
+lenient regression still fails the required gate. *Wounded* is one of the
+strict losses, and Cambridge US explicitly gives it `/ˈwuːn.dɪd/`; Cambridge
+also gives the productive `-handed` ending `/hæn.dɪd/`. Merriam-Webster records
+a weak-vowel reading for *ended*. This is real word-specific variation, not a
+general `-nded` spelling rule, so the candidate was rejected and no
+expectations or runtime rules changed. See [Cambridge
+wounded](https://dictionary.cambridge.org/pronunciation/english/wounded) and
+[Cambridge -handed](https://dictionary.cambridge.org/us/pronunciation/english/handed),
+and [Merriam-Webster end](https://www.merriam-webster.com/dictionary/end).
+
+The fresh `test:eval --subset common --cluster` result remains 5,378/6,990
+strict and 2,907/3,617 top-5,000 strict (76.94% and 80.37%). The leading direct
+rule-trace clusters are initial `<i>` → `/ɪ/` (196 cases), `<a>` → `/æ/` (135),
+and initial `<e>` → `/ɪ/` (73), but their examples are heavily mixed with
+initialisms, foreign names, and lexicalized forms. The cluster report is a
+diagnostic grouping by first differing phone, not evidence for a shared
+pronunciation class. No new class passed source review in this scan; the common
+strict gap to the fixed 6,292-word target remains 914 words and the
+top-5,000 gap remains 349.
+
+### `-cted` weak-vowel candidate replay (2026-10-21)
+
+The refreshed common mismatch suffix scan found 62 errors in `-ted`, including
+11 in `-cted`. Rewriting only final `/tɪd/` to `/təd/` for spellings ending
+`-cted` changes 54 full-dictionary predictions: strict improves by two (24
+wins, 22 losses), and lenient is flat at 83,689. Common strict improves by
+eight (10 wins, two losses), and top-5,000 by five (five wins, no losses).
+Despite passing the aggregate score floors, this is not a verified pronunciation
+gain: Cambridge US lists `/kəˈlek.tɪd/` for *collected* and `/prəˈdʒek.tɪd/`
+for *projected*, matching the current `/ɪd/` reading. The candidate therefore
+overfits IPA-Dict's weak-vowel transcription in at least these standard US
+readings; no postlex rule, expectation or baseline changed. Sources: [Cambridge
+collected](https://dictionary.cambridge.org/pronunciation/english/collected)
+and [projected](https://dictionary.cambridge.org/us/pronunciation/english/projected).
+
+The independent release checks were also refreshed on this worktree: default
+public CMU accuracy is 4,754/5,000 (95.08%), default/auto context is 88/108,
+and homograph eval is 1,455/1,615. These pass their current thresholds; the
+unmet requirement remains the rules-only 90% common-word target.
+
+### Unstressed `pro-` morphology replay (2026-10-21)
+
+The frequency-ranked error list suggests that some `pro-` forms have an
+inconsistent first vowel across direct-rule and morphology routes. Replacing
+initial `/pɝ/` with `/prə/` only on morphology-path words spelled with `pro-`
+changes four full-dictionary items: one strict win (*proceeds*) and three
+losses (*productions'*, *productively*, *promotional*), for net strict and
+lenient `-2`. In the common slice it changes two items with one win and one
+loss, net zero; top-5,000 is unchanged. The route-wide correction therefore
+fails the all-dictionary no-regression gate. Source checks also confirm that
+the direct-rule `/prə/` in *production* and *promotion* is the standard US
+reading, despite IPA-Dict's `/pɝ/` variants. This looks primarily like a
+reference-variant cluster, not a missing `pro-` spelling rule; no rule or gold
+reading changed. Sources: [Cambridge production](https://dictionary.cambridge.org/pronunciation/english/production)
+and [promotion](https://dictionary.cambridge.org/pronunciation/english/promotion).
+
+The same top-frequency scan confirms standard US `/boʊθ/` and `/ʃæl/` for
+*both* and *shall*, where current rules return `/bɑθ/` and `/ʃɔɫ/`. Each has
+spelling-family controls with different vowels: Cambridge US gives `/ɑ/` in
+*cloth*, *moth*, and *broth*, but `/oʊ/` in *both*. It also gives `/æ/` in
+*shall* and *shalt*, while the general `<all>` rule produces `/ɔl/`. These
+splits identify lexical gaps, not a safe broad grapheme rule. See [Cambridge
+both](https://dictionary.cambridge.org/pronunciation/english/both),
+[shall](https://dictionary.cambridge.org/us/pronunciation/english/shall),
+[shalt](https://dictionary.cambridge.org/pronunciation/english/shalt),
+[cloth](https://dictionary.cambridge.org/pronunciation/english/cloth),
+[moth](https://dictionary.cambridge.org/us/dictionary/english/moth), and
+[broth](https://dictionary.cambridge.org/pronunciation/english/broth).
+
+### High-frequency irregular-family route audit (2026-10-21)
+
+Rechecked the most frequent strict errors against the actual `disableDict`
+route and their productive controls. `have` is wrong as a standalone rule
+form (`/heɪv/` vs gold `/hæv/`), while `has`, `had`, and `having` already have
+the expected vowels. `say` and `saying` are right, but the irregular
+inflections `says` and `said` are wrong. `one`, `once`, and `only` are wrong;
+`ones`, `oneself`, and the `anyone`/`someone`/`everyone` compounds already
+recover the `/wʌn/` morpheme through morphology. Cambridge independently
+confirms `/hæv/`, `/sɛd/`, `/sɛz/`, `/wʌn/`, and `/wʌns/` for *have*, *said*,
+*says*, *one*, and *once* respectively. Sources: [have](https://dictionary.cambridge.org/pronunciation/english/have),
+[said](https://dictionary.cambridge.org/pronunciation/english/said),
+[says](https://dictionary.cambridge.org/pronunciation/english/says),
+[one](https://dictionary.cambridge.org/pronunciation/english/one), and
+[once](https://dictionary.cambridge.org/pronunciation/english/once).
+
+These paired forms rule out a single `-ave`, `-ay`, or `<one>` grapheme
+rewrite: the productive bases and most derivatives already have their correct
+phones, while the errors are lexical allomorphs. A spelling-specific code map
+would violate the active rule policy, and `src-data/en/custom.dict` entries
+would not change the direct `disableDict` readings measured by this gate (only
+recursive morphology can consult lexicon stems). No pronunciation or reference
+changed. The current frozen scores remain 5,378/6,990 common strict and
+2,907/3,617 top-5,000 strict; the evidence points the next search toward
+unexplained productive classes rather than these isolated irregular forms.
+
+### Narrow `-ded` weak-vowel replay (2026-10-21)
+
+A suffix-conditioned replay tested changing predicted final `/ɪd/` to `/əd/`
+only for spellings ending `-ded`. It appears positive against the pinned IPA
+reference on the fixed cohorts: common strict `+13/-3` and top-5,000 `+7/-3`.
+The same transformation over the full testable dictionary is `+56/-77`, so
+the spelling class is not a no-regression pronunciation rule. More decisively,
+Cambridge US explicitly gives `/ɪd/` in *added* and *needed*, both common
+cohort cases where the transform would replace the authoritative reading with
+`/əd/` ([added](https://dictionary.cambridge.org/pronunciation/english/added),
+[needed](https://dictionary.cambridge.org/us/pronunciation/english/needed)).
+The apparent common gain therefore includes a reference transcription
+convention mismatch and is not adopted. No source, prediction, baseline, or
+test expectation changed.
+
+### `-ryan` name-rime rule and release gate refresh (2026-10-22)
+
+The verified `-ryan/-ryant` rime rule in `src/en/postlex.ts` changes only the
+shared `/ɹjæn/` sequence when the spelling has that ending; it does not add
+whole-word pronunciations. Oxford gives Ryan `/ˈraɪən/`, and Cambridge gives
+Bryan `/ˈbraɪ.ən/` and Bryant `/ˈbraɪ.ənt/` ([Ryan](https://www.oxfordlearnersdictionaries.com/us/definition/english/ryan),
+[Bryan](https://dictionary.cambridge.org/us/pronunciation/english/bryan),
+[Bryant](https://dictionary.cambridge.org/us/pronunciation/english/bryant)).
+Paired regressions cover the three names, possessives, O'Bryan, and Kenyan,
+Ryans, and Bryanism controls. The frozen full-rule snapshot changes nine forms
+and no default/POS predictions. On the fixed populations, rules-only common
+strict rises 5,378→5,381/6,990 and top-5,000 rises 2,907→2,908/3,617; full
+strict/lenient rises 62,369/83,689→62,377/83,698. Runtime parity remains
+94,778/100,805 strict and 100,681/100,805 lenient. Stress-aware phonemic count
+is 54,762, four above the immediate before-run. The rule, apostrophe, and
+phonotactics suites pass (63 tests), and typecheck passes.
+
+The current rules-only common strict score is still 911 words short of the
+explicit 6,292/6,990 90% release gate. Default CMU accuracy is 4,754/5,000;
+rules mode is 4,173/5,000 and remains below its known legacy 90% floor. Context
+is 88/108 default/auto and homographs are 1,455/1,615. The final dictionary
+rebuild completed using the standard four build steps. `data/en/dict.json`
+reproduced its pre-run SHA-256; the dependency-aware exception table rebuilt to
+53,906 entries with 526 re-pins. A post-build 1,296,341-row snapshot differs
+from the frozen pre-build candidate in 31 morphology rows: 30 are synthetic
+suffixes on Ryan/Bryan/Bryant, and one is the synthetic `confidentiallyer`.
+Rule, dictionary, and POS rows are unchanged. All release accuracy gates were
+rerun against this generated state: common remains 5,381/6,990 and 2,908/3,617;
+full strict/lenient is 62,377/83,698; parity 94,778/100,805 and 100,681/100,805;
+default/rules CMU is 4,754/5,000 and 4,173/5,000; strict-aware is 54,762;
+context is 88/85/53/49 across its four cells; homographs is 1,455/1,615. The
+90% common rules target remains 911 words away. The committed common baseline
+is 5,340/6,990, so this batch's +41 strict words is short of the 5,410 ordinary
+commit floor. No baselines were refreshed.
+
+Post-build validation passed all 390 Jest suites / 7,015 tests, `yarn typecheck`,
+and Rollup bundling. Rollup emitted its existing named/default-export and
+external `pinyin-pro` warnings but completed successfully.
+
+A fresh 10-fold structural rule learner run over 5,093 in-scope common items
+accepted 50 fold-local candidates, but none passed the TRAIN-only repair-versus-
+break filter. Replaying all accepted candidates lowered held-out strict from
+3,829 to 3,808/5,093; the filtered set therefore made no change. No candidate
+was adopted.
+
+### Rejected `-ireless` rule-path correction (2026-10-22)
+
+The rules-only common miss for *wireless* suggests changing `/aɪɝləs/` toward
+the pinned `/aɪɹlɪs/`. Cambridge US instead gives `/ˈwaɪr.ləs/` for
+[wireless](https://dictionary.cambridge.org/us/pronunciation/english/wireless)
+and `/ˈtaɪr.ləs/` for
+[tireless](https://dictionary.cambridge.org/dictionary/english/tireless).
+The rules-only *tireless* already matches the pinned reference, so rewriting
+the `-ireless` family would break that paired control; changing only
+*wireless* would be a word exception driven by the scorer. No rule or
+reference changed.
+
+### Verified compound `-line` plural recovery (2026-10-22)
+
+Regular plurals of transparent compounds ending in *line* could bypass the
+existing compound stem route: rules-only *guidelines* was syllabified as
+`gui·de·li·nes` instead of retaining the verified *guide + line* boundary.
+The plural fallback now retries a verified compound stem only when the plural
+is spelled `-lines` and its left component has the final-`e` spelling frame.
+This covers forms such as *guidelines*, *sidelines*, *lifelines*, and
+*pipelines* without a word map. Cambridge confirms the standard US readings
+for [guideline](https://dictionary.cambridge.org/pronunciation/english/guideline),
+[sideline](https://dictionary.cambridge.org/pronunciation/english/sideline),
+[lifeline](https://dictionary.cambridge.org/pronunciation/english/lifeline),
+[pipeline](https://dictionary.cambridge.org/pronunciation/english/pipeline),
+[baseline](https://dictionary.cambridge.org/pronunciation/english/baseline),
+and [timeline](https://dictionary.cambridge.org/us/pronunciation/english/timeline).
+Paired regressions retain the singular and *headline(s)* controls in both
+dictionary modes.
+
+After the four-step dictionary rebuild, the frozen 1,296,341-row prediction
+snapshot differs in 23 reviewed rows, all `-line` compound plurals or derived
+forms; the before/after snapshots are byte-identical across the subsequent
+compression pass. Re-pin count remains 526, `dict.json` and `exceptions.json`
+hashes are unchanged, and the final exception table remains 53,906 entries.
+The full-dictionary rule score rises 62,377→62,378/105,066 strict and
+83,698→83,699 lenient. Public CMU accuracy rises 4,754→4,755/5,000 default and
+4,173→4,174 rules; *guidelines* is the only changed row in each fixed CMU
+report. Common-subset strict/lenient remains 5,381/6,388 of 6,990 and
+2,908/3,362 of 3,617; runtime parity remains 94,778/100,805 strict and
+100,681/100,805 lenient. Stress-aware correctness is 54,762, homographs
+1,455/1,615, and context cells remain 88/85/53/49; the fixed supported-POS
+default/auto cohort is 84/88. All 391 Jest suites / 7,017 tests and typecheck
+pass. Five-module source count is exactly 3,395.
+
+This is a measured incremental gain, not a qualifying commit batch: common
+strict remains 911 words below the 90% target and 29 below the ordinary
+5,410/6,990 commit floor. No baseline was refreshed.
+
+### Rejected broad sibilant `-es` vowel shift (2026-10-22)
+
+A rules-report scan found several common `-es` forms with `/əz/` where the
+pinned CMU reference expects `/ɪz/`, including *resources*, *references*, and
+*forces*. A broad simulated shift of final `/əz/` to `/ɪz/` for the existing
+sibilant-`-es` spelling frame repairs 11 words but breaks 12, including
+*services*, *messages*, *sources*, and *businesses*. The unchanged 5,000-word
+rules cohort therefore rejects the class; no pronunciation rule or baseline
+changed. Frozen inputs and reports are under
+`/tmp/phonemize-sibilant-es-20261022/before/`.
+
+### Rejected `-tribution` schwa correction (2026-10-22)
+
+The CMU common report marks rules-only *distribution* and *contribution* wrong
+for `/ɪ/` in the unstressed syllable before stressed `-bution`, where its
+references use `/ə/`. Cambridge US independently gives `/ɪ/` for both
+[distribution](https://dictionary.cambridge.org/us/pronunciation/english/distribution)
+and [contribution](https://dictionary.cambridge.org/us/pronunciation/english/contribution),
+and also confirms `/ɪ/` in [distribute](https://dictionary.cambridge.org/us/dictionary/english/distribute)
+and [contribute](https://dictionary.cambridge.org/us/dictionary/english/contribute).
+The existing rules therefore match the checked US dictionary on this vowel;
+changing it to satisfy the narrower CMU forms would be a reference-shaped
+regression. No rule or baseline changed.
+
+### Rejected broad `-ment` correction and custom-entry fallback (2026-10-22)
+
+A simulated final `/ə/`→`/ɛ/` shift across rules-path `-ment` outputs repairs
+2 of 5,000 CMU cases but breaks 31, including *payment*, *moment*,
+*government*, and *agreement*. Cambridge confirms the short-vowel root in
+[comment](https://dictionary.cambridge.org/us/pronunciation/english/comment),
+but the normal dictionary path already returns `/ˈkɑmɛnt/`; a `custom.dict`
+entry is bypassed by the `disableDict` rules evaluation and cannot improve its
+target. The temporary overlay and test were removed after this route check.
+The before-run snapshot, reports, baselines, and source/data hashes are saved
+under `/tmp/phonemize-comment-root-20261022/before/`.
+
+### Rejected broad letter-name `e-` compound split (2026-10-22)
+
+The rules-only common replay supports an `e` + independently attested
+monosyllabic compound-root hypothesis for *email* and *ebay*: both current
+`/ɛ/` onsets are wrong, and the proposed `/i/` onset repairs both with no
+losses in the fixed 5,000-word cohort. Cambridge US confirms `/iː/` for
+[email](https://dictionary.cambridge.org/us/pronunciation/english/email),
+and the UK Intellectual Property Office describes the eBay mark as “EE-BAY”.
+The hypothesis was screened against all 19 dictionary words whose remainder
+appears in both existing compound-part tables. Its dictionary-wide playback
+repairs 4 but breaks 6 entries (including several surnames), a net loss of 2
+strict cases before any other gate; the broad rule is therefore rejected.
+No runtime source or baseline changed. Candidate rows are saved in
+`/tmp/phonemize-e-prefix-20261022/candidate-screen.json`; the reused frozen
+inputs are under `/tmp/phonemize-comment-root-20261022/before/`.
+
+### Open high-frequency `one`/`once` root errors (2026-10-22)
+
+The rules-only common cohort still misses *one* (`/oʊn/` vs `/wʌn/`) and
+*once* (`/ɑns/` vs `/wʌns/`). Cambridge independently confirms US `/wʌn/` for
+[one](https://dictionary.cambridge.org/pronunciation/english/one) and
+`/wʌns/` for [once](https://dictionary.cambridge.org/pronunciation/english/once).
+Related compounds and the plural *ones* already retain `/wʌn/` through their
+existing morphology routes, while the bare numeral and the adverb *once* do
+not share a productive spelling alternation that can safely cover other
+`-one` words such as *stone* and *phone*. No word-specific runtime guard was
+added; the pair remains open pending a class rule with paired controls.
+
+### Rejected broad plural `-alls` correction (2026-10-22)
+
+A conditional `<all>` rule before final `s` changes *calls*, *falls*, *walls*,
+and *balls* from `/æ/` to `/ɔ/`, taking the frozen rules-only CMU score from
+4,174/5,000 to 4,178/5,000. Playback of the full dictionary changes three
+entries: one strict win (*valls*) and no losses. However, the candidate's
+`/ɔ/` is not a safe standard-US class: Cambridge gives `/ɑː/` for US *call*,
+*wall*, and *balls* (while its homographic *falls* entry gives `/ɔː/`). The
+CMU gain therefore appears to encode mixed lexical/variety readings rather
+than a productive plural rule. The candidate was removed; no source, generated
+data, or baseline changed. The frozen rules dump is
+`/tmp/phonemize-comment-root-20261022/alls-before.tsv`; the candidate changed
+only *valls* (`/ˈvæɫz/`→`/ˈvɔɫz/`), the only strict win against the runtime
+dictionary, with no losses. The common-score result is preserved in
+`/tmp/phonemize-comment-root-20261022/common-cache/rules-report.json`.
+Sources: Cambridge US [call](https://dictionary.cambridge.org/us/pronunciation/english/call),
+[wall](https://dictionary.cambridge.org/pronunciation/english/wall),
+[balls](https://dictionary.cambridge.org/us/pronunciation/english/balls), and
+[falls](https://dictionary.cambridge.org/pronunciation/english/falls).
+
+### Structural correction learner CV replay (2026-10-22)
+
+The structural learner replayed actual `disableDict` predictions across 10
+spelling-family folds on the fixed 6,990-word common population (5,093 words
+in scope). It accepted 50 candidates across folds, covering 15 distinct
+conditional readings; none passed the TRAIN-only legacy filter. Applying all
+accepted candidates lowered held-out strict from 3,829/5,093 to 3,808/5,093
+(mean 75.18% to 74.77%). The most recurrent pattern, unstressed `/ɪ/` to
+schwa in several left/right contexts, had top-5,000 wins paired with losses and
+still failed support/fix-rate/distance checks. No candidate was promoted.
+The report, fold assignments and scope record are in
+`/tmp/phonemize-rule-corrections-20261022/`.
+
+The non-structural conditional learner was also replayed over 10 spelling-
+family folds. It accepted 24 candidates and passed none through its train-only
+filter; the eight distinct learned readings had paired wins and losses in the
+held-out evidence. Filter-passed held-out strict therefore remained unchanged
+at a mean 75.22%. Full report: `/tmp/phonemize-rule-corrections-plain-20261022/`.
+
+### `friend` spelling-family vowel (2026-10-22)
+
+Cambridge US gives /ɛ/ in *friendship* and *friendly*, while *fiend* retains
+/iː/. A conditional rule under the existing `^ie` vowel family now changes the
+`friend` root and its productive derivations from /i/ to /ɛ/. A weak-syllable
+guard keeps the same vowel in compounds such as *boyfriends*. Paired controls
+*fiend, field, piece, chief,* and *believe* remain unchanged. The rebuilt full
+snapshot has identical dictionary predictions and 5 rules-route changes:
+four strict wins and no losses against the dictionary. Morphology expands this
+to derived forms without affecting unrelated routes.
+
+Post-build gates: common rules strict 5,383/6,990 (+2 vs the frozen before-run;
+top-5,000 2,909/3,617, +1); default CMU 4,755/5,000 (above 90%); rules CMU
+4,175/5,000 (nondecreasing, still below 90%); context default/auto 88/108
+(baseline 87), default/gold 85/108, rules/auto 53/108 and rules/gold 49/108
+(the latter three unchanged). The supported-POS default/auto cell rises from
+83/88 to 84/88; all remaining supported-POS cells stay fixed. One `invite`
+noun/verb context case changes. Homographs are
+1,455/1,615; stress-aware full set 54,765/90,309 (+82); runtime parity
+94,778/100,805 (unchanged). Typecheck and all 392 Jest suites / 7,029 tests pass for this final candidate. The normal +70-word strict commit threshold is
+not met, so no baseline is refreshed and this batch remains uncommitted.
+
+A full-dictionary postlex ablation (107,644 words, 177 rules) was also
+completed. One rule removal would recover the common-word *Bennett* error, but
+that same `<ett>` spelling class causes 43 strict losses dictionary-wide, so
+no broad exception was adopted. The O'Reilly Media brand clarification remains
+covered by the existing issue #28 tests; this candidate adds no brand-specific
+mapping. Cambridge sources:
+[friendship](https://dictionary.cambridge.org/us/pronunciation/english/friendship),
+[friendly](https://dictionary.cambridge.org/us/pronunciation/english/friendly),
+and [fiend](https://dictionary.cambridge.org/pronunciation/english/fiend).
+
+### Rejected broad weak `-ical` vowel reduction (2026-10-22)
+
+Six frequent rules-only mismatches suggested changing the final unstressed
+`/ɪ/` in `-ical` to `/ə/` (*chemical, clinical, medical, political,
+practical, typical*). Replaying that spelling-wide transform over the frozen
+rebuilt snapshot gains 31 and loses 118 strict dictionary cases overall; even
+the fixed common cohort loses 30 cases for 10 wins (top-5,000: 13 losses,
+6 wins). Controls including *logical, musical, physical,* and *critical*
+confirm that the ending does not have one predictable vowel. No runtime rule
+was adopted. Full candidate rows were derived from
+`/tmp/phonemize-comment-root-20261022/final-friend-rebuild.tsv`.
+
+After the current reference corrections, a narrower replay on matching
+`-ical` outputs still fails: 10 strict wins and 27 losses in the fixed common
+cohort (top-5,000: 6 wins, 13 losses); across 158 matching testable dictionary
+words it yields 28 wins and 89 losses. This confirms the earlier rejection on
+the current frozen population.
+
+### Rejected broad final `-se` voicing (2026-10-22)
+
+Voicing the final `/s/` in every rules-path word spelled `-se` would repair
+*please, ease,* and *phase*, but replaying against the frozen dictionary
+produces 50 strict wins and 293 losses overall. The fixed common cohort loses
+37 cases for 5 wins (top-5,000: 24 losses, 3 wins); *base, case, house, use,*
+and *release* are representative controls. The ending is not a safe class, so
+no runtime change was made. The replay used
+`/tmp/phonemize-comment-root-20261022/final-friend-rebuild.tsv`.
+
+### Narrow final `-plicit` vowel and stress rule (2026-10-22; rebuild pending)
+
+The wider weak closed soft-c+i candidate was rejected after it produced
+dictionary-wide losses. Restricting the vowel and stress repair to final
+`-plicit` changes three frozen rules-path words (*complicit, explicit,* and
+*implicit*): 3 strict wins and 0 losses against the dictionary, with no
+runtime-dictionary changes. The common rules score is 5384/6990, one above the
+pre-candidate run; the top-5000 slice is unchanged at 2909/3617. Paired
+`-plicity` controls (*duplicity, simplicity, multiplicity*) remain unchanged.
+Full Jest (393 suites / 7,035 tests), typecheck, CMU, parity, context, and
+homograph checks passed with no measured gate regression. Context remains
+88/108, homographs 1455/1615, runtime parity 94778/100805, default CMU
+4755/5000, and rules CMU 4175/5000. The phonemic headline is 54766/90309
+(+83 against baseline).
+
+The required post-candidate dictionary rebuild could not run here: the `tsx`
+launcher is blocked from creating its IPC socket, and direct execution cannot
+resolve `raw.githubusercontent.com` to fetch a build input. Generated data and
+baselines were not changed. This candidate remains uncommitted pending a
+successful rebuild and full post-build gates; current strict gaps are therefore
+pre-rebuild measurements.
+
+The 2026-10-22 route and postlex diagnostics were also refreshed. On the fixed
+common cohort, morphology removal drops strict from 5384 to 4734, confirming
+that the existing morphology path is net helpful. Removing postlex rules had
+no adoptable common-word correction. The updated 10-fold structural learner
+accepted 47 candidates and passed none through its train-only filter; its
+highest recurring weak-`/ɪ/` candidates still had paired top-5000 wins and
+losses. The direct error clusters remain dominated by broad vowel defaults
+whose examples include names/loanwords as well as ordinary words, so none was
+promoted without a better spelling or morphological boundary. Reports:
+`/tmp/phonemize-routes-current-20261022/`,
+`/tmp/phonemize-postlex-current-20261022/`, and
+`/tmp/phonemize-rules-current-20261022/`.
+
+### Rejected static `of` / `from` overlays (2026-10-22)
+
+The common-frequency errors for `of` and `from` suggested Cambridge US weak
+readings `/əv/` and `/frəm/`. A runtime simulation of AH0 custom-dictionary
+overrides gained four strict common words (both are in the top-5000) with no
+common losses. It was rejected because that AH0 variant mismatches both
+words' pinned CMU segment readings, while using AH1 to retain CMU's `/ʌ/`
+segments adds primary stress in ordinary sentences such as “A cup of tea” and
+“A book from the library.” Cambridge documents strong and weak variants for
+both function words, so a static lexical override cannot preserve the context
+contract. No custom-dictionary or generated-data change remains. See
+[Cambridge *of*](https://dictionary.cambridge.org/us/pronunciation/english/of)
+and [Cambridge *from*](https://dictionary.cambridge.org/us/pronunciation/english/from).
+
+### IPA-Dict syllabic `-ed` reference correction (2026-10-22; gates pending)
+
+IPA-Dict contains a cluster of spellings ending in `-ted` or `-ded` whose
+selected reference uses `/əd/`, including forms where its variant selection
+also drops the root-final `/t/` or `/d/` (*counted, granted, printed*). The
+Cambridge rule for regular `-ed` after `/t/` or `/d/` is `/ɪd/`; its US
+entries independently show this for *added, needed, granted,* and *printed*.
+The build now corrects only selected `/əd/` readings in that spelling class,
+restores a missing spelled root stop, and preserves compound `-headed` words
+whose dictionary readings are lexicalized (including *lightheaded*).
+
+Replaying the fixed rule-path snapshot against the corrected reference changes
+251 full-dictionary strict comparisons from wrong to right and none from right
+to wrong. Within the fixed common cohort, 63 comparisons change to right with
+no losses (30 of those are in the top-5,000 slice). These are reference
+corrections, not G2P gains. The full pipeline rebuilt the generated tables;
+the no-regression gates below still determine adoption. No baseline is refreshed.
+Cambridge sources: [regular `-ed` pronunciation](https://dictionary.cambridge.org/us/grammar/british-grammar/simple-past),
+[*added*](https://dictionary.cambridge.org/us/pronunciation/english/added),
+[*needed*](https://dictionary.cambridge.org/us/pronunciation/english/needed),
+[*granted*](https://dictionary.cambridge.org/us/pronunciation/english/granted),
+and [*printed*](https://dictionary.cambridge.org/pronunciation/english/printed).
+
+The full build pipeline (dictionary, compound parts, then exceptions) now
+finishes with stable common denominators: rules strict 5,447/6,990 and
+2,939/3,617 top-5,000; the corrected references account for +63 and +30 of
+those comparisons, respectively. Runtime parity is 94,786/100,805, context is
+88/108, homographs are 1,455/1,615, and the stress-aware headline is
+54,776/90,309 (+93 vs baseline). Public CMU accuracy is 4,745/5,000 default
+and 4,175/5,000 rules; the default is ten below the frozen before-run 4,755,
+despite remaining above 90%. This violates the no-regression gate, so the
+candidate is not qualified and no baselines are refreshed. The updated
+10-fold learner also accepted 47 rule candidates and passed none through the
+train-only filter; its most recurrent weak-vowel proposals all lose top-5,000
+controls. Full Jest passes (394 suites / 7,051 tests), typecheck passes, and
+`git diff --check` is clean. The `added`/`ended` and sentence-level `implicit`
+test expectations now match Cambridge's `/ɪd/` suffix and primary-stress
+entries: [regular `-ed`](https://dictionary.cambridge.org/us/grammar/british-grammar/simple-past),
+[*implicit*](https://dictionary.cambridge.org/pronunciation/english/implicit).
+
+### Rejected expanded structural learner candidates (2026-10-22)
+
+The expanded 10-fold learner added triple feature contexts to the spelling,
+syllable, and stress features, keeping spelling families grouped in each fold.
+Across 5,093 rules-path words it accepted 103 candidates at least once, but
+none passed the existing train-only adoption filter. Replaying all accepted
+rules reduced held strict from 3,832/5,093 to 3,810/5,093; the filtered set
+therefore made no held-out change. The strongest recurring suggestion to
+centralize `<i>` before `-ic` repaired cases such as *article* and *political*
+but broke *erotica* and *Vatican*. It also fell below the minimum support and
+fix-rate requirements, so no production rule or baseline change was made.
+The variation is supported by Cambridge US entries: *article*, *erotica*, and
+*Vatican* retain /ɪ/ in this position, while *political* has weak /ə/.
+Evidence: `/tmp/phonemize-rule-corrections-triples/cv-common-report.json`;
+[article](https://dictionary.cambridge.org/us/pronunciation/english/article),
+[erotica](https://dictionary.cambridge.org/pronunciation/english/erotica),
+[Vatican](https://dictionary.cambridge.org/us/pronunciation/english/vatican),
+and [political](https://dictionary.cambridge.org/pronunciation/english/political).
+
+### Rejected weak final `-tin` reduction (2026-10-22)
+
+A distance-objective run of the expanded 10-fold, family-grouped learner
+accepted 84 candidates and passed none through the train-only filter. Applying
+all accepted candidates reduced held strict from 3,832 to 3,817/5,093 and
+increased edit distance, so the broader candidate set is not adoptable.
+
+The strongest individual condition was an unstressed final syllable spelled
+`-tin`, with /ɪ/ changed to /ə/. On the fixed common cohort this simulated
+four strict wins and no losses (5,451/6,990; top-5,000 2,942/3,617), improving
+only *bulletin, Latin, Martin,* and *satin*. It fails the full-dictionary gate:
+across 105,066 testable dictionary words it produces 13 strict wins and 55
+losses (62,646 to 62,604 correct), plus four lenient losses. Narrowing by
+written endings does not fix the conflict: `-atin` has four strict wins and
+three losses, while `-etin` has one win and one loss; the other tested `-tin`
+vowel endings add losses without strict wins. No source or runtime rule was
+changed. Replays:
+`/tmp/phonemize-rule-corrections-distance-triples/cv-common-report.json` and
+the fixed common/full-dictionary simulation from this run.
+
+### Rejected weak final `-age` reduction (2026-10-22)
+
+Changing the final weak vowel in rules-path words ending in `-age` from /ɪ/ to
+/ə/ simulated 18 strict wins and 10 losses on the fixed common cohort
+(5,455/6,990); top-5,000 had 11 wins and 5 losses (2,945/3,617). The full
+dictionary gate rejects it: strict fell from 62,646 to 62,610/105,066 and
+lenient from 81,969 to 81,960, with edit distance increasing. Cambridge US
+entries explicitly support /ɪ/ in *cottage, damage, message,* and *package*,
+so weak `-age` has lexical variation that the suffix alone cannot resolve.
+No runtime rule or reference change was made.
+
+The compression trigger was also met at 3,400 code lines across the five
+modules. Merging adjacent regex declarations reduced the count to 3,395. The
+1,296,341-row before/after prediction snapshots are byte-identical; typecheck
+and all 394 Jest suites / 7,051 tests pass. The neutral compression is recorded
+in `AGENTS.md`; no pronunciation baseline changed.
+
+### Fresh common-error scan and rejected `-ically` repair (2026-10-22)
+
+The current frozen rules-path run remains 5,447/6,990 strict (2,939/3,617
+top-5,000), with 1,543 strict mismatches; 893 are one-phone differences.
+Direct rule traces are led by initial-letter clusters, but their samples are
+mostly spelling-inaccessible names, foreign forms, and abbreviations, so they
+do not justify a broad grapheme rewrite.
+
+A suffix simulation inserted schwa before final dark L in predictions ending
+`-ically` (`kɫi` → `kəɫi`). Across 85 matching full-dictionary words it gained
+26 strict cases and lost 49. The fixed common cohort was a tie at 2 wins and 2
+losses; top-5,000 lost one and gained none. The full-dictionary gate rejects
+this candidate, so no runtime rule was changed. The suffix remains a possible
+diagnostic axis only when a narrower conditioning environment can be found.
+
+The required all-word route ablation replayed 107,644 words and confirmed
+that removing morphology drops strict from 63,984 to 57,880; the unsplit
+alternative drops it further to 54,873. Of 126 individual handler bypasses,
+only one had a positive strict balance, and it changed just *transmittal* and
+*referral*: the strict win is paired with a lenient loss. No handler removal
+or route bypass is adoptable. Full recursive-stem evidence is at
+`/tmp/phonemize-routes-next-release-20261022/report.json`.
+
+### Rejected `-on` as a single failure class (2026-10-22)
+
+The fresh fixed-common mismatch report contains 87 words ending in `-on`:
+35 bare-`-on` rules-path cases, 20 rules-path `-tion` cases, 11 morphology-path
+`-tion` cases, 3 `-sion`, 2 `-ion`, and 16 other endings. Their errors mix
+stress (*upon, phenomenon*), internal-vowel differences (*comparison,
+promotion*), stem/affix joins (*arbitration, distribution*), and names
+(*Avon, Tucson, Yukon*). The count is a triage bucket, not one spelling rule;
+no `-on` rewrite was simulated or adopted. Future mining should group by
+recovered stem and derivational family instead of final letters.
+
+Within those cases, the 31 written `-tion` mismatches are also mixed: 20
+reach the direct spelling rules and 11 reach morphology, with 26 of 31 at
+distance one. Their discrepancies include opposite weak-vowel directions
+(*arbitration/civilization* versus *destination/legislation*), stress and
+rhotic differences (*production/promotion*), and unrelated stem vowels
+(*definition, jurisdiction, tuition*). This split does not support a blanket
+`-tion` vowel or stress rule. No phoneme transform was adopted; any follow-up
+needs to condition on an independently recoverable stem family.
+
+One candidate stem-family transform was tested against the whole dictionary:
+in predictions ending in `-ication`, change the schwa immediately before
+stressed `/keɪʃən/` to `/ɪ/`. It changes 33 words and yields only 3 strict
+wins against 25 losses overall; the fixed common slice has 1 win and 7 losses,
+and top-5,000 has 0 wins and 3 losses. The failure is lexicalized stem
+alternation: *syndicate* has `/də/` while *syndication* has `/dɪ/`, but
+*indicate/indication* runs the opposite direction. This candidate is rejected;
+it did not change sources or runtime rules.
+
+### Collins-supported Bennett reference correction (2026-10-22)
+
+Collins US gives surname *Bennett* as `/ˈbɛnɪt/` ([entry](https://www.collinsdictionary.com/us/dictionary/english/bennett)). The broad final `-ett` rule predicts `/ˈbɛnət/` for this spelling, and replay showed that changing the general rule would break many other words. Added only the source-data pronunciation to `src-data/en/custom.dict`; runtime rule code and name lexicons were not changed. This is a narrowly scoped dictionary correction, not evidence for a general `-ett` class fix.
+
+On the same 6,990-word common cohort, rules-path strict changed from 5,447 to 5,448; lenient stayed 6,395. The top-5,000 slice stayed 2,939/3,617 strict and 3,366 lenient. The default CMU API remained 4,745/5,000, rules-only 4,175/5,000; context remained 88/108 default-auto and 85/108 default-gold; homographs remained 1,455/1,615. None of those baselines was refreshed.
+
+Rebuilding the exception tables allowed the corrected base to derive *Bennett's*, *Bennetts*, and related morphology forms. As a result, `data/en/dict.json` no longer includes `bennetts`: the raw runtime parity and stress-aware report denominators each shrank by one (100,805→100,804 and 90,309→90,308), so those raw headline counts are not directly comparable. The before snapshot recorded `/ˈbɛnɪts/` for `bennetts`; the rebuilt runtime predicts the same `/ˈbɛnɪts/`. This preserves that word on the prior population and avoids treating the denominator change as a score gain or loss. The complete before/after snapshots and reports are under `/tmp/phonemize-bennett-correction-20261022/`.
+
+The focused issue #28 apostrophe suite passed all 24 tests, and `yarn typecheck` plus `git diff --check` passed. The issue's O'Reilly Media behavior remains exercised independently; it did not require a brand-specific runtime mapping.
+
+### Updated family-fold search after Bennett correction (2026-10-22)
+
+Re-ran `learn-rule-corrections.ts --objective distance` against the corrected dictionary and unchanged 6,990-word common cohort. Across ten spelling-family folds, 12 candidate readings were accepted in individual folds, but none passed the tool's legacy filter diagnostic. Applying all accepted candidates reduced held-out strict from 75.26% to 75.10%; the filtered set made no change because no proposal passed. The recurring candidates were a weak `eɪ→ə` change before `m`, and `ə→ɪ` before `it`, but each had mixed wins and losses. No spelling rule was adopted. Report: `/tmp/phonemize-rule-corrections-bennett-20261022/cv-common-report.json`.
+
+### Current accumulated-batch gate audit (2026-10-22)
+
+Current rules-path scores are 5,448/6,990 strict (77.94%) and 6,395 lenient; top-5,000 is 2,939/3,617 strict (81.26%) and 3,366 lenient. That is +108 strict words over the committed 10/20 common baseline, above the ordinary +70 threshold, but still 844 below the requested 90% strict target. Full-dictionary rules are 62,647/105,065 strict and 83,721 lenient. Public CMU API is 4,745/5,000 default and 4,175/5,000 rules-only; default meets the 4,739 floor, while rules-only remains below its legacy 90% floor and unchanged from the preceding frozen run. Context remains 88/108 default-auto and 85/108 default-gold; homographs are 1,455/1,615. Stress-aware phonemic correctness is 54,775/90,308 (+92 against its committed baseline).
+
+The current parity run is 94,785/100,804 strict and 100,691/100,804 lenient, but its generated population is two words smaller than the committed 100,806-word denominator. One deletion is `bennetts`, now derived from the corrected base; its before/after prediction is unchanged at `/ˈbɛnɪts/`. Because the full denominator has not yet been restored, the accumulated batch is not ready for a qualifying commit or baseline refresh despite the percentage delta. All 394 Jest suites / 7,051 tests, `yarn typecheck`, and `test:ipa` passed in this audit. The only command failure was the known `tsx` IPC restriction when invoking the homograph script via Yarn; the equivalent direct `node --require tsx/cjs` run completed and reported 1,455/1,615.
+
+### Cambridge-supported `financ-` root (2026-10-22)
+
+Cambridge US lists PRICE in *finance* and PRICE or schwa variants in *financial*, with no KIT onset ([finance](https://dictionary.cambridge.org/us/dictionary/english/finance), [financial pronunciation](https://dictionary.cambridge.org/us/pronunciation/english/financial)). Added a spelling-family rule for the English `finance` / `financial` root after weak-vowel reduction, without a word map. Paired controls retain *finances*, *financially*, Spanish *financiera/financiero*, and *financo*. The frozen 1,296,330-row snapshot changed four outputs: `finance`, `financial`, `financial's`, and `non-financial`; the post-compression snapshot is byte-identical to the pre-compression candidate. Five-module code count is 3,395. Evidence is under `/tmp/phonemize-financ-class-20261022/`.
+
+Against the immediately preceding frozen candidate, common rules strict rose from 5,448 to 5,450/6,990 and lenient from 6,395 to 6,396; top-5,000 strict rose from 2,939 to 2,941/3,617 and lenient from 3,366 to 3,367. Full-dictionary strict rose from 62,647 to 62,650/105,065 and lenient from 83,721 to 83,722. Public CMU API remains 4,745/5,000 by default; rules-only is 4,176/5,000, one above the preceding run but below its legacy 90% floor. Stress-aware phonemic accuracy is 54,777/90,308 (+94 vs committed baseline). Context remains 88/85/53/49 across its four cells, and homographs remain 1,455/1,615. Runtime parity remains 94,785/100,804 strict and 100,691 lenient; its two-entry population mismatch remains unresolved, so no baselines were refreshed.
+
+The fresh ten-fold family search accepted 12 fold-level candidates; none passed its TRAIN-only legacy filter. Applying all accepted candidates reduced held-out strict from 75.30% to 75.14%; the filtered result remained 75.30%. The structural search accepted 21 candidates, none passed, and applying all reduced held-out strict to 75.10%. Removing each of 177 postlex rules in an all-dictionary replay found no rule with positive common strict or lenient balance. No additional candidate was taken from those searches. All 395 Jest suites / 7,058 tests and typecheck pass; `test:ipa` and `git diff --check` pass. The `yarn build-dict` wrapper hit the sandbox's `tsx` IPC restriction; the direct build script first hit blocked DNS, then succeeded with approved network access.
+
+### Top-5,000 residual spelling-class screen (2026-10-22)
+
+After the `financ-` gain, top-5,000 strict is 2,941/3,617, leaving 315 correct cases to reach 90%; 676 items currently fail. A fresh suffix ranking found 37 `-on`, 18 `-ion`, 17 `-age`, and 17 `-tion` mismatches, among other smaller groups. These are triage counts, not shared pronunciations: the earlier full replays rejected blanket `-on`, `-tion`, and `-age` transforms for mixed stress, vowels, morphology, and dictionary-supported variants. The current family-fold and all-rule postlex ablations likewise provide no passing class candidate, so no broad final-letter rule was added. Full frequency-ranked suffix counts: `/tmp/phonemize-financ-class-20261022/top5000-suffix-scan.json`; postlex replay: `/tmp/phonemize-next-release/postlex-financ-20261022/results.json`; family-fold reports: `/tmp/phonemize-next-release/learner-financ-20261022/` and `/tmp/phonemize-next-release/learner-structural-financ-20261022/`.
+
+### Rejected blanket weak vowel in spelled `-land` (2026-10-22)
+
+A frozen rules-path trial changed every final `/ɫænd/` to `/ɫənd/` across the
+English dictionary. It affected 113 predictions: strict dictionary matches
+rose 46 and fell 47 (net -1). On the top-5,000 list it had one strict win and
+three losses; the controls `land`, `planned`, and `Thailand` retain `/ænd/`,
+while `Portland` was the lone strict win. Cambridge confirms the mixed classes
+in [land](https://dictionary.cambridge.org/us/pronunciation/english/land),
+[Thailand](https://dictionary.cambridge.org/us/pronunciation/english/thailand),
+and [Iceland](https://dictionary.cambridge.org/us/pronunciation/english/iceland).
+The independent CMU replay was net-positive by ten, but the full-dictionary
+strict regression violates the project gate, so no suffix rule was adopted.
+The temporary replay changed no source or reference. The other matching words
+and win/loss rows are summarized in `/tmp/phonemize-next-release/land-trial-2026-10-22.json`.
+
+The fresh structural learner report at
+`/tmp/phonemize-next-release/learn-2026-10-22/cv-common-report.json` also
+selected 46 candidates across ten spelling-family folds, with none passing
+the train-only legacy filter. Applying all selected candidates reduced
+held-out strict from 3,835 to 3,810/5,092. No learned candidate was adopted.
+
+
+### Rejected weak `i` after soft `c` before a consonant (2026-10-22)
+
+A rule-only replay changed 160 dictionary predictions by reducing unstressed
+`/ɪ/` after soft `c` to schwa when another consonant followed in the spelling.
+It fixed five common strict cases and none of those five were common losses,
+but across the full dictionary it produced 25 strict wins against 45 losses
+and reduced lenient correct cases by 14. It misreads attested forms such as
+*tacit, pacifist, narcissism, rancid,* and *incidentally*. The spelling
+environment does not resolve the lexical variation, so the temporary rule was
+removed. No pronunciation or reference change was retained.
+
+### No blanket `-quent` correction (2026-10-22)
+
+Rules-only replay showed mixed `quent` outcomes, so no shared vowel rewrite
+was simulated for adoption. Cambridge distinguishes adjective /ˈfriːkwənt/
+from verb /friːˈkwent/ for *frequent*; the rules path keeps the adjective
+reading for *frequent* and uses the verb reading in *frequented*. A spelling-
+only `e` rewrite would collapse that part-of-speech distinction and risk
+changing the correct inflected verb. See [Cambridge US frequent]
+(https://dictionary.cambridge.org/us/dictionary/english/frequent) and
+[frequented](https://dictionary.cambridge.org/dictionary/english/frequented).
+This is an evaluator/reference ambiguity, not a pronunciation gain; no runtime
+or gold change was made.
+
+### Weak vowel in dropped-e `-aging` inflections (2026-10-22)
+
+For rule-derived present participles ending in `-aging`, change only a final
+`/ədʒɪŋ/` to `/ɪdʒɪŋ/`. The guard excludes the `-naging` family, preserving
+Cambridge US *manage* /ˈmænədʒ/ and its *managing* schwa. Cambridge US confirms
+the KIT vowel in *damaging, imaging, messaging, packaging, salvaging,* and
+*savaging*; Oxford gives US *mortgaging* /ˈmɔːrɡɪdʒɪŋ/. The rule transforms
+the already-composed inflection, so *mortgaging* retains the silent `<t>` from
+its correct stem. No whole-word mapping or runtime lexicon entry was added.
+
+Frozen full snapshot changed exactly seven rules-path predictions, all strict
+wins against the unchanged dictionary reference: *damaging, imaging,
+messaging, mortgaging, packaging, salvaging,* and *savaging*. There were no
+strict losses; *managing, staging, engaging,* and *aging* remain unchanged.
+The evidence is under `/tmp/phonemize-aging-class-20261022/`; the before and
+after snapshots each contain 1,296,330 predictions and the rebuild left
+`data/en/dict.json` byte-identical.
+
+After rebuild, full-dictionary strict is 62,657/105,065 (+7) and lenient is
+83,722 (unchanged). Common strict is 5,453/6,990 (+3) and top-5,000 strict is
+2,943/3,617 (+2); common and top-5,000 lenient counts are unchanged at 6,396
+and 3,367. Public CMU API remains 4,745/5,000 by default and rises from
+4,176 to 4,178/5,000 in rules mode; rules mode remains below its legacy 90%
+floor. Runtime parity is unchanged at 94,785/100,804 strict. Stress-aware
+phonemic accuracy, context IPA (88/85/53/49), and homographs (1,455/1,615)
+are unchanged. All 396 Jest suites / 7,080 tests, typecheck, and `test:ipa`
+pass. Five-module rule-code count remains 3,395.
+
+References: [Cambridge US damaging](https://dictionary.cambridge.org/us/dictionary/english/damaging),
+[imaging](https://dictionary.cambridge.org/us/dictionary/english/imaging),
+[messaging](https://dictionary.cambridge.org/us/dictionary/english/messaging),
+[packaging](https://dictionary.cambridge.org/us/dictionary/english/packaging),
+[salvaging](https://dictionary.cambridge.org/us/dictionary/english/salvaging),
+[savaging](https://dictionary.cambridge.org/us/dictionary/english/savaging),
+[manage pronunciation](https://dictionary.cambridge.org/us/pronunciation/english/manage),
+and [Oxford US mortgage verb](https://www.oxfordlearnersdictionaries.com/us/definition/english/mortgage_2).
+
+### Residual common-word search after `-aging` (2026-10-22)
+
+The refreshed 6,990-word report has 1,537 strict mismatches. The largest
+three-letter endings are `-ion` (36), `-ent` (30), `-age` (27), `-ity` (24),
+and `-ing` (22). These buckets are not shared sound classes: the 22 `-ing`
+failures alone mix vowel, stress, consonant, proper-name, and lexicalized-root
+differences. Generic and structural family-fold learning accepted 21 and 47
+training proposals respectively, but none passed the legacy fold filters;
+filtered held-out strict remained 75.30% in both. Route ablation and removal
+of each postlex rule also exposed no passing shared rule. No further candidate
+was added. Reports: `/tmp/phonemize-rule-corrections/cv-common-report.json`,
+`/tmp/phonemize-route-diagnosis/report.json`, and
+`/tmp/phonemize-postlex-diagnosis/results.json`.
+
+### Rejected blanket `pre-` KIT-to-FLEECE change (2026-10-22)
+
+A rules-path replay that changes initial `/pɹɪ/` to `/pɹi/` repaired two
+common-set strict cases, *preceding* and *presenting*, with no common-set
+losses: 5,453 to 5,455/6,990. Top-5,000 remained 2,943/3,617. This does not
+support a general `pre-` spelling rule: Cambridge gives US FLEECE but UK KIT
+for *preceding*, while *presenting* retains KIT in both Cambridge dialects.
+Other `pre-` words in the same cohort require `/ɛ/`, `/ə/`, or other prefix
+vowels. No runtime change was adopted. See [Cambridge preceding](https://dictionary.cambridge.org/us/dictionary/english/preceding)
+and [presenting](https://dictionary.cambridge.org/us/dictionary/english/presenting).
+
+### Rejected weak `-ticle` correction after dictionary check (2026-10-22)
+
+A replay of unstressed `/ɪ/` → `/ə/` in rule-path words ending `-ticle`
+would change *article, cuticle,* and *particle* to match the pinned IPA-Dict
+golds, with no losses among the four dictionary entries ending in `-ticle`;
+*testicle* remains unchanged because its vowel is secondary-stressed. This is
+not a qualified pronunciation gain: Cambridge US records `/ɪ/` for *article*
+and *cuticle*, and `/ə/` for *particle* (UK `/ɪ/`). The fixed gold therefore
+mixes competing standard readings. No rule or reference was changed; this
+needs a separately versioned source decision rather than a spelling rule. See
+[Cambridge article](https://dictionary.cambridge.org/us/pronunciation/english/article),
+[cuticle](https://dictionary.cambridge.org/us/dictionary/english/cuticle),
+[particle](https://dictionary.cambridge.org/us/pronunciation/english/particle),
+and [testicle](https://dictionary.cambridge.org/us/pronunciation/english/testicle).
+
+### Rejected missing schwa in rules-path `-ically` outputs (2026-10-22)
+
+Inserting `/ə/` before final `/ɫi/` only when a rules-path word is spelled
+`-ically` and currently ends `/ɪkɫi/` changed 85 full-dictionary predictions:
+26 strict wins and 49 losses, lowering full strict from 62,657 to 62,634 out
+of 105,065. The fixed common cohort had two wins and two losses, with no net
+change; top-5,000 had no wins and one loss (2,943 to 2,942/3,617). The suffix
+does not predict whether IPA-Dict includes this schwa. No runtime change was
+adopted. Full win/loss rows: `/tmp/phonemize-ically-l-20261022/replay.json`.
+
+### Rejected apparent `-dical` gain after US dictionary verification (2026-10-22)
+
+A narrower `/ɪkəɫ/` → `/əkəɫ/` rewrite for spellings ending `-dical` would
+raise the fixed common cohort by two and top-5,000 by one (full dictionary:
+3 strict wins, 1 loss). The common wins are *medical* and *radical*, but
+Cambridge US explicitly gives both a KIT vowel; the score gain would move
+away from those standard readings. No rule or gold was changed. Candidate
+rows: `/tmp/phonemize-dical-probe-20261022/replay.json`. See
+[Cambridge medical](https://dictionary.cambridge.org/us/pronunciation/english/medical),
+[radical](https://dictionary.cambridge.org/us/pronunciation/english/radical),
+and [biomedical](https://dictionary.cambridge.org/us/pronunciation/english/biomedical).
+
+### Custom-dictionary exception probe does not reach the rules gate (2026-10-22)
+
+Temporarily overlaid seven Cambridge-verified common lexical forms
+(*have, both, said, been, one, only,* and *business*) in
+`src-data/en/custom.dict`. Rebuild loaded 44 entries and produced a full
+1,296,330-row default/rules/morph/POS snapshot byte-identical to the frozen
+37-entry state; `disableDict` bypasses direct dictionary lookup, so these
+lexical overrides cannot improve the fixed rules-only metric. The temporary
+entries were removed and rebuild restored `data/en/dict.json` to its frozen
+SHA256. This route is not a score-improvement mechanism; future candidates
+must change actual rules-path predictions.
+
+### Rejected dark-lateral normalization before final `i` (2026-10-22)
+
+A rules-output replay replacing final `/ɫi/` with `/li/` changed 2,840 words
+and reduced full strict from 62,657 to 60,524/105,065 (1 win, 2,134 losses).
+The common cohort lost 158 net cases (1 win, 159 losses); top-5,000 lost 64
+net (1 win, 65 losses). Restricting the same rewrite to spellings ending
+`-ly` also regressed: common 1 win/148 losses and top-5,000 1 win/63 losses.
+The reference uses dark-l notation for many ordinary `-ly` outputs, so a broad
+allophonic rewrite is not compatible with the fixed contract. No rule or
+normalizer changed.
+
+### Structural TRAIN candidate search (2026-10-22)
+
+The frozen `learn:rules --structural` run used 5,093/6,990 common words on the
+rules-only path (72.86% coverage), grouped 4,660 spelling families into ten
+folds, and selected only on each fold's TRAIN portion. It accepted 47 fold
+rules and pooled 15 distinct readings, but none passed the existing fix/break
+filter in any fold; the mean held-out strict score therefore stayed 75.30%.
+The strongest pooled candidates still traded TRAIN fixes for breaks and often
+lost top-5,000 cases. No candidate was promoted or replayed as a runtime rule.
+The full report is `/tmp/phonemize-next-release-structural-20261022/cv-common-report.json`.
+
+An accompanying -ing probe rejected a blanket -cede root-vowel repair. Cambridge
+US distinguishes [*preceding*](https://dictionary.cambridge.org/pronunciation/english/preceding)
+/priːˈsiːdɪŋ/ from [*receding*](https://dictionary.cambridge.org/us/dictionary/english/receding)
+/rɪˈsiːdɪŋ/; their shared spelling shape does not license one vowel rule. The
+current `preceding` miss remains open pending a more discriminating general
+class.
+
+### Retained-e `-age` plurals (2026-10-22)
+
+The plural fallback's general silent-e guard capped recovered stems at three
+syllable slots, which excluded rule-exact four-slot `-age` roots. The fallback
+now carries these retained-e roots into plural `-s`; other endings retain the
+original cap. This changes the rules path for *averages*, *beverages*, and
+*porterages*: it inherits the attested root stress instead of resyllabifying
+the whole plural. Cambridge US confirms first-syllable stress in [average](https://dictionary.cambridge.org/us/pronunciation/english/average)
+and [beverage](https://dictionary.cambridge.org/us/pronunciation/english/beverage); Cambridge records initial stress for [porterage](https://dictionary.cambridge.org/us/pronunciation/english/porterage).
+
+On the fixed dictionary, the isolated candidate changed only those three
+rules predictions: no strict wins or losses, one full-dictionary lenient win
+(*porterages*), and no common-cohort change. After rebuild, the full rules
+lenient count is 83,723/105,065, up one from the frozen 83,722; strict remains
+62,657. Common strict/lenient remain 5,453/6,396 and top-5,000 remains
+2,943/3,367. The complete 1,296,330-row runtime snapshot and parity report are
+in `/tmp/phonemize-age-plural-20261022/`. Regenerating previously stale runtime
+tables also refreshed the `financ-` entries; those stress-mark changes are
+separate from the plural rule and are not counted as accuracy gains.
+
+Other final gates stayed nondecreasing: parity 94,785/100,804 strict and
+100,691 lenient; stress-aware 54,778/90,308 (+1 from the frozen before-run);
+public CMU default 4,745/5,000 and rules-only 4,178/5,000; context
+88/108, 85/108, 53/108, 49/108; homographs 1,455/1,615. The default CMU
+90% floor passes; the existing rules-only floor still fails. The full run
+passed all 397 test suites (7,087 tests); after adding three base-root
+assertions, the expanded age and finance focused suites passed 17/17, and
+typecheck passed. Paired tests cover the stems, plural forms, neighboring
+plural controls, and noun/adjective/verb sentence contexts.
+This is a retained sub-threshold improvement; the normal +70 common strict
+commit minimum is not met, so no baseline was changed and the existing batch
+remains uncommitted.
+
+The rebuilt `financ-` test also stopped requiring secondary stress on the
+initial syllable of *financially*. Cambridge's US entry marks primary stress
+on `/næn/` and no secondary stress on `/faɪ/` ([Cambridge financially](https://dictionary.cambridge.org/us/pronunciation/english/financially)).
+This test correction follows the source reading and is not a pronunciation
+gain.
+
+### Rejected blanket weak `-age` vowel rewrite (2026-10-22)
+
+Replayed `/ɪdʒ/` → `/ədʒ/` on every rules-path output whose spelling ends in
+`-age`. Among affected words, strict wins/losses were 45/104 in the full
+dictionary, 18/19 in the fixed common subset, and 11/10 in top-5,000; the
+common strict score therefore regresses by one despite a one-word top-slice
+gain. This is also not a uniform US pronunciation class: Cambridge gives
+`/ɪ/` for [message](https://dictionary.cambridge.org/us/pronunciation/english/message),
+[package](https://dictionary.cambridge.org/us/pronunciation/english/package),
+[damage](https://dictionary.cambridge.org/us/dictionary/english/damage),
+[coverage](https://dictionary.cambridge.org/pronunciation/english/coverage),
+and [drainage](https://dictionary.cambridge.org/us/pronunciation/english/drainage),
+but `/ə/` for [manage](https://dictionary.cambridge.org/us/pronunciation/english/manage).
+No rule or reference was changed.
+
+### Rejected apparent `-tice` and `-sis` vowel gains (2026-10-22)
+
+An exact-population suffix replay suggested `/ɪ/` → `/ə/` in `-tice` words
+(four common wins, none lost; three top-5,000 wins) and in a small `-sis`
+group (five common wins, none lost). The apparent gains conflict with
+Cambridge US: [justice](https://dictionary.cambridge.org/us/pronunciation/english/justice),
+[notice](https://dictionary.cambridge.org/us/pronunciation/english/notice),
+[practice](https://dictionary.cambridge.org/us/pronunciation/english/practice),
+and [hypothesis](https://dictionary.cambridge.org/us/pronunciation/english/hypothesis)
+all retain `/ɪ/` in those endings. These are reference disagreements, not
+pronunciation errors; no rule or reference was changed. Replay used the
+official evaluator's stress stripping, `/ʌ/` normalization, and fixed
+6,990/3,617 populations.
+
+### Rejected general AmE yod deletion before `/ʊɹ/` (2026-10-22)
+
+The common-word route audit flagged *during* (`/djʊɹɪŋ/` versus gold
+`/dɝɪŋ/`). Replaying `/djʊɹ/` → `/dʊɹ/` on the actual pipeline changes only
+four testable dictionary words: it produces no strict wins against the pinned
+CMU-derived references and leaves the common and top-5,000 scores unchanged.
+Cambridge US independently gives `/dʊr/` in [during](https://dictionary.cambridge.org/pronunciation/english/during),
+[endure](https://dictionary.cambridge.org/us/pronunciation/english/endure),
+and [enduring](https://dictionary.cambridge.org/pronunciation/english/enduring),
+so the three benchmark losses may be valid AmE variants rather than incorrect
+outputs. This is source evidence for a future reference-contract review, not
+an accuracy gain under the frozen benchmark; no yod rule or reference was
+changed.
+
+### Rejected structural distance-learning batch (2026-10-22)
+
+The spelling-family-folded `learn-rule-corrections.ts --structural
+--objective distance` run covered 5,092/6,990 common words. It accepted 20
+TRAIN-selected candidates across ten folds; none passed the existing
+fix/break filter. Replaying all accepted candidates reduced held-out strict
+from 3,835 to 3,824/5,092 and lenient from 4,576 to 4,572, while aggregate
+edit distance also worsened. No candidate was promoted. Report:
+`/tmp/phonemize-next-release-distance-20261022/cv-common-report.json`.
+
+### Rejected blanket `-ital` weak-vowel retention (2026-10-22)
+
+The `/ə/` prediction in *hospital* suggested retaining `/ɪ/` before `-ital`.
+Replaying that change through the actual rules pipeline altered 12 of 17
+dictionary spellings ending in `-ital`. On the fixed common cohort it fixes
+*hospital* but breaks *capital*, for zero net strict gain (top-5,000: +1/−1).
+The class is mixed in authoritative US pronunciations: Cambridge gives `/ɪ/`
+for [hospital](https://dictionary.cambridge.org/us/pronunciation/english/hospital),
+but `/ə/` for [capital](https://dictionary.cambridge.org/pronunciation/english/capital),
+[digital](https://dictionary.cambridge.org/us/pronunciation/english/digital),
+and [genital](https://dictionary.cambridge.org/us/pronunciation/english/genital).
+No spelling-wide rule or word mapping was added.
+
+### Rejected three-feature weak-`i` learner batch (2026-10-22)
+
+The TRAIN-only `learn-rule-corrections.ts --structural --expanded --triples`
+screen examined 5,092/6,990 in-scope rules predictions across ten spelling-
+family folds. It accepted 102 candidates; none passed the fixed affected-word,
+fix-rate, and top-5,000 loss filter. Replaying all accepted candidates reduced
+held-out strict from 3,835 to 3,812/5,092 and lenient from 4,576 to 4,563;
+edit distance also worsened. The most tempting `t` → `/ə/` candidate had
+TRAIN top-5,000 +36/−0 but only ten affected cases per fold and 6/2 held-out
+fixes/breaks pooled across folds. Its apparent wins mix `/ə/` words such as
+[particle](https://dictionary.cambridge.org/us/pronunciation/english/particle)
+with Cambridge's `/ɪ/` reading of [article](https://dictionary.cambridge.org/us/pronunciation/english/article)
+and [testicle](https://dictionary.cambridge.org/us/pronunciation/english/testicle);
+the broad class is not a pronunciation rule. No rule or reference changed.
+Report: `/tmp/phonemize-next-release-triples-20261022/cv-common-report.json`.
+
+### Rejected `-ically` schwa insertion under the frozen CMU gate (2026-10-22)
+
+On the actual pipeline, inserting `/ə/` before final `/ɫi/` in `-ically`
+words produces two common strict fixes (*dramatically*, *physically*) and two
+regressions (*basically*, *specifically*) against the pinned CMU strings. The
+common strict net is zero and top-5,000 is 0/1 (one loss).
+Cambridge US marks `/kəli/` in [basically](https://dictionary.cambridge.org/us/pronunciation/english/basically),
+[dramatically](https://dictionary.cambridge.org/us/pronunciation/english/dramatically),
+[physically](https://dictionary.cambridge.org/us/pronunciation/english/physically),
+[specifically](https://dictionary.cambridge.org/us/pronunciation/english/specifically),
+and [periodically](https://dictionary.cambridge.org/pronunciation/english/periodically).
+This supports the schwa as a standard AmE pronunciation, but the present
+single-reading benchmark cannot accept that variant without a separately
+versioned reference audit; no runtime rule or baseline changed.
+
+### Restore the regular sibilant suffix on doubled-z stems (2026-10-22)
+
+Rules-only morphology treated `quizzes` and `whizzes` as if the stem ended in
+an extra schwa, yielding `/əz/` instead of composing the root's final `/z/`
+with the regular `/ɪz/` suffix. A general doubled-`z` inflection path now
+predicts the stem and applies the existing sibilant allomorph; post-phonotactic
+schwa reduction preserves `/ɪ/` for this spelling class. Cambridge confirms
+the root *quiz* `/kwɪz/`, and Oxford gives *buzzes* `/ˈbʌzɪz/` ([Cambridge quiz](https://dictionary.cambridge.org/pronunciation/english/quiz), [Oxford buzz](https://www.oxfordlearnersdictionaries.com/definition/english/buzz_1)).
+
+Paired tests cover six doubled-z roots, their plural/third-person forms, noun
+and verb POS, sentence tokenization, and six neighboring `-es` controls. The
+only changed predictions among the frozen dictionary parity rows were
+`quizzes` and `whizzes`; both now agree with the pinned CMU `/ɪz/` reading.
+On the fixed 6,990/3,617 populations, strict is 5,454/6,990 (+1) and
+2,943/3,617 (unchanged); lenient remains 6,396/6,990 and 3,367/3,617.
+Parity is 94,787/100,804 strict (+2) and 100,691 lenient (unchanged).
+Stress-aware phonemic is 54,778/90,308 (unchanged), public CMU is 4,745/5,000
+default and 4,178/5,000 rules-only (both unchanged), context remains
+88/108, 85/108, 53/108, 49/108, and homographs remain 1,455/1,615. The rebuilt
+exception table re-pinned 528 dependency-affected entries and retained five
+net-positive regressions already reported by the builder. All 398 test suites
+(7,103 tests), typecheck, and diff check passed. This is below the normal
+70-word common-strict commit minimum; no baseline was changed and the existing
+worktree batch remains uncommitted.
+
+The follow-up default learner screen accepted 21 candidates across ten
+spelling-family folds, but none passed its legacy fix/break filter; pooled
+held-out strict therefore remained at a 75.31% mean. Route diagnosis confirms
+morphology is contributing substantial coverage (removing it falls to
+4,703/6,990 strict; the unsplit alternative is 4,590/6,990), so the next
+search should focus on conditional morphology and stem evidence rather than
+bypassing the route. Report: `/tmp/phonemize-zzes-20261022/learn/cv-common-report.json`.
+
+### Longer common-word candidate screen (2026-10-22)
+
+Repeated the family-held-out rule search with `--include-long` to check whether
+the default 12-character cutoff hid transferable rules. The diagnostic scope
+was 7,097 common testable words (107 more than the fixed 6,990-word acceptance
+population), with 5,116 rule-path cases. Across ten spelling-family folds, 20
+rules were selected and none passed the existing train-only fix/break filter;
+applying only passing rules therefore left held-out strict unchanged at a
+75.08% mean. The recurring unstressed `/ɪ/` to `/ə/` candidate fixed `credit`,
+`edit`, and `Medicare`, but broke `media`, `median`, and `medium`; it is not a
+safe general rule. No runtime or reference changed. Report:
+`/tmp/phonemize-long-families-20261022/cv-common-report.json`.
+
+Issue #28's apostrophe regressions remain in
+`__tests__/en-apostrophe-words.test.ts`: they cover O'Reilly Media, curly and
+straight apostrophes, and possessive forms without a brand-specific runtime
+map. The user's clarification that O'Reily was illustrative does not change
+that class-level coverage.
+
+### Rejected blanket `-ogs` plural stem retention (2026-10-22)
+
+Preserving the rule-path stem before final plural/third-person `-s` improved
+the fixed common and top-5,000 strict counts by one each (5,455/6,990 and
+2,944/3,617), but reduced both public CMU measurements by one: default
+4,744/5,000 and rules-only 4,177/5,000. The loss was `blogs`, whose pinned
+CMU reading is `/blɔɡz/`, while the shared stem rule selected `/ɑ/`; the
+unmodified runtime reading remains correct. Since all tracked metrics must be
+nondecreasing, the candidate was removed. The paired trial test was removed
+with it; no dictionary, baseline, or runtime change resulted. Frozen replay
+reports are under `/tmp/phonemize-ogs-20261022/`.
+
+### Low-support family-fold screen (2026-10-22)
+
+Repeated the deterministic common-word learner with `min-support=2` and
+100-rule capacity to test whether the prior support threshold hid smaller
+spelling families. Across 10 spelling-family folds, 716 candidates were
+selected and 142 distinct readings appeared in at least one fold; none passed
+the unchanged train-only filter. Applying all selected candidates reduced
+held-out strict from a 75.31% mean to 74.14%; applying only filter-passed
+candidates left it at 75.31%. The low-support candidates overfit small lexical
+clusters such as *key/Keith* and `-age` words with mixed readings
+(*damage, image*), so no runtime change was made. Report:
+`/tmp/phonemize-learner-ms2-strict-single-20261022/cv-common-report.json`.
+
+### Rejected weak-vowel `-cket` plural override and structural candidates (2026-10-22)
+
+A two-syllable `-ckets` rule temporarily improved four full-dictionary plural
+rows against the pinned IPA-Dict table, but it also changed the OOV forms
+`lockets` and `wickets`. Cambridge gives US /ɪ/ in the bases
+[locket](https://dictionary.cambridge.org/us/pronunciation/english/locket),
+[wicket](https://dictionary.cambridge.org/us/pronunciation/english/wicket),
+[bracket](https://dictionary.cambridge.org/us/pronunciation/english/bracket),
+and [thicket](https://dictionary.cambridge.org/us/pronunciation/english/thicket);
+there was no independent authoritative support for generalizing the plural
+schwa. The rule and its trial tests were removed. This candidate did not change
+either fixed common-word strict count.
+
+A fresh structural TRAIN-only screen selected 46 rules across ten
+spelling-family folds; none passed the unchanged affected-word, fix-rate, and
+top-5,000 loss filter. Applying all selected rules reduced held-out strict
+from 3,835 to 3,810/5,092 and lenient from 4,576 to 4,558. No rule or
+reference changed. Report: `/tmp/phonemize-rule-corrections/cv-common-report.json`.
+
+### Common-word `here` reference conflict (2026-10-22)
+
+The rules-only output for `here` is `/ˈhɪɹ/`, matching Cambridge US
+[/hɪr/](https://dictionary.cambridge.org/us/pronunciation/english/here),
+while the pinned IPA-Dict row is `/ˈhiɹ/` and the CMU row is `HH IY1 R`.
+The shipped dictionary therefore returns `/ˈhiɹ/` to preserve the public CMU
+gate, while the rules evaluator counts its Cambridge-supported output as
+wrong. No prediction or reference was changed: switching the shipped reading
+to `/ɪ/` would lose a CMU match under the unchanged single-reading contract.
+Treat this as a source-variant conflict, not a rule gain; a future reference
+audit would need a versioned accepted-variant contract and unchanged-snapshot
+re-scoring.
+
+### Behavior-neutral rule-module compression (2026-10-22)
+
+The five-module count had reached 3,400 code lines (G2P 1,151), crossing both
+the retained 3,395 total and 1,150 G2P triggers. Merged equivalent stress
+branches and repeated morphology guards, and consolidated related stress
+conditions without changing their tests or return values. A first attempt to
+merge adjacent phoneme regexes was reverted: downstream handling keys on
+`pattern.source`, and that edit caused 743 test failures. The final refactor
+preserves those regex identities.
+
+The final count is 3,394 lines (G2P 1,150, syllabify 1,702, postlex 496,
+morph-table 20, morph-parser 26). The 1,296,330-row `snapshot-dump.ts` output
+is byte-identical to the pre-refactor snapshot (SHA-256
+`ca92e454629cf939300f5e452ba92789f45f3897cb391672abbeb950123b8330`). The
+focused regression set passed 72/72, the full suite passed 7,103/7,103 across
+398 suites, typecheck and `git diff --check` passed. This is neutral
+compression: accuracy baselines and runtime data were not changed.
+
+### Audited `-tribution` and `-ical` mismatch families (2026-10-22)
+
+The fixed common reference marks `contribution` and `distribution` with /ə/ in
+the unstressed vowel before /bju/, while current rules predict /ɪ/. Cambridge
+US lists /trɪˈbjuː/ in both
+[contribution](https://dictionary.cambridge.org/us/pronunciation/english/contribution)
+and [distribution](https://dictionary.cambridge.org/us/pronunciation/english/distribution).
+Changing both to `/ə/` to match the fixed reference would move them away from
+this authoritative AmE reading, so no rule was adopted.
+
+The common `-ical` cluster is mixed as well. Cambridge gives /ˈmedɪkəl/ and
+/ˈklɪnɪkəl/ for [medical](https://dictionary.cambridge.org/us/dictionary/english/medical)
+and [clinical](https://dictionary.cambridge.org/us/dictionary/english/clinical),
+supporting the current `/ɪ/` predictions even though the fixed reference has
+/ə/. For [political](https://dictionary.cambridge.org/us/pronunciation/english/political),
+Cambridge US gives /pəˈlɪtəkəl/, supporting the fixed reference's `/ə/` rather
+than the current `/ɪ/`. This confirms that spelling suffix alone does not
+license one vowel across the family. These source conflicts did not change
+predictions, references, or scores.
+
+### Weak final vowel in the bound `-medicine` root (2026-10-22)
+
+The rules path retained `/ɪ/` in the final unstressed `-cine` slot of
+*medicine* and compounds ending in the root. A narrow root-aware rule now
+reduces that final `/ɪ/` to `/ə/` only for unstressed `ci` + final `ne` in
+spellings ending `medicine`; it leaves *medicinal*, *vaccine*, *plasticine*,
+and other `-cine` roots unchanged. Cambridge US confirms `/sən/` in
+[medicine](https://dictionary.cambridge.org/us/pronunciation/english/medicine)
+and [telemedicine](https://dictionary.cambridge.org/pronunciation/english/telemedicine),
+while [medicinal](https://dictionary.cambridge.org/pronunciation/english/medicinal)
+retains its distinct `/sɪn/` sequence.
+
+The frozen 1,296,330-row comparison changed exactly four rules outputs:
+*medicine*, *medicine's*, *telemedicine*, and *genemedicine*. The first,
+second, and fourth now match the pinned reference; *telemedicine* remains a
+strict mismatch because the reference differs in the earlier root vowels, but
+its final vowel now matches the authoritative US pronunciation. There were
+three full-dictionary strict wins and no losses, and no lenient-count change.
+After `build-dict`, common strict rose 5,454→5,455/6,990 and top-5,000 rose
+2,943→2,944/3,617; lenient counts were unchanged. Public CMU rules rose
+4,178→4,179/5,000; default remained 4,745/5,000. Runtime parity remained
+94,787/100,804 strict and 100,691 lenient; context and homograph gates also
+remained unchanged at 88/85/53/49 and 1,455/1,615. The five-module count is
+3,395 (G2P 1,150, syllabify 1,703, postlex 496, morph-table 20,
+morph-parser 26), at the retained cap. Frozen snapshots and exact trial rows are
+under `/tmp/phonemize-next-release/medicine-*`. This is an accumulating gain, not
+the 90% release target; no baseline was refreshed or commit made.
+
+### Frozen common-word re-screen after `-medicine` (2026-10-22)
+
+The rebuilt common set is 5,455/6,990 strict (78.04%) and the top-5,000 slice is
+2,944/3,617 (81.39%); lenient remains 6,396 and 3,367 respectively. A fresh
+10-fold spelling-family structural search accepted 40 fold-local corrections,
+but none passed the existing held-out filter in any fold. The top recurring
+proposals were unstressed `ɪ→ə` before `l` or after `d`; their cross-fold losses
+prevented adoption. This search is diagnostic only and does not justify a broad
+rule.
+
+Current mismatch clusters also fail a quick uniform-suffix screen: the common
+reference marks many `-age` endings with schwa, while Cambridge US gives /ɪ/
+for both [package](https://dictionary.cambridge.org/pronunciation/english/package)
+and [courage](https://dictionary.cambridge.org/us/pronunciation/english/courage),
+so broad schwa insertion would move those standard readings away from the source.
+The `-ion` and `-ity` clusters mix stress movement, root vowels, and reductions.
+No shared suffix correction was applied. The
+authoritative US entries for [one](https://dictionary.cambridge.org/us/dictionary/english/one)
+and [once](https://dictionary.cambridge.org/us/dictionary/english/once) support
+/wʌn/ and /wʌns/, but the rules-only errors are confined to those exact free
+forms; existing compounds and contrasting `-one` words make a spelling-only
+exception unsafe, so no whole-word rule was added.
+
+The user's clarification confirms that *O'Reily* was illustrative and the
+company is *O'Reilly Media*. Issue #28 remains covered by the existing
+apostrophe regression suite for the brand, sentence tokenization, possessive,
+and straight/curly apostrophes; no brand-specific mapping is needed.
+
+### Two-syllable `-rect` stress and direct-root batch (2026-10-22)
+
+The rules assigned initial stress to the two-syllable `direct` and `erect`,
+while standard US dictionary readings place primary stress on the second
+syllable. A shared `-rect(s)` stress condition now covers these roots and
+regular `-s` forms; it also preserves the already-correct second-syllable
+reading of `correct`. It leaves three-syllable `indirect` and `redirect` on
+their existing routes. The test set checks those paired roots, inflections,
+and both noun and verb uses of `direct` in sentence context.
+
+Against a same-build 1,296,330-row snapshot with the previous stress condition,
+the candidate changed 18 rows: the two roots, `directs`/`erects`, and their
+tested regular derivations. It introduced no changes to `indirect`, `redirect`,
+or the explicit `discrete` control. The full before/after snapshots are
+`/tmp/phonemize-next-release/rect-stress-rebuilt-baseline-20261022.tsv` and
+`/tmp/phonemize-next-release/rect-stress-final-20261022.tsv`; a separate
+pre-build candidate comparison showed ten rows also changed when the generated
+exception tables were rebuilt, so those build effects were excluded from the
+rule delta.
+
+After rebuilding, the stress-aware headline was 54,784/90,308 and exact IPA was
+45,780, both +2 from the same-build previous-rule run. The full-dictionary
+stress-stripped result was 62,668/105,065 strict and 83,725 lenient; common
+strict/lenient remained 5,459/6,397 of 6,990, and top-5,000 remained
+2,947/3,368 of 3,617. Runtime parity was 94,787/100,804 strict and
+100,691/100,804 lenient. Public CMU default stayed 4,745/5,000; rules stayed
+4,179/5,000, unchanged from the prior run and still below its legacy 90% floor.
+Context IPA stayed 88/85/53/49 for default-auto/default-known/rules-auto/
+rules-known, and homographs stayed 1,455/1,615. All 400 test suites (7,129
+tests) and typecheck passed. These accumulated measurements are still below
+the 90% common strict target; baselines were not refreshed.
+
+This rule took the five-module count to 3,396, so the neutral compression
+trigger applied. Merged the adjacent predicates that share the same
+`length - 2` stress result. The 1,296,330-row candidate and compressed snapshots
+are byte-identical (SHA-256
+`67c9ffc6ce9ef8bc375496b9831db9580244a9696d7d9e51b4c8160df1df8e0a`). The
+five-module count is back at 3,395: G2P 1,150, syllabify 1,703, postlex 496,
+morph-table 20, morph-parser 26. The direct-root, primary-stress, and weak-root
+tests passed 128/128; typecheck and `git diff --check` passed.
+
+### Strict-target stress counterfactual screen (2026-10-22)
+
+The current common target remains 5,459/6,990; reaching 6,292 requires 833
+additional strict wins, and the top-5,000 slice needs 309. The latest
+10-fold structural learner again accepted 40 candidates but none passed its
+fixed held-out filter. A separate real-pipeline stress intervention over the
+6,990 common set found one tempting two-syllable final-`o` group with four
+strict wins and one loss: *demo*, *expo*, *promo*, and *retro* improve, while
+*Reno* loses because shifting stress also changes its first vowel. On the full
+dictionary the same group also breaks *repo*. This is evidence that stress
+and vowel quality need to be diagnosed together; a blanket `-o` stress rule
+was rejected. The other inspected two-syllable final-`a` group had no common
+strict wins. Full counterfactual rows and input hashes are in
+`/tmp/phonemize-stress-diagnosis-20261022/` and
+`/tmp/phonemize-stress-all-20261022/`.
+
+The isolated common scorer calls `predict(word)` without POS or sentence
+context. Cambridge distinguishes citation and weak forms for function words:
+US [*of*](https://dictionary.cambridge.org/pronunciation/english/of) has weak
+/əv/ and strong /ɑv/, while [*from*](https://dictionary.cambridge.org/us/pronunciation/english/from)
+has weak /frəm/ and strong /frʌm/. These examples explain some fixed-reference
+misses but do not license changing the scorer or replacing sentence context
+with guessed weak forms. The target and denominator remain unchanged.
+
+### Fresh common report and dispatcher ablations (2026-10-22)
+
+`node --require tsx/cjs scripts/evaluate.ts --subset common --cluster` reproduced
+5,459/6,990 strict and 2,947/3,617 top-5,000 strict. Replaying all 91 active
+postlex rules against the real common-word pipeline found no removal with a
+positive strict balance. The all-word morphology/compound route replay verified
+107,643 outputs: removing morphology reduced strict from 64,006 to 57,893, and
+the unsplit alternative to 54,886. Its per-handler bypasses also had no
+strict-positive, non-regressing candidate; the only positive strict balance
+was `transmittal` (+1) paired with a lenient loss and a changed `referral`
+output. These ablations do not justify removing or bypassing a production
+route. The next candidate must add a supported spelling/morphology class and
+show wins and losses in the actual dispatcher, followed by all fixed gates.
+Evidence: `/tmp/phonemize-postlex-diagnosis/results.json` and
+`/tmp/phonemize-route-diagnosis/report.json`.
+
+### Rejected final `-oth` long-vowel generalization (2026-10-22)
+
+A final-rime counterfactual changed `/ɑθ/` or `/ɔθ/` to `/oʊθ/` for words
+ending in `-oth`. It fixes the common word *both* and three more IPA-Dict
+rows, but across the full dictionary it yields four strict wins and 15 strict
+losses; the common cohort gets one win and no losses. The top-5,000 slice gets
+only the single *both* win. Cambridge US independently gives `/boʊθ/` for
+[*both*](https://dictionary.cambridge.org/pronunciation/english/both), but
+`/slɑθ/` for [*sloth*](https://dictionary.cambridge.org/pronunciation/english/sloth)
+and `/klɑθ/` for [*cloth*](https://dictionary.cambridge.org/pronunciation/english/cloth),
+so the written ending does not determine the vowel. The full-dictionary strict
+regressions fail the adoption gate; no runtime rule or reference was changed.
+
+### Regular doubled-L `-all` plurals and release-gate refresh (2026-10-22)
+
+The `-s` inflection route left the short `/æ/` in doubled-L `-all` stems even
+though the existing pre-L rule assigns `/ɔ/` to the stem: `calls`, `balls`,
+`falls`, `walls`, `halls`, `malls`, `smalls`, and `stalls` therefore disagreed
+with their singular vowel. Extend that existing general rime condition to the
+exact `alls` frame. The regression also pins `call/called/calling`, the
+non-doubled-L `pal/pals` route, and complete sentence tokenization. No word map
+or runtime name list was added. Cambridge's US entries independently support
+the `/ɔ/` stem vowel in [call](https://dictionary.cambridge.org/us/dictionary/english/call)
+and [falls](https://dictionary.cambridge.org/us/dictionary/english/falls).
+
+The frozen 1,296,330-row prediction dump changed only this spelling family:
+the `-alls` forms, their regular derivatives and two compounds ending in
+*Falls*. The rebuilt output introduced no additional changes; the neutral
+one-line compression snapshot is byte-identical. Full evidence is under
+`/tmp/phonemize-all-s-final-plural-20261022/`. The full dictionary strict score
+rose from 62,668 to 62,669/105,065; common strict remained 5,459/6,990 and
+top-5,000 remained 2,947/3,617. Public CMU accuracy rose from 4,745 to
+4,749/5,000 in default mode and from 4,179 to 4,183/5,000 in rules mode.
+Stress-aware phonemic accuracy is 54,785/90,308; runtime parity is
+94,787/100,804 strict and 100,691 lenient. Context IPA is 88/85/53/49 across
+default-auto/default-known/rules-auto/rules-known; homographs are 1,455/1,615.
+All tracked metrics are nondecreasing against their immediate before-run.
+
+The accumulated English-subset strict score is now 119 words (+1.70 points)
+above the 5,340/6,990 committed baseline, meeting the +70-word qualifying
+improvement threshold. After all gates passed, refreshed the common, parity,
+stress-aware, context-IPA and homograph baselines. The explicit 90% common
+strict target is still open. The focused apostrophe suite continues to verify
+O'Reilly Media, its possessive, sentence context, and straight/curly
+apostrophes; no brand-specific pronunciation mapping is needed. The full Jest
+run passed 401 suites / 7,139 tests, typecheck passed, and the five English
+rule modules remain at 3,395 code lines.

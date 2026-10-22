@@ -9,6 +9,7 @@ describe.each([false, true])("bounded finite object frames, rules=%s", disableDi
       ["This secondary array uses pumped-fluid cooling.", "uses", "ˈjuzəz"],
       ["The device uses recycled materials.", "uses", "ˈjuzəz"],
       ["Her film uses both interviews and archival material.", "uses", "ˈjuzəz"],
+      ["Compared to other mass circulation papers in Israel, Haaretz uses smaller headlines and print.", "uses", "ˈjuzəz"],
       ["Their many uses remain clear.", "uses", "ˈjusəz"],
       ["Strong winds uprooted trees.", "winds", "wɪndz"],
       ["Strong winds also uprooted trees.", "winds", "wɪndz"],
@@ -28,6 +29,33 @@ describe.each([false, true])("bounded finite object frames, rules=%s", disableDi
     ];
     for (const [sentence, word, ipa] of cases)
       expect(api.phonemize(sentence, { language: "en-US", returnArray: true }).find(t => t.word === word)?.phoneme.replace(/ˌ/g, "")).toBe(ipa);
+  });
+
+  it("recognizes base verbs after modified bare plural subjects with compound objects", () => {
+    const api = createPhonemizer({ processors: [new EnglishG2P({ disableDict })] });
+    for (const sentence of [
+      "Adequate safety stock levels permit business operations to proceed.",
+      "Such stand-alone power systems permit operations at night.",
+      "Most U.S. states with low population densities commonly permit bicycle use on interstate freeways.",
+    ]) {
+      const token = api.phonemize(sentence, { language: "en-US", returnArray: true }).find(t => t.word.toLowerCase() === "permit");
+      expect(token?.phoneme).toBe(disableDict ? "ˈpɝmɪt" : "pɝˈmɪt");
+    }
+    for (const sentence of ["A permit was issued.", "They applied for a permit.", "The permit applications arrived."]) {
+      const token = api.phonemize(sentence, { language: "en-US", returnArray: true }).find(t => t.word.toLowerCase() === "permit");
+      expect(token?.phoneme).toBe("ˈpɝmɪt");
+    }
+  });
+
+  it("recognizes a transitive phrasal verb before its particle object", () => {
+    const api = createPhonemizer({ processors: [new EnglishG2P({ disableDict })] });
+    const sentence = "Firecats invite back coaches Mastrole, Hall, Naples Daily News, September 24, 2005.";
+    const token = api.phonemize(sentence, { language: "en-US", returnArray: true }).find(t => t.word.toLowerCase() === "invite");
+    expect(token?.phoneme).toBe(disableDict ? "ɪnˈvaɪt" : "ˌɪnˈvaɪt");
+
+    const noun = api.phonemize("The invite came by email.", { language: "en-US", returnArray: true })
+      .find(t => t.word.toLowerCase() === "invite");
+    expect(noun?.phoneme).toBe(disableDict ? "ɪnˈvaɪt" : "ˈɪnvaɪt");
   });
 });
 it("infers finite POS from the same determiner-backed syntax for unrelated verbs", () => {

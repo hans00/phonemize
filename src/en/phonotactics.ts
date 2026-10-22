@@ -56,18 +56,19 @@ function simplifyDtFinal(ipa: string): string {
 //   /t/  after voiceless obstruents p,k,f,θ,s,ʃ (picked, reached, washed)
 //   /d/  after voiced consonants/vowels (loved, formed, rained)
 // The rule engine emits /əd/ everywhere; collapse to /t/ or /d/ except
-// after t,d. Dict backs this strongly (voiceless→/t/ 346:4).
+// after t,d. Velar + -ed adjectives also retain a syllabic ending.
 const ED_VOICELESS = "pkfθsʃ"; // tʃ ends in ʃ, so prev='ʃ' catches affricate
 const ED_VOICED_NON_TD = "bʒvzðmnŋɫlɹjɡɑæɛɪɔʊʌəɝaeiouy";
 // Obstruents. An obstruent + /ɹ/ + /d/ is not a possible English coda, so
 // the schwa in /Cɹəd/ is a nucleus, not the -ed allomorph's: the lexicon
 // spells that shape /Cɹəd/ 9 times (alfred, hatred, sacred) and /Cɹd/ 0.
 const ED_OBSTRUENTS = "bdɡkptfvszʃʒθð";
-function fixPastTenseED(ipa: string, word?: string): string {
+function fixPastTenseED(ipa: string, word?: string, pos?: string, lexicalVelarED = false): string {
   // Only a real orthographic -ed past tense takes the allomorph. Without
   // this guard the rule mangles any word ending in /Cəd/ (rapid→ɹæpt,
   // candid, vivid, splendid, method, salad…).
-  if (word !== undefined && !word.endsWith("ed")) return ipa;
+  if (word !== undefined && (!word.endsWith("ed") ||
+      (lexicalVelarED && !pos?.startsWith("V") && /(?:k|ɡ)əd$/.test(ipa) && /(?:k|g)ed$/.test(word)))) return ipa;
   const len = ipa.length;
   if (len < 3) return ipa;
   if (ipa.charCodeAt(len - 1) !== 100 /* 'd' */) return ipa;
@@ -161,6 +162,13 @@ function normalizeStrut(ipa: string, word?: string): string {
   return out;
 }
 
+// When a lexical/stem route carries -ire's optional rhotic vowel into -er,
+// surface the stem rhotic as a coda before the agent suffix (acquirer).
+export function restoreIreCodaBeforeAgent(ipa: string, word?: string): string {
+  if (!word?.endsWith("irer") || !ipa.includes("aɪɝɝ")) return ipa;
+  return ipa.replace(/aɪɝɝ/g, "aɪɹɝ");
+}
+
 // A de-rhoticizing rule used to sit here, splitting /ɝ/ before a stress
 // mark + vowel into /ə/ + onset /ɹ/ (operating ˈɑpɝˌeɪtɪŋ → ˈɑpəˌɹeɪtɪŋ).
 // The lexicon disagrees: 1659 dict entries spell that position /ɝ/ against
@@ -218,13 +226,25 @@ function simplifyPluralAfterVowel(ipa: string): string {
   return ipa.replace(PLURAL_VZ_RE, "$1z");
 }
 
+// Environment derivatives use /ɪn/ before the PRICE root; bare environ has /ɛn/.
+function restoreEnvironmentStem(ipa: string, word?: string): string {
+  if (!word?.startsWith("environment") || word.includes("-")) return ipa;
+  return ipa.replace(/^([ˈˌ]?)ɛnvɝən/, (_match, stress: string) =>
+    `ɪn${stress}vaɪɹən`,
+  );
+}
+
 // ─── Rule: weak-vowel merger in syllabic -es ──────────────────────────────
 // The syllabic plural/3sg -es after a sibilant (s,z,ʃ,ʒ) surfaces with
 // /ə/ in the dict 359:107 over /ɪ/ (ages dʒəz, clauses zəz, approaches
 // tʃəz). Note: -ed is NOT converted — the dict prefers /ɪd/ there
 // (697:316), so the merger only applies to -es. Anchored to word end.
 const SYLLABIC_ES_RE = /([szʃʒ])ɪz$/;
-function weakVowelInflection(ipa: string): string {
+function weakVowelInflection(ipa: string, word?: string): string {
+  // The doubled-z spelling is an exception to the dictionary-wide schwa
+  // preference above: CMU and Oxford keep /ɪz/ in quizzes/buzzes, matching
+  // the overt, single-phoneme /z/ root plus the sibilant suffix.
+  if (word && /zzes$/.test(word)) return ipa;
   if (ipa.endsWith("ɪz")) return ipa.replace(SYLLABIC_ES_RE, "$1əz");
   return ipa;
 }
@@ -373,20 +393,23 @@ function applyHappyTensing(ipa: string): string {
  *
  * `word` is the lowercased orthographic form, used by rules that need
  * lexical context (the weak-schwa function-word exemption in normalizeStrut,
- * the -ed suffix test in fixPastTenseED).
+ * the -ed suffix test in fixPastTenseED). `pos` preserves lexical syllabic
+ * -ed after velars outside verb readings.
  */
-export function applyPhonotactics(ipa: string, word?: string): string {
+export function applyPhonotactics(ipa: string, word?: string, pos?: string, lexicalVelarED = false): string {
   let cur = ipa;
   cur = collapseInitialDoubleA(cur);
   cur = simplifyDtFinal(cur);
-  cur = fixPastTenseED(cur, word);
+  cur = fixPastTenseED(cur, word, pos, lexicalVelarED);
   cur = dropSilentH(cur);
   cur = normalizeStrut(cur, word);
+  cur = restoreIreCodaBeforeAgent(cur, word);
   cur = laxFleeceBeforeCodaR(cur);
   cur = coalesceUnstressedIR(cur);
   cur = tenseHiatusI(cur);
   cur = simplifyPluralAfterVowel(cur);
-  cur = weakVowelInflection(cur);
+  cur = weakVowelInflection(cur, word);
+  cur = restoreEnvironmentStem(cur, word);
   cur = epenthesizeSyllabicL(cur);
   cur = elideIcallySchwa(cur);
   cur = applyHappyTensing(cur);

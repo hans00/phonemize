@@ -2,6 +2,8 @@ import * as fs from "fs";
 import * as path from "path";
 import * as json5 from "json5";
 import { arpabetToIpa } from "../src/utils";
+import { restoreIreCodaBeforeAgent } from "../src/en/phonotactics";
+import { normalizeRegularEdAllomorph } from "./normalize-ipa-dict";
 
 interface DictEntry {
   [word: string]: string;
@@ -177,7 +179,11 @@ function normalizeMultiplePrimaryStress(ipa: string): string {
   return chars.join("");
 }
 
-function parseDict(content: string, heteronymWords: Set<string>): DictEntry {
+function parseDict(
+  content: string,
+  heteronymWords: Set<string>,
+  correctedReferences: Set<string>,
+): DictEntry {
   const lines = content.split("\n");
 
   const dict: DictEntry = {};
@@ -206,7 +212,9 @@ function parseDict(content: string, heteronymWords: Set<string>): DictEntry {
       ? variants.filter(v => v.includes("ɔ"))
       : variants;
     const ipa = normalizeMultiplePrimaryStress(selectVariant(pool, heteronymWords.has(lowerWord)));
-    dict[lowerWord] = ipa;
+    const correctedIpa = normalizeRegularEdAllomorph(lowerWord, ipa);
+    dict[lowerWord] = correctedIpa;
+    if (correctedIpa !== ipa) correctedReferences.add(lowerWord);
   }
 
   return dict;
@@ -242,7 +250,7 @@ function loadCmuDict(content: string): DictEntry {
   return arpaDict;
 }
 
-function trimDictionary(dictionary: DictEntry): DictEntry {
+function trimDictionary(dictionary: DictEntry, correctedReferences: Set<string>): DictEntry {
   const trimmedDict = { ...dictionary };
   let totalRemoved = 0;
 
@@ -282,7 +290,7 @@ function trimDictionary(dictionary: DictEntry): DictEntry {
 
   // Rule 2: Remove predictable past tense (-ed)
   Object.keys(dictionary).forEach(word => {
-    if (word.endsWith('ed') && word.length > 3) {
+    if (!correctedReferences.has(word) && word.endsWith('ed') && word.length > 3) {
       const base = word.slice(0, -2);
       if (dictionary[base]) {
         const basePron = dictionary[base];
@@ -387,13 +395,21 @@ async function main(): Promise<void> {
     const res = await fetch(
       "https://raw.githubusercontent.com/open-dict-data/ipa-dict/refs/heads/master/data/en_US.txt",
     );
-    const dict = parseDict(await res.text(), heteronymWords);
+    const correctedReferences = new Set<string>();
+    const dict = parseDict(await res.text(), heteronymWords, correctedReferences);
+    // IPA-Dict renders some transparent -ire + -er forms with two rhotic
+    // nuclei (acquirer: /aɪɝɝ/). Merriam-Webster records /ə-ˈkwī(-ə)r-ər/;
+    // normalize this productive spelling class before data is both shipped
+    // and used as the runtime-parity reference.
+    for (const [word, ipa] of Object.entries(dict))
+      dict[word] = restoreIreCodaBeforeAgent(ipa, word);
     console.log(`Loaded ${Object.keys(dict).length} entries from Dictionary`);
 
     // Load custom dictionary
     const customDictPath = new URL("../src-data/en/custom.dict", import.meta.url)
       .pathname;
     const customDict = loadCmuDict(fs.readFileSync(customDictPath, "utf-8"));
+    for (const word of Object.keys(customDict)) correctedReferences.delete(word);
     console.log(
       `Loaded ${Object.keys(customDict).length} entries from custom dictionary`,
     );
@@ -403,7 +419,9 @@ async function main(): Promise<void> {
 
     // Apply dictionary trimming
     console.log("\nApplying dictionary trimming...");
-    const trimmedDict = trimDictionary(finalArpaDict);
+    // Keep corrected source entries in the benchmark/reference population even
+    // when the generic morphology trimmer could reconstruct their new reading.
+    const trimmedDict = trimDictionary(finalArpaDict, correctedReferences);
     const originalSize = Object.keys(finalArpaDict).length;
     const trimmedSize = Object.keys(trimmedDict).length;
     const reduction = originalSize - trimmedSize;

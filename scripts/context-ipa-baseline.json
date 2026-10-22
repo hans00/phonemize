@@ -15,13 +15,13 @@
   "cells": {
     "default/auto": {
       "n": 108,
-      "strict": 87,
-      "lenient": 87,
-      "reading": 87,
-      "stress": 106,
+      "strict": 88,
+      "lenient": 88,
+      "reading": 88,
+      "stress": 107,
       "segments": 88,
-      "macro": 0.8383449883449883,
-      "balanced": 0.8777958152958153,
+      "macro": 0.8466783216783217,
+      "balanced": 0.8834776334776335,
       "phoneErrors": 20,
       "referencePhones": 448,
       "slices": {
@@ -47,8 +47,8 @@
         },
         "pos-stress": {
           "n": 31,
-          "strict": 30,
-          "lenient": 30
+          "strict": 31,
+          "lenient": 31
         },
         "sense": {
           "n": 21,
@@ -104,8 +104,8 @@
         },
         "invite_vrb": {
           "n": 8,
-          "strict": 7,
-          "lenient": 7
+          "strict": 8,
+          "lenient": 8
         },
         "learned_adj": {
           "n": 1,
@@ -641,13 +641,13 @@
   "supportedPosCells": {
     "default/auto": {
       "n": 88,
-      "strict": 83,
-      "lenient": 83,
-      "reading": 83,
-      "stress": 86,
+      "strict": 84,
+      "lenient": 84,
+      "reading": 84,
+      "stress": 87,
       "segments": 84,
-      "macro": 0.9608391608391608,
-      "balanced": 0.9637635756056809,
+      "macro": 0.9699300699300699,
+      "balanced": 0.970342522974102,
       "phoneErrors": 4,
       "referencePhones": 398,
       "slices": {
@@ -673,8 +673,8 @@
         },
         "pos-stress": {
           "n": 31,
-          "strict": 30,
-          "lenient": 30
+          "strict": 31,
+          "lenient": 31
         },
         "sense": {
           "n": 1,
@@ -715,8 +715,8 @@
         },
         "invite_vrb": {
           "n": 8,
-          "strict": 7,
-          "lenient": 7
+          "strict": 8,
+          "lenient": 8
         },
         "learned_adj": {
           "n": 1,
@@ -1240,7 +1240,7 @@
       "ˌɪnˈvaɪt",
       "ˈɪnvaɪt",
       "ˌɪnˈvaɪt",
-      "ˈɪnvaɪt",
+      "ˌɪnˈvaɪt",
       "ˌɪnˈvaɪt",
       "ˌɪnˈvaɪt",
       "ˌɪnˈvaɪt",

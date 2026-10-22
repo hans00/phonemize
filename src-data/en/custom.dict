@@ -1,11 +1,16 @@
 # Additional custom vocabulary overlayed on top of CMUdict
 
+
+every EH1 V R IY0 # Cambridge US /ˈev.ri/; use the rhotic consonant variant
+even IY1 V AH0 N # Cambridge US and Merriam-Webster /ˈiːvən/; correct IPA-Dict short-i reference
+current K ER0 AH0 N T # Cambridge US /ˈkɝː.ənt/; correct the source dictionary's /ɑɹ/ variant
+
 nth EH1 N TH # ordinal suffix, Cambridge US /ɛnθ/
 
 ai EY1 AY1
 buggie B AH1 G IY0
 jedi JH EH1 D AY2
-language L AE1 NG W IH0 JH
+language L AE1 NG G W IH0 JH # Cambridge US /ˈlæŋ.ɡwɪdʒ/; restore the velar stop omitted by the override
 llm EH1 L EH1 L EH1 M
 naboo N AH0 B UW1
 neuml N UW1 EH1 M EH1 L
@@ -17,6 +22,8 @@ the DH AH0
 most M OW1 S T
 last L AE1 S T
 already AO0 L R EH1 D IY0
+eventual IH0 V EH1 N CH UW0 AH0 L # Cambridge US /ɪˈven.tʃu.əl/; corrects the pinned schwa-onset variant
+eventually IH0 V EH1 N CH UW0 AH0 L IY0 # Cambridge US /ɪˈven.tʃu.ə.li/; corrects the pinned consonant/vowel variant
 thorough TH ER1 OW0
 bouquet B UW0 K EY1
 quay K IY1
@@ -32,3 +39,5 @@ collaborations K AH0 L AE2 B ER0 EY1 SH AH0 N Z
 around AH0 R AW1 N D
 runaround R AH1 N AX0 R AW2 N D
 wind W IH1 N D # Default noun reading; the homograph table handles verb context.
+real-estate R IY1 L IH0 S T EY2 T # Cambridge US and pinned CMUdict: primary stress on real, secondary on estate.
+bennett B EH1 N IH0 T # Collins US: ˈbɛnɪt; surname spelling is not safely predicted by the broad -ett rule.

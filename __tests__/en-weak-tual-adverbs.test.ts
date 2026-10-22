@@ -9,7 +9,8 @@ describe("expanded /u/ in -tual adverbs", () => {
   });
 
   it.each([
-    ["eventually", "əˈvɛntʃuəɫi"],
+    // Cambridge US /ɪˈven.tʃu.ə.li/; corrects the old IPA-Dict onset-vowel reading.
+    ["eventually", "ɪˈvɛntʃuəɫi"],
     ["factually", "ˈfæktʃuəɫi"],
     ["habitually", "həˈbɪtʃuəɫi"],
     ["virtually", "ˈvɝtʃuəɫi"],

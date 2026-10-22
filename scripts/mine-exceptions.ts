@@ -509,6 +509,10 @@ function isExactMatch(pred: string | null | undefined, dictIpa: string): boolean
   return primaryNucleusIdx(pred) === primaryNucleusIdx(dictIpa);
 }
 
+function isStrictMatch(pred: string | null | undefined, dictIpa: string): boolean {
+  return !!pred && norm(pred) === norm(dictIpa);
+}
+
 function reloadRuntime(): typeof import("../src/en/g2p").default {
   delete require.cache[require.resolve("../data/en/exceptions.json")];
   delete require.cache[require.resolve("../data/en/initialisms.json")];
@@ -543,8 +547,11 @@ const dictWords: [string, string][] = Object.entries(dict).filter(
 const RunA = reloadRuntime();
 const runtimeA = new RunA({ disableDict: true });
 const correctA = new Set<string>();
+const strictCorrectA = new Set<string>();
 for (const [word, dictIpa] of dictWords) {
-  if (isExactMatch(runtimeA.predict(word, "en"), dictIpa)) correctA.add(word);
+  const pred = runtimeA.predict(word, "en");
+  if (isExactMatch(pred, dictIpa)) correctA.add(word);
+  if (isStrictMatch(pred, dictIpa)) strictCorrectA.add(word);
 }
 
 // Run B: same, but with every evicted stem restored — simulates
@@ -557,17 +564,22 @@ writeFileSync(
 const RunB = reloadRuntime();
 const runtimeB = new RunB({ disableDict: true });
 const correctB = new Set<string>();
+const strictCorrectB = new Set<string>();
 for (const [word, dictIpa] of dictWords) {
-  if (isExactMatch(runtimeB.predict(word, "en"), dictIpa)) correctB.add(word);
+  const pred = runtimeB.predict(word, "en");
+  if (isExactMatch(pred, dictIpa)) correctB.add(word);
+  if (isStrictMatch(pred, dictIpa)) strictCorrectB.add(word);
 }
 
 const flipSet = new Map<string, string>(); // wrong in A, exact in B
+const strictFlipSet = new Map<string, string>(); // strict wrong in A, exact in B
 let antiFlips = 0; // exact in A, wrong in B — blanket-restore risk
 for (const [word, dictIpa] of dictWords) {
   const a = correctA.has(word);
   const b = correctB.has(word);
   if (!a && b) flipSet.set(word, dictIpa);
   if (a && !b) antiFlips++;
+  if (!strictCorrectA.has(word) && strictCorrectB.has(word)) strictFlipSet.set(word, dictIpa);
 }
 console.log(
   `Rules-only (disableDict:true) mismatches under shippedMap: ${dictWords.length - correctA.size}`,
@@ -606,6 +618,7 @@ function attribute(stem: string, word: string): void {
 // fails, which for this dict is exactly the tryDecomposition words
 // Phase 2 is built for.
 const rePinned = new Map<string, string>();
+const segmentalOnlyStems = new Set<string>();
 const evictedBuckets = new Map<string, string[]>();
 for (const word of evictedMap.keys()) {
   const key = word.slice(0, 3);
@@ -649,6 +662,30 @@ for (const [word, dictIpa] of flipSet) {
   else residual.push(word);
 }
 console.log(`Phase 1 (customDict) resolved: ${resolvedByPhase1.size}/${flipSet.size}`);
+
+// A stress-stripped strict scorer can accept a segmentally exact derived form
+// whose primary stress remains wrong. Preserve its stem when doing so restores
+// strict accuracy without breaking any already-correct stress-aware word.
+const stressAttributedWords = new Set([...attributed.values()].flat());
+const resolvedByStrictFallback = new Set<string>();
+for (const [word, dictIpa] of strictFlipSet) {
+  if (stressAttributedWords.has(word)) continue;
+  const bucket = (evictedBuckets.get(word.slice(0, 3)) ?? []).filter(
+    (stem) => !AMBIGUOUS_CLUSTER_E.test(stem),
+  );
+  for (const stem of bucket) {
+    const probe = new AttribCtor({ disableDict: true });
+    probe.addPronunciation(stem, evictedMap.get(stem)!);
+    if (!isStrictMatch(probe.predict(word, "en"), dictIpa)) continue;
+    attribute(stem, word);
+    segmentalOnlyStems.add(stem);
+    resolvedByStrictFallback.add(word);
+    break;
+  }
+}
+if (resolvedByStrictFallback.size > 0) {
+  console.log(`Phase 1c (segmental strict stems): ${resolvedByStrictFallback.size}/${strictFlipSet.size}`);
+}
 
 // Phase 1b (prefix + inflection): an outer privative prefix hides the
 // inflection stem's first letters from the shared-prefix buckets above
@@ -807,7 +844,7 @@ for (let round = 0; round < 3; round++) {
   let droppedAny = false;
   for (const [stem, regressions] of benefit) {
     const fixes = attributed.get(stem)?.length ?? 0;
-    if (regressions > fixes) {
+    if (regressions > fixes || segmentalOnlyStems.has(stem) && regressions > 0) {
       console.log(`Net-check drop ${stem}: ${regressions} verified regressions, ${fixes} attributed fixes`);
       rePinned.delete(stem);
       droppedAny = true;

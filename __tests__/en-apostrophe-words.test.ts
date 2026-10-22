@@ -20,6 +20,7 @@ describe("Issue #28: lexical apostrophes", () => {
     }
   });
 
+  // O'Reily is only an illustrative spelling here; the real company below is O'Reilly Media.
   it.each(["O'Brien's", "O'Reily's", "O'Reilly's"])(
     "keeps %s in one contextual token", (word) => {
       const tokens = phonemizer.phonemize(`We saw ${word} logo.`, { language: "en-US", returnArray: true });
@@ -64,6 +65,17 @@ describe("Issue #28: lexical apostrophes", () => {
     expect(tokens.find(token => token.word === "O'Brien")?.phoneme).toBe("oʊˈbɹaɪɪn");
     expect(tokens.find(token => token.word === "O'Reilly")?.phoneme).toBe("oʊˈɹaɪɫi");
     expect(tokens.find(token => token.word === "Media")?.phoneme).toBe("ˈmidiə");
+  });
+
+  it.each(["'", "‘", "’"])("keeps the O'Reilly brand and possessive together with apostrophe %s", apostrophe => {
+    const brand = `O${apostrophe}Reilly`;
+    const possessive = `${brand}${apostrophe}s`;
+    const tokens = phonemizer.phonemize(`${brand} Media sells books. I bought ${possessive} book.`, {
+      language: "en-US", returnArray: true,
+    });
+    expect(tokens.find(token => token.word === brand)?.phoneme).toBe("oʊˈɹaɪɫi");
+    expect(tokens.find(token => token.word === "Media")?.phoneme).toBe("ˈmidiə");
+    expect(tokens.find(token => token.word === possessive)?.phoneme).toBe("oʊˈɹaɪɫiz");
   });
 
   it.each([

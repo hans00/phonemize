@@ -99,6 +99,7 @@ export function isAuxiliaryOrPossessiveDeterminer(word: string): boolean {
 const ATTRIBUTIVE_SUFFIX = /(ical|ial|ous|ful|less|ible|able|ular|ic|al|m[ai]nent)$/;
 const RELATIVE_PRONOUNS = ["that", "which", "who"];
 const PREVERBAL_ADVERBS = ["also", "often", "never", "always", "usually", "still", "sometimes", "rarely", "seldom", "then", "now"];
+const VERB_PARTICLES = new Set(["down", "up", "out", "off", "over", "under", "back"]);
 const BE_FORMS = ["am", "is", "are", "was", "were", "be", "being", "been"];
 const HAVE_FORMS = ["have", "has", "had", "having"];
 const CONTRACTED_BE_HAVE = /^(?:(?:he|she|it|that|there|what|who)['‘’]s|i['‘’]m|(?:you|we|they)['‘’]re)$/;
@@ -296,6 +297,20 @@ export function hasFiniteObjectFrame({ words, index }: PredictionContext): boole
   const quantifiedSubject = (pluralQuantifier(lower(quantifier)) || indefiniteQuantifier(lower(quantifier)) && plural(lower(quantifiedHead))) &&
     (quantifier === 0 || /^[,;:.!?]$/.test(lower(quantifier - 1)) || CONJUNCTIONS.includes(lower(quantifier - 1)) || lower(quantifier - 1) === "how");
   if (quantifiedSubject) subjectIndex = quantifiedHead;
+  // A nearby prepositional modifier can separate a plural subject head from
+  // the predicate ("states with low population densities commonly permit").
+  // Recover only a plural noun immediately before the preposition; this
+  // avoids treating the modifier's own head as the clause subject.
+  if (!quantifiedSubject) {
+    for (let prep = quantifiedHead - 1; prep > Math.max(-1, quantifiedHead - 6); prep--) {
+      const candidate = lower(prep - 1);
+      const interrupted = words.slice(prep + 1, quantifiedHead).some(token => /^[,;:.!?]$/.test(token));
+      if (PREPOSITIONS.includes(lower(prep)) && !interrupted && /^[a-z]{3,}$/.test(candidate) && plural(candidate) && !FUNCTION_WORDS.has(candidate)) {
+        subjectIndex = prep - 1;
+        break;
+      }
+    }
+  }
   if ((/e$/.test(target) || plural(target)) && lower(subjectIndex) === ",") {
     let opening = subjectIndex - 1;
     while (opening >= Math.max(0, subjectIndex - 20) && lower(opening) !== "," && !/^[;:.!?]$/.test(lower(opening))) opening--;
@@ -316,6 +331,8 @@ export function hasFiniteObjectFrame({ words, index }: PredictionContext): boole
   const barePluralPredicate = words[index] === target && (subjectPlural || bareAllSubject) && !plural(target) && !/(?:ed|ing)$/.test(target);
   let objectIndex = index + 1;
   while (objectIndex < index + 4 && isVerbAdverb(lower(objectIndex))) objectIndex++;
+  const hasVerbParticle = VERB_PARTICLES.has(lower(objectIndex));
+  if (hasVerbParticle) objectIndex++;
   if (/^['‘"“]$/.test(lower(objectIndex))) objectIndex++;
   const object = lower(objectIndex);
   const cardinalObject = isCardinalToken(object), quantifiedBareObject = quantifiedSubject && plural(subject) && plural(object) && !FUNCTION_WORDS.has(object);
@@ -335,7 +352,16 @@ export function hasFiniteObjectFrame({ words, index }: PredictionContext): boole
   while (ATTRIBUTIVE_SUFFIX.test(lower(headIndex)) && headIndex < objectIndex + 7) headIndex++;
   const head = lower(headIndex);
   const bareObject = barePluralPredicate && /[a-z]{3,}ed$/.test(object) && plural(head) || (plural(object) || /(?:logy|graphy)$/.test(object) || NOUN_ENDINGS.some(ending => object.endsWith(ending))) && !FUNCTION_WORDS.has(object) && PREPOSITIONS.includes(head);
-  if (!/^[a-z]+$/.test(target) || !(plural(target) || /e$/.test(target) && subjectPlural || barePluralPredicate && (quantifiedObject || quantifiedBareObject || cardinalObject || bareObject || /[a-z]{3,}ing$/.test(object) || bareAllSubject && object === "it")) || FUNCTION_WORDS.has(target) ||
+  // A bare compound object can be a singular noun followed by its nominal
+  // head ("permit bicycle use on ..."). The following preposition bounds
+  // the object phrase and distinguishes it from an adjective/predicate.
+  const unmarkedCompoundObject = /^[a-z]{3,}$/.test(object) && !FUNCTION_WORDS.has(object) && !PREPOSITIONS.includes(object) &&
+    !isCardinalToken(object) && !quantified(object) &&
+    /^[a-z]{3,}$/.test(lower(objectIndex + 1)) &&
+    PREPOSITIONS.includes(lower(objectIndex + 2));
+  const particleObject = hasVerbParticle && /^[a-z]{3,}$/.test(object) && !FUNCTION_WORDS.has(object) && !PREPOSITIONS.includes(object) && !isCardinalToken(object) && !quantified(object);
+  const nominalObject = bareObject || unmarkedCompoundObject || particleObject;
+  if (!/^[a-z]+$/.test(target) || !(plural(target) || /e$/.test(target) && subjectPlural || barePluralPredicate && (quantifiedObject || quantifiedBareObject || cardinalObject || nominalObject || /[a-z]{3,}ing$/.test(object) || bareAllSubject && object === "it")) || FUNCTION_WORDS.has(target) ||
       !/^[a-z]{3,}$/.test(subject) || FUNCTION_WORDS.has(subject)) return false;
   let determiner = subjectIndex - 1;
   while (determiner > subjectIndex - 4 && determiner >= 0 &&
@@ -346,8 +372,21 @@ export function hasFiniteObjectFrame({ words, index }: PredictionContext): boole
   const clauseStart = determiner === 0 || /^[,;:.!?]$/.test(lower(determiner - 1)) || CONJUNCTIONS.includes(lower(determiner - 1));
   const determinedSubject = quantifiedSubject || DETERMINERS.includes(lower(determiner)) && clauseStart;
   const properSubject = /^(?:[A-Z][a-z]+|[A-Z]{2,})$/.test(words[subjectIndex] ?? "") &&
+    !FUNCTION_WORDS.has(lower(subjectIndex)) && !quantified(lower(subjectIndex)) &&
     (subjectIndex === 0 || /^[,;:.!?]$/.test(lower(subjectIndex - 1)) || /^(?:and|or|but)$/.test(lower(subjectIndex - 1)));
-  const bareSubject = subjectPlural && (subjectIndex === 0 || subjectIndex === 1 && /^(?:[A-Z][a-z]+|[A-Z]{2,})$/.test(words[0]) && !FUNCTION_WORDS.has(lower(0)) && !quantified(lower(0)) && (ATTRIBUTIVE_SUFFIX.test(lower(0)) || NOUN_ENDINGS.some(ending => lower(0).endsWith(ending))));
+  let bareSubjectStart = subjectIndex;
+  while (bareSubjectStart > Math.max(0, subjectIndex - 5)) {
+    const modifier = lower(bareSubjectStart - 1);
+    if (modifier === "-" && bareSubjectStart > Math.max(0, subjectIndex - 5) && /^[a-z]{2,}$/.test(lower(bareSubjectStart - 2))) {
+      bareSubjectStart -= 2;
+      continue;
+    }
+    if (!/^[a-z][a-z'-]*$/.test(modifier) || FUNCTION_WORDS.has(modifier) || PREPOSITIONS.includes(modifier)) break;
+    bareSubjectStart--;
+  }
+  const bareSubjectBoundary = bareSubjectStart === 0 || /^[,;:.!?]$/.test(lower(bareSubjectStart - 1)) || CONJUNCTIONS.includes(lower(bareSubjectStart - 1));
+  const modifiedBareSubject = bareSubjectBoundary && subjectIndex - bareSubjectStart >= 2 && !/^[A-Z]/.test(words[subjectIndex] ?? "");
+  const bareSubject = subjectPlural && (subjectIndex === 0 || modifiedBareSubject || subjectIndex === 1 && /^(?:[A-Z][a-z]+|[A-Z]{2,})$/.test(words[0]) && !FUNCTION_WORDS.has(lower(0)) && !quantified(lower(0)) && (ATTRIBUTIVE_SUFFIX.test(lower(0)) || NOUN_ENDINGS.some(ending => lower(0).endsWith(ending))));
   const subjectFrame = determinedSubject ||
     /e$/.test(target) && subjectPlural && subjectIndex !== index - 1 && determiner === -1 || properSubject;
   const nominal = /(?:tion|sion|ment|ness|ity|ism|ogy|ing|ics)$/.test(subject);
@@ -378,7 +417,7 @@ export function hasFiniteObjectFrame({ words, index }: PredictionContext): boole
     words[index] === target && plural(target) && !subjectPlural && properSubject && closedPronounObject ||
     bareAllPronounPredicate ||
     words[index] === target && plural(target) && !subjectPlural && subjectFrame && /^[A-Z][a-z]{2,}$/.test(words[objectIndex] ?? "") && !FUNCTION_WORDS.has(object) ||
-    bareObject && (subjectFrame || nominal || bareSubject && barePluralPredicate) || adjective && noun && subjectFrame ||
+    nominalObject && (subjectFrame || nominal || bareSubject && barePluralPredicate) || adjective && noun && subjectFrame ||
     plural(target) && !subjectPlural && plural(object) && !FUNCTION_WORDS.has(object) && subjectFrame;
 }
 

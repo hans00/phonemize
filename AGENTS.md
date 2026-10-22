@@ -79,10 +79,11 @@ with the same arguments when the `tsx` CLI's IPC is unavailable in the sandbox.
   subsequently removed gram tables. It is not today's no-regression floor and must not be lowered.
 - Normal improvement commits require **>=1 absolute percentage point** of English-subset strict
   improvement over the previous committed baseline, with unchanged denominator and all other gates.
-  For n=6990 this needs at least 70 extra correct words. The 2026-10-17 committed baseline
-  has 5270/6990; the next ordinary batch therefore needs >=5340/6990.
+  For n=6990 this needs at least 70 extra correct words. The 2026-10-22 committed baseline
+  has 5459/6990; the next ordinary batch therefore needs >=5529/6990.
 - The completed isolated-word 70% strict /90% lenient checkpoint is unchanged. Long-term English-subset
-  targets remain >=80% strict /90% lenient. Context has its own fixed baseline, not that isolated goal.
+  targets remain >=80% strict /90% lenient; the user-requested next-release common-word strict target
+  is >=90% with the fixed denominator. Context has its own fixed baseline, not that isolated goal.
 - POS-only gains can accumulate without meeting the isolated strict commit threshold. Do not invent
   score gains, reset a baseline, split tiny commits or treat evaluator maintenance as pronunciation gain.
   A user-requested checkpoint exception does not waive the rule for future commits.
@@ -130,7 +131,7 @@ with the same arguments when the `tsx` CLI's IPC is unavailable in the sandbox.
 
 Count all five rule modules: `g2p.ts`, `syllabify.ts`, `postlex.ts`, `morph-table.ts`, `morph-parser.ts`.
 Do not evade the trigger by relocating rule code. Count code with block-comment awareness; omit
-blank lines, `//` comments and whole block comments. Last neutral pass: **3395** code lines (2026-10-20; grouped adjacent stress-neutral morphology rows and combined a declaration after a byte-identical 1,296,352-row prediction snapshot; retained cap unchanged).
+blank lines, `//` comments and whole block comments. Last neutral pass: **3395** code lines (2026-10-22; grouped adjacent syllabifier regex declarations; byte-identical 1,296,341-row prediction snapshot; retained cap unchanged).
 
 Run compression when any trigger fires:
 

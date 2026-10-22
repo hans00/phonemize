@@ -8,8 +8,7 @@ describe.each([false, true])("initial ed is a root nucleus (disableDict=%s)", di
     ["edges", "ˈɛdʒəz"], ["edged", "ˈɛdʒd"], ["edging", "ˈɛdʒɪŋ"],
     ["edgeless", "ˈɛdʒɫəs"], ["edgy", "ˈɛdʒi"],
     ["bed", "ˈbɛd"], ["redder", "ˈɹɛdɝ"], ["walked", "ˈwɔkt"],
-    ["played", "ˈpɫeɪd"], ["added", disableDict ? "ˈædɪd" : "ˈædəd"],
-    ["ended", disableDict ? "ˈɛndɪd" : "ˈɛndəd"],
+    ["played", "ˈpɫeɪd"], ["added", "ˈædɪd"], ["ended", "ˈɛndɪd"],
   ])("preserves the nucleus or inflection of %s", (word, ipa) => {
     expect(engine.predict(word)).toBe(ipa);
   });

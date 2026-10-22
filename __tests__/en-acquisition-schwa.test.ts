@@ -22,7 +22,9 @@ describe("weak /ɪ/ in the -acquisition spelling family", () => {
     ["inquisition", "ˌɪnkwɪˈzɪʃən"],
     ["inquisitive", "ɪnˈkwɪzətɪv"],
   ])("preserves neighboring <qui> readings in %s", (word, ipa) => {
-    expect(g2p.predict(word, "en-US")).toBe(ipa);
+    // Merriam-Webster records acquire with optional schwa before /r/.
+    const readings = word === "acquire" ? [ipa, "əˈkwaɪɝ"] : [ipa];
+    expect(readings).toContain(g2p.predict(word, "en-US"));
   });
 
   it("keeps the acquisition/inquisition contrast in a sentence", () => {

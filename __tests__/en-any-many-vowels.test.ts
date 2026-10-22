@@ -13,7 +13,8 @@ describe("stressed any/many roots", () => {
   });
 
   it.each([
-    ["company", "ˈkɑmpəni"],
+    // Cambridge US gives /ˈkʌm.pə.ni/.
+    ["company", "ˈkʌmpəni"],
     ["Germany", "ˈdʒɝməni"],
     ["Albany", "ˈæɫbəni"],
     ["Danny", "ˈdæni"],

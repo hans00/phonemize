@@ -486,6 +486,8 @@ const POST_LEX_RULES: PostLexRule[] = [
   // Frozen strict +58/-58, lenient +12/-6; common +2/+1. -ec(k) is KIT.
   // German -enberg names reduce the linking vowel (annenberg ənb).
   { when: (w) => /[^aeiouckl]ett$/.test(w), re: /ət(s?)$/, sub: "ɪt$1" },
+  // The name rime -ryan/-ryant uses PRICE + a weak vowel (Ryan, Bryan, Bryant).
+  { when: (w) => /ryan(?:t)?(?:s|'s)?$/.test(w), re: /ɹjæn(?=(?:t?s?|z)$)/, sub: "ɹaɪən" },
   { when: (w) => /[^aeiou]et(te?)s$/.test(w), re: /əts$/, sub: "ɪts" },
   { when: (w) => /ec[k]?$/.test(w), re: /ək$/, sub: "ɪk" },
   { when: (w) => /enb[eu]rg/.test(w), re: /ɪn(?=b)/, sub: "ən" },
@@ -620,8 +622,7 @@ const KNOWN_DIPHTHONGS = new Set(["eɪ", "aɪ", "ɔɪ", "aʊ", "oʊ"]);
 export function hiatusMarkOffset(tail: string): number {
   let i = 0;
   while (i < tail.length && !IPA_V.includes(tail[i])) i++;
-  if (i >= tail.length) return 0;
-  const hasOnset = i > 0;
+  if (i >= tail.length) return 0; const hasOnset = i > 0;
   i += KNOWN_DIPHTHONGS.has(tail.slice(i, i + 2)) ? 2 : 1;
   if (i >= tail.length || !IPA_V.includes(tail[i]) || hasOnset && tail.slice(i, i + 2) === "oʊ") return 0;
   return i;
@@ -750,8 +751,7 @@ function addFullVowelSecondaries(ipa: string): string {
   for (let r = primary + 2; r < runs.length; r++) {
     const [s, e] = runs[r];
     const nuc = ipa.slice(s, e);
-    if (!FULL_NUCLEI.some((f) => nuc.startsWith(f))) continue;
-    if (e >= ipa.length) continue; // word-final open syllable
+    if (!FULL_NUCLEI.some((f) => nuc.startsWith(f)) || e >= ipa.length) continue; // Ignore weak nuclei and word-final open syllables.
     let o = s;
     if (o > 0 && IPA_C.includes(ipa[o - 1])) {
       if (o > 1 && IPA_C.includes(ipa[o - 2]) && LEGAL_ONSET_2.has(ipa.slice(o - 2, o))) o -= 2;

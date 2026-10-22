@@ -82,6 +82,24 @@ describe("phonotactics: syllabic-/l/ epenthesis needs an obstruent onset", () =>
   });
 });
 
+describe("phonotactics: environment derivatives select the weak PRICE stem", () => {
+  it.each([
+    ["environment", "ˈɛnvɝənmənt", "ɪnˈvaɪɹənmənt"],
+    ["environmental", "ˌɛnvɝənˈmɛntəl", "ɪnˌvaɪɹənˈmɛntəl"],
+  ])("reinterprets the stem in %s", (word, input, expected) => {
+    expect(applyPhonotactics(input, word)).toBe(expected);
+  });
+
+  it.each([
+    ["environ", "ˈɛnvɝən"],
+    ["environs", "ˈɛnvɝənz"],
+    ["environment-friendly", "ˈɛnvɝənməntˈfɹɛndli"],
+    ["environmentally", "ɪnˌvaɪɹənˈmɛntəli"],
+  ])("preserves the neighboring form %s", (word, ipa) => {
+    expect(applyPhonotactics(ipa, word)).toBe(ipa);
+  });
+});
+
 describe("phonotactics: word-initial /h/ + sonorant is a licit onset", () => {
   // The lexicon keeps it 24 times and drops it once (hlavaty, hruska,
   // hmong, hnat). Word-final /h/ is still dropped: 2754 : 18.
@@ -110,6 +128,46 @@ describe("phonotactics: -ed allomorph keeps a nucleus schwa", () => {
   it("still applies the allomorph elsewhere", () => {
     expect(applyPhonotactics("ˈhaɪpəd", "hyped")).toBe("ˈhaɪpt");
     expect(applyPhonotactics("ˈɹaɪməd", "rhymed")).toBe("ˈɹaɪmd");
+  });
+});
+
+describe("phonotactics: velar -ed adjectives retain their lexical syllable", () => {
+  it("preserves lexical /kəd/ and /ɡəd/ outside verb readings", () => {
+    for (const [ipa, word] of [
+      ["ˈneɪkəd", "naked"], ["ˈwɪkəd", "wicked"], ["ˈkɹʊkəd", "crooked"],
+      ["ˈɹæɡəd", "ragged"], ["ˈɹʌɡəd", "rugged"], ["ˈɫɛɡəd", "legged"],
+    ]) {
+      expect(applyPhonotactics(ipa, word, undefined, true)).toBe(ipa);
+      expect(applyPhonotactics(ipa, word, "ADJ", true)).toBe(ipa);
+      expect(applyPhonotactics(ipa, word, "V", true)).toBe(ipa.replace(/(k|ɡ)əd$/, (_, c) => `${c}${c === "k" ? "t" : "d"}`));
+    }
+  });
+
+  it("leaves ordinary velar-final past forms unchanged", () => {
+    for (const [ipa, word] of [
+      ["ˈfɫæɡd", "flagged"], ["ˈbeɪkt", "baked"], ["ˈæskt", "asked"],
+      ["ˈpɪkt", "picked"], ["ˈwɝkt", "worked"],
+    ]) {
+      expect(applyPhonotactics(ipa, word)).toBe(ipa);
+      expect(applyPhonotactics(ipa, word, "V")).toBe(ipa);
+    }
+  });
+
+  it("lets tokenizer-supplied verb POS select the regular past allomorph", () => {
+    const g2p = new EnG2P();
+    expect(g2p.predict("wicked", "en", "ADJ")).toBe("ˈwɪkəd");
+    expect(g2p.predict("wicked", "en", "V")).toBe("wɪkt");
+    expect(g2p.predict("bryked", "en", "V")).toBe("bɹaɪkt");
+  });
+});
+
+describe("phonotactics: rhotic -ire stems before agent -er", () => {
+  it("restores the stem coda instead of stacking two rhotic nuclei", () => {
+    expect(applyPhonotactics("əˈkwaɪɝɝ", "acquirer")).toBe("əˈkwaɪɹɝ");
+    expect(applyPhonotactics("dɪˈzaɪɝɝ", "desirer")).toBe("dɪˈzaɪɹɝ");
+  });
+  it("leaves unrelated -irer forms alone", () => {
+    expect(applyPhonotactics("ˈmɪɹɝ", "mirror")).toBe("ˈmɪɹɝ");
   });
 });
 
