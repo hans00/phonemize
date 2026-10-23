@@ -26,6 +26,7 @@ describe("LOT → THOUGHT before ŋ and f", () => {
     // office/officer/often/software split as of|fice, of|ten, sof|tware.
     for (const w of ["officer", "often", "software"])
       expect(rules(w)).toContain("ɔf");
+    expect(rules("software")).toBe("ˈsɔftwɛɹ");
   });
 
   it("leaves the ost and non-ŋ nasal frames alone", () => {

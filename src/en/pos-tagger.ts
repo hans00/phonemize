@@ -647,6 +647,7 @@ export const FUNCTION_WORDS: Set<string> = new Set([
 ]);
 
 export function isFunctionWord(word: string, pos?: string): boolean {
+  if (pos?.startsWith("N")) return false;
   if (FUNCTION_WORDS.has(word.toLowerCase())) return true;
   // POS-based fallback for words my list might miss.
   if (pos && /^(DT|IN|CC|PRP|MD|AUX|WP|WDT|WRB|TO|EX)$/.test(pos)) return true;

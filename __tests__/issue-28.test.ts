@@ -27,4 +27,9 @@ describe("Issue #28: doubled-final-consonant name variants", () => {
     expect(g2p.predict("seann")).toBe(g2p.predict("sean"));
     expect(g2p.predict("seann")).toBe("ˈsin");
   });
+
+  it("keeps the O’Reilly brand reading across apostrophe styles and sentence context", () => {
+    expect(toIPA("O'Reilly Media")).toBe("oʊˈɹaɪɫi ˈmidiə");
+    expect(toIPA("O’Reilly Media")).toBe("oʊˈɹaɪɫi ˈmidiə");
+  });
 });

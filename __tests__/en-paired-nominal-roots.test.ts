@@ -38,7 +38,7 @@ describe.each([false, true])("paired nominal roots, rules=%s", disableDict => {
     const api = createPhonemizer({ processors: [new EnglishG2P({ disableDict })] });
     for (const [sentence, word, ipa] of [
       ["They discuss atheism.", "atheism", "ˈeɪθiˌɪzəm"],
-      ["The communist teacher is here.", "communist", disableDict ? "ˈkɑmjənɪst" : "ˈkɑmjənəst"],
+      ["The communist teacher is here.", "communist", "ˈkɑmjənɪst"],
       ["They play the game.", "play", "pɫeɪ"],
     ]) expect(api.phonemize(sentence, { language: "en-US", returnArray: true }).find(t => t.word === word)?.phoneme).toBe(ipa);
   });

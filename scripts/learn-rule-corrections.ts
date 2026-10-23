@@ -30,6 +30,8 @@ import { createHash } from "crypto";
 import levenshtein from "fast-levenshtein";
 import EnglishG2P from "../src/en/g2p";
 import dictionary from "../data/en/dict.json";
+import commonCohort from "./common-cohort.json";
+import { commonGold } from "./common-cohort-gold";
 import { decompose } from "../src/en/suffixes";
 import { isSyllableHeavy } from "../src/en/syllabify";
 import {
@@ -494,7 +496,7 @@ async function main(): Promise<void> {
   if (!existsSync(freqPath)) throw new Error(`Missing ${freqPath} — run yarn test:common-accuracy --download first.`);
   const freqWordsAll = [...new Set(readFileSync(freqPath, "utf8").trim().split(/\s+/))].map((w) => w.toLowerCase());
   const freqSet = new Set(freqWordsAll);
-  const top5000Set = new Set(freqWordsAll.slice(0, 5000));
+  const top5000Set = new Set(commonCohort.top5000);
 
   log("Loading dictionary + building testable word list...");
   let words = Object.keys(dict);
@@ -502,9 +504,17 @@ async function main(): Promise<void> {
   const testable = getTestableWords(words);
   log(`  ${testable.length} testable words`);
 
-  // Match evaluate.ts: common English frequency-list words, excluding foreign names.
-  const commonWords = testable.filter((w) => freqSet.has(w.toLowerCase()) && !isForeign(w.toLowerCase()));
-  log(`  ${commonWords.length} common (frequency-list ∩ !isForeign) testable words — this is the population for the whole run`);
+  // Match the frozen evaluate.ts population exactly. Newly added dictionary
+  // entries must not silently change either the denominator or held-out folds.
+  const expandedCommon = testable.filter((w) => freqSet.has(w.toLowerCase()) && !isForeign(w.toLowerCase()));
+  const testableSet = new Set(testable.map((w) => w.toLowerCase()));
+  const commonWords = argv.includes("--include-long")
+    ? expandedCommon
+    : LIMIT ? commonCohort.words.filter((w: string) => testableSet.has(w)) : commonCohort.words;
+  if (!argv.includes("--include-long") && !LIMIT && commonWords.length !== commonCohort.n) {
+    throw new Error(`Frozen common cohort mismatch: found ${commonWords.length}, expected ${commonCohort.n}`);
+  }
+  log(`  ${commonWords.length} common words — ${argv.includes("--include-long") ? "expanded research population" : "frozen release cohort"}`);
 
   log("Building EnglishG2P (disableDict:true)...");
   const g2p = new EnglishG2P({ disableDict: true });
@@ -514,7 +524,7 @@ async function main(): Promise<void> {
   let scopeOk = 0, scopeMismatch = 0;
   for (const word of commonWords) {
     const lowerWord = word.toLowerCase();
-    const gold = dict[word];
+    const gold = commonGold(word, dict[word]);
     if (!gold) continue;
     const actual = g2p.predict(word, "en") ?? "";
     let r: Render;

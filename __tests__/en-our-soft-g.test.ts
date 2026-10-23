@@ -5,6 +5,7 @@ describe.each([false, true])("rhotic ou before soft g (disableDict=%s)", disable
   const engine = new EnglishG2P({ disableDict });
   it.each([
     ["encourage", "ɛnˈkɝɪdʒ"],
+    ["discourage", "dɪˈskɝɪdʒ"],
     ["courageous", "kɝˈeɪdʒəs"], ["scourge", "ˈskɝdʒ"],
   ])("retains the NURSE vowel and root stress in %s", (word, ipa) => {
     expect(engine.predict(word)).toBe(ipa);

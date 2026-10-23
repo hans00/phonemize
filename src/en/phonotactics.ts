@@ -1,3 +1,5 @@
+import { syllabify } from "./syllabify";
+
 /**
  * Universal English phonotactic post-processing.
  *
@@ -241,10 +243,14 @@ function restoreEnvironmentStem(ipa: string, word?: string): string {
 // (697:316), so the merger only applies to -es. Anchored to word end.
 const SYLLABIC_ES_RE = /([szʃʒ])ɪz$/;
 function weakVowelInflection(ipa: string, word?: string): string {
-  // The doubled-z spelling is an exception to the dictionary-wide schwa
-  // preference above: CMU and Oxford keep /ɪz/ in quizzes/buzzes, matching
-  // the overt, single-phoneme /z/ root plus the sibilant suffix.
-  if (word && /zzes$/.test(word)) return ipa;
+  // These spellings have independently attested KIT stems, so retain the
+  // regular /ɪz/ ending through the dictionary-wide weak-vowel merger.
+  // A disyllabic -age stem with a KIT nucleus keeps the separate plural
+  // /ɪz/ (images, messages, packages, cottages). Exclude diphthong offglides
+  // (pages, wages) and longer weak -age stems (averages, percentages).
+  if (word && /ages$/.test(word) && syllabify(word.slice(0, -4)).length === 1 &&
+      /(?<![eaoɔ])ɪdʒɪz$/.test(ipa)) return ipa;
+  if (word && /(?:zzes|tices)$/.test(word)) return ipa;
   if (ipa.endsWith("ɪz")) return ipa.replace(SYLLABIC_ES_RE, "$1əz");
   return ipa;
 }

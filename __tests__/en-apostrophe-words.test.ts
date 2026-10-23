@@ -4,11 +4,11 @@ import EnglishG2P from "../src/en/g2p";
 describe("Issue #28: lexical apostrophes", () => {
   const phonemizer = createPhonemizer({ processors: [new EnglishG2P()] });
 
-  // Readings independently attested in the pinned CMUdict benchmark source.
+  // Readings are independently attested; O'Brien uses Cambridge US's surname entry.
   it.each([
-    ["O'Brien", "oʊˈbɹaɪɪn"],
+    ["O'Brien", "oʊˈbɹaɪən"],
     ["O'Reilly", "oʊˈɹaɪɫi"],
-    ["O'Brien's", "oʊˈbɹaɪɪnz"],
+    ["O'Brien's", "oʊˈbɹaɪənz"],
     ["O'Neill", "oʊˈniɫ"],
     ["D'Angelo", "diˈændʒɪɫoʊ"],
     ["rock'n'roll", "ˌɹɑkənˈɹoʊɫ"],
@@ -62,9 +62,24 @@ describe("Issue #28: lexical apostrophes", () => {
     const tokens = phonemizer.phonemize("I met O'Brien yesterday. O'Reilly Media sells technical books.", {
       language: "en-US", returnArray: true,
     });
-    expect(tokens.find(token => token.word === "O'Brien")?.phoneme).toBe("oʊˈbɹaɪɪn");
+    expect(tokens.find(token => token.word === "O'Brien")?.phoneme).toBe("oʊˈbɹaɪən");
     expect(tokens.find(token => token.word === "O'Reilly")?.phoneme).toBe("oʊˈɹaɪɫi");
     expect(tokens.find(token => token.word === "Media")?.phoneme).toBe("ˈmidiə");
+  });
+
+  it("keeps Brien independent while applying the compound reading in O'Brien", () => {
+    expect(phonemizer.toIPA("Brien", "en-US")).toBe("ˈbɹaɪɪn");
+    for (const apostrophe of ["'", "‘", "’"]) {
+      expect(phonemizer.toIPA(`O${apostrophe}Brien`, "en-US")).toBe("oʊˈbɹaɪən");
+      expect(phonemizer.toIPA(`O${apostrophe}Briens`, "en-US")).toBe("oʊˈbɹaɪənz");
+    }
+    expect(phonemizer.toIPA("O'Neill", "en-US")).toBe("oʊˈniɫ");
+    expect(phonemizer.toIPA("O'Reilly Media", "en-US")).toBe("oʊˈɹaɪɫi ˈmidiə");
+    expect(phonemizer.toIPA("Brien", "en-US")).toBe("ˈbɹaɪɪn");
+    for (const disableDict of [false, true]) {
+      const processor = new EnglishG2P({ disableDict });
+      expect(processor.predict("O'Brien", "en-US")).toBe("oʊˈbɹaɪən");
+    }
   });
 
   it.each(["'", "‘", "’"])("keeps the O'Reilly brand and possessive together with apostrophe %s", apostrophe => {

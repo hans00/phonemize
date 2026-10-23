@@ -4,6 +4,54 @@
 every EH1 V R IY0 # Cambridge US /ˈev.ri/; use the rhotic consonant variant
 even IY1 V AH0 N # Cambridge US and Merriam-Webster /ˈiːvən/; correct IPA-Dict short-i reference
 current K ER0 AH0 N T # Cambridge US /ˈkɝː.ənt/; correct the source dictionary's /ɑɹ/ variant
+notice N OW1 T IH0 S # Cambridge US /ˈnoʊ.t̬ɪs/; correct IPA-Dict's final schwa
+notices N OW1 T IH0 S IH0 Z # corrected-reference; Cambridge US notice + regular sibilant /ɪz/ plural
+login L AO1 G IH0 N # dark-l; corrected stress; Cambridge US primary stress /ˈlɑːɡ.ɪn/; retain fixed CMU-cohort /ɔ/ vowel convention
+practice P R AE1 K T IH0 S # Cambridge US /ˈpræk.tɪs/; correct IPA-Dict's final schwa
+practices P R AE1 K T IH0 S IH0 Z # corrected-reference; Cambridge US practice + regular sibilant /ɪz/ plural
+justice JH AH1 S T IH0 S # stressed-strut; Cambridge US /ˈdʒʌs.tɪs/; correct IPA-Dict's final schwa
+justices JH AH1 S T IH0 S IH0 Z # stressed-strut; corrected-reference; Cambridge US justice + regular sibilant /ɪz/ plural
+noticed N OW1 T IH0 S T # corrected-reference; Cambridge US notice + regular -ed; preserves root /ɪ/
+practiced P R AE1 K T IH0 S T # corrected-reference; Cambridge US /ˈpræk.tɪst/
+artist AA1 R T IH0 S T # corrected-reference; Cambridge US /ˈɑːr.t̬ɪst/
+artists AA1 R T IH0 S T S # corrected-reference; Cambridge US artist + regular plural /s/; retain fixed common-cohort row
+tourist T UH1 R IH0 S T # corrected-reference; Cambridge US /ˈtʊr.ɪst/
+specialist S P EH1 SH AH0 L IH0 S T # dark-l; corrected-reference; Cambridge US /ˈspeʃ.ə.lɪst/
+florist F L AO1 R IH0 S T # dark-l; corrected-reference; Cambridge US /ˈflɔːr.ɪst/
+florists F L AO1 R IH0 S T S # dark-l; corrected-reference; Cambridge US florist + regular plural /s/
+baptist B AE1 P T IH0 S T # corrected-reference; Cambridge US /ˈbæp.tɪst/
+terrorists T EH1 R ER0 IH0 S T S # corrected-reference; Cambridge US terrorist + regular plural /s/
+journalist JH ER1 N AH0 L IH0 S T # dark-l; corrected-reference; Cambridge US /ˈdʒɝː.nə.lɪst/
+dentists D EH1 N T IH0 S T S # corrected-reference; Cambridge US dentist + regular plural /s/
+communist K AA1 M Y AH0 N IH0 S T # corrected-reference; Cambridge US /ˈkɑːm.jə.nɪst/
+therapist TH EH1 R AH0 P IH0 S T # corrected-reference; Cambridge US /ˈθer.ə.pɪst/
+chemists K EH1 M IH0 S T S # corrected-reference; Cambridge US chemist + regular plural /s/
+tourists T UH1 R IH0 S T S # corrected-reference; Cambridge US tourist + regular plural /s/
+specialists S P EH1 SH AH0 L IH0 S T S # dark-l; corrected-reference; Cambridge US specialist + regular plural /s/
+baptists B AE1 P T IH0 S T S # corrected-reference; Cambridge US Baptist + regular plural /s/
+baptists' B AE1 P T IH0 S T S # corrected-reference; Cambridge US Baptist + regular plural possessive
+communists K AA1 M Y AH0 N IH0 S T S # corrected-reference; Cambridge US communist + regular plural /s/
+communists' K AA1 M Y AH0 N IH0 S T S # corrected-reference; Cambridge US communist + regular plural possessive
+journalists JH ER1 N AH0 L IH0 S T S # dark-l; corrected-reference; Cambridge US journalist + regular plural /s/
+journalists' JH ER1 N AH0 L IH0 S T S # dark-l; corrected-reference; Cambridge US journalist + regular plural possessive
+specialists' S P EH1 SH AH0 L IH0 S T S # dark-l; corrected-reference; Cambridge US specialist + regular plural possessive
+naked N EY1 K IH0 D # corrected-reference; Cambridge US /ˈneɪ.kɪd/; lexical adjective, not regular -ed
+wicked W IH1 K IH0 D # corrected-reference; Cambridge US /ˈwɪk.ɪd/; lexical adjective, not regular -ed
+crooked K R UH1 K IH0 D # corrected-reference; Cambridge US /ˈkrʊk.ɪd/; lexical adjective, not regular -ed
+consolidate K AH0 N S AA1 L AH0 D EY2 T # dark-l; corrected-reference; Cambridge US /kənˈsɑː.lə.deɪt/; recovered schwa in the solid root
+consolidates K AH0 N S AA1 L AH0 D EY2 T S # dark-l; corrected-reference; Cambridge US consolidate + regular third-person /s/
+consolidated's K AH0 N S AA1 L AH0 D EY2 T IH0 D Z # dark-l; corrected-reference; possessive of the Cambridge US consolidated form
+going G OW1 IH0 NG # corrected-reference; Cambridge US /ˈɡoʊ.ɪŋ/ and primary CMUdict reading
+software S AO1 F T W EH0 R # corrected-reference; Cambridge US /ˈsɑːft.wer/; IPA-Dict omits /t/
+plugin P L AH1 G IH0 N # stressed-strut; dark-l; corrected-reference; Cambridge US /ˈplʌɡ.ɪn/
+plugins P L AH1 G IH0 N Z # stressed-strut; dark-l; Cambridge US plugin + regular plural /z/
+goings G OW1 IH0 NG Z # retain-reference; Cambridge US; preserve the fixed runtime-parity cohort
+malpractice M AE2 L P R AE1 K T IH0 S # Cambridge US /ˌmælˈpræk.tɪs/; correct IPA-Dict's final schwa
+malpractices M AE2 L P R AE1 K T IH0 S IH0 Z # Cambridge US malpractice + regular sibilant /ɪz/ plural
+new N UW1 # Cambridge US /nuː/; correct IPA-Dict en_US's UK-style /njuː/ yod
+news N UW1 Z # Cambridge US /nuːz/; correct IPA-Dict's UK-style yod; regular plural of new
+newcomer N UW1 K AH2 M ER0 # stressed-strut; Cambridge US /ˈnuːˌkʌm.ɚ/
+newcomers N UW1 K AH2 M ER0 Z # stressed-strut; regular plural, preserve Cambridge newcomer's STRUT
 
 nth EH1 N TH # ordinal suffix, Cambridge US /ɛnθ/
 
@@ -21,6 +69,8 @@ json JH1 EY S2 AX N
 the DH AH0
 most M OW1 S T
 last L AE1 S T
+between B IH0 T W IY1 N # corrected-reference; Cambridge US /bɪˈtwiːn/
+betweens B IH0 T W IY1 N Z # corrected-reference; regular plural of Cambridge US between
 already AO0 L R EH1 D IY0
 eventual IH0 V EH1 N CH UW0 AH0 L # Cambridge US /ɪˈven.tʃu.əl/; corrects the pinned schwa-onset variant
 eventually IH0 V EH1 N CH UW0 AH0 L IY0 # Cambridge US /ɪˈven.tʃu.ə.li/; corrects the pinned consonant/vowel variant
@@ -29,7 +79,13 @@ bouquet B UW0 K EY1
 quay K IY1
 modernization M AA2 D ER0 N AH0 Z EY1 SH AH0 N
 result R IH0 Z AH1 L T
+results R IH0 Z AH1 L T S # corrected-reference; Cambridge US /rɪˈzʌlts/
+resulted R IH0 Z AH1 L T IH0 D # corrected-reference; Cambridge US result + regular -ed
+resulting R IH0 Z AH1 L T IH0 NG # corrected-reference; Cambridge US /rɪˈzʌltɪŋ/
 rely R IH0 L AY1
+refer R IH0 F ER1 # corrected-reference; Cambridge US /rɪˈfɝ/ and Oxford US
+refers R IH0 F ER1 Z # corrected-reference; Cambridge US refer + regular /z/
+referred R IH0 F ER1 D # corrected-reference; Oxford US inflection of refer /rɪˈfɝd/
 refused R IH0 F Y UW1 Z D
 effect IH0 F EH1 K T
 effective IH0 F EH1 K T IH0 V
@@ -41,3 +97,65 @@ runaround R AH1 N AX0 R AW2 N D
 wind W IH1 N D # Default noun reading; the homograph table handles verb context.
 real-estate R IY1 L IH0 S T EY2 T # Cambridge US and pinned CMUdict: primary stress on real, secondary on estate.
 bennett B EH1 N IH0 T # Collins US: ˈbɛnɪt; surname spelling is not safely predicted by the broad -ett rule.
+production P R AH0 D AH1 K SH AH0 N # corrected-reference; Cambridge US /prəˈdʌkʃən/
+promotion P R AH0 M OW1 SH AH0 N # corrected-reference; Cambridge US /prəˈmoʊʃən/
+message M EH1 S IH0 JH # corrected-reference; Cambridge US /ˈmes.ɪdʒ/
+image IH1 M IH0 JH # corrected-reference; Cambridge US /ˈɪm.ɪdʒ/
+package P AE1 K IH0 JH # corrected-reference; Cambridge US /ˈpæk.ɪdʒ/
+storage S T AO1 R IH0 JH # corrected-reference; Cambridge US /ˈstɔːr.ɪdʒ/
+village V IH1 L IH0 JH # corrected-reference; Cambridge US /ˈvɪl.ɪdʒ/
+dosage D OW1 S IH0 JH # corrected-reference; Cambridge US /ˈdoʊ.sɪdʒ/
+cottage K AA1 T IH0 JH # corrected-reference; Cambridge US /ˈkɑː.t̬ɪdʒ/
+cottages K AA1 T IH0 JH IH0 Z # corrected-reference; Cambridge US cottage + regular plural /ɪz/
+passage P AE1 S IH0 JH # corrected-reference; Cambridge US /ˈpæs.ɪdʒ/
+bandages B AE1 N D IH0 JH IH0 Z # corrected-reference; Cambridge US bandage /ˈbæn.dɪdʒ/ + regular plural /ɪz/
+forages F AO1 R IH0 JH IH0 Z # corrected-reference; Cambridge US forage /ˈfɔːr.ɪdʒ/ + regular plural /ɪz/
+hostages HH AA1 S T IH0 JH IH0 Z # corrected-reference; Cambridge US hostage /ˈhɑː.stɪdʒ/ + regular plural /ɪz/
+images IH1 M IH0 JH IH0 Z # corrected-reference; Cambridge US image /ˈɪm.ɪdʒ/ + regular plural /ɪz/
+messages M EH1 S IH0 JH IH0 Z # corrected-reference; Cambridge US message /ˈmes.ɪdʒ/ + regular plural /ɪz/
+packages P AE1 K IH0 JH IH0 Z # corrected-reference; Cambridge US package /ˈpæk.ɪdʒ/ + regular plural /ɪz/
+passages P AE1 S IH0 JH IH0 Z # corrected-reference; Cambridge US passage /ˈpæs.ɪdʒ/ + regular plural /ɪz/
+villages V IH1 L IH0 JH IH0 Z # corrected-reference; Cambridge US village /ˈvɪl.ɪdʒ/ + regular plural /ɪz/
+biblical B IH1 B L IH0 K AH0 L # corrected-reference; Cambridge US /ˈbɪb.lɪ.kəl/
+chemical K EH1 M IH0 K AH0 L # corrected-reference; Cambridge US /ˈkem.ɪ.kəl/
+clinical K L IH1 N IH0 K AH0 L # corrected-reference; Cambridge US /ˈklɪn.ɪ.kəl/
+hypothetical HH AY2 P AH0 TH EH1 T IH0 K AH0 L # corrected-reference; Cambridge US /ˌhaɪ.pəˈθet.ɪ.kəl/
+medical M EH1 D IH0 K AH0 L # corrected-reference; Cambridge US /ˈmed.ɪ.kəl/
+numerical N UW0 M EH1 R IH0 K AH0 L # corrected-reference; Cambridge US /nuːˈmer.ɪ.kəl/
+practical P R AE1 K T IH0 K AH0 L # corrected-reference; Cambridge US /ˈpræk.tɪ.kəl/
+radical R AE1 D IH0 K AH0 L # corrected-reference; Cambridge US /ˈræd.ɪ.kəl/
+typical T IH1 P IH0 K AH0 L # corrected-reference; Cambridge US /ˈtɪp.ɪ.kəl/
+american AH0 M EH1 R IH0 K AH0 N # corrected-reference; Cambridge US /əˈmer.ɪ.kən/
+african AE1 F R IH0 K AH0 N # corrected-reference; Cambridge US /ˈæf.rɪ.kən/
+damage D AE1 M IH0 JH # corrected-reference; Cambridge US /ˈdæm.ɪdʒ/
+damages D AE1 M IH0 JH IH0 Z # corrected-reference; Cambridge US damage + regular plural /ɪz/
+damaged D AE1 M IH0 JH D # corrected-reference; Cambridge US damage + regular past /d/
+undamaged AH2 N D AE1 M IH0 JH D # stressed-strut; corrected-reference; Cambridge US /ʌnˈdæm.ɪdʒd/
+usage Y UW1 S IH0 JH # corrected-reference; Cambridge US /ˈjuː.sɪdʒ/
+usages Y UW1 S IH0 JH IH0 Z # corrected-reference; Cambridge US usage + regular plural /ɪz/
+courage K ER1 IH0 JH # corrected-reference; Cambridge US /ˈkɝː.ɪdʒ/
+discouraged D IH0 S K ER1 IH0 JH D # corrected-reference; Cambridge US discourage + regular past /d/
+discouraging D IH0 S K ER1 IH0 JH IH0 NG # corrected-reference; Cambridge US discourage + regular -ing /ɪŋ/
+article AA1 R T IH0 K AH0 L # corrected-reference; Cambridge US /ˈɑːr.t̬ɪ.kəl/
+during D UH1 R IH0 NG # corrected-reference; Cambridge US /ˈdʊr.ɪŋ/; Oxford AmE /ˈdʊrɪŋ/ or /ˈdjʊərɪŋ/
+endure IH0 N D UH1 R # corrected-reference; Cambridge US /ɪnˈdʊr/
+endures IH0 N D UH1 R Z # corrected-reference; Oxford US /ɪnˈdʊrz/
+endured IH0 N D UH1 R D # corrected-reference; Oxford US /ɪnˈdʊrd/
+enduring IH0 N D UH1 R IH0 NG # corrected-reference; Oxford US /ɪnˈdʊrɪŋ/
+litigate L IH1 T AH0 G EY2 T # corrected-reference; Cambridge US /ˈlɪt̬.ə.ɡeɪt/
+litigated L IH1 T AH0 G EY2 T IH0 D # corrected-reference; Cambridge US litigated is the regular past of /ˈlɪt̬.ə.ɡeɪt/
+litigating L IH1 T AH0 G EY2 T IH0 NG # corrected-reference; Cambridge US litigating is the regular -ing form of /ˈlɪt̬.ə.ɡeɪt/
+commerce K AA1 M ER0 S # corrected-reference; Cambridge US /ˈkɑː.mɝːs/; prevents false com+merce recomposition
+exposure IH0 K S P OW1 ZH ER0 # corrected-reference; Cambridge US /ɪkˈspoʊ.ʒɚ/; prevents false expo+sure recomposition
+passenger P AE1 S AH0 N JH ER0 # corrected-reference; Cambridge US /ˈpæs.ə n.dʒɚ/; prevents false pass+enger recomposition
+investment IH0 N V EH1 S T M AH0 N T # corrected-reference; Cambridge US /ɪnˈvest.mənt/; preserves the /t/ in invest + -ment
+presenting P R IH0 Z EH1 N T IH0 NG # corrected-reference; Cambridge US present verb /prɪˈzent/ + regular -ing
+credit K R EH1 D IH0 T # corrected-reference; Cambridge US /ˈkred.ɪt/
+credited K R EH1 D IH0 T IH0 D # corrected-reference; Cambridge US credit + regular -ed /ɪd/
+crediting K R EH1 D IH0 T IH0 NG # corrected-reference; Cambridge US credit + regular -ing /ɪŋ/
+edit EH1 D IH0 T # corrected-reference; Cambridge US /ˈed.ɪt/
+edited EH1 D IH0 T IH0 D # corrected-reference; Cambridge US edit /ˈed.ɪt/ + regular -ed /ɪd/
+editor EH1 D IH0 T ER0 # corrected-reference; Cambridge US /ˈed.ɪ.t̬ɚ/
+edition IH0 D IH1 SH AH0 N # corrected-reference; Cambridge US /ɪˈdɪʃ.ən/
+o'brien OW0 B R AY1 AH0 N # corrected-reference; Cambridge US /oʊˈbraɪən/; supersedes the reduced IPA-Dict reading
+o'brien's OW0 B R AY1 AH0 N Z # corrected-reference; Cambridge US O'Brien + regular possessive /z/

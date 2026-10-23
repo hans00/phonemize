@@ -14,7 +14,7 @@ describe('Index', function() {
         "word": "John's"
       },
       {
-        "phoneme": "ˈpækədʒ",
+        "phoneme": "ˈpækɪdʒ", // Cambridge US /ˈpæk.ɪdʒ/
         "position": 7,
         "word": "package"
       },

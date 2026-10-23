@@ -14,12 +14,15 @@ import * as ts from "typescript";
 import levenshtein from "fast-levenshtein";
 import EnglishG2P from "../src/en/g2p";
 import dictionary from "../data/en/dict.json";
+import commonCohort from "./common-cohort.json";
+import { commonGold } from "./common-cohort-gold";
 import { isForeign } from "./foreign-filter";
 
 const argv = process.argv.slice(2);
 if (argv.includes("--help")) {
   console.log("yarn diagnose:routes [--all] [--include-long] [--limit N] [--out DIR]");
-  console.log("Default: full English subset; --all: full dictionary. Diagnosis only; no adoption or baseline updates.");
+  console.log("Default: frozen 6,990-word release cohort; --all: dictionary words; add --include-long to lift the length limit.");
+  console.log("Diagnosis only; no adoption or baseline updates.");
   process.exit(0);
 }
 function value(flag: string, fallback?: string): string | undefined {
@@ -103,9 +106,14 @@ function canon(ipa: string): string {
 const score = (ipa: string, gold: string): number[] => [Number(strip(ipa) === strip(gold)), Number(levenshtein.get(canon(ipa), canon(gold)) <= 1)];
 const frequencyPath = join(__dirname, ".common-accuracy-cache/frequency.txt");
 const frequency = new Set(readFileSync(frequencyPath, "utf8").trim().split(/\s+/));
-const words = Object.keys(dictionary).filter(word => /^[a-z']+$/i.test(word) && word.length >= 3 &&
-  (argv.includes("--include-long") || word.length <= 12) && !/^([A-Z]\.?){2,8}$/.test(word) && /[aeiou]/i.test(word) &&
-  (argv.includes("--all") || frequency.has(word.toLowerCase()) && !isForeign(word.toLowerCase()))).slice(0, limit);
+const words = (argv.includes("--all") || argv.includes("--include-long")
+  ? Object.keys(dictionary).filter(word => /^[a-z']+$/i.test(word) && word.length >= 3 &&
+    (argv.includes("--include-long") || word.length <= 12) && !/^([A-Z]\.?){2,8}$/.test(word) && /[aeiou]/i.test(word) &&
+    (argv.includes("--all") || frequency.has(word.toLowerCase()) && !isForeign(word.toLowerCase())))
+  : commonCohort.words).slice(0, limit);
+if (!argv.includes("--all") && !argv.includes("--include-long") && limit === Infinity && words.length !== commonCohort.n) {
+  throw new Error(`Frozen common cohort mismatch: found ${words.length}, expected ${commonCohort.n}`);
+}
 type Row = { word: string; gold: string; baseline: string; alternative: string; delta: number[] };
 type Group = { alternative: string; label: string; changed: number; strict: number[]; lenient: number[]; rows: Row[] };
 const groups = new Map<string, Group>();
@@ -115,7 +123,7 @@ for (const word of words) {
   const baseline = lab.predict(word, "en") ?? "";
   if (baseline !== (unmodified.predict(word, "en") ?? "")) throw new Error(`Instrumentation changed ${word}`);
   const label = observed ?? "outside-predictInternal";
-  const gold = (dictionary as Record<string, string>)[word], before = score(baseline, gold);
+  const gold = commonGold(word, (dictionary as Record<string, string>)[word])!, before = score(baseline, gold);
   before.forEach((count, i) => totals.baseline[i] += count);
   for (const [name, skipped] of Object.entries(alternatives)) {
     let alternative: string;

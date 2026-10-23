@@ -22,10 +22,10 @@ for (const disableDict of [false, true]) {
   });
 }
 
-test("traces the letter-spelling rule instead of an unused vowel rule", () => {
+test("traces registered initialisms separately from inferred letter spelling", () => {
   const g = new EnglishG2P({ disableDict: true });
   for (const word of ["abc", "isbn", "usb", "fbi", "cpu"])
     expect(g.trace(word).steps).toEqual([
-      { grapheme: word, phoneme: g.predict(word, "en"), rule: "initialism:letter-spelling" },
+      { grapheme: word, phoneme: g.predict(word, "en"), rule: "initialism:registered" },
     ]);
 });

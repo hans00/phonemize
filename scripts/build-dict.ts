@@ -3,7 +3,8 @@ import * as path from "path";
 import * as json5 from "json5";
 import { arpabetToIpa } from "../src/utils";
 import { restoreIreCodaBeforeAgent } from "../src/en/phonotactics";
-import { normalizeRegularEdAllomorph } from "./normalize-ipa-dict";
+import { normalizeRegularEdAllomorph, restoreNasalStopBeforeIng } from "./normalize-ipa-dict";
+import { preferCarefulFinalTs } from "./dict-variants";
 
 interface DictEntry {
   [word: string]: string;
@@ -211,8 +212,12 @@ function parseDict(
     const pool = isThoughtSpelling && variants.some(v => v.includes("ɔ"))
       ? variants.filter(v => v.includes("ɔ"))
       : variants;
-    const ipa = normalizeMultiplePrimaryStress(selectVariant(pool, heteronymWords.has(lowerWord)));
-    const correctedIpa = normalizeRegularEdAllomorph(lowerWord, ipa);
+    const isHeteronym = heteronymWords.has(lowerWord);
+    const originalSelection = selectVariant(pool, isHeteronym);
+    const carefulSelection = selectVariant(preferCarefulFinalTs(pool, lowerWord), isHeteronym);
+    if (carefulSelection !== originalSelection) correctedReferences.add(lowerWord);
+    const ipa = normalizeMultiplePrimaryStress(carefulSelection);
+    const correctedIpa = normalizeRegularEdAllomorph(lowerWord, restoreNasalStopBeforeIng(lowerWord, ipa));
     dict[lowerWord] = correctedIpa;
     if (correctedIpa !== ipa) correctedReferences.add(lowerWord);
   }
@@ -235,6 +240,8 @@ function loadCmuDict(content: string): DictEntry {
     let [, word, variantNo, phonesStr] = match;
     if (!word || !phonesStr || variantNo) continue;
 
+    const stressedStrut = /#\s*stressed-strut(?:\s|;|$)/i.test(line);
+    const darkLateral = /#\s*dark-l(?:\s|;|$)/i.test(line);
     // remove comment
     phonesStr = phonesStr.replace(/# .*$/, "").trim();
 
@@ -242,9 +249,10 @@ function loadCmuDict(content: string): DictEntry {
     const arpaPhonemes = arpaPhones.join(" ");
 
     // Convert ARPABET to IPA using the unified function
-    const ipaPhonemes = arpabetToIpa(arpaPhonemes);
+    const ipaPhonemes = arpabetToIpa(arpaPhonemes, stressedStrut ? { stressedAh: "strut" } : {});
+    const sourcePronunciation = darkLateral ? ipaPhonemes.replace(/l/g, "ɫ") : ipaPhonemes;
 
-    arpaDict[word.toLowerCase()] = ipaPhonemes;
+    arpaDict[word.toLowerCase()] = sourcePronunciation;
   }
 
   return arpaDict;
@@ -256,6 +264,7 @@ function trimDictionary(dictionary: DictEntry, correctedReferences: Set<string>)
 
   // Rule 1: Remove predictable plural forms (-s, -es)
   Object.keys(dictionary).forEach(word => {
+    if (correctedReferences.has(word)) return;
     // Simple plural -s
     if (word.endsWith('s') && word.length > 2 && !word.endsWith('ss')) {
       const singular = word.slice(0, -1);
@@ -309,7 +318,7 @@ function trimDictionary(dictionary: DictEntry, correctedReferences: Set<string>)
 
   // Rule 3: Remove predictable present participle (-ing)
   Object.keys(dictionary).forEach(word => {
-    if (word.endsWith('ing') && word.length > 4) {
+    if (!correctedReferences.has(word) && word.endsWith('ing') && word.length > 4) {
       const base = word.slice(0, -3);
       if (dictionary[base]) {
         const basePron = dictionary[base];
@@ -408,8 +417,19 @@ async function main(): Promise<void> {
     // Load custom dictionary
     const customDictPath = new URL("../src-data/en/custom.dict", import.meta.url)
       .pathname;
-    const customDict = loadCmuDict(fs.readFileSync(customDictPath, "utf-8"));
-    for (const word of Object.keys(customDict)) correctedReferences.delete(word);
+    const customSource = fs.readFileSync(customDictPath, "utf-8");
+    const customDict = loadCmuDict(customSource);
+    const explicitCustomReferences = new Set(
+      customSource.split(/\r?\n/).flatMap(line => {
+        if (!/#.*\b(?:corrected-reference|retain-reference)(?:\s|;|$)/i.test(line)) return [];
+        const match = line.match(/^([a-zA-Z']+(?:\(\d+\))?)/);
+        return match ? [match[1].replace(/\(\d+\)$/, "").toLowerCase()] : [];
+      }),
+    );
+    for (const word of Object.keys(customDict)) {
+      correctedReferences.delete(word);
+      if (explicitCustomReferences.has(word)) correctedReferences.add(word);
+    }
     console.log(
       `Loaded ${Object.keys(customDict).length} entries from custom dictionary`,
     );

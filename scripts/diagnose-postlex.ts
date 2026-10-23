@@ -7,12 +7,14 @@ import * as ts from "typescript";
 import levenshtein from "fast-levenshtein";
 import EnglishG2P from "../src/en/g2p";
 import dictionary from "../data/en/dict.json";
+import commonCohort from "./common-cohort.json";
+import { commonGold } from "./common-cohort-gold";
 import { isForeign } from "./foreign-filter";
 
 const argv = process.argv.slice(2);
 if (argv.includes("--help")) {
   console.log("yarn diagnose:postlex [--all] [--include-long] [--out DIR]");
-  console.log("Default: English subset. Scores are diagnostic; rebuild and validate before adoption.");
+  console.log("Default: frozen 6,990-word release cohort. Scores are diagnostic; rebuild and validate before adoption.");
   process.exit(0);
 }
 const outIndex = argv.indexOf("--out");
@@ -84,10 +86,16 @@ try {
 const frequencyFile = join(__dirname, ".common-accuracy-cache/frequency.txt");
 const frequency = new Set(readFileSync(frequencyFile, "utf8").trim().split(/\s+/));
 const inSubset = (word: string): boolean => frequency.has(word.toLowerCase()) && !isForeign(word.toLowerCase());
-const common = (word: string): boolean => word.length <= 12 && inSubset(word);
-const words = Object.keys(dictionary).filter(word => /^[a-z']+$/i.test(word) && word.length >= 3 &&
-  word.length <= (argv.includes("--include-long") ? 40 : 12) && /[aeiou]/i.test(word) &&
-  !/^([A-Z]\.?){2,8}$/.test(word) && (argv.includes("--all") || inSubset(word)));
+const commonWords = new Set<string>(commonCohort.words);
+const common = (word: string): boolean => commonWords.has(word.toLowerCase());
+const words = argv.includes("--all") || argv.includes("--include-long")
+  ? Object.keys(dictionary).filter(word => /^[a-z']+$/i.test(word) && word.length >= 3 &&
+    word.length <= (argv.includes("--include-long") ? 40 : 12) && /[aeiou]/i.test(word) &&
+    !/^([A-Z]\.?){2,8}$/.test(word) && (argv.includes("--all") || inSubset(word)))
+  : commonCohort.words;
+if (!argv.includes("--all") && !argv.includes("--include-long") && words.length !== commonCohort.n) {
+  throw new Error("Frozen common cohort mismatch: found " + words.length + ", expected " + commonCohort.n);
+}
 const strip = (ipa: string): string => ipa.replace(/[ˈˌ]/g, "").replace(/ʌ/g, "ə");
 function canon(ipa: string): string {
   let value = strip(ipa);
@@ -116,7 +124,7 @@ const results = [...control.touched].map(([index, touched]) => {
     const before = baseline.get(word)!, after = next.predict(word);
     if (!after) throw new Error(`No ablated prediction: ${word}`);
     if (before === after) continue;
-    const gold = dictionary[word as keyof typeof dictionary], b = score(before, gold);
+    const gold = commonGold(word, dictionary[word as keyof typeof dictionary])!, b = score(before, gold);
     const delta = score(after, gold).map((value, i) => value - b[i]), isCommon = common(word);
     for (const scope of isCommon ? ["all", "common"] as const : ["all"] as const)
       delta.forEach((value, i) => { counts[scope][i] += value; if (value) winsLosses[scope][i][value > 0 ? 0 : 1]++; });

@@ -38,3 +38,13 @@ describe.each([false, true])("bound Latin suffix stress (disableDict=%s)", disab
       expect(g2p.predict(word)).toContain("ɡˈz");
   });
 });
+
+test("rules-only keeps the Cambridge US weak vowel in -stitution forms", () => {
+  const rules = new EnglishG2P({ disableDict: true });
+  // Cambridge US lists /ə/ in these entries; the pinned IPA-Dict gold for
+  // institution instead has /ɪ/, so do not turn that reference mismatch into
+  // a broad runtime rule.
+  expect(rules.predict("institution")).toBe("ˌɪnstəˈtuʃən");
+  expect(rules.predict("constitution")).toBe("ˌkɑnstəˈtuʃən");
+  expect(rules.predict("substitution")).toBe("ˌsʌbstəˈtuʃən");
+});

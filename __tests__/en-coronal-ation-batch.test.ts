@@ -15,7 +15,7 @@ describe.each([false, true])("coronal weak vowel before -ation (disableDict=%s)"
     expect(reading(engine.predict(word)!)).toEqual(reading(ipa));
   });
   it.each([
-    ["medicate", disableDict ? "ˈmɛdəkeɪt" : "ˈmɛdɪkeɪt"], ["litigate", "ˈlɪtɪɡeɪt"],
+    ["medicate", disableDict ? "ˈmɛdəkeɪt" : "ˈmɛdɪkeɪt"], ["litigate", "ˈlɪtəɡeɪt"],
     ["lubrication", "lubɹɪˈkeɪʃən"], ["vacation", "veɪˈkeɪʃən"],
   ])("preserves the unaffected stem or environment in %s", (word, ipa) => {
     expect(reading(engine.predict(word)!)).toEqual(reading(ipa));

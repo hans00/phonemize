@@ -63,6 +63,13 @@ BLESSED|B L EH1 S IH0 D|B L EH1 S T|N
 LEARNED|L ER1 N IH0 D|L ER1 N D|N,ADJ
 DOGGED|D AO1 G D|D AO1 G IH0 D|V
 
+# Cambridge US lexical adjectives have /ɪd/; preserve the regular verb
+# readings only when the tagger identifies the verb use.
+# https://dictionary.cambridge.org/us/pronunciation/english/wicked
+WICKED|W IH1 K IH0 D|W IH1 K T|N,ADJ
+# https://dictionary.cambridge.org/us/pronunciation/english/crooked
+CROOKED|K R UH1 K IH0 D|K R UH1 K T|N,ADJ
+
 #The upstream V entry drops /n/. Retain the existing vouched Misaki phones.
 #Cambridge confirms /n/ in the verb and adjective interchangeable.
 #https://dictionary.cambridge.org/pronunciation/english/interchange

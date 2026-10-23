@@ -76,15 +76,30 @@ function isAcronym(word: string, ipa: string): boolean {
   // Canonicalize both sides so ə≡ʌ, ɫ≡l, ɑ≡ɔ etc. — needed because the
   // dict uses dialectal/stylistic variants (e.g., "w"=dəbəɫju in dict,
   // dʌbəɫju in our LETTER_NAMES).
-  let p = canon(ipa);
+  const canonical = canon(ipa);
+  let p = canonical;
+  let sequenceMatch = true;
   for (const c of word) {
     const name = LETTER_NAMES[c];
-    if (!name) return false;
+    if (!name) { sequenceMatch = false; break; }
     const l = canon(name);
-    if (!p.startsWith(l)) return false;
+    if (!p.startsWith(l)) { sequenceMatch = false; break; }
     p = p.slice(l.length);
   }
-  return p === "";
+  if (sequenceMatch && p === "") return true;
+
+  // Some dictionary-attested initialisms pronounce a repeated triple as
+  // "triple <letter>" (AAA, IEEE). Admit only spellings whose complete
+  // phonemes match `triple` plus the spelled lead/final letters; the
+  // alternate centre accounts for /l/ resyllabification before a vowel.
+  const repeated = /^([a-z])?([a-z])\2{2}$/.exec(word);
+  if (!repeated || !dict.triple) return false;
+  const prefix = repeated[1] ? canon(LETTER_NAMES[repeated[1]]) : "";
+  const suffix = canon(LETTER_NAMES[repeated[2]]);
+  if (!suffix || !canonical.startsWith(prefix) || !canonical.endsWith(suffix)) return false;
+  const centre = canonical.slice(prefix.length, canonical.length - suffix.length);
+  const triple = canon(dict.triple);
+  return centre === triple || centre === triple.replace(/əɫ$/, "ɫə");
 }
 
 // ─── Linguistic-origin classifier ──────────────────────────────────────────

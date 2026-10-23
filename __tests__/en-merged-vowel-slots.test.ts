@@ -47,7 +47,8 @@ describe.each([false, true])("merged vowel slots (disableDict=%s)", disableDict 
     for (const word of ["ordinary", "ordinarily"]) expect(g2p.predict(word)).toContain("də");
     expect(g2p.predict("ordinance")).toContain("də");
     expect(g2p.predict("artificial")).toContain("tə");
-    expect(g2p.predict("litigate")).toContain("tɪ");
+    // Cambridge US: https://dictionary.cambridge.org/us/pronunciation/english/litigate
+    expect(g2p.predict("litigate")).toContain("tə");
     expect(g2p.predict("culinary")).toMatch(/[ɪə]ˌ?n/);
   });
 });

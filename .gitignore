@@ -8,7 +8,9 @@ coverage/
 *report.txt
 *.tsbuildinfo
 src/*.js
-
+.claude/worktrees/
+.claude/plugin_claude_mem_lite.md
+.claude/.plugin_claude_mem_lite_state.json
 
 # WikiPron eval benchmark (generated on demand; Wiktionary-derived)
 scripts/.wikipron-cache/

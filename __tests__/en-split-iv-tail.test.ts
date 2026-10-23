@@ -34,6 +34,6 @@ it("preserves noun/adjective/verb sentence controls", () => {
     ["I appreciate the help.", "appreciate", "əˈpɹiʃiˌeɪt"],
     ["It is a precious gift.", "precious", "ˈpɹɛʃəs"],
     ["Use discretion here.", "discretion", "dɪsˈkɹɛʃən"],
-    ["The medical report is clear.", "medical", "ˈmɛdəkəɫ"],
+    ["The medical report is clear.", "medical", "ˈmɛdɪkəɫ"],
   ]) expect(api.phonemize(sentence, { language: "en-US", returnArray: true }).find(t => t.word === target)?.phoneme).toBe(ipa);
 });

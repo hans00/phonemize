@@ -24,7 +24,8 @@ describe.each([false, true])("vouched rhotic compounds and closure roots (disabl
     ["pepperell", "ˈpɛpɝəɫ"], ["pickerell", "ˈpɪkɝəɫ"],
     ["witherell", disableDict ? "ˈwɪðɝəɫ" : "ˈwɪθɝəɫ"],
     ["foreclosure", "ˌfɔɹˈkɫoʊʒɝ"], ["closure", "ˈkɫoʊʒɝ"],
-    ["disclosure", "dɪsˈkɫoʊʒɝ"], ["overarm", "ˌoʊvɝˈɑɹm"],
+    // Cambridge US: https://dictionary.cambridge.org/us/pronunciation/english/disclosure
+    ["disclosure", "dɪˈskɫoʊʒɝ"], ["overarm", "ˌoʊvɝˈɑɹm"],
     ["overeat", "ˈoʊvɝˌit"],
     ["cynosure", disableDict ? "ˈsɪnəʒɝ" : "ˈsaɪnɔˌsɝ"],
     ["exposure", disableDict ? "ɪksˈpoʊʒɝ" : "ɪkˈspoʊʒɝ"],

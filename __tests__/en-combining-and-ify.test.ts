@@ -13,6 +13,17 @@ describe.each([false, true])("combining forms and suffix context (disableDict=%s
       expect(g2p.predict(word)).toMatch(/^ˌ?ɔ/);
   });
 
+  test("auto- keeps its component reading in compounds", () => {
+    if (disableDict) {
+      expect(g2p.predict("automotive")).toBe("ˌɔtoʊˈmoʊtɪv");
+      expect(g2p.predict("automotives")).toBe("ˌɔtəˈmoʊtɪvz");
+      expect(g2p.predict("autoeurope")).toBe("ˌɔtoʊˈjʊɹəp");
+      expect(g2p.predict("autopilot")).toBe("ˈɔtoʊˌpaɪɫət");
+      expect(g2p.predict("autopacific")).toBe("ˌɔtoʊpəˈsɪfɪk");
+      expect(g2p.predict("non-automotive")).toBe("nɑnˈˌɔtoʊmoʊtɪv");
+    }
+  });
+
   test("-ify establishes the root in its antepenult frame", () => {
     for (const word of ["solidify", "solidifies", "solidified", "solidifying"])
       expect(g2p.predict(word)).toContain("ˈɫɪd");

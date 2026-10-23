@@ -24,8 +24,23 @@ describe("retained -age stems before plural -s", () => {
     ["stages", "ˈsteɪdʒəz"],
     ["underages", "ˈʌndɝɪdʒəz"],
     ["percentages", "pɝˈsɛntɪdʒəz"],
+    ["wages", "ˈweɪdʒəz"],
+    ["damages", "ˈdæmɪdʒɪz"],
+    ["mortgages", "ˈmɔɹɡədʒəz"],
   ])("preserves the distinct neighboring plural %s", (plural, expected) => {
     const g2p = new EnglishG2P({ disableDict: true });
+    expect(g2p.predict(plural, "en-US")).toBe(expected);
+  });
+
+  it.each([
+    ["image", "images", "ˈɪmɪdʒɪz"],
+    ["message", "messages", "ˈmɛsɪdʒɪz"],
+    ["package", "packages", "ˈpækɪdʒɪz"],
+    ["cottage", "cottages", "ˈkɑtɪdʒɪz"],
+  ])("keeps a KIT-final %s stem distinct before plural -es", (stem, plural, expected) => {
+    const g2p = new EnglishG2P({ disableDict: true });
+    expect(g2p.trace(stem, "en-US").path).toBe("rules");
+    expect(g2p.trace(plural, "en-US").path).toBe("morphology");
     expect(g2p.predict(plural, "en-US")).toBe(expected);
   });
 

@@ -103,6 +103,23 @@ describe("the unstressed vowel before -ce reduces", () => {
   it("does not count an inflection toward trisyllabic laxing", () => {
     expect(rules("notices")).toMatch(/^ˈnoʊ/);
   });
+
+  it("keeps the regular /ɪz/ ending in -tice plurals", () => {
+    expect(rules("notices")).toBe("ˈnoʊtɪsɪz");
+    expect(rules("practices")).toBe("ˈpɹæktɪsɪz");
+    expect(rules("justices")).toBe("ˈdʒʌstɪsɪz");
+    expect(rules("malpractices")).toBe("ˌmæɫˈpɹæktɪsɪz");
+  });
+
+  it("preserves the checked root vowel in -tice past tense forms", () => {
+    expect(rules("noticed")).toBe("ˈnoʊtɪst");
+    expect(rules("practiced")).toBe("ˈpɹæktɪst");
+  });
+
+  it("keeps the weak /əz/ convention for neighboring sibilant plurals", () => {
+    expect(rules("classes")).toBe("ˈkɫæsəz");
+    expect(rules("buses")).toBe("ˈbʌsəz");
+  });
 });
 
 // A word-initial closed <o> before the stress keeps its full vowel, like

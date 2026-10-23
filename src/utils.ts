@@ -99,7 +99,10 @@ const ARPABET_VOWELS = new Set([
   "IH", "IY", "OW", "OY", "UH", "UW", "AX", "AXR",
 ]);
 
-export function arpabetToIpa(arpabet: string): string {
+export function arpabetToIpa(
+  arpabet: string,
+  options: { stressedAh?: "strut" } = {},
+): string {
   if (!arpabet || typeof arpabet !== "string" || !arpabet.trim()) {
     return "";
   }
@@ -117,7 +120,9 @@ export function arpabetToIpa(arpabet: string): string {
     const stress = phoneme.match(/([012])$/)?.[0] || "";
     const basePhoneme = phoneme.replace(/[012]$/, "");
 
-    const ipaPhoneme = ARPABET_TO_IPA[basePhoneme];
+    const ipaPhoneme = basePhoneme === "AH" && options.stressedAh === "strut" && (stress === "1" || stress === "2")
+      ? "ʌ"
+      : ARPABET_TO_IPA[basePhoneme];
     if (ipaPhoneme) {
       result.push(ipaPhoneme);
       isVowel.push(ARPABET_VOWELS.has(basePhoneme));

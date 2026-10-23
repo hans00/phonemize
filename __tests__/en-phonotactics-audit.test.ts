@@ -155,8 +155,10 @@ describe("phonotactics: velar -ed adjectives retain their lexical syllable", () 
 
   it("lets tokenizer-supplied verb POS select the regular past allomorph", () => {
     const g2p = new EnG2P();
-    expect(g2p.predict("wicked", "en", "ADJ")).toBe("ˈwɪkəd");
+    expect(g2p.predict("wicked", "en", "ADJ")).toBe("ˈwɪkɪd");
     expect(g2p.predict("wicked", "en", "V")).toBe("wɪkt");
+    expect(g2p.predict("crooked", "en", "ADJ")).toBe("ˈkɹʊkɪd");
+    expect(g2p.predict("crooked", "en", "V")).toBe("kɹʊkt");
     expect(g2p.predict("bryked", "en", "V")).toBe("bɹaɪkt");
   });
 });

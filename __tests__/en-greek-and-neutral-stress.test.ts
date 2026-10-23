@@ -113,5 +113,6 @@ test("bare Logue is not mistaken for a longer silent-ue suffix", () => {
 
 test("a consonant-only abbreviation does not license silent Greek g", () => {
   const g2p = new EnglishG2P({ disableDict: true });
-  for (const word of ["pgm", "mgm"]) expect(g2p.predict(word)).toContain("ɡ");
+  expect(g2p.predict("pgm")).toBe("ˌpiˌdʒiˈɛm");
+  expect(g2p.predict("mgm")).toContain("ɡ");
 });

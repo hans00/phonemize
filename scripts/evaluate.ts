@@ -1,9 +1,11 @@
 import EnglishG2P from '../src/en/g2p';
 import dictionary from '../data/en/dict.json';
+import commonCohort = require('./common-cohort.json');
+import { commonReferences } from './common-cohort-gold';
 import fs from 'fs';
+import { createHash } from 'crypto';
 import { join, resolve } from 'path';
 import levenshtein from 'fast-levenshtein';
-import { isForeign } from './foreign-filter';
 
 const BASELINE_PATH = join(__dirname, 'eval-baseline.json');
 const COMMON_BASELINE_PATH = join(__dirname, 'eval-common-baseline.json');
@@ -319,7 +321,7 @@ async function evaluateFullDict(g2p: EnglishG2P, dict: Record<string, string>, t
  * the same reason). The full-dict `yarn test:eval` run above remains the
  * no-regression gate; this is the improvement target.
  */
-async function evaluateCommonSubset(g2p: EnglishG2P, dict: Record<string, string>, testableWords: string[]) {
+async function evaluateCommonSubset(g2p: EnglishG2P, dict: Record<string, string>) {
   const cacheDir = resolve(process.env.COMMON_BENCHMARK_DIR ?? 'scripts/.common-accuracy-cache');
   const freqPath = join(cacheDir, 'frequency.txt');
   if (!fs.existsSync(freqPath)) {
@@ -329,19 +331,30 @@ async function evaluateCommonSubset(g2p: EnglishG2P, dict: Record<string, string
     );
   }
 
-  // Same dedup-in-rank-order treatment evaluate-common-accuracy.ts applies:
-  // the raw list has a handful of duplicate tokens.
-  const freqWords = [...new Set(fs.readFileSync(freqPath, 'utf8').trim().split(/\s+/))];
-  const top5000Words = freqWords.slice(0, 5000);
-  const freqSet = new Set(freqWords);
-  const top5000Set = new Set(top5000Words);
+  // Freeze the evaluated populations independently from dictionary keys.
+  // Adding a corrected reference must not silently add a newly retained
+  // inflection to either denominator.
+  const frequencyText = fs.readFileSync(freqPath, 'utf8');
+  const frequencySha256 = createHash('sha256').update(frequencyText).digest('hex');
+  if (frequencySha256 !== commonCohort.frequencySha256) {
+    throw new Error(`Pinned common frequency list hash changed: ${frequencySha256}`);
+  }
+  const fullSubset = commonCohort.words;
+  const top5000Subset = commonCohort.top5000;
+  const missingReferences = fullSubset.filter(word => !commonReferences[word]);
+  if (missingReferences.length) {
+    throw new Error(`Frozen common cohort has ${missingReferences.length} missing pinned references: ${missingReferences.slice(0, 10).join(', ')}`);
+  }
+  const fullSet = new Set(fullSubset);
+  if (fullSubset.length !== commonCohort.n || fullSet.size !== fullSubset.length ||
+      top5000Subset.length !== commonCohort.topN || new Set(top5000Subset).size !== top5000Subset.length ||
+      top5000Subset.some(word => !fullSet.has(word))) {
+    throw new Error('Frozen common cohort manifest is inconsistent');
+  }
 
-  const nonForeignTestable = testableWords.filter(w => !isForeign(w.toLowerCase()));
-  const fullSubset = nonForeignTestable.filter(w => freqSet.has(w.toLowerCase()));
-  const top5000Subset = nonForeignTestable.filter(w => top5000Set.has(w.toLowerCase()));
-
-  const fullResult = scoreWordList(fullSubset, dict, g2p);
-  const top5000Result = scoreWordList(top5000Subset, dict, g2p);
+  const commonReferenceDict = { ...dict, ...commonReferences };
+  const fullResult = scoreWordList(fullSubset, commonReferenceDict, g2p);
+  const top5000Result = scoreWordList(top5000Subset, commonReferenceDict, g2p);
 
   let baseline: CommonBaseline | null = null;
   if (fs.existsSync(COMMON_BASELINE_PATH)) {
@@ -351,11 +364,11 @@ async function evaluateCommonSubset(g2p: EnglishG2P, dict: Record<string, string
   console.log(`\n--- G2P Rule-based Evaluation Results (English subset: frequency list, non-foreign) ---`);
   if (baseline) console.log(`    baseline: ${baseline.date}`);
 
-  console.log(`\nFull frequency list (${freqWords.length} unique ranked words; ${fullSubset.length} testable & non-foreign):`);
+  console.log(`\nFixed English common cohort (${fullSubset.length} ranked, testable & non-foreign words):`);
   console.log(`  - Strict:  ${fullResult.strictCorrect}/${fullResult.total} = ${fullResult.strictAccuracy.toFixed(2)}%${delta(fullResult.strictAccuracy, baseline?.full.strictAccuracy)}`);
   console.log(`  - Lenient: ${fullResult.lenientCorrect}/${fullResult.total} = ${fullResult.lenientAccuracy.toFixed(2)}%${delta(fullResult.lenientAccuracy, baseline?.full.lenientAccuracy)}`);
 
-  console.log(`\nTop-5000 slice (${top5000Words.length} ranked words; ${top5000Subset.length} testable & non-foreign):`);
+  console.log(`\nFixed top-5000 cohort (${top5000Subset.length} ranked, testable & non-foreign words):`);
   console.log(`  - Strict:  ${top5000Result.strictCorrect}/${top5000Result.total} = ${top5000Result.strictAccuracy.toFixed(2)}%${delta(top5000Result.strictAccuracy, baseline?.top5000.strictAccuracy)}`);
   console.log(`  - Lenient: ${top5000Result.lenientCorrect}/${top5000Result.total} = ${top5000Result.lenientAccuracy.toFixed(2)}%${delta(top5000Result.lenientAccuracy, baseline?.top5000.lenientAccuracy)}`);
 
@@ -393,7 +406,7 @@ async function evaluate() {
   console.log(`Filtered down to ${testableWords.length} testable words (excluding long words & abbreviations).`);
 
   if (cliArgs.subset === 'common') {
-    await evaluateCommonSubset(g2p, dict, testableWords);
+    await evaluateCommonSubset(g2p, dict);
   } else {
     await evaluateFullDict(g2p, dict, testableWords);
   }

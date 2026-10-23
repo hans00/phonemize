@@ -114,7 +114,8 @@ describe.each([false, true])("nasal roots and hard g (disableDict=%s)", disableD
 test("public API retains root behavior and both invite readings", () => {
   expect(toIPA("get")).toMatch(/^ˈ?ɡɛt$/);
   expect(toIPA("shoe")).toContain("ʃu");
-  expect(toIPA("newcomer")).toContain("kəmɝ");
+  // Cambridge US gives /ˈnuːˌkʌm.ɚ/, preserving the stressed STRUT vowel.
+  expect(toIPA("newcomer")).toContain("kʌmɝ");
   expect(toIPA("polled")).toContain("poʊ");
   expect(toIPA("pony")).toContain("oʊ");
   expect(toIPA("transsexual")).toMatch(/n[ˈˌ]?s/);

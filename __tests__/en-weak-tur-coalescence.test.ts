@@ -8,7 +8,7 @@ describe.each([false, true])("weak open rhotic u (disableDict=%s)", disableDict 
     ["century's", "ˈsɛntʃɝiz"], ["midcentury", "mɪdˈsɛntʃɝi"],
     ["saturn", "ˈsætɝn"], ["sturdy", "ˈstɝdi"], ["turn", "ˈtɝn"],
     ["turtle", "ˈtɝtəɫ"], ["centurion", "sɛnˈtʊɹiən"],
-    ["maturity", disableDict ? "məˈtʊɹəti" : "məˈtʃʊɹəti"],
+    ["maturity", "məˈtʃʊɹəti"],
     ["natural", "ˈnætʃɝəɫ"], ["future", "ˈfjutʃɝ"],
   ])("preserves the root or control of %s", (word, ipa) => {
     expect(engine.predict(word)).toBe(ipa);

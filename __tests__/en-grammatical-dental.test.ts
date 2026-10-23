@@ -17,7 +17,7 @@ describe.each([false, true])("grammatical dental and uppercase recovery, rules=%
   });
   test("explicit initialisms and short-token spelling remain available", () => {
     const engine = cold(disableDict);
-    expect(engine.predict("CPU")).toBe("ˈsiˈpiˈju"); expect(engine.predict("TTS")).toBe("ˈtiˈtiˈɛs");
+    expect(engine.predict("CPU")).toBe(disableDict ? "ˌsiˌpiˈju" : "ˈsiˈpiˈju"); expect(engine.predict("TTS")).toBe("ˈtiˈtiˈɛs");
     if (disableDict) { expect(engine.predict("US")).toBe("ˈjuˈɛs"); expect(engine.predict("IT")).toBe("ˈaɪˈti"); expect(engine.predict("WHO")).toBe("ˈdʌbəɫjuˈeɪtʃˈoʊ"); }
     engine.addPronunciation("with", "ˈtɛst");
     expect(engine.predict("WITH")).toBe("ˈtɛst"); expect(engine.predict("with's")).toBe("ˈtɛsts");

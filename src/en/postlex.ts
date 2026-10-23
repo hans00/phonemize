@@ -573,6 +573,7 @@ const POST_LEX_RULES: PostLexRule[] = [
   // abridges). After a voiced consonant or a vowel, final s voices to
   // /z/ (abbs, addams, airways). Greek/Latin -as/-us/-is endings keep
   // /s/ (barnabas, campus, tennis).
+  { when: (w) => /tices$/.test(w), re: /səs$/, sub: "sɪz" },
   { when: (w) => /[sxzcg]es$/.test(w), re: /([szʃʒ])əs$/, sub: "$1əz" },
   { when: (w) => w.endsWith("s") && !w.endsWith("ss"), re: /([bdɡvðmnŋɫlɹ])s$/, sub: "$1z" },
   { when: (w) => /[aeiouwy]s$/.test(w) && !/[uia]s$/.test(w), re: /([aɪʊoeiɔuəɝ])s$/, sub: "$1z" },

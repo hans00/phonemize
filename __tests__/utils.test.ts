@@ -168,6 +168,7 @@ describe('Utils', function() {
     it('should handle stress markers correctly', function() {
       expect(arpabetToIpa('HH AX1 L OW')).toEqual('ˈhəloʊ')
       expect(arpabetToIpa('AH2 B AW T')).toEqual('ˌəbaʊt')
+      expect(arpabetToIpa('AH2 B AW T', { stressedAh: 'strut' })).toEqual('ˌʌbaʊt')
       expect(arpabetToIpa('HH AX L OW')).toEqual('həloʊ')
     })
 
