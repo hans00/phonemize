@@ -80,3 +80,27 @@ export function tryStressNeutralSuffix(
   }
   return undefined;
 }
+
+// Preserve a vouched root's still-weak nucleus after derivational stress moves.
+// Alignment tolerates only front-lax vowel/lateral notation differences; it
+// never copies into an accented nucleus, diphthong, hiatus or different root.
+export function preservePretonicSchwa(ipa: string, inherited: string): string {
+  const bare = inherited.replace(/[ˈˌ]/g, ""), normalize = (s: string): string => s.replace(/[ˈˌ]/g, "").replace(/ɫ/g, "l").replace(/[əɛɪ]/g, "ə"), primary = ipa.indexOf("ˈ");
+  if (primary < 0 || normalize(ipa) !== normalize(inherited)) return ipa;
+  let index = 0;
+  return ipa.replace(/[^ˈˌ]/g, (phone: string, offset: number) =>
+    bare[index++] === "ə" && offset < primary && /[ɛɪ]/.test(phone) && !/[ˈˌ][^aeiouyɑɔæɛɪʊʌəɝɚɜɒ]*$/.test(ipa.slice(0, offset)) && !/[aeiouyɑɔæɛɪʊʌəɝɚɜɒ]/.test((ipa[offset - 1] ?? "") + (ipa[offset + 1] ?? "")) ? "ə" : phone);
+}
+
+// Align an -ary base with -arian before copying only its pretonic diphthongs.
+export function preserveAryDiphthongs(ipa: string, inherited: string): string {
+  const tokens = (s: string): string[] => s.replace(/[ˈˌ]/g, "").replace(/ɝ/g, "əɹ").match(/aɪ|aʊ|eɪ|oʊ|ɔɪ|./g) ?? [];
+  const vowel = /^(?:[aeiouɑɔæɛɪʊʌəɚ]|aɪ|aʊ|eɪ|oʊ|ɔɪ)$/, base = tokens(inherited), derived = tokens(ipa), vowels = base.filter(p => vowel.test(p));
+  const consonants = (ps: string[]): string => ps.filter(p => !vowel.test(p)).join("").replace(/ɫ/g, "l");
+  if (consonants(base) !== consonants(derived).replace(/n$/, "") || derived.filter(p => vowel.test(p)).length !== vowels.length + 1) return ipa;
+  let index = 0;
+  return ipa.replace(/aɪ|aʊ|eɪ|oʊ|ɔɪ|[aeiouɑɔæɛɪʊʌəɝɚ]/g, (phone: string, offset: number) => {
+    const prior = vowels[index++];
+    return offset < ipa.indexOf("ˈ") && /^(?:aɪ|aʊ|eɪ|oʊ|ɔɪ)$/.test(prior ?? "") && /^[ɪə]$/.test(phone) ? prior : phone;
+  });
+}

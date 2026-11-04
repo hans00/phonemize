@@ -25,6 +25,6 @@ describe("reduced vowel in the productive select root", () => {
   it("keeps the vowel through verb, noun, and adjective sentence contexts", () => {
     expect(rules.phonemize("Please select a picture. The selection was selective.", {
       language: "en-US",
-    })).toBe("pɫis səˈɫɛkt ə ˈpɪktʃɝ. ðə səˈɫɛkʃən wɑz səˈɫɛktɪv.");
+    })).toBe("pɫiz səˈɫɛkt ə ˈpɪktʃɝ. ðə səˈɫɛkʃən wɑz səˈɫɛktɪv.");
   });
 });

@@ -1,0 +1,17 @@
+{
+  "version": "runtime-parity-en-v4",
+  "supersedes": "runtime-parity-en-v3",
+  "status": "diagnostic-only; historical v2 baseline remains required",
+  "variants": {
+    "resign": {
+      "from": "ɹiˈsaɪn",
+      "to": "ɹɪˈzaɪn",
+      "source": "https://dictionary.cambridge.org/pronunciation/english/resign"
+    },
+    "resort": {
+      "from": "ɹiˈsɔɹt",
+      "to": "ɹɪˈzɔɹt",
+      "source": "https://dictionary.cambridge.org/us/dictionary/english/resort"
+    }
+  }
+}

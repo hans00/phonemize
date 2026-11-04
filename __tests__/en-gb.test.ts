@@ -95,6 +95,22 @@ describe("en-GB (Received Pronunciation) transformation", () => {
   });
 
   describe("integration", () => {
+    it("does not treat inherited object properties as RP dictionary entries", () => {
+      expect(transformAmericanToRP("constructor", "kənˈstɹʌktɝ")).toBe("kənˈstɹʌktə");
+      expect(transformAmericanToRP("__proto__", "ˈtu")).toBe("ˈtu");
+      expect(phonemize("constructor", "en-GB")).toBe("kənˈstɹʌktə");
+      expect(phonemize("A constructor builds it.", "en-GB")).toContain("kənˈstɹʌktə");
+      expect(phonemize("constructor", "en-US")).toBe("kənˈstɹʌktɝ");
+      expect(phonemize("A constructor builds it.", "en-US")).toContain("kənˈstɹʌktɝ");
+    });
+
+    it("keeps a caller-supplied stem in both dialects", () => {
+      const processor = new EnglishG2P();
+      processor.addPronunciation("tube", "ˈtub");
+      expect(processor.predict("tubeless", "en-GB")).toBe("ˈtubɫəs");
+      expect(processor.predict("tubeless", "en-US")).toBe("ˈtubɫəs");
+    });
+
     it("does not change AmE output when no language is specified", () => {
       expect(phonemize("car")).toBe("ˈkɑɹ"); // baseline AmE
       expect(phonemize("bird")).toBe("ˈbɝd");

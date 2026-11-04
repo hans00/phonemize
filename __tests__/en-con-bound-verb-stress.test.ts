@@ -23,7 +23,7 @@ describe.each([false, true])("weak con- verb roots (disableDict=%s)", disableDic
     expect(standard(g2p.predict("contract", "en"))).toBe("ˈkɑntɹækt");
     expect(standard(g2p.predict("constraint", "en"))).toBe(disableDict ? "ˈkɑnstɹeɪnt" : "kənˈstɹeɪnt");
     expect(standard(g2p.predict("construct", "en"))).toBe("ˈkɑnstɹəkt");
-    expect(standard(g2p.predict("content", "en"))).toBe(disableDict ? "ˈkɑntənt" : "ˈkɑntɛnt");
+    expect(standard(g2p.predict("content", "en"))).toBe("ˈkɑntɛnt");
   });
 
   it("keeps root stress under outer un- inflection", () => {

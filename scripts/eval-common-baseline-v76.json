@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-28",
+  "referenceVersion": "common-cohort-v76",
+  "referenceSha256": "2c640dd1ee82d2a44a3b0cad6f73d7f0e4fe2f5276ab6f12590be3057d4919ff",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.11874105865522,
+    "lenientAccuracy": 92.47496423462088
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 87.50345590268178,
+    "lenientAccuracy": 94.27702515897153
+  },
+  "provenance": {
+    "method": "Rescore independently documented US variants against unchanged original predictions; retain old readings and populations.",
+    "oldContract": "common-cohort-v75",
+    "newContract": "common-cohort-v76",
+    "before": [
+      5808,
+      6464,
+      3165,
+      3410
+    ],
+    "after": [
+      5810,
+      6464,
+      3165,
+      3410
+    ],
+    "runtimeChanges": 0,
+    "sourceSnapshotSha256": "0d5192518238eeab5a3fcfaa2e18675482b28016a607e95256f6d3cf4052fc15",
+    "sources": {
+      "transmit": "https://www.collinsdictionary.com/us/dictionary/english/transmit",
+      "transmitted": "https://www.collinsdictionary.com/us/dictionary/english/transmit"
+    }
+  }
+}

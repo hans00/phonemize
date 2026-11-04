@@ -34,6 +34,12 @@ describe.each([false, true])("paired nominal roots, rules=%s", disableDict => {
       ["jansenist", "ˈdʒænsənɪst"], ["schism", disableDict ? "ˈʃɪzəm" : "ˈskɪzəm"], ["schist", "ˈʃɪst"],
     ]) expect(engine.predict(word)).toBe(ipa);
   });
+  it("composes communism from the independently attested communist root", () => {
+    const engine = new EnglishG2P({ disableDict });
+    expect(engine.predict("communist", "en-US")).toBe("ˈkɑmjənɪst");
+    expect(engine.predict("communism", "en-US")).toBe("ˈkɑmjəˌnɪzəm");
+    expect(engine.predict("communism's", "en-US")).toBe("ˈkɑmjəˌnɪzəmz");
+  });
   it("keeps complete noun, adjective and verb contexts", () => {
     const api = createPhonemizer({ processors: [new EnglishG2P({ disableDict })] });
     for (const [sentence, word, ipa] of [

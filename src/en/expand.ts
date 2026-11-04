@@ -270,8 +270,11 @@ export function expandAbbreviations(text: string): string {
   text = text.replace(/(\b\d+(?::\d{2})?\s*)([ap])\.?m\b\.?/gi,
     (_, clock, period) => `${clock.trimEnd()} ${period.toLowerCase()} m`);
   // Handle abbreviations with periods
-  text = text.replace(/\b([a-z]+)\./gi, (match, abbr) => {
+  text = text.replace(/\b([a-z]+)\./gi, (match, abbr, offset: number, source: string) => {
     const lower = abbr.toLowerCase();
+    // `apt` is also the ordinary adjective /æpt/. Expand it only when a
+    // unit number follows, which is the structural cue for an address label.
+    if (lower === "apt" && !/^\s*#?\s*\d/.test(source.slice(offset + match.length))) return match;
     if (LABEL_ABBREVIATIONS[lower]) {
       return abbr !== lower ? LABEL_ABBREVIATIONS[lower] : match;
     }
@@ -283,8 +286,9 @@ export function expandAbbreviations(text: string): string {
 
   // Handle common abbreviations without periods
   const words = text.split(/\s+/);
-  const expandedWords = words.map((word) => {
+  const expandedWords = words.map((word, index) => {
     const clean = word.toLowerCase().replace(/[^\w]/g, "");
+    if (clean === "apt" && !/^#?\s*\d/.test(words[index + 1] ?? "")) return word;
     if (ABBREVIATIONS[clean]) {
       return word.replace(new RegExp(clean, "gi"), ABBREVIATIONS[clean]);
     }

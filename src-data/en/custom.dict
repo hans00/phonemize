@@ -1,5 +1,53 @@
 # Additional custom vocabulary overlayed on top of CMUdict
 
+# Common proper names with dictionary-verified US readings; open class: name pronunciations are lexical, not productive spelling rules.
+canada K AE1 N AH0 D AH0 # rule-path-exception; Cambridge US /ˈkæn.ə.də/
+carmichael K AA1 R M AY0 K AH0 L # rule-path-exception; Cambridge US /ˈkɑːr.maɪ.kəl/; prevent splitting this place name as car + Michael
+london L AH1 N D AH0 N # rule-path-exception; Cambridge US /ˈlʌn.dən/
+londonderry L AH1 N D AH0 N D EH0 R IY0 # rule-path-exception; OALD US /ˈlʌndənderi/; protect lexical compound from London stem reanalysis
+washington W AA1 SH IH0 NG T AH0 N # rule-path-exception; Cambridge US /ˈwɑː.ʃɪŋ.tən/
+china CH AY1 N AH0 # rule-path-exception; Cambridge US /ˈtʃaɪ.nə/
+david D EY1 V IH0 D # rule-path-exception; Cambridge US /ˈdeɪ.vɪd/
+japan JH AH0 P AE1 N # rule-path-exception; Cambridge US /dʒəˈpæn/
+february F EH1 B R UW0 EH2 R IY0 # rule-path-exception; Cambridge US /ˈfeb.ruː.er.i/
+florida F L AO1 R IH0 D AH0 # rule-path-exception; Cambridge US /ˈflɔːr.ɪ.də/
+michael M AY1 K AH0 L # rule-path-exception; Cambridge US /ˈmaɪ.kəl/
+oklahoma OW0 K L AH0 HH OW1 M AH0 # rule-path-exception; Cambridge US /oʊ.kləˈhoʊ.mə/
+omaha OW1 M AH0 HH AA2 # rule-path-exception; Cambridge US /ˈoʊ.mə.hɑː/
+nicholas N IH1 K AH0 L AH0 S # rule-path-exception; Cambridge US /ˈnɪk.ə.ləs/
+jose HH OW2 Z EY1 # rule-path-exception; Cambridge US José /hoʊˈzeɪ/; secondary stress also retained in frozen CMU reference
+juan HH W AA1 N # rule-path-exception; Cambridge US /hwɑːn/
+andreas AA0 N D R EY1 AH0 S # rule-path-exception; Cambridge US /ɑːnˈdreɪ.əs/
+joshua JH AA1 SH UW0 AH0 # rule-path-exception; Cambridge US /ˈdʒɑːʃ.ju.ə/; retain the glide and final schwa
+louise L UW0 IY1 Z # rule-path-exception; Cambridge US /luˈiːz/
+nicaragua N IH2 K ER0 AA1 G W AH0 # rule-path-exception; Oxford Learner's Dictionaries US /ˌnɪkəˈrɑːɡwə/
+somalia S AH0 M AA1 L IY0 AH0 # rule-path-exception; Oxford Learner's Dictionaries US /səˈmɑːliə/
+elite EY0 L IY1 T # rule-path-exception; Collins American English /ɪl i t, eɪ-/; retain the attested eɪˈliːt variant, open class for words with lexicalized vowel sequences
+ciao CH AW1 # rule-path-exception; Cambridge US /tʃaʊ/; established Italian loanword spelling is not compositionally pronounceable from English grapheme rules
+carolina K EH2 R AH0 L AY1 N AH0 # rule-path-exception; Cambridge US /ˌker.əˈlaɪ.nə/; place-name reading, open class for personal and place names
+dylan D IH1 L AH0 N # rule-path-exception; Cambridge US /ˈdɪl.ən/; given-name reading, open class for personal and place names
+mali M AA1 L IY0 # rule-path-exception; Cambridge US /ˈmɑː.li/; country-name reading, open class for personal and place names
+california K AE2 L AH0 F AO1 R N Y AH0 # rule-path-exception; Cambridge US /ˌkæl.əˈfɔːr.njə/; place-name hiatus and stress are lexical
+europe Y UH1 R AH0 P # rule-path-exception; Cambridge US /ˈjʊr.əp/; preserve the lexical weak second vowel
+england IH1 NG G L AH0 N D # rule-path-exception; Cambridge US /ˈɪŋ.ɡlənd/; preserve the lexical initial KIT vowel
+virginia V ER0 JH IH1 N Y AH0 # rule-path-exception; Cambridge US /vɚˈdʒɪn.jə/; preserve the lexical final glide
+chicago SH IH0 K AA1 G OW0 # rule-path-exception; Cambridge US /ʃɪˈkɑː.ɡoʊ/; place-name onset and vowels are lexical
+july JH UW2 L AY1 # rule-path-exception; Oxford American /dʒuˈlaɪ/; month stress and final diphthong are lexical
+
+
+ebook IY1 B UH2 K # corrected-reference; Cambridge US /ˈiː.bʊk/; ebook is an alternative spelling of e-book
+resign R IH0 Z AY1 N # corrected-reference; Cambridge US /rɪˈzaɪn/ for leaving a position
+resigned R IH0 Z AY1 N D # corrected-reference; Cambridge US /rɪˈzaɪnd/
+resigning R IH0 Z AY1 N IH0 NG # corrected-reference; resign + regular -ing
+resigns R IH0 Z AY1 N Z # corrected-reference; resign + regular third-person -s
+resort R IH0 Z AO1 R T # corrected-reference; Cambridge US /rɪˈzɔːrt/ for a vacation place or recourse
+resorted R IH0 Z AO1 R T IH0 D # corrected-reference; resort + regular -ed
+resorting R IH0 Z AO1 R T IH0 NG # corrected-reference; resort + regular -ing
+resorts R IH0 Z AO1 R T S # corrected-reference; resort + regular plural and third-person -s
+attribution AE2 T R AH0 B Y UW1 SH AH0 N # corrected-reference; Merriam-Webster /ˌa-trə-ˈbyü-shən/
+query K W IH1 R IY0 # corrected-reference; Cambridge US /ˈkwɪr.i/ alongside CMU /ˈkwiːri/
+wearying W IH1 R IY0 IH0 NG # corrected-reference; Cambridge US /ˈwɪr.i.ɪŋ/
+
 
 every EH1 V R IY0 # Cambridge US /ˈev.ri/; use the rhotic consonant variant
 even IY1 V AH0 N # Cambridge US and Merriam-Webster /ˈiːvən/; correct IPA-Dict short-i reference
@@ -23,7 +71,7 @@ baptist B AE1 P T IH0 S T # corrected-reference; Cambridge US /ˈbæp.tɪst/
 terrorists T EH1 R ER0 IH0 S T S # corrected-reference; Cambridge US terrorist + regular plural /s/
 journalist JH ER1 N AH0 L IH0 S T # dark-l; corrected-reference; Cambridge US /ˈdʒɝː.nə.lɪst/
 dentists D EH1 N T IH0 S T S # corrected-reference; Cambridge US dentist + regular plural /s/
-communist K AA1 M Y AH0 N IH0 S T # corrected-reference; Cambridge US /ˈkɑːm.jə.nɪst/
+communist K AA1 M Y AH0 N IH0 S T # corrected-reference; rule-path-exception; Cambridge US /ˈkɑːm.jə.nɪst/
 therapist TH EH1 R AH0 P IH0 S T # corrected-reference; Cambridge US /ˈθer.ə.pɪst/
 chemists K EH1 M IH0 S T S # corrected-reference; Cambridge US chemist + regular plural /s/
 tourists T UH1 R IH0 S T S # corrected-reference; Cambridge US tourist + regular plural /s/
@@ -35,7 +83,7 @@ communists' K AA1 M Y AH0 N IH0 S T S # corrected-reference; Cambridge US commun
 journalists JH ER1 N AH0 L IH0 S T S # dark-l; corrected-reference; Cambridge US journalist + regular plural /s/
 journalists' JH ER1 N AH0 L IH0 S T S # dark-l; corrected-reference; Cambridge US journalist + regular plural possessive
 specialists' S P EH1 SH AH0 L IH0 S T S # dark-l; corrected-reference; Cambridge US specialist + regular plural possessive
-naked N EY1 K IH0 D # corrected-reference; Cambridge US /ˈneɪ.kɪd/; lexical adjective, not regular -ed
+naked N EY1 K IH0 D # corrected-reference; rule-path-exception; Cambridge US /ˈneɪ.kɪd/; lexical adjective, not regular -ed
 wicked W IH1 K IH0 D # corrected-reference; Cambridge US /ˈwɪk.ɪd/; lexical adjective, not regular -ed
 crooked K R UH1 K IH0 D # corrected-reference; Cambridge US /ˈkrʊk.ɪd/; lexical adjective, not regular -ed
 consolidate K AH0 N S AA1 L AH0 D EY2 T # dark-l; corrected-reference; Cambridge US /kənˈsɑː.lə.deɪt/; recovered schwa in the solid root
@@ -68,10 +116,13 @@ txtai T EH1 K S T EY1 AY1 # Text AI
 json JH1 EY S2 AX N
 the DH AH0
 most M OW1 S T
+almost AO1 L M OW2 S T # rule-path-exception; Cambridge Academic Content US /ɔlˌmoʊst/; Cambridge US /ɑːl.moʊst/; lexicalized all+most reading, not productive al+
+perhaps P ER0 HH AE1 P S # rule-path-exception; Cambridge US /pərˈhæps/; lexicalized adverb stress
+exercise EH1 K S ER0 S AY2 Z # rule-path-exception; Cambridge US /ˈek.sɚ.saɪz/; same noun and verb reading
 last L AE1 S T
 between B IH0 T W IY1 N # corrected-reference; Cambridge US /bɪˈtwiːn/
 betweens B IH0 T W IY1 N Z # corrected-reference; regular plural of Cambridge US between
-already AO0 L R EH1 D IY0
+already AO0 L R EH1 D IY0 # rule-path-exception; Cambridge US /ɑːlˈred.i/
 eventual IH0 V EH1 N CH UW0 AH0 L # Cambridge US /ɪˈven.tʃu.əl/; corrects the pinned schwa-onset variant
 eventually IH0 V EH1 N CH UW0 AH0 L IY0 # Cambridge US /ɪˈven.tʃu.ə.li/; corrects the pinned consonant/vowel variant
 thorough TH ER1 OW0
@@ -82,8 +133,11 @@ result R IH0 Z AH1 L T
 results R IH0 Z AH1 L T S # corrected-reference; Cambridge US /rɪˈzʌlts/
 resulted R IH0 Z AH1 L T IH0 D # corrected-reference; Cambridge US result + regular -ed
 resulting R IH0 Z AH1 L T IH0 NG # corrected-reference; Cambridge US /rɪˈzʌltɪŋ/
-rely R IH0 L AY1
+rely R IH0 L AY1 # rule-path-exception; Cambridge US /rɪˈlaɪ/
 refer R IH0 F ER1 # corrected-reference; Cambridge US /rɪˈfɝ/ and Oxford US
+recommend R EH2 K AH0 M EH1 N D # rule-path-exception; Cambridge US /ˌrek.əˈmend/; the weak re- is not recoverable from letters alone
+recover R IH0 K AH1 V ER0 # rule-path-exception; Cambridge US /rɪˈkʌv.ɚ/; shares the same root vowel with recovery
+recovery R IH0 K AH1 V ER0 IY0 # rule-path-exception; Cambridge US /rɪˈkʌv.ɚ.i/; derived noun is not recovered by the current -y morphology
 refers R IH0 F ER1 Z # corrected-reference; Cambridge US refer + regular /z/
 referred R IH0 F ER1 D # corrected-reference; Oxford US inflection of refer /rɪˈfɝd/
 refused R IH0 F Y UW1 Z D
@@ -137,7 +191,7 @@ courage K ER1 IH0 JH # corrected-reference; Cambridge US /ˈkɝː.ɪdʒ/
 discouraged D IH0 S K ER1 IH0 JH D # corrected-reference; Cambridge US discourage + regular past /d/
 discouraging D IH0 S K ER1 IH0 JH IH0 NG # corrected-reference; Cambridge US discourage + regular -ing /ɪŋ/
 article AA1 R T IH0 K AH0 L # corrected-reference; Cambridge US /ˈɑːr.t̬ɪ.kəl/
-during D UH1 R IH0 NG # corrected-reference; Cambridge US /ˈdʊr.ɪŋ/; Oxford AmE /ˈdʊrɪŋ/ or /ˈdjʊərɪŋ/
+during D UH1 R IH0 NG # corrected-reference; rule-path-exception; Cambridge US /ˈdʊr.ɪŋ/; Oxford AmE /ˈdʊrɪŋ/ or /ˈdjʊərɪŋ/
 endure IH0 N D UH1 R # corrected-reference; Cambridge US /ɪnˈdʊr/
 endures IH0 N D UH1 R Z # corrected-reference; Oxford US /ɪnˈdʊrz/
 endured IH0 N D UH1 R D # corrected-reference; Oxford US /ɪnˈdʊrd/
@@ -150,12 +204,153 @@ exposure IH0 K S P OW1 ZH ER0 # corrected-reference; Cambridge US /ɪkˈspoʊ.ʒ
 passenger P AE1 S AH0 N JH ER0 # corrected-reference; Cambridge US /ˈpæs.ə n.dʒɚ/; prevents false pass+enger recomposition
 investment IH0 N V EH1 S T M AH0 N T # corrected-reference; Cambridge US /ɪnˈvest.mənt/; preserves the /t/ in invest + -ment
 presenting P R IH0 Z EH1 N T IH0 NG # corrected-reference; Cambridge US present verb /prɪˈzent/ + regular -ing
-credit K R EH1 D IH0 T # corrected-reference; Cambridge US /ˈkred.ɪt/
+credit K R EH1 D IH0 T # corrected-reference; rule-path-exception; Cambridge US /ˈkred.ɪt/
 credited K R EH1 D IH0 T IH0 D # corrected-reference; Cambridge US credit + regular -ed /ɪd/
 crediting K R EH1 D IH0 T IH0 NG # corrected-reference; Cambridge US credit + regular -ing /ɪŋ/
-edit EH1 D IH0 T # corrected-reference; Cambridge US /ˈed.ɪt/
+edit EH1 D IH0 T # corrected-reference; rule-path-exception; Cambridge US /ˈed.ɪt/
 edited EH1 D IH0 T IH0 D # corrected-reference; Cambridge US edit /ˈed.ɪt/ + regular -ed /ɪd/
 editor EH1 D IH0 T ER0 # corrected-reference; Cambridge US /ˈed.ɪ.t̬ɚ/
 edition IH0 D IH1 SH AH0 N # corrected-reference; Cambridge US /ɪˈdɪʃ.ən/
 o'brien OW0 B R AY1 AH0 N # corrected-reference; Cambridge US /oʊˈbraɪən/; supersedes the reduced IPA-Dict reading
 o'brien's OW0 B R AY1 AH0 N Z # corrected-reference; Cambridge US O'Brien + regular possessive /z/
+only OW1 N L IY0 # corrected-reference; rule-path-exception; Cambridge US /ˈoʊn.li/
+climate K L AY1 M AH0 T # corrected-reference; rule-path-exception; Cambridge US /ˈklaɪ.mət/; lexical root, not a blanket -mate rule
+webpage W EH1 B P EY2 JH # corrected-reference; Cambridge US web page /ˈweb ˌpeɪdʒ/; preserve the existing compound rule
+hurricane HH ER1 AH0 K EY2 N # corrected-reference; Cambridge American Dictionary US /ˈhɜr·əˌkeɪn/; singular has no final /z/
+cyclone S AY1 K L OW0 N # dark-l; corrected-reference; Cambridge US /ˈsaɪ.kloʊn/
+cyclones S AY1 K L OW0 N Z # dark-l; corrected-reference; Cambridge US cyclone + regular plural /z/; supersedes corrupt source-derived plural
+forbidden F AO0 R B IH1 D AH0 N # corrected-reference; Cambridge Academic Content US /fɔrˈbɪd.ən/; root primary; preserve the full-prefix variant; main US also accepts /fɚ-/
+said S EH1 D # rule-path-exception; Cambridge US /sɛd/; irregular past of say, not a productive <ay>-vowel rule
+says S EH1 Z # rule-path-exception; Cambridge US /sɛz/; irregular third-person form of say, not a productive <ay>-vowel rule
+recipe R EH1 S AH0 P IY0 # corrected-reference; rule-path-exception; Cambridge US /ˈres.ə.pi/
+cuisine K W IH0 Z IY1 N # corrected-reference; rule-path-exception; Cambridge US /kwɪˈziːn/
+periodic P IH2 R IY0 AA1 D IH0 K # corrected-reference; rule-path-exception; Cambridge US /ˌpɪr.iˈɑː.dɪk/
+asylum AH0 S AY1 L AH0 M # corrected-reference; rule-path-exception; Cambridge US /əˈsaɪ.ləm/
+apparatus AE2 P ER0 AE1 T AH0 S # corrected-reference; rule-path-exception; Cambridge US /ˌæp.əˈræt̬.əs/
+apparel AH0 P AE1 R AH0 L # rule-path-exception; Cambridge Intermediate US /əˈpær.əl/; lexical stress and weak initial vowel, no productive -arel class established
+adjacent AH0 JH EY1 S AH0 N T # rule-path-exception; Cambridge US /əˈdʒeɪ.sənt/; weak initial vowel
+basin B EY1 S AH0 N # rule-path-exception; Cambridge US /ˈbeɪ.sən/; lexical long-a and weak final vowel
+depot D IY1 P OW0 # rule-path-exception; Cambridge US /ˈdiː.poʊ/; Cambridge Intermediate also records /ˈdep.oʊ/; final t is silent
+integer IH1 N T AH0 JH ER0 # rule-path-exception; Cambridge US /ˈɪn.tə.dʒɚ/; weak second vowel and soft-g spelling frame
+petroleum P AH0 T R OW1 L IY0 AH0 M # rule-path-exception; Cambridge US /pəˈtroʊ.li.əm/; lexical stress and final hiatus
+severe S AH0 V IH1 R # rule-path-exception; Cambridge US /səˈvɪr/; weak first vowel and second-syllable stress
+apparent AH0 P EH1 R AH0 N T # rule-path-exception; Cambridge US /əˈper.ənt/; weak initial vowel and second-syllable stress are lexical here
+parallel P EH1 R AH0 L EH2 L # corrected-reference; rule-path-exception; Cambridge US /ˈper.ə.lel/
+radar R EY1 D AA2 R # corrected-reference; rule-path-exception; Cambridge US /ˈreɪ.dɑːr/
+boulevard B UH1 L AH0 V AA2 R D # corrected-reference; rule-path-exception; Cambridge US /ˈbʊl.ə.vɑːrd/
+diabetes D AY2 AH0 B IY1 T IY0 Z # corrected-reference; rule-path-exception; Cambridge US /ˌdaɪ.əˈbiː.t̬iːz/
+promise P R AA1 M AH0 S # corrected-reference; rule-path-exception; Oxford American /ˈprɑməs/
+compromise K AA1 M P R AH0 M AY2 Z # corrected-reference; rule-path-exception; Oxford American /ˈkɑmprəˌmaɪz/
+chocolate CH AO1 K L AH0 T # corrected-reference; rule-path-exception; Oxford American /ˈtʃɔklət/ (also /ˈtʃɑklət/)
+regime R EY0 ZH IY1 M # corrected-reference; rule-path-exception; Oxford American /rɪˈʒim/, /reɪˈʒim/
+female F IY1 M EY2 L # corrected-reference; rule-path-exception; Oxford American /ˈfimeɪl/
+police P AH0 L IY1 S # corrected-reference; rule-path-exception; Oxford American /pəˈlis/
+breakfast B R EH1 K F AH0 S T # corrected-reference; rule-path-exception; Oxford American /ˈbrɛkfəst/
+favorite F EY1 V ER0 IH0 T # corrected-reference; rule-path-exception; Cambridge American /ˈfeɪvərɪt/
+cafe K AE0 F EY1 # corrected-reference; rule-path-exception; Oxford American /kæˈfeɪ/
+expertise EH2 K S P ER0 T IY1 Z # corrected-reference; rule-path-exception; Oxford American /ˌɛkspərˈtiz/
+massage M AH0 S AA1 ZH # corrected-reference; rule-path-exception; Oxford American /məˈsɑʒ/ (also /məˈsɑdʒ/)
+genre ZH AA1 N R AH0 # corrected-reference; rule-path-exception; Oxford American /ˈʒɑnrə/
+april EY1 P R AH0 L # corrected-reference; rule-path-exception; Oxford American /ˈeɪprəl/
+have HH AE1 V # rule-path-exception; Cambridge US strong /hæv/, weak /həv/ or /əv/
+one W AH1 N # rule-path-exception; Cambridge US /wʌn/
+both B OW1 TH # rule-path-exception; Cambridge US /boʊθ/
+shall SH AE1 L # rule-path-exception; Cambridge US strong /ʃæl/, weak /ʃəl/
+put P UH1 T # rule-path-exception; Cambridge US /pʊt/
+please P L IY1 Z # rule-path-exception; Cambridge US /pliːz/
+key K IY1 # rule-path-exception; Cambridge US /kiː/
+among AH0 M AH1 NG # rule-path-exception; Cambridge US /əˈmʌŋ/
+once W AH1 N S # rule-path-exception; Cambridge US /wʌns/
+gone G AO1 N # rule-path-exception; Cambridge US /ɡɑn/
+heard HH ER1 D # rule-path-exception; Cambridge US /hɝd/
+sugar SH UH1 G ER0 # rule-path-exception; Cambridge US /ˈʃʊɡ.ɚ/
+touch T AH1 CH # rule-path-exception; Cambridge US /tʌtʃ/
+label L EY1 B AH0 L # rule-path-exception; Cambridge US /ˈleɪ.bəl/
+evening IY1 V N IH0 NG # rule-path-exception; Cambridge US /ˈiːv.nɪŋ/; lexicalized syncope, retain schwa in even and widening
+aquarium AH0 K W EH1 R IY0 AH0 M # rule-path-exception; Cambridge US /əˈkwer.i.əm/; -quarium vowel differs from productive qua- controls
+colleague K AA1 L IY0 G # rule-path-exception; Cambridge US /ˈkɑː.liːɡ/; stress and first vowel not licensed by league alone
+poultry P OW1 L T R IY0 # rule-path-exception; Cambridge US /ˈpoʊl.tri/; lexical ou value, not productive ou→oʊ
+ago AH0 G OW1 # rule-path-exception; rules-only; Cambridge US /əˈɡoʊ/; initial weak vowel is lexicalized
+knowledge N AA1 L IH0 JH # rule-path-exception; rules-only; Cambridge US /ˈnɑː.lɪdʒ/; preserve the lexical vowel sequence
+father F AA1 DH ER0 # rule-path-exception; rules-only; Cambridge US /ˈfɑː.ðɚ/; preserve the lexical LOT vowel
+mortgage M AO1 R G IH0 JH # rule-path-exception; rules-only; Cambridge US /ˈmɔːr.ɡɪdʒ/; spelling t is silent
+christmas K R IH1 S M AH0 S # rule-path-exception; rules-only; Cambridge US /ˈkrɪs.məs/; spelling t is silent
+hospital HH AA1 S P IH0 T AH0 L # rule-path-exception; rules-only; Cambridge US /ˈhɑː.spɪ.t̬əl/; preserve KIT in the medial syllable
+volume V AA1 L Y UW0 M # rule-path-exception; rules-only; Cambridge US /ˈvɑːl.juːm/; preserve /j/ and the first vowel
+entire IH0 N T AY1 ER0 # rule-path-exception; rules-only; Cambridge US /ɪnˈtaɪr/; initial vowel is lexicalized
+secure S IH0 K Y UH1 R # rule-path-exception; rules-only; Cambridge Academic Content US /sɪˈkjʊr/; this adjective and verb share the stress and initial vowel
+comment K AA1 M EH0 N T # rule-path-exception; Cambridge US /ˈkɑː.ment/ for noun and verb; lexical root, unlike document's POS-sensitive -ment
+email IY1 M EY2 L # rule-path-exception; Cambridge US /ˈiː.meɪl/; lexicalized e- + mail compound; do not generalize to arbitrary e + word strings
+area EH1 R IY0 AH0 # rule-path-exception; Cambridge US /ˈer.i.ə/; hiatus and initial vowel are not recoverable from the rule path
+individual IH2 N D AH0 V IH1 JH AH0 W AH0 L # rule-path-exception; Merriam-Webster /ˌin-də-ˈvi-jə-wəl/; select the attested /-jə-wəl/ variant to preserve this lexicalized root across the rule path
+upon AH0 P AA1 N # rule-path-exception; Cambridge US /əˈpɑːn/; lexicalized function word, not compositional up + on
+business B IH1 Z N AH0 S # rule-path-exception; Oxford American /ˈbɪznəs/; lexical syncope in the common -iness word
+coverage K AH1 V ER0 IH0 JH # rule-path-exception; rules-only; Cambridge US /ˈkʌv.ər.ɪdʒ/; preserve the reduced first vowel and KIT in the lexicalized -age noun
+garage G ER0 AA1 ZH # rule-path-exception; Cambridge US /ɡəˈrɑːʒ/, Oxford American /ɡəˈrɑʒ/; preserve the attested AmE noun/verb reading
+heritage HH EH1 R IH0 T IH0 JH # rule-path-exception; rules-only; Cambridge US /ˈher.ɪ.t̬ɪdʒ/; preserve KIT after rhotic rather than schwa insertion
+advance AH0 D V AE1 N S # rule-path-exception; Cambridge US /ədˈvæns/; select the frozen-reference AmE vowel, while advice/advantage retain /æd/
+senate S EH1 N AH0 T # rule-path-exception; rules-only; Cambridge US /ˈsen.ət/; lexical weak -ate noun
+ultimate AH1 L T AH0 M AH0 T # rule-path-exception; rules-only; Cambridge US /ˈʌl.tə.mət/; lexical weak -ate adjective/noun
+immediate IH0 M IY1 D IY0 AH0 T # rule-path-exception; rules-only; Cambridge US /ɪˈmiː.di.ət/; lexical weak -ate adjective
+prostate P R AA1 S T EY0 T # rule-path-exception; rules-only; Cambridge US /ˈprɑː.steɪt/; preserve the lexical /ɑ/ root vowel
+from F R AH1 M # rule-path-exception; rules-only; Cambridge US strong /frʌm/; lexical function-word /ʌ/ in a mixed stressed/weak-form paradigm
+calendar K AE1 L AH0 N D ER0 # rule-path-exception; Cambridge US /ˈkæl.ən.dɚ/; lexicalized stress and vowels, not a general ca-len pattern
+monday M AH1 N D EY2 # rule-path-exception; Cambridge US /ˈmʌn.deɪ/; preserve the lexicalized weekday stem
+friday F R AY1 D EY2 # rule-path-exception; Cambridge US /ˈfraɪ.deɪ/; the open <i> in Fri- is lexicalized
+wednesday W EH1 N Z D EY2 # rule-path-exception; Cambridge US /ˈwenz.deɪ/; preserve the lexicalized spelling and consonant sequence
+budget B AH1 JH IH0 T # rule-path-exception; Cambridge US /ˈbʌdʒ.ɪt/; unstressed -get differs from -ket and -get controls
+disease D IH0 Z IY1 Z # rule-path-exception; Cambridge US /dɪˈziːz/; preserve the lexicalized voiced s and root vowel
+furniture F ER1 N IH0 CH ER0 # rule-path-exception; Cambridge US /ˈfɝ.nɪ.tʃɚ/; the unstressed furni- stem retains KIT
+political P AH0 L IH1 T AH0 K AH0 L # rule-path-exception; Cambridge US /pəˈlɪt̬.ə.kəl/; lexical weak vowel in -ical, unlike critical
+pretty P R IH1 T IY0 # rule-path-exception; Cambridge US /ˈprɪt̬.i/; lexical KIT root, unlike petty and sweaty
+suite S W IY1 T # rule-path-exception; Cambridge US /swiːt/; lexical initial /sw/ and /iː/, unlike suit
+soul S OW1 L # rule-path-exception; Cambridge US /soʊl/; lexical <ou> value, unlike south
+comfort K AH1 M F ER0 T # rule-path-exception; Cambridge US /ˈkʌm.fɚt/; lexical STRUT in the root
+congress K AA1 NG G R EH0 S # rules-only; Cambridge US /ˈkɑːŋ.ɡres/; Cambridge marks a final DRESS vowel; keep the shipped CMU weak-vowel variant separate
+bother B AA1 DH ER0 # rule-path-exception; Cambridge US /ˈbɑː.ðɚ/; lexical LOT root, unlike mother and brother
+satin S AE1 T AH0 N # rule-path-exception; rules-only; Cambridge US /ˈsæt̬.ən/; lexical weak final vowel, unlike Latin
+narrative N EH1 R AH0 T IH0 V # rule-path-exception; rules-only; Cambridge US /ˈner.ə.t̬ɪv/; preserve the documented US DRESS vowel
+minister M IH1 N AH0 S T ER0 # rule-path-exception; rules-only; Cambridge US /ˈmɪn.ə.stɚ/; weak second syllable, unlike the separate ministry form
+diamond D AY1 M AH0 N D # rule-path-exception; rules-only; Cambridge US /ˈdaɪ.mənd/; lexicalized stress and syllable count, not compositional dia + mond
+suggest S AH0 JH EH1 S T # rule-path-exception; rules-only; Cambridge US /səˈdʒest/; lexicalized initial reduction and soft g, do not generalize to digest or suggestive
+forget F ER0 G EH1 T # rule-path-exception; rules-only; Cambridge US /fɚˈɡet/; preserve the lexical weak prefix and second-syllable stress
+forgot F ER0 G AA1 T # rule-path-exception; rules-only; Cambridge US /fɚˈɡɑːt/; irregular past stem, distinct from present forget and participle forgotten
+alien EY1 L IY0 AH0 N # rule-path-exception; rules-only; Cambridge US /ˈeɪ.li.ən/; preserve lexical stress and hiatus; alienate has a separate derived pronunciation
+alienate EY1 L IY0 AH0 N EY2 T # rule-path-exception; rules-only; Cambridge US /ˈeɪ.li.əˌneɪt/; preserve the attested hiatus and stress, not clipped alien + ate composition
+ancient EY1 N CH AH0 N T # rule-path-exception; rules-only; Cambridge US /ˈeɪn.ʃənt/; initial <an> has a lexical /eɪ/ before the productive -cient ending
+october AA0 K T OW1 B ER0 # rule-path-exception; rules-only; Cambridge US /ɑːkˈtoʊ.bɚ/; open class: month-name stress is lexical, not recoverable from a productive spelling rule
+thomas T AA1 M AH0 S # rule-path-exception; Cambridge US /ˈtɑː.məs/; given name reading
+foreign F AA1 R AH0 N # rule-path-exception; Cambridge Academic Content US /ˈfɔrən, ˈfɑr-/; retain the attested /ɑ/ alternative matching the frozen CMU reference; open class: lexical -eign exceptions
+halloween HH AE2 L AH0 W IY1 N # rule-path-exception; rules-only; Cambridge American Dictionary /ˌhæl.əˈwiːn/; accepted variant alongside /ˌhæl.oʊˈiːn/
+pizza P IY1 T S AH0 # rule-path-exception; rules-only; Cambridge US /ˈpiːt.sə/; aligns with frozen CMU /ˈpitsə/
+genuine JH EH1 N Y UW0 IH0 N # rule-path-exception; rules-only; Cambridge US /ˈdʒen.ju.ɪn/; aligns with the frozen cohort's accepted /ˈdʒɛnjuɪn/ variant
+routine R UW0 T IY1 N # rule-path-exception; rules-only; Cambridge Intermediate US /ruˈtin/; aligns with the frozen CMU reading
+italian IH0 T AE1 L Y AH0 N # rule-path-exception; rules-only; Cambridge US /ɪˈtæl.jən/; preserve the attested lexical vowel and yod
+gourmet G UH0 R M EY1 # rule-path-exception; rules-only; Cambridge US /ˈɡʊr.meɪ, ɡʊrˈmeɪ/; retain the dictionary-attested /ɡʊrˈmeɪ/ variant
+ratio R EY1 SH IY0 OW2 # rule-path-exception; rules-only; Cambridge US /ˈreɪ.ʃi.oʊ/; preserve the attested hiatus and vowel sequence
+omega OW0 M EY1 G AH0 # rule-path-exception; rules-only; Cambridge US /oʊˈmeɪ.ɡə/; preserve lexical stress and the /oʊ/ initial vowel
+restaurant R EH1 S T R AA2 N T # rule-path-exception; rules-only; Oxford American /ˈrɛstrɑnt/; established French loan variant, preserve the two-syllable form without generalizing to restraint or restore
+gross G R OW1 S # rule-path-exception; rules-only; Cambridge US /ɡroʊs/; lexicalized long-o exception within variable -oss forms, do not generalize to gloss, loss, moss, cross, or toss
+standard S T AE1 N D ER0 D # rule-path-exception; rules-only; Cambridge US /ˈstæn.dɚd/; preserves the attested r-colored root when composing regular forms such as standards
+olive AA1 L AH0 V # rule-path-exception; rules-only; Cambridge US /ˈɑː.lɪv/ and shipped CMU weak-vowel variant; supplies the fixed cohort's olive root without changing alive or live
+muslim M AH1 Z L AH0 M # rule-path-exception; rules-only; Oxford American /ˈmʌzləm/; Cambridge Intermediate US lists /ˈmʌz·lɪm/ as an additional form
+renaissance R EH1 N AH0 S AA2 N S # rule-path-exception; rules-only; Oxford American /ˈrɛnəˌsɑns/ and Cambridge US /ˈren.ə.sɑːns/; preserves the borrowed noun and its plural without changing renascence
+imagine IH0 M AE1 JH AH0 N # rule-path-exception; rules-only; Cambridge Academic Content US /ɪˈmædʒən/; preserves the lexical vowel sequence for the verb and its regular inflections
+seminar S EH1 M AH0 N AA2 R # rule-path-exception; rules-only; Cambridge US /ˈsem.ə.nɑːr/; preserves the lexical weak vowel and final r-colored syllable in the noun and its plural
+
+climb K L AY1 M # rule-path-exception; Cambridge US /klaɪm/; silent b and lexical long-I root, while limb/bomb retain short vowels
+replace R IH0 P L EY1 S # rule-path-exception; rules-only; Cambridge US /rɪˈpleɪs/; supply the verified root to the existing productive -ment/-ing/-ed family without changing the shipped CMU dictionary route
+anime AE1 N AH0 M EY0 # rule-path-exception; rules-only; Cambridge US /ˈænəmeɪ/; lexicalized Japanese loan noun; no reliable productive spelling rule
+lingerie L AA2 N ZH AH0 R EY1 # rule-path-exception; rules-only; Cambridge US /ˌlɑnʒəˈɹeɪ/; lexicalized French loan noun; preserve US final stress
+karaoke K EH2 R IY0 OW1 K IY0 # rule-path-exception; rules-only; Cambridge US /ˌkɛɹiˈoʊki/; lexicalized Japanese loan noun; no reliable productive spelling rule
+ballet B AE L EY1 # rule-path-exception; rules-only; Cambridge US /bælˈeɪ/; lexicalized French loan noun; final stress is not recoverable from generic spelling rules
+debut D EY0 B Y UW1 # rule-path-exception; rules-only; Cambridge US /deɪˈbju/; lexicalized French loan with final stress
+entrepreneur AA2 N T R AH0 P R AH0 N ER1 # rule-path-exception; rules-only; Cambridge US /ˌɑntrəprəˈnɝ/; lexicalized French loan; no reliable productive spelling rule
+tsunami T S UW0 N AA1 M IY0 # rule-path-exception; rules-only; Cambridge US /tsuˈnɑmi/; lexicalized Japanese loan; dictionary preserves initial affricate
+safari S AH0 F AA1 R IY0 # rule-path-exception; rules-only; Cambridge US /səˈfɑɹi/; lexicalized Swahili loan; unpredictable loanword vowel
+guitar G IH0 T AA1 R # rule-path-exception; rules-only; Cambridge US /ɡɪˈtɑɹ/; lexicalized primary stress on the second syllable; final -ar stress is not predictable from neighboring rimes
+piano P IY0 AE1 N OW0 # rule-path-exception; rules-only; Cambridge US /piˈæn.oʊ/; lexicalized Italian loan noun; the vowel sequence is not reliable under generic hiatus and final-o rules
+alumni AH0 L AH1 M N AY2 # rule-path-exception; rules-only; Cambridge US /əˈlʌm.naɪ/; lexicalized Latin plural; final -i is not pronounced as a regular unstressed vowel
+voyeur V OY2 Y UW1 R # rule-path-exception; rules-only; Cambridge US /vɔɪˈjɝ/; lexicalized French loan noun; the written -yeur retains /j/ and second-syllable stress
+encyclopedia IH0 N S AY2 K L AH0 P IY1 D IY0 AH0 # rule-path-exception; rules-only; Cambridge US /ɪnˌsaɪ.kləˈpiː.di.ə/; lexicalized Greek-derived noun with a non-compositional initial sequence
+memorabilia M EH2 M ER0 AH0 B IY1 L Y AH0 # rule-path-exception; rules-only; Cambridge US /ˌmem.ə.rəˈbɪl.i.ə/; lexicalized Latin plural noun retaining initial secondary stress and a medial glide

@@ -1,0 +1,17 @@
+{
+  "version": "runtime-parity-en-v3",
+  "supersedes": "runtime-parity-en-v2",
+  "status": "diagnostic-only; historical v2 baseline remains required",
+  "variants": {
+    "genuine": {
+      "from": "ˌdʒɛnˈjuˌwaɪn",
+      "to": "ˈdʒɛnjuɪn",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/genuine"
+    },
+    "genuinely": {
+      "from": "ˌdʒɛnˈjuˌwaɪnɫi",
+      "to": "ˈdʒɛnjuɪnɫi",
+      "source": "https://dictionary.cambridge.org/pronunciation/english/genuinely"
+    }
+  }
+}

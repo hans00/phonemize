@@ -128,6 +128,10 @@ describe('Expand', function() {
       expect(expandAbbreviations('Sunset Blvd.')).toBe('Sunset boulevard')
       expect(expandAbbreviations('First Rd.')).toBe('First road')
       expect(expandAbbreviations('Apt. 5')).toBe('apartment 5')
+      expect(expandAbbreviations('Apt 5')).toBe('apartment 5')
+      expect(expandAbbreviations('apt')).toBe('apt')
+      expect(expandAbbreviations('That was an apt answer.')).toBe('That was an apt answer.')
+      expect(expandAbbreviations('Apt.')).toBe('Apt.')
     })
 
     it('should expand organization abbreviations', function() {
@@ -191,4 +195,4 @@ describe('Expand', function() {
       expect(expandText('Is it 5th?')).toContain('Is it fifth?')
     })
   })
-}) 
+})

@@ -56,7 +56,7 @@ Metric definitions, limits and the evaluation audit are in [docs/BENCHMARK.md](d
 | `yarn test`, `yarn typecheck` | Regression tests and source types | All pass; a TODO is still an unresolved requirement |
 | `yarn test:eval` | Full-dict rule-path strict/lenient; stress stripped | Neither count decreases against frozen before-run |
 | `yarn test:eval --subset common` | Non-foreign frequency-list English subset, including top-5000 slice | Strict/lenient counts nondecreasing on both slices; main commit metric is full-subset strict |
-| `yarn test:parity --dump FILE` | Default pipeline vs dictionary, stress stripped | Strict nondecreasing against committed baseline and before-run; review runtime win/loss list |
+| `yarn test:parity [--before FILE] --dump FILE` | Default pipeline vs frozen v6 dictionary cohort, stress stripped | Strict/lenient nondecreasing against committed baseline and optional before-run; review runtime win/loss list |
 | `yarn test:common-accuracy` | Public API segments vs pinned CMUdict, 5000 items | Default >=90% AND nondecreasing vs before-run; also measure `--rules` and require nondecrease |
 | `node --require tsx/cjs scripts/evaluate-strict.ts` | Stress-aware en-US phonemic headline | Correct count nondecreasing vs before-run; report error buckets |
 | `yarn test:homographs` | Nearest labelled reading in full sentences | Eval correct count nondecreasing vs baseline and before-run; ties/alignment failures count as wrong |
@@ -71,16 +71,19 @@ with the same arguments when the `tsx` CLI's IPC is unavailable in the sandbox.
 
 ### Baselines and commit minimum
 
-- Authoritative committed scores: `scripts/eval-common-baseline.json`, `parity-baseline.json`,
+- Current worktree score baselines: `scripts/eval-common-baseline-v85.json` (current versioned common-reference contract; v47-v84 are historical),
+  `scripts/parity-baseline-v6.json` (fixed 100,816-word runtime-parity contract; migrated from the unchanged v2 frozen predictions after correcting the false hurricane plural reference; v2 remains historical),
   `eval-strict-baseline.json`, `homograph-baseline.json`. `context-ipa-baseline.json` is the initial
-  version-specific context baseline. Read the files and current checkout;
+  version-specific context baseline; `scripts/context-ipa-baseline-v3.json` is the current contract,
+  migrated from v2 by re-scoring the same 432 stored predictions with every summary field unchanged.
+  Read the files and current checkout;
   historical narrative scores may be stale.
 - `scripts/eval-baseline.json` is the retained **86.998% historical lenient target**, reached with
   subsequently removed gram tables. It is not today's no-regression floor and must not be lowered.
 - Normal improvement commits require **>=1 absolute percentage point** of English-subset strict
   improvement over the previous committed baseline, with unchanged denominator and all other gates.
-  For n=6990 this needs at least 70 extra correct words. The 2026-10-22 committed baseline
-  has 5459/6990; the next ordinary batch therefore needs >=5529/6990.
+  For n=6990 this needs at least 70 extra correct words. The active v85 reference contract carries
+  forward the previous committed 5814/6990 strict floor, so the next ordinary batch needs >=5884/6990.
 - The completed isolated-word 70% strict /90% lenient checkpoint is unchanged. Long-term English-subset
   targets remain >=80% strict /90% lenient; the user-requested next-release common-word strict target
   is >=90% with the fixed denominator. Context has its own fixed baseline, not that isolated goal.
@@ -131,7 +134,7 @@ with the same arguments when the `tsx` CLI's IPC is unavailable in the sandbox.
 
 Count all five rule modules: `g2p.ts`, `syllabify.ts`, `postlex.ts`, `morph-table.ts`, `morph-parser.ts`.
 Do not evade the trigger by relocating rule code. Count code with block-comment awareness; omit
-blank lines, `//` comments and whole block comments. Last neutral pass: **3395** code lines (2026-10-22; grouped adjacent syllabifier regex declarations; byte-identical 1,296,341-row prediction snapshot; retained cap unchanged).
+blank lines, `//` comments and whole block comments. Most recent neutral pass: **3377** code lines (2026-11-03; `g2p.ts` 1149, `syllabify.ts` 1719, `postlex.ts` 451, `morph-table.ts` 14, `morph-parser.ts` 44; merged adjacent same-scope declarations and grouped syllabifier imports; byte-identical 1,296,762-row rebuilt-data snapshot, SHA-256 `dbfc6afca07c896e060cd2bf8ed2937af3ecc00a0cd76ba062310c77a54e844f`; retained cap **3395** unchanged). Previous neutral pass: **3391** code lines (2026-10-30; merged adjacent KIT-y rules with the open-coda guard preserved, exclusive postlex replacement types, and grouped lookup declarations).
 
 Run compression when any trigger fires:
 

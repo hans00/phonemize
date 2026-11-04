@@ -1,0 +1,63 @@
+{
+  "version": "common-en-5000-segments-v6",
+  "supersedes": "common-en-5000-segments-v5",
+  "population": 5000,
+  "corrections": {
+    "query": {
+      "retain": [
+        "kwiɹi"
+      ],
+      "add": [
+        "kwɪɹi"
+      ],
+      "source": "https://dictionary.cambridge.org/pronunciation/english/query"
+    },
+    "pocket": {
+      "retain": [
+        "pɑkət"
+      ],
+      "add": [
+        "pɑkɪt"
+      ],
+      "source": "https://dictionary.cambridge.org/us/dictionary/english/pocket"
+    },
+    "online": {
+      "retain": [
+        "ɔnlaɪn"
+      ],
+      "add": [
+        "ɑnlaɪn"
+      ],
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/online"
+    },
+    "around": {
+      "retain": [
+        "ɝaʊnd",
+        "ɝaʊn"
+      ],
+      "add": [
+        "əɹaʊnd"
+      ],
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/around"
+    },
+    "replace": {
+      "retain": [
+        "ɹipleɪs",
+        "ɝpleɪs"
+      ],
+      "add": [
+        "ɹɪpleɪs"
+      ],
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/replace"
+    },
+    "replaced": {
+      "retain": [
+        "ɹipleɪst"
+      ],
+      "add": [
+        "ɹɪpleɪst"
+      ],
+      "source": "https://dictionary.cambridge.org/us/dictionary/english/replaced"
+    }
+  }
+}

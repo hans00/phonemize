@@ -1,0 +1,96 @@
+{
+  "status": "validated accumulating complete C-le root boundary batch; release goal and historical parity contract incomplete",
+  "referenceContract": "common-cohort-v71",
+  "metrics": {
+    "full": [
+      63126,
+      83999
+    ],
+    "common": [
+      5817,
+      6470,
+      3173,
+      3414
+    ],
+    "cmu": [
+      4754,
+      4261
+    ],
+    "stress": 55072,
+    "exact": 46065,
+    "homographs": 1455,
+    "parity": {
+      "n": 100835,
+      "strict": 94834,
+      "lenient": 100729
+    }
+  },
+  "commonStrictGain": 2,
+  "fullStrictGain": 18,
+  "fullLenientGain": 15,
+  "stressGain": 15,
+  "exactGain": 13,
+  "remaining": 474,
+  "tests": 8532,
+  "suites": 475,
+  "focused": 93,
+  "counts": {
+    "g2p": 1149,
+    "syllabify": 1723,
+    "postlex": 470,
+    "morph-table": 20,
+    "morph-parser": 33,
+    "total": 3395
+  },
+  "exceptions": {
+    "before": 53355,
+    "after": 53335,
+    "added": [],
+    "removed": [
+      "disable",
+      "disabled",
+      "disabling",
+      "ackles",
+      "beckles",
+      "dekle",
+      "disabilities",
+      "eckles",
+      "febles",
+      "gingles",
+      "mikles",
+      "naples",
+      "peebles",
+      "peeples",
+      "preble",
+      "rickles",
+      "sharples",
+      "unable",
+      "preamble",
+      "sharpless"
+    ],
+    "changed": []
+  },
+  "repins": 542,
+  "snapshot": "94b5e60aa1929b1eb5b68337356b3cba577f4182c145b0a3476b8806b32d8def",
+  "rows": 1296684,
+  "changedRows": 377,
+  "routes": {
+    "dict": 2,
+    "rule": 21,
+    "morph": 354
+  },
+  "frozenRebuiltByteIdentical": false,
+  "rebuildChangedRows": 57,
+  "rebuildReview": "One default disabilities secondary-stress variant confirmed by Oxford;56 unlabelled synthetic rows reviewed and not counted as gains",
+  "context": "all eval/train fields except metadata identical; complete homograph train report identical",
+  "prose": "26 full sentence streams with non-target tokens/spans preserved; six full article streams unchanged",
+  "rejected": "Broad borrowed-root permission broke dismantle and synthetic derivations; split plural ownership from special borrowed recovery and retained attested bare stems before e restoration",
+  "limitations": [
+    "inkling still has extra schwa; only nasal/lenient repair",
+    "preblees is an unlabelled synthetic +es case affected by prior root eviction; not a claimed gain",
+    "CMU rules legacy90 floor remains below90%",
+    "parity-v2 original100816-word population/reference snapshot unresolved; original floor untouched",
+    "existing homograph train per-lemma floors unchanged"
+  ],
+  "committed": false
+}

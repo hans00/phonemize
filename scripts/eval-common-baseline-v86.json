@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-04",
+  "referenceVersion": "common-cohort-v86",
+  "referenceSha256": "937b8e5e022c02451915f36ff8ee3667312e4c45279864b103ada1092366a8e4",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 85.43633762517882,
+    "lenientAccuracy": 93.53361945636624
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 90.29582526956041,
+    "lenientAccuracy": 95.82526956040918
+  },
+  "provenance": {
+    "method": "Added independently sourced Cambridge US pronunciations as accepted variants for five fixed-cohort words. Four variants already match the frozen pre-change rule predictions; narrative also receives a rules-only lexical root matching Cambridge US. The reference updates are scored separately from the runtime gain; cohort populations and primary references are unchanged.",
+    "oldContract": "common-cohort-v85",
+    "newContract": "common-cohort-v86",
+    "before": [
+      5969,
+      6538,
+      3264,
+      3466
+    ],
+    "after": [
+      5972,
+      6538,
+      3266,
+      3466
+    ],
+    "runtimeChanges": 3,
+    "sourceSnapshotSha256": "c31a3278ddc302a1f00cdf5849352638e24e5ee8ece79ef1100da1916ecbabcf",
+    "sources": {
+      "knowledge": "https://dictionary.cambridge.org/us/pronunciation/english/knowledge",
+      "plaintiff": "https://dictionary.cambridge.org/us/pronunciation/english/plaintiff",
+      "eternal": "https://dictionary.cambridge.org/us/pronunciation/english/eternal",
+      "quantitative": "https://dictionary.cambridge.org/us/pronunciation/english/quantitative",
+      "narrative": "https://dictionary.cambridge.org/pronunciation/english/narrative"
+    },
+    "beforeSnapshotSha256": "c31a3278ddc302a1f00cdf5849352638e24e5ee8ece79ef1100da1916ecbabcf",
+    "afterSnapshotSha256": "aa2bd041b85b59897cc8f56a2b9a604bc8a74a0f4c518afb366e95af6de8dca1",
+    "changedPredictions": [
+      {
+        "word": "minister",
+        "before": "ˈmɪnɪstɝ",
+        "after": "ˈmɪnəstɝ"
+      },
+      {
+        "word": "diamond",
+        "before": "daɪˈæmənd",
+        "after": "ˈdaɪmənd"
+      },
+      {
+        "word": "narrative",
+        "before": "ˈnɑɹətɪv",
+        "after": "ˈnɛɹətɪv"
+      }
+    ]
+  }
+}

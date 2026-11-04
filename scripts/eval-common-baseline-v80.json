@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-03",
+  "referenceVersion": "common-cohort-v80",
+  "referenceSha256": "bb3282407c0511e4e205941be923e9f4270c856e152700c303ee63555b0d74a5",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.89127324749643,
+    "lenientAccuracy": 92.73247496423463
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 88.11169477467514,
+    "lenientAccuracy": 94.55349737351396
+  },
+  "provenance": {
+    "method": "Re-scored the unchanged 1,296,762-row prediction snapshot under the v80 Cambridge US variant contract; no runtime changes, and both denominators and every v79 primary reference are preserved.",
+    "oldContract": "common-cohort-v79",
+    "newContract": "common-cohort-v80",
+    "before": [
+      5864,
+      6482,
+      3187,
+      3420
+    ],
+    "after": [
+      5864,
+      6482,
+      3187,
+      3420
+    ],
+    "runtimeChanges": 0,
+    "sourceSnapshotSha256": "7653119d6ff1e5e3f6a4912bacbd8b021adab04e2ff48936f2ee5d5ce3fa868b",
+    "sources": {
+      "array": "https://dictionary.cambridge.org/us/pronunciation/english/array",
+      "arrival": "https://dictionary.cambridge.org/us/pronunciation/english/arrival",
+      "arrived": "https://dictionary.cambridge.org/us/pronunciation/english/arrive",
+      "arrive": "https://dictionary.cambridge.org/us/pronunciation/english/arrive",
+      "arrangement": "https://dictionary.cambridge.org/pronunciation/english/arrangement",
+      "arising": "https://dictionary.cambridge.org/pronunciation/english/arise",
+      "arranged": "https://dictionary.cambridge.org/us/pronunciation/english/arrange",
+      "arise": "https://dictionary.cambridge.org/pronunciation/english/arise",
+      "arrange": "https://dictionary.cambridge.org/us/pronunciation/english/arrange",
+      "aruba": "https://dictionary.cambridge.org/pronunciation/english/aruba"
+    }
+  }
+}

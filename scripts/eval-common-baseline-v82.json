@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-03",
+  "referenceVersion": "common-cohort-v82",
+  "referenceSha256": "bd5e4d50d6c6276fa43df34ee941ae959936c55e5e3623d9f60bad3bb54e835d",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.89127324749643,
+    "lenientAccuracy": 92.73247496423463
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 88.11169477467514,
+    "lenientAccuracy": 94.55349737351396
+  },
+  "provenance": {
+    "method": "Re-scored the unchanged frozen prediction snapshot under v82; the snapshot records the primary /ɪ/ reading for specifics, so all historical counts remain unchanged.",
+    "oldContract": "common-cohort-v81",
+    "newContract": "common-cohort-v82",
+    "before": [
+      5864,
+      6482,
+      3187,
+      3420
+    ],
+    "after": [
+      5864,
+      6482,
+      3187,
+      3420
+    ],
+    "runtimeChanges": 0,
+    "sourceSnapshotSha256": "7653119d6ff1e5e3f6a4912bacbd8b021adab04e2ff48936f2ee5d5ce3fa868b",
+    "sources": {
+      "presidential": "https://dictionary.cambridge.org/pronunciation/english/presidential",
+      "specifics": "https://dictionary.cambridge.org/pronunciation/english/specifics"
+    }
+  }
+}

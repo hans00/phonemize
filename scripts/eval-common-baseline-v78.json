@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-28",
+  "referenceVersion": "common-cohort-v78",
+  "referenceSha256": "322517cda2a00f3454c279d32377d5f614e2961a8b55a85c3c7dfd519e05e7e3",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.17596566523605,
+    "lenientAccuracy": 92.4892703862661
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 87.50345590268178,
+    "lenientAccuracy": 94.27702515897153
+  },
+  "provenance": {
+    "method": "Rescore independently documented US variants against unchanged original predictions; retain old readings and populations.",
+    "oldContract": "common-cohort-v77",
+    "newContract": "common-cohort-v78",
+    "before": [
+      5811,
+      6465,
+      3165,
+      3410
+    ],
+    "after": [
+      5814,
+      6465,
+      3165,
+      3410
+    ],
+    "runtimeChanges": 0,
+    "sourceSnapshotSha256": "0d5192518238eeab5a3fcfaa2e18675482b28016a607e95256f6d3cf4052fc15",
+    "sources": {
+      "conferencing": "https://dictionary.cambridge.org/pronunciation/english/video-conferencing",
+      "inspired": "https://dictionary.cambridge.org/pronunciation/english/inspired",
+      "recovered": "https://dictionary.cambridge.org/us/dictionary/english/recovered"
+    }
+  }
+}

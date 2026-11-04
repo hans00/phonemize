@@ -1,0 +1,42 @@
+{
+  "status": "validated behavior-neutral compression",
+  "beforeCodeLines": 3395,
+  "counts": {
+    "g2p": 1149,
+    "syllabify": 1723,
+    "postlex": 455,
+    "morph-table": 20,
+    "morph-parser": 44,
+    "total": 3391
+  },
+  "retainedCap": 3395,
+  "g2pCap": 1150,
+  "rows": 1296684,
+  "snapshot": "76f4d8fa353e371aebe6fad15aa56d59badf59502b023bf742fe09d28c799bd7",
+  "byteIdentical": true,
+  "tests": 8587,
+  "suites": 478,
+  "typecheckExit": 0,
+  "changed": [
+    "src/en/g2p.ts",
+    "src/en/syllabify.ts",
+    "src/en/postlex.ts"
+  ],
+  "sourceHashes": {
+    "src/en/g2p.ts": "821fbf77ff253bd03d997736ebf273d518484d443fa6c1874ddfc42078575dc6",
+    "src/en/syllabify.ts": "e52109a993e2190113d35556fe2d6e649d8bf744d5830befd4744ed52f08dd9e",
+    "src/en/postlex.ts": "7106ce7505c94e45b8506e8c7fcd9e9af681b0e31bbd212a9e89a6408ed77691"
+  },
+  "dataUnchanged": true,
+  "metricEvidence": "/tmp/phonemize-nile-r2-20261030/verification.json",
+  "qualifiedCommonStrict": 5819,
+  "remaining": 472,
+  "pronunciationGain": 0,
+  "details": [
+    "Adjacent one-character KIT-y rules merged; only the empty-coda branch is gated by the next st onset. Closed m/n codas remain unconditional.",
+    "Postlex rule type now requires exactly one string/callback replacement; removed non-null assertion.",
+    "Adjacent same-type null-prototype lookup declarations grouped without reordering initialization."
+  ],
+  "committed": false,
+  "goalComplete": false
+}

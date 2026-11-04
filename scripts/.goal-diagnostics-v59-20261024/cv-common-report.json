@@ -1,0 +1,604 @@
+{
+  "toolSha256": "8248dfdf8dec7d4a8f79c873df867ac7770ca6d49c9e60c54c682c421e456007",
+  "objective": "strict",
+  "dictionarySha256": "ba8bfb50a2f448c9ef4534e38b38b90a29af11e5312dd81c9ffda95f2f7daee5",
+  "frequencySha256": "981c776dc7e8996accb256e5fea9d241331b9602efe0c977285734890e1ae729",
+  "baselineSha256": "9ebd63bcf2ced6fa670249bb8824726e0e743e83f9aa06a1e4d835a2d62516fa",
+  "structuralFeatures": true,
+  "familyGrouped": true,
+  "maxWordLength": 12,
+  "longWordsInScope": 0,
+  "kFolds": 10,
+  "minSupport": 5,
+  "maxRules": 30,
+  "seed": 20260928,
+  "replay": "actual predict() with an isolated ruleSyllables hook; no replica tail",
+  "diagnosticFilterUsesTrainOnly": true,
+  "population": {
+    "commonTestable": 6990,
+    "inScope": 5066,
+    "coveragePct": 72.47496423462088
+  },
+  "totalAccepted": 5,
+  "totalPassed": 0,
+  "meanPassedPerFold": 0,
+  "heldStrictPctBefore": {
+    "mean": 79.25361149441416,
+    "std": 1.4449839144950802,
+    "perFold": [
+      80.27613412228797,
+      81.06508875739645,
+      78.69822485207101,
+      79.28994082840237,
+      77.7120315581854,
+      79.6844181459566,
+      78.65612648221344,
+      77.66798418972331,
+      77.4703557312253,
+      82.01581027667984
+    ]
+  },
+  "heldStrictPctAfterAllAccepted": {
+    "mean": 79.25361149441416,
+    "strictCorrect": 4015,
+    "total": 5066
+  },
+  "heldStrictPctAfterPassed": {
+    "mean": 79.25361149441416,
+    "std": 1.4449839144950802,
+    "perFold": [
+      80.27613412228797,
+      81.06508875739645,
+      78.69822485207101,
+      79.28994082840237,
+      77.7120315581854,
+      79.6844181459566,
+      78.65612648221344,
+      77.66798418972331,
+      77.4703557312253,
+      82.01581027667984
+    ]
+  },
+  "heldMetrics": {
+    "before": {
+      "strict": 4015,
+      "lenient": 4592,
+      "distance": 1824,
+      "n": 5066
+    },
+    "after": {
+      "strict": 4015,
+      "lenient": 4592,
+      "distance": 1824,
+      "n": 5066
+    }
+  },
+  "selection": "strict train objective, max-rules fixed; held-out never selects or stops",
+  "perFold": [
+    {
+      "fold": 0,
+      "trainN": 4559,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 407,
+        "lenient": 465,
+        "n": 507,
+        "distance": 161
+      },
+      "metricsAfter": {
+        "strict": 407,
+        "lenient": 465,
+        "n": 507,
+        "distance": 161
+      },
+      "mismatchCount": 947,
+      "candPoolSize": 28401,
+      "prunedSize": 794,
+      "acceptedCount": 0,
+      "passedCount": 0,
+      "heldStrictPctBefore": 80.27613412228797,
+      "heldStrictPctAfterAllAccepted": 80.27613412228797,
+      "heldStrictPctAfterPassed": 80.27613412228797,
+      "rules": [],
+      "passingRules": []
+    },
+    {
+      "fold": 1,
+      "trainN": 4559,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 411,
+        "lenient": 454,
+        "n": 507,
+        "distance": 173
+      },
+      "metricsAfter": {
+        "strict": 411,
+        "lenient": 454,
+        "n": 507,
+        "distance": 173
+      },
+      "mismatchCount": 951,
+      "candPoolSize": 28153,
+      "prunedSize": 787,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 81.06508875739645,
+      "heldStrictPctAfterAllAccepted": 81.06508875739645,
+      "heldStrictPctAfterPassed": 81.06508875739645,
+      "rules": [
+        {
+          "keyStr": "r\u0000slotFromEnd+stress\u00003,unstressed\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "r",
+            "template": "slotFromEnd+stress",
+            "value": "3,unstressed",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 3,
+          "trainFixes": 2,
+          "trainBreaks": 1,
+          "trainLenientNet": 1,
+          "trainDistanceGain": 4,
+          "affected": 6,
+          "fixRate": 0.3333333333333333,
+          "heldFixes": 0,
+          "heldBreaks": 0,
+          "top5000Fixes": 0,
+          "top5000Breaks": 1,
+          "top5000DistUp": 1,
+          "pass": false,
+          "reason": "fails: affected=6<20 fixRate=0.33<0.75 top5000Fix=0<3 top5000Break=1>0 top5000DistUp=1>0",
+          "examplesFixed": [
+            {
+              "word": "maritime",
+              "before": "ˈmɛɹɪˌtaɪm",
+              "after": "ˈmɛɹəˌtaɪm",
+              "gold": "ˈmɛɹəˌtaɪm"
+            },
+            {
+              "word": "marijuana",
+              "before": "ˌmɛɹɪˈwɑnə",
+              "after": "ˌmɛɹəˈwɑnə",
+              "gold": "ˌmɛɹəˈwɑnə"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "arizona",
+              "before": "ˌɛɹɪˈzoʊnə",
+              "after": "ˌɛɹəˈzoʊnə",
+              "gold": "ˌɛɹɪˈzoʊnə"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 2,
+      "trainN": 4559,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 399,
+        "lenient": 453,
+        "n": 507,
+        "distance": 193
+      },
+      "metricsAfter": {
+        "strict": 399,
+        "lenient": 453,
+        "n": 507,
+        "distance": 193
+      },
+      "mismatchCount": 939,
+      "candPoolSize": 27754,
+      "prunedSize": 821,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 78.69822485207101,
+      "heldStrictPctAfterAllAccepted": 78.69822485207101,
+      "heldStrictPctAfterPassed": 78.69822485207101,
+      "rules": [
+        {
+          "keyStr": "r\u0000slotFromEnd+stress\u00003,unstressed\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "r",
+            "template": "slotFromEnd+stress",
+            "value": "3,unstressed",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 3,
+          "trainFixes": 2,
+          "trainBreaks": 1,
+          "trainLenientNet": 1,
+          "trainDistanceGain": 4,
+          "affected": 6,
+          "fixRate": 0.3333333333333333,
+          "heldFixes": 0,
+          "heldBreaks": 0,
+          "top5000Fixes": 0,
+          "top5000Breaks": 1,
+          "top5000DistUp": 1,
+          "pass": false,
+          "reason": "fails: affected=6<20 fixRate=0.33<0.75 top5000Fix=0<3 top5000Break=1>0 top5000DistUp=1>0",
+          "examplesFixed": [
+            {
+              "word": "maritime",
+              "before": "ˈmɛɹɪˌtaɪm",
+              "after": "ˈmɛɹəˌtaɪm",
+              "gold": "ˈmɛɹəˌtaɪm"
+            },
+            {
+              "word": "marijuana",
+              "before": "ˌmɛɹɪˈwɑnə",
+              "after": "ˌmɛɹəˈwɑnə",
+              "gold": "ˌmɛɹəˈwɑnə"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "arizona",
+              "before": "ˌɛɹɪˈzoʊnə",
+              "after": "ˌɛɹəˈzoʊnə",
+              "gold": "ˌɛɹɪˈzoʊnə"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 3,
+      "trainN": 4559,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 402,
+        "lenient": 457,
+        "n": 507,
+        "distance": 184
+      },
+      "metricsAfter": {
+        "strict": 402,
+        "lenient": 457,
+        "n": 507,
+        "distance": 184
+      },
+      "mismatchCount": 944,
+      "candPoolSize": 28343,
+      "prunedSize": 778,
+      "acceptedCount": 0,
+      "passedCount": 0,
+      "heldStrictPctBefore": 79.28994082840237,
+      "heldStrictPctAfterAllAccepted": 79.28994082840237,
+      "heldStrictPctAfterPassed": 79.28994082840237,
+      "rules": [],
+      "passingRules": []
+    },
+    {
+      "fold": 4,
+      "trainN": 4559,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 394,
+        "lenient": 456,
+        "n": 507,
+        "distance": 206
+      },
+      "metricsAfter": {
+        "strict": 394,
+        "lenient": 456,
+        "n": 507,
+        "distance": 206
+      },
+      "mismatchCount": 936,
+      "candPoolSize": 27930,
+      "prunedSize": 753,
+      "acceptedCount": 0,
+      "passedCount": 0,
+      "heldStrictPctBefore": 77.7120315581854,
+      "heldStrictPctAfterAllAccepted": 77.7120315581854,
+      "heldStrictPctAfterPassed": 77.7120315581854,
+      "rules": [],
+      "passingRules": []
+    },
+    {
+      "fold": 5,
+      "trainN": 4559,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 404,
+        "lenient": 462,
+        "n": 507,
+        "distance": 182
+      },
+      "metricsAfter": {
+        "strict": 404,
+        "lenient": 462,
+        "n": 507,
+        "distance": 182
+      },
+      "mismatchCount": 944,
+      "candPoolSize": 28059,
+      "prunedSize": 784,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 79.6844181459566,
+      "heldStrictPctAfterAllAccepted": 79.6844181459566,
+      "heldStrictPctAfterPassed": 79.6844181459566,
+      "rules": [
+        {
+          "keyStr": "r\u0000slotFromEnd+stress\u00003,unstressed\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "r",
+            "template": "slotFromEnd+stress",
+            "value": "3,unstressed",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 3,
+          "trainFixes": 2,
+          "trainBreaks": 1,
+          "trainLenientNet": 1,
+          "trainDistanceGain": 4,
+          "affected": 6,
+          "fixRate": 0.3333333333333333,
+          "heldFixes": 0,
+          "heldBreaks": 0,
+          "top5000Fixes": 0,
+          "top5000Breaks": 1,
+          "top5000DistUp": 1,
+          "pass": false,
+          "reason": "fails: affected=6<20 fixRate=0.33<0.75 top5000Fix=0<3 top5000Break=1>0 top5000DistUp=1>0",
+          "examplesFixed": [
+            {
+              "word": "maritime",
+              "before": "ˈmɛɹɪˌtaɪm",
+              "after": "ˈmɛɹəˌtaɪm",
+              "gold": "ˈmɛɹəˌtaɪm"
+            },
+            {
+              "word": "marijuana",
+              "before": "ˌmɛɹɪˈwɑnə",
+              "after": "ˌmɛɹəˈwɑnə",
+              "gold": "ˌmɛɹəˈwɑnə"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "arizona",
+              "before": "ˌɛɹɪˈzoʊnə",
+              "after": "ˌɛɹəˈzoʊnə",
+              "gold": "ˌɛɹɪˈzoʊnə"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 6,
+      "trainN": 4560,
+      "heldN": 506,
+      "metricsBefore": {
+        "strict": 398,
+        "lenient": 464,
+        "n": 506,
+        "distance": 175
+      },
+      "metricsAfter": {
+        "strict": 398,
+        "lenient": 464,
+        "n": 506,
+        "distance": 175
+      },
+      "mismatchCount": 939,
+      "candPoolSize": 27829,
+      "prunedSize": 754,
+      "acceptedCount": 0,
+      "passedCount": 0,
+      "heldStrictPctBefore": 78.65612648221344,
+      "heldStrictPctAfterAllAccepted": 78.65612648221344,
+      "heldStrictPctAfterPassed": 78.65612648221344,
+      "rules": [],
+      "passingRules": []
+    },
+    {
+      "fold": 7,
+      "trainN": 4560,
+      "heldN": 506,
+      "metricsBefore": {
+        "strict": 393,
+        "lenient": 460,
+        "n": 506,
+        "distance": 190
+      },
+      "metricsAfter": {
+        "strict": 393,
+        "lenient": 460,
+        "n": 506,
+        "distance": 190
+      },
+      "mismatchCount": 934,
+      "candPoolSize": 27726,
+      "prunedSize": 807,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 77.66798418972331,
+      "heldStrictPctAfterAllAccepted": 77.66798418972331,
+      "heldStrictPctAfterPassed": 77.66798418972331,
+      "rules": [
+        {
+          "keyStr": "r\u0000slotFromEnd+stress\u00003,unstressed\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "r",
+            "template": "slotFromEnd+stress",
+            "value": "3,unstressed",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 3,
+          "trainFixes": 2,
+          "trainBreaks": 1,
+          "trainLenientNet": 1,
+          "trainDistanceGain": 4,
+          "affected": 6,
+          "fixRate": 0.3333333333333333,
+          "heldFixes": 0,
+          "heldBreaks": 0,
+          "top5000Fixes": 0,
+          "top5000Breaks": 1,
+          "top5000DistUp": 1,
+          "pass": false,
+          "reason": "fails: affected=6<20 fixRate=0.33<0.75 top5000Fix=0<3 top5000Break=1>0 top5000DistUp=1>0",
+          "examplesFixed": [
+            {
+              "word": "maritime",
+              "before": "ˈmɛɹɪˌtaɪm",
+              "after": "ˈmɛɹəˌtaɪm",
+              "gold": "ˈmɛɹəˌtaɪm"
+            },
+            {
+              "word": "marijuana",
+              "before": "ˌmɛɹɪˈwɑnə",
+              "after": "ˌmɛɹəˈwɑnə",
+              "gold": "ˌmɛɹəˈwɑnə"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "arizona",
+              "before": "ˌɛɹɪˈzoʊnə",
+              "after": "ˌɛɹəˈzoʊnə",
+              "gold": "ˌɛɹɪˈzoʊnə"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 8,
+      "trainN": 4560,
+      "heldN": 506,
+      "metricsBefore": {
+        "strict": 392,
+        "lenient": 456,
+        "n": 506,
+        "distance": 198
+      },
+      "metricsAfter": {
+        "strict": 392,
+        "lenient": 456,
+        "n": 506,
+        "distance": 198
+      },
+      "mismatchCount": 933,
+      "candPoolSize": 27714,
+      "prunedSize": 813,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 77.4703557312253,
+      "heldStrictPctAfterAllAccepted": 77.4703557312253,
+      "heldStrictPctAfterPassed": 77.4703557312253,
+      "rules": [
+        {
+          "keyStr": "r\u0000slotFromEnd+stress\u00003,unstressed\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "r",
+            "template": "slotFromEnd+stress",
+            "value": "3,unstressed",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 3,
+          "trainFixes": 2,
+          "trainBreaks": 1,
+          "trainLenientNet": 1,
+          "trainDistanceGain": 4,
+          "affected": 6,
+          "fixRate": 0.3333333333333333,
+          "heldFixes": 0,
+          "heldBreaks": 0,
+          "top5000Fixes": 0,
+          "top5000Breaks": 1,
+          "top5000DistUp": 1,
+          "pass": false,
+          "reason": "fails: affected=6<20 fixRate=0.33<0.75 top5000Fix=0<3 top5000Break=1>0 top5000DistUp=1>0",
+          "examplesFixed": [
+            {
+              "word": "maritime",
+              "before": "ˈmɛɹɪˌtaɪm",
+              "after": "ˈmɛɹəˌtaɪm",
+              "gold": "ˈmɛɹəˌtaɪm"
+            },
+            {
+              "word": "marijuana",
+              "before": "ˌmɛɹɪˈwɑnə",
+              "after": "ˌmɛɹəˈwɑnə",
+              "gold": "ˌmɛɹəˈwɑnə"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "arizona",
+              "before": "ˌɛɹɪˈzoʊnə",
+              "after": "ˌɛɹəˈzoʊnə",
+              "gold": "ˌɛɹɪˈzoʊnə"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 9,
+      "trainN": 4560,
+      "heldN": 506,
+      "metricsBefore": {
+        "strict": 415,
+        "lenient": 465,
+        "n": 506,
+        "distance": 162
+      },
+      "metricsAfter": {
+        "strict": 415,
+        "lenient": 465,
+        "n": 506,
+        "distance": 162
+      },
+      "mismatchCount": 956,
+      "candPoolSize": 28318,
+      "prunedSize": 832,
+      "acceptedCount": 0,
+      "passedCount": 0,
+      "heldStrictPctBefore": 82.01581027667984,
+      "heldStrictPctAfterAllAccepted": 82.01581027667984,
+      "heldStrictPctAfterPassed": 82.01581027667984,
+      "rules": [],
+      "passingRules": []
+    }
+  ],
+  "pooledCandidates": [
+    {
+      "keyStr": "r\u0000slotFromEnd+stress\u00003,unstressed\u0000ɪ\u0000ə",
+      "key": {
+        "grapheme": "r",
+        "template": "slotFromEnd+stress",
+        "value": "3,unstressed",
+        "p": "ɪ",
+        "q": "ə"
+      },
+      "foldsAccepted": 5,
+      "foldsPassed": 0,
+      "sumTrainFix": 10,
+      "sumTrainBreak": 5,
+      "sumTop5000Fix": 0,
+      "sumTop5000Break": 5,
+      "meanAffected": 6,
+      "meanFixRate": 0.3333333333333333
+    }
+  ]
+}

@@ -1,0 +1,9176 @@
+{
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "contextMode": true,
+  "minScore": 80,
+  "passed": false,
+  "sources": [
+    {
+      "name": "blue-sky",
+      "sha256": "66113282b6aac87ae9d23b46c46dda5b03656975d0b495c735698309e7a82765"
+    },
+    {
+      "name": "gps-pizza",
+      "sha256": "973c57370ff5ebdbb66b441e62333e38d68fae4dc3d31e65c8c8db6d040cc7ec"
+    },
+    {
+      "name": "hurricanes",
+      "sha256": "d0120683f1ac5624fa15b5142d952ad2a2747228853b5c6ec58cf9f378231fe8"
+    }
+  ],
+  "scores": [
+    {
+      "name": "blue-sky",
+      "lang": "en-US",
+      "total": 609,
+      "ok": 0,
+      "minor": 0,
+      "wrong": 0,
+      "score": 0,
+      "rows": [
+        {
+          "word": "Why",
+          "ipa": "hwaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Short",
+          "ipa": "ʃɔɹt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Answer",
+          "ipa": "ˈænsɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Sunlight",
+          "ipa": "ˈsʌnˌɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reaches",
+          "ipa": "ˈɹitʃəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth's",
+          "ipa": "ɝθs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "atmosphere",
+          "ipa": "ˈætməsfɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ænd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scattered",
+          "ipa": "ˈskætɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "directions",
+          "ipa": "daɪˈɹɛkʃɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "by",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "gases",
+          "ipa": "ˈɡæsəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "particles",
+          "ipa": "ˈpɑɹtəkəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scattered",
+          "ipa": "ˈskætɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "more",
+          "ipa": "mɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "than",
+          "ipa": "ðən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "other",
+          "ipa": "ˈʌðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "colors",
+          "ipa": "ˈkʌɫɝz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "because",
+          "ipa": "bɪˈkɔz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "travels",
+          "ipa": "ˈtɹævəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "as",
+          "ipa": "əz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "shorter",
+          "ipa": "ˈʃɔɹtɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "smaller",
+          "ipa": "ˈsmɔɫɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "waves",
+          "ipa": "weɪvz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "This",
+          "ipa": "ðɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "why",
+          "ipa": "hwaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "we",
+          "ipa": "wi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "see",
+          "ipa": "si",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "most",
+          "ipa": "moʊst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "time",
+          "ipa": "taɪm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "It's",
+          "ipa": "ɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "easy",
+          "ipa": "ˈizi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "see",
+          "ipa": "si",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Have",
+          "ipa": "həv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "ever",
+          "ipa": "ˈɛvɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "wondered",
+          "ipa": "ˈwʌndɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "why",
+          "ipa": "hwaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "A",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "lot",
+          "ipa": "ɫɑt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "other",
+          "ipa": "ˈʌðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "smart",
+          "ipa": "smɑɹt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "people",
+          "ipa": "ˈpipəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "have",
+          "ipa": "həv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "too",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "And",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "took",
+          "ipa": "tʊk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "long",
+          "ipa": "ɫɔŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "time",
+          "ipa": "taɪm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "figure",
+          "ipa": "ˈfɪɡjɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "out",
+          "ipa": "aʊt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Sun",
+          "ipa": "sʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "looks",
+          "ipa": "ɫʊks",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "white",
+          "ipa": "hwaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "But",
+          "ipa": "bət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "really",
+          "ipa": "ˈɹiɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "made",
+          "ipa": "meɪd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "up",
+          "ipa": "ʌp",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "colors",
+          "ipa": "ˈkʌɫɝz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rainbow",
+          "ipa": "ˈɹeɪnboʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "When",
+          "ipa": "hwən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "white",
+          "ipa": "hwaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "shines",
+          "ipa": "ʃaɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "through",
+          "ipa": "θɹu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "prism",
+          "ipa": "ˈpɹɪzəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "separated",
+          "ipa": "ˈsɛpɝˌeɪtɪd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "into",
+          "ipa": "ˈɪntu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "its",
+          "ipa": "ɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "colors",
+          "ipa": "ˈkʌɫɝz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "A",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "prism",
+          "ipa": "ˈpɹɪzəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "specially",
+          "ipa": "ˈspɛʃəɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "shaped",
+          "ipa": "ʃeɪpt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "crystal",
+          "ipa": "ˈkɹɪstəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "If",
+          "ipa": "ɪf",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "visited",
+          "ipa": "ˈvɪzɪtɪd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Land",
+          "ipa": "ɫænd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Magic",
+          "ipa": "ˈmædʒɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Windows",
+          "ipa": "ˈwɪndoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "learned",
+          "ipa": "ɫɝnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "see",
+          "ipa": "si",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "just",
+          "ipa": "dʒʌst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "one",
+          "ipa": "wʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tiny",
+          "ipa": "ˈtaɪni",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "bit",
+          "ipa": "bɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "kinds",
+          "ipa": "kaɪndz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "energy",
+          "ipa": "ˈɛnɝdʒi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "beaming",
+          "ipa": "ˈbimɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "around",
+          "ipa": "əˈɹaʊnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "universe",
+          "ipa": "ˈjunəˌvɝs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "around",
+          "ipa": "əˈɹaʊnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Like",
+          "ipa": "ɫaɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "energy",
+          "ipa": "ˈɛnɝdʒi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "passing",
+          "ipa": "ˈpæsɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "through",
+          "ipa": "θɹu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "ocean",
+          "ipa": "ˈoʊʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "energy",
+          "ipa": "ˈɛnɝdʒi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "travels",
+          "ipa": "ˈtɹævəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "waves",
+          "ipa": "weɪvz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "too",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Some",
+          "ipa": "sʌm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "travels",
+          "ipa": "ˈtɹævəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "short",
+          "ipa": "ʃɔɹt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "choppy",
+          "ipa": "ˈtʃɑpi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "waves",
+          "ipa": "weɪvz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Other",
+          "ipa": "ˈʌðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "travels",
+          "ipa": "ˈtɹævəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "long",
+          "ipa": "ɫɔŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "lazy",
+          "ipa": "ˈɫeɪzi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "waves",
+          "ipa": "weɪvz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "waves",
+          "ipa": "weɪvz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "shorter",
+          "ipa": "ˈʃɔɹtɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "than",
+          "ipa": "ðən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "red",
+          "ipa": "ɹɛd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "waves",
+          "ipa": "weɪvz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "All",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "travels",
+          "ipa": "ˈtɹævəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "straight",
+          "ipa": "stɹeɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "line",
+          "ipa": "ɫaɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "unless",
+          "ipa": "ənˈɫɛs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "something",
+          "ipa": "ˈsʌmθɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "gets",
+          "ipa": "ɡɛts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "way",
+          "ipa": "weɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "does",
+          "ipa": "dəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "one",
+          "ipa": "wʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "these",
+          "ipa": "ðiz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "things",
+          "ipa": "θɪŋz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reflect",
+          "ipa": "ɹɪˈfɫɛkt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "like",
+          "ipa": "ɫaɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "mirror",
+          "ipa": "ˈmɪɹɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "bend",
+          "ipa": "bɛnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "like",
+          "ipa": "ɫaɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "prism",
+          "ipa": "ˈpɹɪzəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "or",
+          "ipa": "əɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scatter",
+          "ipa": "ˈskætɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "like",
+          "ipa": "ɫaɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "molecules",
+          "ipa": "ˈmɑɫəkˌjuɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "gases",
+          "ipa": "ˈɡæsəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "atmosphere",
+          "ipa": "ˈætməsfɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Sunlight",
+          "ipa": "ˈsʌnˌɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reaches",
+          "ipa": "ˈɹitʃəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth's",
+          "ipa": "ɝθs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "atmosphere",
+          "ipa": "ˈætməsfɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ænd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scattered",
+          "ipa": "ˈskætɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "directions",
+          "ipa": "daɪˈɹɛkʃɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "by",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "gases",
+          "ipa": "ˈɡæsəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "particles",
+          "ipa": "ˈpɑɹtəkəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scattered",
+          "ipa": "ˈskætɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "directions",
+          "ipa": "daɪˈɹɛkʃɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "by",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tiny",
+          "ipa": "ˈtaɪni",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "molecules",
+          "ipa": "ˈmɑɫəkˌjuɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth's",
+          "ipa": "ɝθs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "atmosphere",
+          "ipa": "ˈætməsfɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scattered",
+          "ipa": "ˈskætɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "more",
+          "ipa": "mɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "than",
+          "ipa": "ðən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "other",
+          "ipa": "ˈʌðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "colors",
+          "ipa": "ˈkʌɫɝz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "because",
+          "ipa": "bɪˈkɔz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "travels",
+          "ipa": "ˈtɹævəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "as",
+          "ipa": "əz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "shorter",
+          "ipa": "ˈʃɔɹtɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "smaller",
+          "ipa": "ˈsmɔɫɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "waves",
+          "ipa": "weɪvz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "This",
+          "ipa": "ðɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "why",
+          "ipa": "hwaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "we",
+          "ipa": "wi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "see",
+          "ipa": "si",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "most",
+          "ipa": "moʊst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "time",
+          "ipa": "taɪm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Closer",
+          "ipa": "ˈkɫoʊsɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "horizon",
+          "ipa": "hɝˈaɪzən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "fades",
+          "ipa": "feɪdz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "lighter",
+          "ipa": "ˈɫaɪtɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "or",
+          "ipa": "əɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "white",
+          "ipa": "hwaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sunlight",
+          "ipa": "ˈsʌnˌɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reaching",
+          "ipa": "ˈɹitʃɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "us",
+          "ipa": "əs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "low",
+          "ipa": "ɫoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "has",
+          "ipa": "həz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "passed",
+          "ipa": "pæst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "through",
+          "ipa": "θɹu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "even",
+          "ipa": "ˈivən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "more",
+          "ipa": "mɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "than",
+          "ipa": "ðən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sunlight",
+          "ipa": "ˈsʌnˌɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reaching",
+          "ipa": "ˈɹitʃɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "us",
+          "ipa": "əs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "overhead",
+          "ipa": "ˌoʊvɝˈhɛd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "As",
+          "ipa": "əz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sunlight",
+          "ipa": "ˈsʌnˌɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "has",
+          "ipa": "həz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "passed",
+          "ipa": "pæst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "through",
+          "ipa": "θɹu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "this",
+          "ipa": "ðɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "molecules",
+          "ipa": "ˈmɑɫəkˌjuɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "have",
+          "ipa": "həv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scattered",
+          "ipa": "ˈskætɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "re",
+          "ipa": "ɹeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scattered",
+          "ipa": "ˈskætɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "many",
+          "ipa": "ˈmɛni",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "times",
+          "ipa": "taɪmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "many",
+          "ipa": "ˈmɛni",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "directions",
+          "ipa": "daɪˈɹɛkʃɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Also",
+          "ipa": "ˈɔɫsoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "surface",
+          "ipa": "ˈsɝfəs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth",
+          "ipa": "ɝθ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "has",
+          "ipa": "həz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reflected",
+          "ipa": "ɹɪˈfɫɛktɪd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scattered",
+          "ipa": "ˈskætɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "All",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "this",
+          "ipa": "ðɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scattering",
+          "ipa": "ˈskætɝɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "mixes",
+          "ipa": "ˈmɪksəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "colors",
+          "ipa": "ˈkʌɫɝz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "together",
+          "ipa": "təˈɡɛðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "again",
+          "ipa": "əˈɡeɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "so",
+          "ipa": "soʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "we",
+          "ipa": "wi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "see",
+          "ipa": "si",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "more",
+          "ipa": "mɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "white",
+          "ipa": "hwaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "less",
+          "ipa": "ɫɛs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "What",
+          "ipa": "hwət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "makes",
+          "ipa": "meɪks",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "red",
+          "ipa": "ɹɛd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sunset",
+          "ipa": "ˈsʌnˌsɛt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "As",
+          "ipa": "əz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Sun",
+          "ipa": "sʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "gets",
+          "ipa": "ɡɛts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "lower",
+          "ipa": "ˈɫoʊɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "its",
+          "ipa": "ɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "passing",
+          "ipa": "ˈpæsɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "through",
+          "ipa": "θɹu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "more",
+          "ipa": "mɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "atmosphere",
+          "ipa": "ˈætməsfɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reach",
+          "ipa": "ɹitʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Even",
+          "ipa": "ˈivən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "more",
+          "ipa": "mɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scattered",
+          "ipa": "ˈskætɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "allowing",
+          "ipa": "əˈɫaʊɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reds",
+          "ipa": "ɹɛdz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "yellows",
+          "ipa": "ˈjɛɫoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pass",
+          "ipa": "pæs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "straight",
+          "ipa": "stɹeɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "through",
+          "ipa": "θɹu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "your",
+          "ipa": "jəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eyes",
+          "ipa": "aɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Sometimes",
+          "ipa": "ˈsʌmˌtaɪmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "whole",
+          "ipa": "hoʊɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "western",
+          "ipa": "ˈhwɛstɝn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "seems",
+          "ipa": "simz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "glow",
+          "ipa": "ɡɫoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "appears",
+          "ipa": "əˈpɪɹz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "red",
+          "ipa": "ɹɛd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "because",
+          "ipa": "bɪˈkɔz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "small",
+          "ipa": "smɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "particles",
+          "ipa": "ˈpɑɹtəkəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "dust",
+          "ipa": "dʌst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pollution",
+          "ipa": "pəˈɫuʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "or",
+          "ipa": "əɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "other",
+          "ipa": "ˈʌðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "aerosols",
+          "ipa": "ˈɛɹəˌsɑɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "also",
+          "ipa": "ˈɔɫsoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scatter",
+          "ipa": "ˈskætɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "leaving",
+          "ipa": "ˈɫivɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "more",
+          "ipa": "mɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "purely",
+          "ipa": "ˈpjʊɹɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "red",
+          "ipa": "ɹɛd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "yellow",
+          "ipa": "ˈjɛɫoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "go",
+          "ipa": "ɡoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "through",
+          "ipa": "θɹu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "atmosphere",
+          "ipa": "ˈætməsfɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "other",
+          "ipa": "ˈʌðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "planets",
+          "ipa": "ˈpɫænəts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "too",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "It",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "depends",
+          "ipa": "dɪˈpɛndz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "what's",
+          "ipa": "hwʌts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "atmosphere",
+          "ipa": "ˈætməsfɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "For",
+          "ipa": "fəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "example",
+          "ipa": "ɪɡˈzæmpəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Mars",
+          "ipa": "mɑɹz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "has",
+          "ipa": "həz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "very",
+          "ipa": "ˈvɛɹi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "thin",
+          "ipa": "θɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "atmosphere",
+          "ipa": "ˈætməsfɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "made",
+          "ipa": "meɪd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "mostly",
+          "ipa": "ˈmoʊsɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "carbon",
+          "ipa": "ˈkɑɹbən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "dioxide",
+          "ipa": "daɪˈɑksaɪd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "filled",
+          "ipa": "fɪɫd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "with",
+          "ipa": "wɪð",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "fine",
+          "ipa": "faɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "dust",
+          "ipa": "dʌst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "particles",
+          "ipa": "ˈpɑɹtəkəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "These",
+          "ipa": "ðiz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "fine",
+          "ipa": "faɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "particles",
+          "ipa": "ˈpɑɹtəkəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scatter",
+          "ipa": "ˈskætɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "light",
+          "ipa": "ɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "differently",
+          "ipa": "ˌdɪfɝˈɛntɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "than",
+          "ipa": "ðən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "gases",
+          "ipa": "ˈɡæsəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "particles",
+          "ipa": "ˈpɑɹtəkəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth's",
+          "ipa": "ɝθs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "atmosphere",
+          "ipa": "ˈætməsfɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Photos",
+          "ipa": "ˈfoʊtoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "NASA's",
+          "ipa": "ˈɛnˈeɪˈɛsˈeɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rovers",
+          "ipa": "ˈɹoʊvɝz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "landers",
+          "ipa": "ˈɫændɝz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Mars",
+          "ipa": "mɑɹz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "have",
+          "ipa": "həv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "shown",
+          "ipa": "ʃoʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "us",
+          "ipa": "əs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "at",
+          "ipa": "ət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sunset",
+          "ipa": "ˈsʌnˌsɛt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "there",
+          "ipa": "ðɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "actually",
+          "ipa": "ˈæktʃuəɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "opposite",
+          "ipa": "ˈɑpəzət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "what",
+          "ipa": "hwʌt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you'd",
+          "ipa": "jud",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "experience",
+          "ipa": "ɪksˈpɪɹiəns",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth",
+          "ipa": "ɝθ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "During",
+          "ipa": "ˈdʊɹɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "daytime",
+          "ipa": "ˈdeɪˌtaɪm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Martian",
+          "ipa": "ˈmɑɹʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "takes",
+          "ipa": "teɪks",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "an",
+          "ipa": "ən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "orange",
+          "ipa": "ˈɔɹəndʒ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "or",
+          "ipa": "əɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reddish",
+          "ipa": "ˈɹɛdɪʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "color",
+          "ipa": "ˈkʌɫɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "But",
+          "ipa": "bət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "as",
+          "ipa": "əz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Sun",
+          "ipa": "sʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sets",
+          "ipa": "sɛts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "around",
+          "ipa": "əˈɹaʊnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Sun",
+          "ipa": "sʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "begins",
+          "ipa": "bɪˈɡɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "take",
+          "ipa": "teɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "gray",
+          "ipa": "ɡɹeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tone",
+          "ipa": "toʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "top",
+          "ipa": "tɑp",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "image",
+          "ipa": "ˈɪmɪdʒ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "shows",
+          "ipa": "ʃoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "orange",
+          "ipa": "ˈɔɹəndʒ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "colored",
+          "ipa": "ˈkʌɫɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Martian",
+          "ipa": "ˈmɑɹʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "during",
+          "ipa": "ˈdʊɹɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "daytime",
+          "ipa": "ˈdeɪˌtaɪm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "bottom",
+          "ipa": "ˈbɑtəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "image",
+          "ipa": "ˈɪmɪdʒ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "shows",
+          "ipa": "ʃoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tinted",
+          "ipa": "ˈtɪntɪd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "at",
+          "ipa": "ət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sunset",
+          "ipa": "ˈsʌnˌsɛt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Both",
+          "ipa": "boʊθ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "images",
+          "ipa": "ˈɪmɪdʒɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "were",
+          "ipa": "wɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "captured",
+          "ipa": "ˈkæptʃɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "by",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "NASA's",
+          "ipa": "ˈɛnˈeɪˈɛsˈeɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Mars",
+          "ipa": "mɑɹz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Pathfinder",
+          "ipa": "ˈpæθˌfaɪndɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Lander",
+          "ipa": "ˈɫændɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Credit",
+          "ipa": "ˈkɹɛdɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "NASA",
+          "ipa": "ˈɛnˈeɪˈɛsˈeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "JPL",
+          "ipa": "ˈdʒeɪˈpiˈɛɫ",
+          "verdict": "?",
+          "reason": ""
+        }
+      ]
+    },
+    {
+      "name": "gps-pizza",
+      "lang": "en-US",
+      "total": 328,
+      "ok": 0,
+      "minor": 0,
+      "wrong": 0,
+      "score": 0,
+      "rows": [
+        {
+          "word": "How",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Does",
+          "ipa": "dəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "GPS",
+          "ipa": "ˌɡipiˈɛs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Work",
+          "ipa": "wɝk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "It's",
+          "ipa": "ɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Friday",
+          "ipa": "ˈfɹaɪˌdeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "night",
+          "ipa": "naɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "want",
+          "ipa": "wɑnt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "some",
+          "ipa": "sʌm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pizza",
+          "ipa": "ˈpitsə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Fast",
+          "ipa": "fæst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "But",
+          "ipa": "bət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "somebody",
+          "ipa": "ˈsʌmˌbɑdi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "going",
+          "ipa": "ˈɡoʊɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "have",
+          "ipa": "həv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pick",
+          "ipa": "pɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pizza",
+          "ipa": "ˈpitsə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "up",
+          "ipa": "ʌp",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "means",
+          "ipa": "minz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "they",
+          "ipa": "ðeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "need",
+          "ipa": "nid",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "know",
+          "ipa": "noʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "how",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "get",
+          "ipa": "ɡɛt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "closest",
+          "ipa": "ˈkɫoʊsəst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pizzeria",
+          "ipa": "ˌpitsɝˈiə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "In",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "this",
+          "ipa": "ðɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "modern",
+          "ipa": "ˈmɑdɝn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "world",
+          "ipa": "wɝɫd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "no",
+          "ipa": "noʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "problem",
+          "ipa": "ˈpɹɑbɫəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Just",
+          "ipa": "dʒʌst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "plug",
+          "ipa": "pɫʌɡ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pizza'",
+          "ipa": "ˈpitsə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "into",
+          "ipa": "ˈɪntu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "smartphone",
+          "ipa": "ˈsmɑɹtˌfoʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tells",
+          "ipa": "tɛɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "exactly",
+          "ipa": "ɪɡˈzæktɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "how",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "get",
+          "ipa": "ɡɛt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "there",
+          "ipa": "ðɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "But",
+          "ipa": "bət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "how",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "exactly",
+          "ipa": "ɪɡˈzæktɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "does",
+          "ipa": "dəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "phone",
+          "ipa": "foʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "know",
+          "ipa": "noʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "where",
+          "ipa": "hwəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Something",
+          "ipa": "ˈsʌmθɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "called",
+          "ipa": "kɔɫd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Global",
+          "ipa": "ˈɡɫoʊbəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Positioning",
+          "ipa": "pəˈzɪʃənɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "System",
+          "ipa": "ˈsɪstəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "or",
+          "ipa": "əɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "GPS",
+          "ipa": "ˌɡipiˈɛs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tells",
+          "ipa": "tɛɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that's",
+          "ipa": "ðəts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "how",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "When",
+          "ipa": "hwən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "your",
+          "ipa": "jəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "phone",
+          "ipa": "foʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tells",
+          "ipa": "tɛɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "where",
+          "ipa": "hwəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "may",
+          "ipa": "meɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "actually",
+          "ipa": "ˈæktʃuəɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "be",
+          "ipa": "bi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "listening",
+          "ipa": "ˈɫɪsənɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "signals",
+          "ipa": "ˈsɪɡnəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "satellites",
+          "ipa": "ˈsætəˌɫaɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "high",
+          "ipa": "haɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "up",
+          "ipa": "ʌp",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "space",
+          "ipa": "speɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "There",
+          "ipa": "ðɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "over",
+          "ipa": "ˈoʊvɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "thirty",
+          "ipa": "ˈθɝˌdi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "satellites",
+          "ipa": "ˈsætəˌɫaɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "used",
+          "ipa": "just",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "for",
+          "ipa": "fəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "GPS",
+          "ipa": "ˌɡipiˈɛs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "orbiting",
+          "ipa": "ˈɔɹbətɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "over",
+          "ipa": "ˈoʊvɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sixteen",
+          "ipa": "ˌsɪksˈtin",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "zero",
+          "ipa": "ˈziɹoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "miles",
+          "ipa": "ˈmaɪəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "twenty",
+          "ipa": "ˈtwɛnti",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "six",
+          "ipa": "sɪks",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "000km",
+          "ipa": "ˈkm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "above",
+          "ipa": "əˈbʌv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth",
+          "ipa": "ɝθ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Your",
+          "ipa": "jəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "phone",
+          "ipa": "foʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "just",
+          "ipa": "dʒʌst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "needs",
+          "ipa": "nidz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "figure",
+          "ipa": "ˈfɪɡjɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "out",
+          "ipa": "aʊt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "how",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "far",
+          "ipa": "fɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "away",
+          "ipa": "əˈweɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "some",
+          "ipa": "sʌm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "them",
+          "ipa": "ðɛm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "If",
+          "ipa": "ɪf",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "your",
+          "ipa": "jəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "phone",
+          "ipa": "foʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "knows",
+          "ipa": "noʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "how",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "far",
+          "ipa": "fɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "away",
+          "ipa": "əˈweɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "four",
+          "ipa": "fɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "satellites",
+          "ipa": "ˈsætəˌɫaɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "then",
+          "ipa": "ðɛn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "there",
+          "ipa": "ðɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "only",
+          "ipa": "ˈoʊnɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "one",
+          "ipa": "wʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "place",
+          "ipa": "pɫeɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth",
+          "ipa": "ɝθ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "can",
+          "ipa": "kən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "be",
+          "ipa": "bi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Your",
+          "ipa": "jəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "phone",
+          "ipa": "foʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "or",
+          "ipa": "əɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "any",
+          "ipa": "ˈɛni",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "device",
+          "ipa": "dɪˈvaɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "with",
+          "ipa": "wɪð",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "GPS",
+          "ipa": "ˌɡipiˈɛs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "programmed",
+          "ipa": "ˈpɹoʊˌɡɹæmd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "know",
+          "ipa": "noʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "where",
+          "ipa": "hwəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "satellites",
+          "ipa": "ˈsætəˌɫaɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "at",
+          "ipa": "ət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "any",
+          "ipa": "ˈɛni",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "given",
+          "ipa": "ˈɡɪvən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "time",
+          "ipa": "taɪm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "phone",
+          "ipa": "foʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "uses",
+          "ipa": "ˈjuzəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "information",
+          "ipa": "ˌɪnfɝˈmeɪʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "along",
+          "ipa": "əˈɫɔŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "with",
+          "ipa": "wɪð",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "amount",
+          "ipa": "əˈmaʊnt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "time",
+          "ipa": "taɪm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "signal",
+          "ipa": "ˈsɪɡnəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "took",
+          "ipa": "tʊk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reach",
+          "ipa": "ɹitʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "figure",
+          "ipa": "ˈfɪɡjɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "out",
+          "ipa": "aʊt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "how",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "far",
+          "ipa": "fɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "away",
+          "ipa": "əˈweɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "satellites",
+          "ipa": "ˈsætəˌɫaɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "By",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "doing",
+          "ipa": "duɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "computes",
+          "ipa": "kəmˈpjuts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "its",
+          "ipa": "ɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "location",
+          "ipa": "ˌɫoʊˈkeɪʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "So",
+          "ipa": "soʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "when",
+          "ipa": "hwən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "search",
+          "ipa": "sɝtʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "for",
+          "ipa": "fəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "nearest",
+          "ipa": "ˈnɪɹəst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pizza",
+          "ipa": "ˈpitsə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "place",
+          "ipa": "pɫeɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "your",
+          "ipa": "jəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "smartphone",
+          "ipa": "ˈsmɑɹtˌfoʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "this",
+          "ipa": "ðɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "what",
+          "ipa": "hwət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "your",
+          "ipa": "jəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "phone",
+          "ipa": "foʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "thinking",
+          "ipa": "ˈθɪŋkɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "What",
+          "ipa": "hwət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "satellites",
+          "ipa": "ˈsætəˌɫaɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "talking",
+          "ipa": "ˈtɔkɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "me",
+          "ipa": "mi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "right",
+          "ipa": "ɹaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "now",
+          "ipa": "naʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Hey",
+          "ipa": "heɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "there",
+          "ipa": "ðɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "satellites",
+          "ipa": "ˈsætəˌɫaɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "I",
+          "ipa": "aɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "know",
+          "ipa": "noʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "guys",
+          "ipa": "ɡʌɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "And",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "I",
+          "ipa": "aɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "know",
+          "ipa": "noʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "where",
+          "ipa": "hwəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sky",
+          "ipa": "skaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "right",
+          "ipa": "ɹaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "now",
+          "ipa": "naʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "too",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Let",
+          "ipa": "ɫɛt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "me",
+          "ipa": "mi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "listen",
+          "ipa": "ˈɫɪsən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "your",
+          "ipa": "jəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "signal",
+          "ipa": "ˈsɪɡnəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "figure",
+          "ipa": "ˈfɪɡjɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "out",
+          "ipa": "aʊt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "how",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "far",
+          "ipa": "fɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "away",
+          "ipa": "əˈweɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "I",
+          "ipa": "aɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "am",
+          "ipa": "əm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "each",
+          "ipa": "itʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Oh",
+          "ipa": "oʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "I",
+          "ipa": "aɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "must",
+          "ipa": "məst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "be",
+          "ipa": "bi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "right",
+          "ipa": "ɹaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "here",
+          "ipa": "hɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "There's",
+          "ipa": "ðɛɹz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "no",
+          "ipa": "noʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "other",
+          "ipa": "ˈʌðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "place",
+          "ipa": "pɫeɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "right",
+          "ipa": "ɹaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "distance",
+          "ipa": "ˈdɪstəns",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "away",
+          "ipa": "əˈweɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "each",
+          "ipa": "itʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "OK",
+          "ipa": "ˈoʊˈkeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "let",
+          "ipa": "ɫɛt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "me",
+          "ipa": "mi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "check",
+          "ipa": "tʃɛk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "internet",
+          "ipa": "ˈɪntɝˌnɛt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "see",
+          "ipa": "si",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "what",
+          "ipa": "hwət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pizza",
+          "ipa": "ˈpitsə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "places",
+          "ipa": "ˈpɫeɪsəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "near",
+          "ipa": "nɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "me",
+          "ipa": "mi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "And",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "happens",
+          "ipa": "ˈhæpənz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "an",
+          "ipa": "ən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "instant",
+          "ipa": "ˈɪnstənt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Good",
+          "ipa": "ɡʊd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "thing",
+          "ipa": "θɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "too",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "You're",
+          "ipa": "juɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "only",
+          "ipa": "ˈoʊnɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "getting",
+          "ipa": "ˈɡɛtɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hungrier",
+          "ipa": "ˈhʌŋɡɹiɝ",
+          "verdict": "?",
+          "reason": ""
+        }
+      ]
+    },
+    {
+      "name": "hurricanes",
+      "lang": "en-US",
+      "total": 583,
+      "ok": 0,
+      "minor": 0,
+      "wrong": 0,
+      "score": 0,
+      "rows": [
+        {
+          "word": "How",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Do",
+          "ipa": "də",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Hurricanes",
+          "ipa": "ˈhɝəˌkeɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Form",
+          "ipa": "fɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Hurricane",
+          "ipa": "ˈhɝəˌkeɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Fran",
+          "ipa": "fɹæn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Image",
+          "ipa": "ˈɪmɪdʒ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "made",
+          "ipa": "meɪd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "GOES",
+          "ipa": "ɡoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "satellite",
+          "ipa": "ˈsætəˌɫaɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "data",
+          "ipa": "ˈdætə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Hurricanes",
+          "ipa": "ˈhɝəˌkeɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "most",
+          "ipa": "moʊst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "violent",
+          "ipa": "ˈvaɪəɫənt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "storms",
+          "ipa": "stɔɹmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth",
+          "ipa": "ɝθ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "People",
+          "ipa": "ˈpipəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "call",
+          "ipa": "kɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "these",
+          "ipa": "ðiz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "storms",
+          "ipa": "stɔɹmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "by",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "other",
+          "ipa": "ˈʌðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "names",
+          "ipa": "neɪmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "such",
+          "ipa": "sʌtʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "as",
+          "ipa": "əz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "typhoons",
+          "ipa": "ˈtaɪfunz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "or",
+          "ipa": "əɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cyclones",
+          "ipa": "ˈsaɪkɫoʊnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "depending",
+          "ipa": "dɪˈpɛndɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "where",
+          "ipa": "hwɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "they",
+          "ipa": "ðeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "occur",
+          "ipa": "əˈkɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "scientific",
+          "ipa": "saɪənˈtɪfɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "term",
+          "ipa": "tɝm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "for",
+          "ipa": "fəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "these",
+          "ipa": "ðiz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "storms",
+          "ipa": "stɔɹmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tropical",
+          "ipa": "ˈtɹɑpɪkəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cyclone",
+          "ipa": "ˈsaɪkɫoʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Only",
+          "ipa": "ˈoʊnɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tropical",
+          "ipa": "ˈtɹɑpɪkəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cyclones",
+          "ipa": "ˈsaɪkɫoʊnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "form",
+          "ipa": "fɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "over",
+          "ipa": "ˈoʊvɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Atlantic",
+          "ipa": "ətˈɫæntɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Ocean",
+          "ipa": "ˈoʊʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "or",
+          "ipa": "əɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eastern",
+          "ipa": "ˈistɝn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Pacific",
+          "ipa": "pəˈsɪfɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Ocean",
+          "ipa": "ˈoʊʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "called",
+          "ipa": "kɔɫd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hurricanes",
+          "ipa": "ˈhɝəˌkeɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Whatever",
+          "ipa": "ˌhwʌˈtɛvɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "they",
+          "ipa": "ðeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "called",
+          "ipa": "kɔɫd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tropical",
+          "ipa": "ˈtɹɑpɪkəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cyclones",
+          "ipa": "ˈsaɪkɫoʊnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "all",
+          "ipa": "ɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "form",
+          "ipa": "fɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "same",
+          "ipa": "seɪm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "way",
+          "ipa": "weɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Tropical",
+          "ipa": "ˈtɹɑpɪkəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cyclones",
+          "ipa": "ˈsaɪkɫoʊnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "like",
+          "ipa": "ɫaɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "giant",
+          "ipa": "ˈdʒaɪənt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "engines",
+          "ipa": "ˈɛndʒənz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "use",
+          "ipa": "juz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "warm",
+          "ipa": "wɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "moist",
+          "ipa": "mɔɪst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "as",
+          "ipa": "əz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "fuel",
+          "ipa": "ˈfjuəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "That",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "why",
+          "ipa": "hwaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "they",
+          "ipa": "ðeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "form",
+          "ipa": "fɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "only",
+          "ipa": "ˈoʊnɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "over",
+          "ipa": "ˈoʊvɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "warm",
+          "ipa": "wɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "ocean",
+          "ipa": "ˈoʊʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "waters",
+          "ipa": "ˈwɔtɝz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "near",
+          "ipa": "nɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "equator",
+          "ipa": "ɪˈkweɪtɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "warm",
+          "ipa": "wɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "moist",
+          "ipa": "mɔɪst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "over",
+          "ipa": "ˈoʊvɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "ocean",
+          "ipa": "ˈoʊʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rises",
+          "ipa": "ˈɹaɪzəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "upward",
+          "ipa": "ˈʌpwɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "near",
+          "ipa": "nɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "surface",
+          "ipa": "ˈsɝfəs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Because",
+          "ipa": "bɪˈkɔz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "this",
+          "ipa": "ðɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "moves",
+          "ipa": "muvz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "up",
+          "ipa": "ʌp",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "away",
+          "ipa": "əˈweɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "surface",
+          "ipa": "ˈsɝfəs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "there",
+          "ipa": "ðɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "less",
+          "ipa": "ɫɛs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "left",
+          "ipa": "ɫɛft",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "near",
+          "ipa": "nɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "surface",
+          "ipa": "ˈsɝfəs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Another",
+          "ipa": "əˈnʌðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "way",
+          "ipa": "weɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "say",
+          "ipa": "seɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "same",
+          "ipa": "seɪm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "thing",
+          "ipa": "θɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "warm",
+          "ipa": "wɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rises",
+          "ipa": "ˈɹaɪzəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "causing",
+          "ipa": "ˈkɔzɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "an",
+          "ipa": "ən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "area",
+          "ipa": "ˈɛɹiə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "lower",
+          "ipa": "ˈɫoʊɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pressure",
+          "ipa": "ˈpɹɛʃɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "below",
+          "ipa": "biˈɫoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "A",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cumulonimbus",
+          "ipa": "ˌkjumjəɫəˈnɪmbəs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cloud",
+          "ipa": "kɫaʊd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "A",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tropical",
+          "ipa": "ˈtɹɑpɪkəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cyclone",
+          "ipa": "ˈsaɪkɫoʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "has",
+          "ipa": "həz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "so",
+          "ipa": "soʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "many",
+          "ipa": "ˈmɛni",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "these",
+          "ipa": "ðiz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "they",
+          "ipa": "ðeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "form",
+          "ipa": "fɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "huge",
+          "ipa": "hjudʒ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "circular",
+          "ipa": "ˈsɝkjəɫɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "bands",
+          "ipa": "bændz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "surrounding",
+          "ipa": "sɝˈaʊndɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "areas",
+          "ipa": "ˈɛɹiəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "with",
+          "ipa": "wɪð",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "higher",
+          "ipa": "ˈhaɪɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pressure",
+          "ipa": "ˈpɹɛʃɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pushes",
+          "ipa": "ˈpʊʃəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "low",
+          "ipa": "ɫoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pressure",
+          "ipa": "ˈpɹɛʃɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "area",
+          "ipa": "ˈɛɹiə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Then",
+          "ipa": "ðɛn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "new",
+          "ipa": "nu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "becomes",
+          "ipa": "bɪˈkʌmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "warm",
+          "ipa": "wɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "moist",
+          "ipa": "mɔɪst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rises",
+          "ipa": "ˈɹaɪzəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "too",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "As",
+          "ipa": "əz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "warm",
+          "ipa": "wɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "continues",
+          "ipa": "kənˈtɪnjuz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rise",
+          "ipa": "ɹaɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "surrounding",
+          "ipa": "sɝˈaʊndɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "swirls",
+          "ipa": "swɝɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "take",
+          "ipa": "teɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "its",
+          "ipa": "ɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "place",
+          "ipa": "pɫeɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "As",
+          "ipa": "əz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "warmed",
+          "ipa": "wɔɹmd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "moist",
+          "ipa": "mɔɪst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rises",
+          "ipa": "ˈɹaɪzəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cools",
+          "ipa": "kuɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "off",
+          "ipa": "ɔf",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "water",
+          "ipa": "ˈwɔtɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "forms",
+          "ipa": "fɔɹmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "clouds",
+          "ipa": "kɫaʊdz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "whole",
+          "ipa": "hoʊɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "system",
+          "ipa": "ˈsɪstəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "clouds",
+          "ipa": "kɫaʊdz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "wind",
+          "ipa": "wɪnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "spins",
+          "ipa": "spɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "grows",
+          "ipa": "ɡɹoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "fed",
+          "ipa": "fɛd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "by",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "ocean's",
+          "ipa": "ˈoʊʃənz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "heat",
+          "ipa": "hit",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "water",
+          "ipa": "ˈwɔtɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "evaporating",
+          "ipa": "iˈvæpɝˌeɪtɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "surface",
+          "ipa": "ˈsɝfəs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Storms",
+          "ipa": "stɔɹmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "that",
+          "ipa": "ðət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "form",
+          "ipa": "fɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "north",
+          "ipa": "nɔɹθ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "equator",
+          "ipa": "ɪˈkweɪtɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "spin",
+          "ipa": "spɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "counterclockwise",
+          "ipa": "ˌkaʊntɝˈkɫɔkwaɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Storms",
+          "ipa": "stɔɹmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "south",
+          "ipa": "saʊθ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "equator",
+          "ipa": "ɪˈkweɪtɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "spin",
+          "ipa": "spɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "clockwise",
+          "ipa": "ˈkɫɑkˌwaɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "This",
+          "ipa": "ðɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "difference",
+          "ipa": "ˈdɪfɝəns",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "because",
+          "ipa": "bɪˈkɔz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth's",
+          "ipa": "ɝθs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rotation",
+          "ipa": "ˌɹoʊˈteɪʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "its",
+          "ipa": "ɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "axis",
+          "ipa": "ˈæksəs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "As",
+          "ipa": "əz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "storm",
+          "ipa": "stɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "system",
+          "ipa": "ˈsɪstəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rotates",
+          "ipa": "ˈɹoʊteɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "faster",
+          "ipa": "ˈfæstɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "faster",
+          "ipa": "ˈfæstɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "an",
+          "ipa": "ən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eye",
+          "ipa": "aɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "forms",
+          "ipa": "fɔɹmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "center",
+          "ipa": "ˈsɛntɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "It",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "very",
+          "ipa": "ˈvɛɹi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "calm",
+          "ipa": "kɑɫm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "clear",
+          "ipa": "kɫɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eye",
+          "ipa": "aɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "with",
+          "ipa": "wɪð",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "very",
+          "ipa": "ˈvɛɹi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "low",
+          "ipa": "ɫoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pressure",
+          "ipa": "ˈpɹɛʃɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Higher",
+          "ipa": "ˈhaɪɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "pressure",
+          "ipa": "ˈpɹɛʃɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "above",
+          "ipa": "əˈbʌv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "flows",
+          "ipa": "fɫoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "down",
+          "ipa": "daʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "into",
+          "ipa": "ˈɪntu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eye",
+          "ipa": "aɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "If",
+          "ipa": "ɪf",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "you",
+          "ipa": "ju",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "could",
+          "ipa": "kəd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "slice",
+          "ipa": "sɫaɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "into",
+          "ipa": "ˈɪntu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tropical",
+          "ipa": "ˈtɹɑpɪkəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cyclone",
+          "ipa": "ˈsaɪkɫoʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "it",
+          "ipa": "ɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "would",
+          "ipa": "wəd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "look",
+          "ipa": "ɫʊk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "something",
+          "ipa": "ˈsʌmθɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "like",
+          "ipa": "ɫaɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "this",
+          "ipa": "ðɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "small",
+          "ipa": "smɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "red",
+          "ipa": "ɹɛd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "arrows",
+          "ipa": "ˈæɹoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "show",
+          "ipa": "ʃoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "warm",
+          "ipa": "wɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "moist",
+          "ipa": "mɔɪst",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rising",
+          "ipa": "ˈɹaɪzɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "ocean's",
+          "ipa": "ˈoʊʃənz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "surface",
+          "ipa": "ˈsɝfəs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "forming",
+          "ipa": "ˈfɔɹmɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "clouds",
+          "ipa": "kɫaʊdz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "bands",
+          "ipa": "bændz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "around",
+          "ipa": "əˈɹaʊnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eye",
+          "ipa": "aɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "blue",
+          "ipa": "bɫu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "arrows",
+          "ipa": "ˈæɹoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "show",
+          "ipa": "ʃoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "how",
+          "ipa": "haʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cool",
+          "ipa": "kuɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "dry",
+          "ipa": "dɹaɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "air",
+          "ipa": "ɛɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "sinks",
+          "ipa": "sɪŋks",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eye",
+          "ipa": "aɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "between",
+          "ipa": "bɪˈtwin",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "bands",
+          "ipa": "bændz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "clouds",
+          "ipa": "kɫaʊdz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "large",
+          "ipa": "ɫɑɹdʒ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "red",
+          "ipa": "ɹɛd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "arrows",
+          "ipa": "ˈæɹoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "show",
+          "ipa": "ʃoʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rotation",
+          "ipa": "ˌɹoʊˈteɪʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rising",
+          "ipa": "ˈɹaɪzɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "bands",
+          "ipa": "bændz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "clouds",
+          "ipa": "kɫaʊdz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "When",
+          "ipa": "hwən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "winds",
+          "ipa": "wɪndz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "in",
+          "ipa": "ɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rotating",
+          "ipa": "ˈɹoʊteɪtɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "storm",
+          "ipa": "stɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reach",
+          "ipa": "ɹitʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "thirty",
+          "ipa": "ˈθɝˌdi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "nine",
+          "ipa": "naɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "mph",
+          "ipa": "ˌɛmˌpiˈeɪtʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "storm",
+          "ipa": "stɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "called",
+          "ipa": "kɔɫd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tropical",
+          "ipa": "ˈtɹɑpɪkəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "storm",
+          "ipa": "stɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "And",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "when",
+          "ipa": "hwən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "wind",
+          "ipa": "wɪnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "speeds",
+          "ipa": "spidz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "reach",
+          "ipa": "ɹitʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "seventy",
+          "ipa": "ˈsɛvənti",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "four",
+          "ipa": "fɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "mph",
+          "ipa": "ˌɛmˌpiˈeɪtʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "storm",
+          "ipa": "stɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "is",
+          "ipa": "ɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "officially",
+          "ipa": "əˈfɪʃəɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "a",
+          "ipa": "ə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "tropical",
+          "ipa": "ˈtɹɑpɪkəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cyclone",
+          "ipa": "ˈsaɪkɫoʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "or",
+          "ipa": "əɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hurricane",
+          "ipa": "ˈhɝəˌkeɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Tropical",
+          "ipa": "ˈtɹɑpɪkəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cyclones",
+          "ipa": "ˈsaɪkɫoʊnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "usually",
+          "ipa": "ˈjuʒəwəɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "weaken",
+          "ipa": "ˈwikən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "when",
+          "ipa": "hwən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "they",
+          "ipa": "ðeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hit",
+          "ipa": "hɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "land",
+          "ipa": "ɫænd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "because",
+          "ipa": "bɪˈkɔz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "they",
+          "ipa": "ðeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "are",
+          "ipa": "ɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "no",
+          "ipa": "noʊ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "longer",
+          "ipa": "ˈɫɔŋɡɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "being",
+          "ipa": "biɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "fed",
+          "ipa": "fɛd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "by",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "energy",
+          "ipa": "ˈɛnɝdʒi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "warm",
+          "ipa": "wɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "ocean",
+          "ipa": "ˈoʊʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "waters",
+          "ipa": "ˈwɔtɝz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "However",
+          "ipa": "ˌhaʊˈɛvɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "they",
+          "ipa": "ðeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "often",
+          "ipa": "ˈɔfən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "move",
+          "ipa": "muv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "far",
+          "ipa": "fɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "inland",
+          "ipa": "ˈɪnˌɫænd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "dumping",
+          "ipa": "ˈdʌmpɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "many",
+          "ipa": "ˈmɛni",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "inches",
+          "ipa": "ˈɪntʃəz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "rain",
+          "ipa": "ɹeɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "causing",
+          "ipa": "ˈkɔzɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "lots",
+          "ipa": "ɫɑts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "wind",
+          "ipa": "wɪnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "damage",
+          "ipa": "ˈdæmɪdʒ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "before",
+          "ipa": "ˌbiˈfɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "they",
+          "ipa": "ðeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "die",
+          "ipa": "daɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "out",
+          "ipa": "aʊt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "completely",
+          "ipa": "kəmˈpɫitɫi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Tropical",
+          "ipa": "ˈtɹɑpɪkəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "cyclone",
+          "ipa": "ˈsaɪkɫoʊn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "categories",
+          "ipa": "ˈkætəˌɡɔɹiz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Category",
+          "ipa": "ˈkætəˌɡɔɹi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Wind",
+          "ipa": "wɪnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Speed",
+          "ipa": "spid",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "mph",
+          "ipa": "ˌɛmˌpiˈeɪtʃ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Damage",
+          "ipa": "ˈdæmɪdʒ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "at",
+          "ipa": "ət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Landfall",
+          "ipa": "ˈɫændˌfɔɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Storm",
+          "ipa": "stɔɹm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Surge",
+          "ipa": "sɝdʒ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "feet",
+          "ipa": "fit",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "one",
+          "ipa": "wʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "seventy",
+          "ipa": "ˈsɛvənti",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "four",
+          "ipa": "fɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "ninety",
+          "ipa": "ˈnaɪnti",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "five",
+          "ipa": "faɪv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Minimal",
+          "ipa": "ˈmɪnəməɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "four",
+          "ipa": "fɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "five",
+          "ipa": "faɪv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "two",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "ninety",
+          "ipa": "ˈnaɪnti",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "six",
+          "ipa": "sɪks",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "one",
+          "ipa": "wʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hundred",
+          "ipa": "ˈhʌndɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "ten",
+          "ipa": "tɛn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Moderate",
+          "ipa": "ˈmɑdɝət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "six",
+          "ipa": "sɪks",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eight",
+          "ipa": "eɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "three",
+          "ipa": "θɹi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "one",
+          "ipa": "wʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hundred",
+          "ipa": "ˈhʌndɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eleven",
+          "ipa": "ˈiɫɛvən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "one",
+          "ipa": "wʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hundred",
+          "ipa": "ˈhʌndɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "twenty",
+          "ipa": "ˈtwɛnti",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "nine",
+          "ipa": "naɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Extensive",
+          "ipa": "ɪksˈtɛnsɪv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "nine",
+          "ipa": "naɪn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "twelve",
+          "ipa": "twɛɫv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "four",
+          "ipa": "fɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "one",
+          "ipa": "wʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hundred",
+          "ipa": "ˈhʌndɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "thirty",
+          "ipa": "ˈθɝˌdi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "one",
+          "ipa": "wʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hundred",
+          "ipa": "ˈhʌndɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "fifty",
+          "ipa": "ˈfɪfti",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "six",
+          "ipa": "sɪks",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Extreme",
+          "ipa": "ɛkˈstɹim",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "thirteen",
+          "ipa": "ˌθɝˈtin",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eighteen",
+          "ipa": "ˌeɪˈtin",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "five",
+          "ipa": "faɪv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "one",
+          "ipa": "wʌn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hundred",
+          "ipa": "ˈhʌndɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "fifty",
+          "ipa": "ˈfɪfti",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "seven",
+          "ipa": "ˈsɛvən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "or",
+          "ipa": "əɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "higher",
+          "ipa": "ˈhaɪɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Catastrophic",
+          "ipa": "ˌkætəˈstɹɑfɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "nineteen",
+          "ipa": "ˌnaɪnˈtin",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "The",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "two",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "GOES",
+          "ipa": "ɡoʊz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "satellites",
+          "ipa": "ˈsætəˌɫaɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "keep",
+          "ipa": "kip",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "their",
+          "ipa": "ðəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "eyes",
+          "ipa": "aɪz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "on",
+          "ipa": "ɑn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hurricanes",
+          "ipa": "ˈhɝəˌkeɪnz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "from",
+          "ipa": "fɹəm",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "far",
+          "ipa": "fɑɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "above",
+          "ipa": "əˈbʌv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Earth's",
+          "ipa": "ɝθs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "surface",
+          "ipa": "ˈsɝfəs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "twenty",
+          "ipa": "ˈtwɛnti",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "two",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "three",
+          "ipa": "θɹi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hundred",
+          "ipa": "ˈhʌndɝd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "miles",
+          "ipa": "ˈmaɪəɫz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "above",
+          "ipa": "əˈbʌv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "to",
+          "ipa": "tu",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "be",
+          "ipa": "bi",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "exact",
+          "ipa": "ɪɡˈzækt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Learn",
+          "ipa": "ɫɝn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "more",
+          "ipa": "mɔɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "about",
+          "ipa": "əˈbaʊt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "this",
+          "ipa": "ðɪs",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "kind",
+          "ipa": "kaɪnd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "of",
+          "ipa": "əv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "orbit",
+          "ipa": "ˈɔɹbət",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "These",
+          "ipa": "ðiz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "satellites",
+          "ipa": "ˈsætəˌɫaɪts",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "built",
+          "ipa": "bɪɫt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "by",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "NASA",
+          "ipa": "ˈɛnˈeɪˈɛsˈeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "operated",
+          "ipa": "ˈɑpɝˌeɪtɪd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "by",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "the",
+          "ipa": "ðə",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "National",
+          "ipa": "ˈnæʃənəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Oceanic",
+          "ipa": "ˌoʊʃiˈænɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ænd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Atmospheric",
+          "ipa": "ˌætməsˈfɛɹɪk",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "Administration",
+          "ipa": "ædˌmɪnɪˈstɹeɪʃən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "NOAA",
+          "ipa": "ˈɛnˈoʊˈeɪˈeɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "save",
+          "ipa": "seɪv",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "lives",
+          "ipa": "ɫaɪvz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "by",
+          "ipa": "baɪ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "helping",
+          "ipa": "ˈhɛɫpɪŋ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "weather",
+          "ipa": "ˈwɛðɝ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "forecasters",
+          "ipa": "ˈfɔɹˌkæstɝz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "predict",
+          "ipa": "pɹiˈdɪkt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "warn",
+          "ipa": "wɔɹn",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "people",
+          "ipa": "ˈpipəɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "where",
+          "ipa": "hwəɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "and",
+          "ipa": "ənd",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "when",
+          "ipa": "hwən",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "these",
+          "ipa": "ðiz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "severe",
+          "ipa": "səˈvɪɹ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "storms",
+          "ipa": "stɔɹmz",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "will",
+          "ipa": "wɪɫ",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "hit",
+          "ipa": "hɪt",
+          "verdict": "?",
+          "reason": ""
+        },
+        {
+          "word": "land",
+          "ipa": "ɫænd",
+          "verdict": "?",
+          "reason": ""
+        }
+      ]
+    }
+  ]
+}

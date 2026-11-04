@@ -33,7 +33,7 @@ describe.each([false, true])("silent-e agent roots (disableDict=%s)", disableDic
     ["monism", "ˈmɑnɪzəm"], ["nazism", "ˈnæzɪzəm"],
     ["lyrist", "ˈɫɪɹɪst"], ["tavist", "ˈtævɪst"],
     ["banister", "ˈbænɪstɝ"], ["metabolism", "məˈtæbəˌɫɪzəm"],
-    ["minister", disableDict ? "ˈmɪnɪstɝ" : "ˈmɪnəstɝ"],
+    ["minister", "ˈmɪnəstɝ"],
   ])("preserves the complete reading of %s", (word, ipa) => {
     expect(engine.predict(word)).toBe(ipa);
   });

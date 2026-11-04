@@ -30,8 +30,8 @@ import { createHash } from "crypto";
 import levenshtein from "fast-levenshtein";
 import EnglishG2P from "../src/en/g2p";
 import dictionary from "../data/en/dict.json";
-import commonCohort from "./common-cohort.json";
-import { commonGold } from "./common-cohort-gold";
+import commonCohort from "./common-cohort-v86.json";
+import { commonGold, commonGoldVariants, commonReferenceContract } from "./common-cohort-gold";
 import { decompose } from "../src/en/suffixes";
 import { isSyllableHeavy } from "../src/en/syllabify";
 import {
@@ -41,12 +41,14 @@ import {
   syllableToIPA,
 } from "../src/en/syllabify";
 import { isForeign } from "./foreign-filter";
+import { traceNestedCommon } from "./diagnose-nested-routes";
+import { nestedFamilyFolds } from "./nested-family-folds";
 
 // ─────────────────────────── CLI args ────────────────────────────────────
 const argv = process.argv.slice(2);
 if (argv.includes("--help")) {
-  console.log("node --import tsx scripts/learn-rule-corrections.ts [--objective strict|distance] [--structural] [--include-long] [--k-folds 10] [--max-rules 30] [--min-support 5] [--seed 20260928] [--limit N] [--out DIR]");
-  console.log("Research only: emits candidates, train-only filter diagnostics, and family-held-out scores; never updates runtime or baselines.");
+  console.log("node --import tsx scripts/learn-rule-corrections.ts [--objective strict|distance] [--structural] [--suffix-windows] [--nested-folds] [--dedupe-equivalent-replays] [--include-long] [--k-folds 10] [--max-rules 30] [--min-support 5] [--seed 20260928] [--limit N] [--out DIR]");
+  console.log("Research only: emits candidates, train-only filter diagnostics, and family-held-out scores; never updates runtime or baselines. Equivalent replay deduplication preserves only each candidate with identical cohort entries and lower template complexity.");
   process.exit(0);
 }
 function flag(name: string, def?: string): string | undefined {
@@ -64,6 +66,9 @@ const SEED = Number(flag("seed", "20260928"));
 const OUT_DIR = flag("out", "/tmp/phonemize-rule-corrections")!;
 const MIN_SUPPORT = Number(flag("min-support", "5")); // pre-scoring prune (lower than Trial B's 8: common-only population is ~1/10th the size)
 const K_FOLDS = Number(flag("k-folds", "10"));
+const NESTED_FOLDS = argv.includes("--nested-folds");
+const DEDUPE_EQUIVALENT_REPLAYS = argv.includes("--dedupe-equivalent-replays");
+if (NESTED_FOLDS && (LIMIT !== undefined || argv.includes("--include-long"))) throw new Error("--nested-folds requires the fixed common cohort; --limit and --include-long are unsupported");
 for (const [name, value, minimum] of [["max-rules", MAX_RULES, 1], ["min-support", MIN_SUPPORT, 1], ["k-folds", K_FOLDS, 2], ["seed", SEED, 0]] as const) {
   if (!Number.isInteger(value) || value < minimum) throw new Error(`--${name} must be an integer >= ${minimum}`);
 }
@@ -88,11 +93,11 @@ function canon(s: string): string {
   for (const g of SIMILAR) for (let i = 1; i < g.length; i++) out = out.split(g[i]).join(g[0]);
   return out;
 }
-function lenientOk(pred: string, gold: string): boolean {
-  return levenshtein.get(canon(pred), canon(gold)) <= 1;
+function lenientOk(pred: string, gold: string | string[]): boolean {
+  return (Array.isArray(gold) ? gold : [gold]).some(variant => levenshtein.get(canon(pred), canon(variant)) <= 1);
 }
-function strictOk(pred: string, gold: string): boolean {
-  return strip(pred) === strip(gold);
+function strictOk(pred: string, gold: string | string[]): boolean {
+  return (Array.isArray(gold) ? gold : [gold]).some(variant => strip(pred) === strip(variant));
 }
 
 // ─────────────────────── testable-word filter (evaluate.ts) ──────────────
@@ -170,6 +175,9 @@ interface Render {
   final: string;
   reachedRoot: boolean;
 }
+type ScopeFailure =
+  | { kind: "root-not-reached"; word: string; actual: string; rendered: string }
+  | { kind: "output-mismatch"; word: string; actual: string; rendered: string; syllables: string[] };
 function render(lowerWord: string): Render {
   const syllables = syllabify(lowerWord);
   const stressedIdx = assignStress(syllables, lowerWord);
@@ -289,6 +297,8 @@ interface TemplateCtx {
   silentE: boolean;
   wordInitial: boolean;
   wordFinal: boolean;
+  wordSuffix3: string;
+  wordSuffix4: string;
 }
 // name -> (ctx) -> value string; complexity used as an MDL tie-break
 // (lower = simpler/more general, preferred on a scoring tie).
@@ -323,6 +333,18 @@ if (argv.includes("--structural")) {
     TEMPLATES.push({name: name + "+stress", complexity: 3, value: c => value(c) + "," + c.stressStatus});
     TEMPLATES.push({name: name + "+right", complexity: 4, value: c => value(c) + "," + c.rightLetter});
   }
+}
+
+// Research-only orthographic rime windows. Unlike `suffix`, these do not
+// depend on the current morphology parser; held-out spelling-family replay
+// decides whether a shared tail is productive enough to merit review.
+if (argv.includes("--suffix-windows")) {
+  TEMPLATES.push(
+    { name: "wordSuffix3", complexity: 3, value: c => c.wordSuffix3 },
+    { name: "wordSuffix4", complexity: 4, value: c => c.wordSuffix4 },
+    { name: "wordSuffix3+stress", complexity: 4, value: c => `${c.wordSuffix3},${c.stressStatus}` },
+    { name: "wordSuffix4+stress", complexity: 5, value: c => `${c.wordSuffix4},${c.stressStatus}` },
+  );
 }
 
 // Expanded but still interpretable interactions for a second family-CV
@@ -394,6 +416,7 @@ interface WordRec {
   word: string;
   lowerWord: string;
   gold: string;
+  goldVariants: string[];
   goldNorm: string; // strip()'d
   syllables: string[];
   stressedIdx: number;
@@ -460,6 +483,8 @@ function buildStepCtx(rec: { syllables: string[]; stressedIdx: number; secondary
     silentE,
     wordInitial: k === 0,
     wordFinal: k === rec.flatSteps.length - 1,
+    wordSuffix3: spelling.slice(-3),
+    wordSuffix4: spelling.slice(-4),
   };
   return { step, ctx };
 }
@@ -522,9 +547,11 @@ async function main(): Promise<void> {
   log("Rendering + scope-checking every common word (this validates the runtime replay)...");
   const recs: WordRec[] = [];
   let scopeOk = 0, scopeMismatch = 0;
+  const scopeFailures: ScopeFailure[] = [];
   for (const word of commonWords) {
     const lowerWord = word.toLowerCase();
-    const gold = commonGold(word, dict[word]);
+    const goldVariants = commonGoldVariants(word, dict[word]);
+    const gold = goldVariants[0] ?? commonGold(word, dict[word]);
     if (!gold) continue;
     const actual = g2p.predict(word, "en") ?? "";
     let r: Render;
@@ -535,9 +562,15 @@ async function main(): Promise<void> {
     }
     const inScope = r.reachedRoot && r.final === actual;
     if (inScope) scopeOk++;
-    else { scopeMismatch++; continue; } // out of scope: leave untouched, don't add to recs
+    else {
+      scopeMismatch++;
+      scopeFailures.push(r.reachedRoot
+        ? { kind: "output-mismatch", word, actual, rendered: r.final, syllables: r.syllables }
+        : { kind: "root-not-reached", word, actual, rendered: r.final });
+      continue; // out of scope: leave untouched, don't add to recs
+    }
     recs.push({
-      word, lowerWord, gold, goldNorm: strip(gold),
+      word, lowerWord, gold, goldVariants, goldNorm: strip(gold),
       syllables: r.syllables, stressedIdx: r.stressedIdx, secondary: r.secondary,
       ipa: r.ipa, flatSteps: r.flatSteps, baselineFinal: actual,
       curIpa: r.ipa.slice(), curFinal: actual,
@@ -547,8 +580,8 @@ async function main(): Promise<void> {
   }
   log(`Scope: ${scopeOk} in-scope (pure rules-path) / ${scopeOk + scopeMismatch} common testable (${((scopeOk / (scopeOk + scopeMismatch)) * 100).toFixed(2)}% coverage)`);
   writeFileSync(join(OUT_DIR, "scope-report-common.json"), JSON.stringify({
-    commonTestable: commonWords.length, inScope: scopeOk, outOfScope: scopeMismatch,
-    coveragePct: (scopeOk / (scopeOk + scopeMismatch)) * 100,
+    commonReferenceContract, commonTestable: commonWords.length, inScope: scopeOk, outOfScope: scopeMismatch,
+    coveragePct: (scopeOk / (scopeOk + scopeMismatch)) * 100, scopeFailures,
   }, null, 2));
 
   // Assign family components to balanced folds, without consulting IPA labels.
@@ -575,24 +608,41 @@ async function main(): Promise<void> {
     }
     if (word.endsWith("ies")) joinFamily(word, word.slice(0, -3) + "y");
   }
+  const nestedTrace = NESTED_FOLDS ? traceNestedCommon() : undefined;
+  const nestedGrouping = nestedTrace && (K_FOLDS === 10 ? nestedTrace.grouping : nestedFamilyFolds(commonWords, nestedTrace.dependencies, K_FOLDS));
+  const familyKey = (word: string) => {
+    if (!nestedGrouping) return root(word);
+    const assignment = nestedGrouping.assignments.get(word);
+    if (!assignment) throw new Error(`Missing nested family: ${word}`);
+    return assignment.family;
+  };
   const families = new Map<string, WordRec[]>();
   for (const r of recs) {
-    const key = root(r.lowerWord);
+    const key = familyKey(r.lowerWord);
     const family = families.get(key) ?? []; family.push(r); families.set(key, family);
   }
   if (families.size < K_FOLDS) throw new Error(`Need at least ${K_FOLDS} spelling families, got ${families.size}`);
-  const rng = mulberry32(SEED);
-  const groups = seededShuffle([...families.values()], rng).sort((a,b) => b.length-a.length);
   const foldSizes = Array(K_FOLDS).fill(0);
-  for (const group of groups) {
-    const fold = foldSizes.indexOf(Math.min(...foldSizes));
-    for (const r of group) r.foldIndex = fold;
-    foldSizes[fold] += group.length;
+  if (nestedGrouping) {
+    for (const r of recs) {
+      r.foldIndex = nestedGrouping.assignments.get(r.lowerWord)!.fold;
+      foldSizes[r.foldIndex]++;
+    }
+  } else {
+    const rng = mulberry32(SEED);
+    const groups = seededShuffle([...families.values()], rng).sort((a,b) => b.length-a.length);
+    for (const group of groups) {
+      const fold = foldSizes.indexOf(Math.min(...foldSizes));
+      for (const r of group) r.foldIndex = fold;
+      foldSizes[fold] += group.length;
+    }
   }
+  if (foldSizes.some(size => size === 0)) throw new Error("A held-out fold has no in-scope words");
   writeFileSync(join(OUT_DIR, "family-folds.json"), JSON.stringify({
-    grouping: "connected attested spelling relatives, heuristic not gold morphology",
-    seed: SEED, sizes: foldSizes,
-    assignments: recs.map(r => ({word:r.word, family:root(r.lowerWord), fold:r.foldIndex})),
+    grouping: nestedGrouping ? "nested-dependency-v1: executed stems and connected attested spelling relatives" : "connected attested spelling relatives, heuristic not gold morphology",
+    seed: nestedGrouping ? null : SEED, sizes: foldSizes,
+    ...(nestedTrace ? { dependencyCalls: nestedTrace.dependencies.length, fullCohortFoldSizes: nestedGrouping!.sizes } : {}),
+    assignments: recs.map(r => ({word:r.word, family:familyKey(r.lowerWord), fold:r.foldIndex})),
   }, null, 2));
   log(`Assigned ${K_FOLDS} folds over ${families.size} spelling families: ${foldSizes}`);
 
@@ -600,9 +650,9 @@ async function main(): Promise<void> {
     let strictN = 0, lenientN = 0, distance = 0;
     for (const r of recsSubset) {
       const pred = useCur ? r.curFinal : r.baselineFinal;
-      if (strictOk(pred, r.gold)) strictN++;
-      if (lenientOk(pred, r.gold)) lenientN++;
-      distance += levenshtein.get(strip(pred), strip(r.gold));
+      if (strictOk(pred, r.goldVariants)) strictN++;
+      if (lenientOk(pred, r.goldVariants)) lenientN++;
+      distance += Math.min(...r.goldVariants.map(variant => levenshtein.get(strip(pred), strip(variant))));
     }
     return { strict: strictN, lenient: lenientN, n: recsSubset.length, distance };
   }
@@ -678,15 +728,15 @@ async function main(): Promise<void> {
       seen.add(e.rec);
       const newFinal = rebuildFinal(e.rec.lowerWord, e.rec.syllables, e.rec.stressedIdx, newIpa);
       if (newFinal === e.rec.curFinal) continue;
-      const wasOk = strictOk(e.rec.curFinal, e.rec.gold);
-      const nowOk = strictOk(newFinal, e.rec.gold);
+      const wasOk = strictOk(e.rec.curFinal, e.rec.goldVariants);
+      const nowOk = strictOk(newFinal, e.rec.goldVariants);
       const fixed = !wasOk && nowOk;
       const broken = wasOk && !nowOk;
       const distBefore = levenshtein.get(strip(e.rec.curFinal), strip(e.rec.gold));
       const distAfter = levenshtein.get(strip(newFinal), strip(e.rec.gold));
       if (e.rec.isTrain && !e.rec.foreign) {
         res.changedTrainNonForeign++;
-        res.trainLenientNet += +lenientOk(newFinal, e.rec.gold) - +lenientOk(e.rec.curFinal, e.rec.gold);
+        res.trainLenientNet += +lenientOk(newFinal, e.rec.goldVariants) - +lenientOk(e.rec.curFinal, e.rec.goldVariants);
         res.trainDistanceGain += distBefore - distAfter;
         if (fixed) { res.affectedTrainNonForeign++; res.trainFix++; if (res.fixedWordsTrain.length < 5) res.fixedWordsTrain.push({ word: e.rec.word, before: e.rec.curFinal, after: newFinal, gold: e.rec.gold }); }
         if (broken) { res.affectedTrainNonForeign++; res.trainBreak++; if (res.brokenWordsTrain.length < 5) res.brokenWordsTrain.push({ word: e.rec.word, before: e.rec.curFinal, after: newFinal, gold: e.rec.gold }); }
@@ -746,7 +796,7 @@ async function main(): Promise<void> {
       const predNorm = rec.ipa.join("").replace(/ʌ/g, "ə");
       const goldNorm = rec.goldNorm.replace(/ɫ/g, "l");
       if (predNorm === goldNorm) continue;
-      if (strictOk(rec.baselineFinal, rec.gold)) continue;
+      if (strictOk(rec.baselineFinal, rec.goldVariants)) continue;
       mismatchCount++;
       const ops = editScript(predNorm, goldNorm);
       const spans = errorSpans(ops);
@@ -775,8 +825,22 @@ async function main(): Promise<void> {
         }
       }
     }
-    const pruned = [...candPool.values()].filter((c) => c.supportWords.size >= MIN_SUPPORT);
-    log(`  ${mismatchCount} mismatched train words -> ${candPool.size} raw candidates, ${pruned.length} clear min-support=${MIN_SUPPORT}`);
+    const supported = [...candPool.values()].filter((c) => c.supportWords.size >= MIN_SUPPORT);
+    const equivalentReplays = new Map<string, CandAgg>();
+    if (DEDUPE_EQUIVALENT_REPLAYS) {
+      for (const candidate of supported) {
+        const contextKey = `${candidate.key.grapheme}\u0000${candidate.key.template}\u0000${candidate.key.value}`;
+        const signature = createHash("sha256").update(`${candidate.key.grapheme}\u0000${candidate.key.p}\u0000${candidate.key.q}\u0000`);
+        for (const entry of revIndex.get(contextKey) ?? [])
+          signature.update(`${entry.rec.word}\u0000${entry.syllableIndex}\u0000${entry.offsetGuess}\n`);
+        const replayKey = signature.digest("hex");
+        const prior = equivalentReplays.get(replayKey);
+        if (!prior || candidate.complexity < prior.complexity || candidate.complexity === prior.complexity && candidate.keyStr < prior.keyStr)
+          equivalentReplays.set(replayKey, candidate);
+      }
+    }
+    const pruned = DEDUPE_EQUIVALENT_REPLAYS ? [...equivalentReplays.values()] : supported;
+    log(`  ${mismatchCount} mismatched train words -> ${candPool.size} raw candidates, ${supported.length} clear min-support=${MIN_SUPPORT}${DEDUPE_EQUIVALENT_REPLAYS ? `, ${pruned.length} distinct replay behaviors` : ""}`);
 
     // ── greedy TBL loop ──
     interface AcceptedRule { idx: number; key: CandKey; complexity: number; score: ScoreResult; cumulativeHeldStrict: number }
@@ -930,11 +994,17 @@ async function main(): Promise<void> {
   }
 
   const summary = {
-    toolSha256: toolHash, objective: OBJECTIVE,
+    toolSha256: toolHash, objective: OBJECTIVE, dedupeEquivalentReplays: DEDUPE_EQUIVALENT_REPLAYS, commonReferenceContract,
     dictionarySha256: createHash("sha256").update(JSON.stringify(dict)).digest("hex"),
     frequencySha256: createHash("sha256").update(readFileSync(freqPath)).digest("hex"),
     baselineSha256: createHash("sha256").update(JSON.stringify(recs.map(r => [r.word, r.baselineFinal]))).digest("hex"),
     structuralFeatures: argv.includes("--structural"), familyGrouped: true,
+    ...(NESTED_FOLDS ? {
+      foldStrategy: "nested-dependency-v1", dependencyCalls: nestedTrace!.dependencies.length,
+      foldAssignmentSha256: createHash("sha256").update(readFileSync(join(OUT_DIR, "family-folds.json"))).digest("hex"),
+      traceToolSha256: createHash("sha256").update(readFileSync(join(__dirname, "diagnose-nested-routes.ts"))).digest("hex"),
+      foldToolSha256: createHash("sha256").update(readFileSync(join(__dirname, "nested-family-folds.ts"))).digest("hex"),
+    } : {}),
     maxWordLength: Number.isFinite(MAX_WORD_LENGTH) ? MAX_WORD_LENGTH : null,
     longWordsInScope: recs.filter(r => r.word.length > 12).length,
     kFolds: K_FOLDS, minSupport: MIN_SUPPORT, maxRules: MAX_RULES, seed: SEED,

@@ -31,6 +31,26 @@ describe("Verb form stays independent of POS", () => {
     expect(readings(sentence)).toEqual([ipa]);
   });
 
+  it("uses the live verb vowel in past and participle sentence contexts", () => {
+    const lived = (sentence: string) => phonemizer.phonemize(sentence, {
+      language: "en-US", returnArray: true,
+    }).filter(token => token.word.toLowerCase() === "lived").map(token => token.phoneme);
+    const live = (sentence: string) => phonemizer.phonemize(sentence, {
+      language: "en-US", returnArray: true,
+    }).filter(token => token.word.toLowerCase() === "live").map(token => token.phoneme);
+    expect(live("I live there.")).toEqual(["ɫɪv"]);
+    expect(live("This is a live show.")).toEqual(["ɫaɪv"]);
+    expect(lived("I lived there.")).toEqual(["ɫɪvd"]);
+    expect(lived("They have lived here.")).toEqual(["ɫɪvd"]);
+    expect(lived("The long-lived tortoise survived.")).toEqual(["ɫaɪvd"]);
+  });
+
+  it("preserves the separate adjective reading without a verbal context", () => {
+    expect(engine.predict("lived", "en-US")).toBe("ˈɫaɪvd");
+    expect(engine.predictWithContext("lived", { words: ["lived"], index: 0 }, "en-US", "ADJ"))
+      .toBe("ɫaɪvd");
+  });
+
   it("preserves duplicate occurrences and sentence boundaries", () => {
     expect(readings("I read books daily. He read yesterday.")).toEqual(["ɹid", "ɹɛd"]);
     expect(readings("He will read today, but I read yesterday.")).toEqual(["ɹid", "ɹɛd"]);

@@ -1,0 +1,52 @@
+{
+  "status": "reference maintenance only; no pronunciation gain",
+  "source": "https://dictionary.cambridge.org/us/dictionary/english/interim",
+  "oldReference": "ɪnˈtɛɹɪm",
+  "newReference": "ˈɪntɝɪm",
+  "newVariants": [
+    "ˈɪntɝəm"
+  ],
+  "baselineBefore": [
+    5804,
+    6464,
+    3165,
+    3410
+  ],
+  "baselineAfter": [
+    5803,
+    6463,
+    3165,
+    3410
+  ],
+  "currentBefore": [
+    5813,
+    6468,
+    3172,
+    3413
+  ],
+  "currentAfter": [
+    5812,
+    6467,
+    3172,
+    3413
+  ],
+  "sourceSnapshotSha256": "0d5192518238eeab5a3fcfaa2e18675482b28016a607e95256f6d3cf4052fc15",
+  "currentSnapshotSha256": "91681bbba1f2604bd8c3546c02fadfc68c99e1b7662831b8f1f14d91e5acf3db",
+  "runtimeChanges": 0,
+  "oldContractRetained": true,
+  "affectedHistoricalPrediction": "ɪnˈtɛɹɪm",
+  "referenceOnlyDelta": [
+    -1,
+    -1,
+    0,
+    0
+  ],
+  "historicalFullSnapshotMissingUnchangedCohortKeys": [
+    "credits",
+    "editors",
+    "editions",
+    "jackets",
+    "packets"
+  ],
+  "proofScope": "All changed reference rows have original stored predictions. The five absent unchanged keys retain their original contribution; no reconstruction or changed denominator."
+}

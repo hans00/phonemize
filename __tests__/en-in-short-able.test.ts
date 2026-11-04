@@ -8,7 +8,7 @@ describe.each([false, true])("in- before short silent-e -able roots (disableDict
     ["inhalable", "ˌɪnˈheɪɫəbəɫ"], ["incapably", "ˌɪnˈkeɪpəbɫi"],
     ["incurably", "ˌɪnˈkjʊɹəbɫi"],
     ["capable", "ˈkeɪpəbəɫ"], ["curable", "ˈkjʊɹəbəɫ"],
-    ["inextricable", "ɪˈnɛkstɹɪkəbəɫ"], ["inapplicable", "ɪˈnæpɫɪkəbəɫ"],
+    ["inextricable", "ɪˈnɛkstɹɪkəbəɫ"], ["inapplicable", disableDict ? "ˌɪnəˈpɫɪkəbəɫ" : "ˌɪˈnæpɫɪkəbəɫ"],
   ])("keeps the root or unaffected boundary in %s", (word, ipa) => {
     expect(engine.predict(word)).toBe(ipa);
   });

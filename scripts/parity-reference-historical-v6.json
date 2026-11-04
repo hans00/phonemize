@@ -1,0 +1,23 @@
+{
+  "version": "runtime-parity-en-v6",
+  "supersedes": "runtime-parity-historical-en-v5",
+  "status": "migrated fixed-population contract; historical v2 preserved unchanged",
+  "population": 100816,
+  "baseDictionarySha256": "154b612082db16dcc1c5959337a606b5a52fb7912da2cf6c0c0edacc635f1a72",
+  "frozenSnapshotSha256": "5dc2893f38e7b755cb77f3b4c5ae1178d192103732472b8706898746315c7eda",
+  "historicalV2BaselineSha256": "2e3f400bbc90e2463e4882807101f5cb3e7575ea53e9d75a132b38b27397fc8b",
+  "historicalV2ReferenceManifestSha256": "f585084e29e264c4d6c5f767c2777102136fa1065d4363e62402bcbc75ef3400",
+  "v3ManifestSha256": "745e893fb539e1c9835af4eb7dd50ae3c7b8e6e83075b8af07a0243648083d8f",
+  "v4ManifestSha256": "5f37dbb89df3e336463746e935ce9ee05613d57b3915fe9ad898d40247286c41",
+  "v5ManifestSha256": "1fdb71231618749b936c6cb42c9f5ea2449a5211d02bdc0c004dabbe7e0d00b3",
+  "referenceRowsSha256": "4b08f8ca16445622fbe22345c4d9be6583a639ee9d35c3f7e10b2bad906ca176",
+  "rowsSha256": "a26714809800ee49b6b88ef37d2176f940f36ac943f0583a42c0700fbd1a360e",
+  "rowsFileSha256": "2bc93a553fa1dbec7ae2c319b4e1fd032e59557d08afbbd2ea3e975d3adadc4c",
+  "hurricaneReplacement": {
+    "from": "\u02c8h\u0259\u0279\u0259\u02ccke\u026anz",
+    "to": "\u02c8h\u025d\u0259\u02ccke\u026an",
+    "source": "https://dictionary.cambridge.org/dictionary/english/hurricane"
+  },
+  "frozenSnapshotArchive": "scripts/.prediction-cache/diagnostic-81373dbf5863771c61dafffa985ad8addf45ffb76975084e367d46f5a0147668.tar.gz",
+  "frozenSnapshotArchiveSha256": "81373dbf5863771c61dafffa985ad8addf45ffb76975084e367d46f5a0147668"
+}

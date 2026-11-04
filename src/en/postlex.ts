@@ -1,6 +1,6 @@
 import { isAuxiliaryOrPossessiveDeterminer, isFunctionWord } from "./pos-tagger";
 import { addInitialSecondary } from "./phonotactics";
-import { EN_PREFIXES, LATIN_E_ROOT, SHORT_ANCY_ROOT, PRICE_HIATUS_ARY_ROOT } from "./syllabify";
+import { EN_PREFIXES, BOUND_IO_VERB_ROOT, LATIN_E_ROOT, SHORT_ANCY_ROOT, PRICE_HIATUS_ARY_ROOT, PREFIX_WEAK_LE_ROOT } from "./syllabify";
 
 /**
  * Post-lexical corrections for the rule path.
@@ -12,80 +12,57 @@ import { EN_PREFIXES, LATIN_E_ROOT, SHORT_ANCY_ROOT, PRICE_HIATUS_ARY_ROOT } fro
  * here may move there without changing dict-word behavior.
  *
  * Two tables, applied in order:
- *   POST_PROC_RULES — unconditional IPA cleanup (degemination, rhotic
+ *   POST_PROC_RULES — ordered IPA cleanup (degemination, rhotic
  *     merges, suffix vowel fixes).
  *   POST_LEX_RULES  — orthography/etymology-conditioned corrections,
  *     each gated by a cheap guard on the spelling (and syllable count).
  *     Order is load-bearing: later rules see earlier rules' output.
  */
 
-// --- Unconditional IPA cleanup (applied after syllabification, before stress marking) ---
+// Ordered IPA cleanup before mark insertion; metadata retains an owned final primary.
 
-export const POST_PROC_RULES: Array<[RegExp, string]> = [
-  [/([pbtdkɡfvszʃʒθðmnŋlɹhjwɫ])\1/g, "$1"],
-  [/sʒ/g, "ʃ"],
-  [/əɹ/g, "ɝ"],
-  [/n([kɡ])/g, "ŋ$1"],
+export const POST_PROC_RULES: Array<[pattern: RegExp, replacement: string, preserveBoundPrimary?: true]> = [
+  [/([pbtdkɡfvszʃʒθðmnŋlɹhjwɫ])\1/g, "$1"], [/sʒ/g, "ʃ"],
+  [/(?:əɹ|aʊɹ(?=(?:[ɪə]|ˈ?eɪ)dʒ|dʒ$))/g, "ɝ"], [/n([kɡ])/g, "ŋ$1"],
   // A velar stop bridges the final nasal-fricative coda; medial tails retain their source variants.
-  [/ŋθ(?=s?$)/, "ŋkθ"],
-  [/^mk/, "mək"],
+  [/ŋθ(?=s?$)/, "ŋkθ"], [/^mk/, "mək"],
   // German -rich stays hard after rhotic coalescence (emerich), while
   // a word-initial /r/ onset is the English root (rich), not this suffix.
-  [/((?<!^)ɹ|ɝ)ɪtʃ$/, "$1ɪk"],
-  [/ɡdʒ$/, "ɡ"],
-  [/([bdfɡhklmnpɹstzv])ə(ʃ|dʒ)əs$/, "$1eɪ$2əs"],
-  [/([^w])əʃən$/, "$1eɪʃən"],
+  [/((?<!^)ɹ|ɝ)ɪtʃ$/, "$1ɪk"], [/ɡdʒ$/, "ɡ"],
+  [/([bdfɡhklmnpɹstzv])ə(ʃ|dʒ)əs$/, "$1eɪ$2əs"], [/([^w])əʃən$/, "$1eɪʃən"],
   [/oʊɹ/g, "ɔɹ"],
-  // Rhotic ou contracts before the soft-g rime, including stressed -ageous.
-  [/aʊɹ(?=(?:[ɪə]|ˈ?eɪ)dʒ|dʒ$)/g, "ɝ"],
+  // Rhotic ou before soft-g shares the earlier schwa-r contraction.
   [/[ɑə][ɛə]$/, "oʊ"],
   // These disjoint rimes share GOAT-to-PALM; intervening rules cannot create them.
-  [/oʊ(?=[ntplm]ɪk|nəm|m[ɪə]t[ɝɹ]|ɡɹəf[iɝ]|(?:dʒɪk|leɪt)$)/g, "ɑ"],
-  [/(?:oʊ|ɑ)mɪnən([ts])/g, "ɑmənən$1"],
-  [/ætɪv$/, "ətɪv"],
-  [/ɑɹi$/, "ɛɹi"],
-  [/ɑl([dtskp])/g, "oʊl$1"],
-  [/əhl/g, "ɑl"],
-  [/([pbtdkɡfvszʃθmnlhjwɫ])ɹoʊst/g, "$1ɹɑst"],
-  [/bɹoʊd/g, "bɹɔd"],
-  [/^ʌnɪ/, "junɪ"],
-  [/([kɡdbptfvszʃʒmnlɹwj])əəs$/g, "$1uəs"],
-  [/ksɪəs/g, "kʃəs"],
-  [/stjʊɹ/g, "stʃɝ"],
-  [/([tsn])aɪv$/g, "$1ɪv"],
-  [/([^aeiouæɑɔɛɪuoəɝʌ])ɪtɪv$/g, "$1ətɪv"],
-  [/ɡuʃ/g, "ɡwɪʃ"],
-  [/mək(ɝ|ɪŋ)$/, "meɪk$1"],
-  [/məstɝ$/, "mæstɝ"],
-  [/ɪ(?=(?:[nlkfvmt]eɪʃən|[nk]eɪt)$)|(?<=ɪn)ɪ(?=ti$)/, "ə"],
-  [/ʌmɪnəs$/, "umənəs"],
-  [/pənənt$/, "poʊnənt"],
-  [/ɡɹɛɡeɪt$/, "ɡɹəɡeɪt"],
-  [/tɪənɛɹi$/, "ʃənɛɹi"],
-  [/ɝɹeɪʃən$/, "ɝeɪʃən"],
-  [/ɛntɛɹi$/, "əntɛɹi"],
+  [/oʊ(?=[ntplm]ɪk|nəm|m[ɪə]t[ɝɹ]|ɡɹəf[iɝ]|(?:dʒɪk|leɪt)$)/g, "ɑ"], [/(?:oʊ|ɑ)mɪnən([ts])/g, "ɑmənən$1"],
+  [/ætɪv$/, "ətɪv"], [/ɑɹi$/, "ɛɹi"], [/ɑl([dtskp])/g, "oʊl$1"], [/əhl/g, "ɑl"],
+  [/([pbtdkɡfvszʃθmnlhjwɫ])ɹoʊst/g, "$1ɹɑst"], [/bɹoʊd/g, "bɹɔd"],
+  [/^ʌnɪ/, "junɪ"], [/([kɡdbptfvszʃʒmnlɹwj])əəs$/g, "$1uəs"],
+  [/ksɪəs/g, "kʃəs"], [/stjʊɹ/g, "stʃɝ"],
+  [/([tsn])aɪv$/g, "$1ɪv", true], [/([^aeiouæɑɔɛɪuoəɝʌ])ɪtɪv$/g, "$1ətɪv"],
+  [/ɡuʃ/g, "ɡwɪʃ"], [/mək(ɝ|ɪŋ)$/, "meɪk$1"],
+  [/məstɝ$/, "mæstɝ"], [/ɪ(?=(?:[nlkfvmt]eɪʃən|[nk]eɪt)$)|(?<=ɪn)ɪ(?=ti$)/, "ə"],
+  [/ʌmɪnəs$/, "umənəs"], [/pənənt$/, "poʊnənt"],
+  [/ɡɹɛɡeɪt$/, "ɡɹəɡeɪt"], [/tɪənɛɹi$/, "ʃənɛɹi"],
+  [/ɝɹeɪʃən$/, "ɝeɪʃən"], [/ɛntɛɹi$/, "əntɛɹi"],
   [/aʊɹ(?=[^aeiouæɛɪɑɔʌʊ])/g, "uɹ"], // French -our- before consonant (belcourt/bournonville)
   [/æ{2,}/g, "ɑ"], // double-a → ɑ (baalbek, baasch, baatz)
   // word-final -ia: sɪnðɪæ→sɪnðiə (cynthia/sylvia). Two rules, because an
   // ɪ after a/e/o/ɔ is the offglide of a diphthong, not a hiatus vowel:
   // there only the final æ reduces (freya ˈfɹeɪə, caya ˈkeɪə), while the
   // unguarded form read /aɪ/+/æ/ as hiatus and stripped the glide.
-  [/(?<![eaoɔ])ɪæ$/, "iə"],
-  [/(?<=[eaoɔ]ɪ)æ$/, "ə"],
+  [/(?<![eaoɔ])ɪæ$/, "iə"], [/(?<=[eaoɔ]ɪ)æ$/, "ə"],
   [/zjʊɹ$/, "ʒɝ"], // -zure: seizure/azure → ʒɝ
   [/nð$/, "nθ"], // word-final -nth: absinthe/labyrinth → nθ
 ];
 
 // --- Guarded orthography/etymology corrections ---
 
-interface PostLexRule {
+type PostLexRule = {
   /** Cheap pre-guard on the spelling (w) and syllable count; rule fires only when true. */
   when: (w: string, syl: number, finalPrimary: boolean) => boolean;
   re: RegExp;
-  /** Plain replacement string (use `fn` instead for callback replacers). */
-  sub?: string;
-  fn?: (substring: string, ...groups: string[]) => string;
-}
+} & ({ sub: string; fn?: never } | { fn: (substring: string, ...groups: string[]) => string; sub?: never });
 
 // German(ic) surname suffixes whose <ei> is /aɪ/ (and whose <g> stays hard).
 const GERMANIC_EI_SUFFIX_RE =
@@ -95,6 +72,16 @@ const GERMANIC_EI_SUFFIX_RE =
 // vowel reduction (dispatch/mismatch/watch compounds). Frozen strict
 // flat, lenient +4/-0; native stomach/eunuch remain velar.
 const POST_LEX_RULES: PostLexRule[] = [
+  // A closed -ect root retains DRESS before the stress-shifting -ivity suffix.
+  { when: w => /ectivit(?:y|ies)$/.test(w), re: /ək(?=tɪv[əɪ]ti$)/, sub: "ɛk" },
+  { when: w => /airi/.test(w), re: /eɪɹ(?=[ˈˌ]?[iɪ])/g, sub: "ɛɹ" },
+  { when: w => /elor(?:s|'s)?$/.test(w), re: /ɪlɝ(?=[sz]?$)/, sub: "əlɝ" },
+  // The closed -tex rime keeps DRESS before regular written inflections.
+  { when: w => /tex(?:es|ed|ing)?$/.test(w), re: /təks(?=(?:[əɪ][sz]|[dz]|ɪŋ)?$)/, sub: "tɛks" },
+  // Consonant + le retains its syllabic lateral before the man/men compound tail.
+  { when: w => /[bcdfghjklmnpqrstvwxyz]le(?:man|men)(?:s|'s)?$/.test(w), re: /(?<=[^aeiouɑɔæɛɪʊʌəɝ])lɪ(?=m[əɪ]n)/g, sub: "əl" },
+  // Keep clusters before s and full-vowel compound tails outside the weak b+nasal foot.
+  { when: (w, syl, finalPrimary) => syl === 2 && !finalPrimary && /sb/.test(w), re: /(?<=[aeiouæɛɪɑɔʌʊəɝ])s(?=bə[nm]d?$)/, sub: "z" },
   // Only the grammatical root's first dental voices after KIT; longer lexical tails remain separate.
   { when: w => isFunctionWord(w) || isFunctionWord(/^([a-z]+th)(?=[aeiouy]+[^aeiouy]*$)/.exec(w)?.[1] ?? ""), re: /^([^θð]*ɪ)θ/, sub: "$1ð" },
   // Auxiliary/possessive s voices after voiced phones; lexical and demonstrative codas stay literal.
@@ -134,8 +121,8 @@ const POST_LEX_RULES: PostLexRule[] = [
   // — Latinate / native suffix corrections —
   { when: (w) => w.startsWith("aa"), re: /^æ+/, sub: "ɑ" },
   // Only weak -age reduces. Plural -ages differs from -ageous; Greek
-  // -phage is a full-vowel root, including before plural s.
-  { when: (w, syl, finalPrimary) => syl >= 3 && !finalPrimary && (!w.endsWith("s") || w.endsWith("ages") && !w.endsWith("phages")), re: /eɪdʒ(?=(?:[əɪ][sz])?$)/, sub: "ɪdʒ" },
+  // -phage and the teen+age compound keep the full vowel despite naive spelling syllables.
+  { when: (w, syl, finalPrimary) => syl >= 3 && !finalPrimary && !w.startsWith("teen") && (!w.endsWith("s") || w.endsWith("ages") && !w.endsWith("phages")), re: /eɪdʒ(?=(?:[əɪ][sz])?$)/, sub: "ɪdʒ" },
   // Written -ri-age contracts to one weak nucleus (marriage/carriage).
   { when: w => /riage$/.test(w), re: /ɪɪdʒ$/, sub: "ɪdʒ" },
   { when: (w) => w.includes("asiv"), re: /æsɪv/, sub: "eɪsɪv" },
@@ -200,10 +187,7 @@ const POST_LEX_RULES: PostLexRule[] = [
   { when: (w) => w.endsWith("itis"), re: /ɪtɪs$/, sub: "aɪtɪs" },
   // Polysyllabic -tice/-vice: unstressed final syllable should be /ɪs/ not /aɪs/
   // Guards protect entice(6)/advice(6)/device(6) via length, and service/crevice via -vice≥7
-  {
-    when: (w) => (w.length >= 7 && w.endsWith("tice")) || (w.length >= 7 && w.endsWith("vice")),
-    re: /aɪs$/, sub: "ɪs",
-  },
+  { when: w => w.length >= 7 && (w.endsWith("tice") || w.endsWith("vice")), re: /aɪs$/, sub: "ɪs" },
   // -ange(r|s|rous)? → /eɪndʒ/: change/range/strange/exchange,
   // danger/stranger/ranger/granger/dangerous, changes/exchanges. Rule-diff
   // over the whole dict (this extension alone, beyond the pre-existing
@@ -219,15 +203,15 @@ const POST_LEX_RULES: PostLexRule[] = [
   // both dict.json and rule-diff's own canon (which folds æ/eɪ), so
   // tensing its vowel moves neither score. Table hit at runtime.
   {
-    when: (w) =>
-      /ange(?:rous|rs|r|s)?$/.test(w) &&
-      !/lange(?:rous|rs|r|s)?$/.test(w),
+    when: (w, syl) =>
+      (/ange(?:rous|rs|r|s)?$/.test(w) || syl === 2 && /angels?$/.test(w)) &&
+      !/lange(?:rous|rs|r|s|ls|l)?$/.test(w),
     // The lookahead has to cover this rule's position in the pipeline,
     // BEFORE the later whole-word passes that coalesce ɪɹ→ɝ (dangerous:
     // "dan"·"ge"·"rous" splits the r onto the "rous" syllable, so the
     // "e"/"r" here are still two raw phonemes, ɪɹ not ɝ) and voice a
     // plural s→z (changes/exchanges/flanges): əs, not yet əz.
-    re: /ændʒ(?=ɝ|ɪɹ|əs$|əz$|$)/, sub: "eɪndʒ",
+    re: /ændʒ(?=ɝ|ɪɹ|ə[lɫ][sz]?$|əs$|əz$|$)/, sub: "eɪndʒ",
   },
   // -erous/-arous/-orous/-urous: unstressed -er- is /ɝ/ (generous/cancerous/boisterous)
   { when: (w) => /(?:erous|arous|orous|urous)$/.test(w), re: /ɪɹəs$/, sub: "ɝəs" },
@@ -498,12 +482,12 @@ const POST_LEX_RULES: PostLexRule[] = [
 
   // — Consonant clusters —
   // Nasal assimilation stops at a prefix boundary: in-/en-/un-/non-/conc-
-  // before <c/k/q> keeps /n/ (265:26 in dict — include, uncle is the
-  // rare monomorphemic exception). con+qu (conquer, conquest) assimilates.
+  // before <c/k/q> keeps /n/. A weak-le fragment has no full root nucleus
+  // to license that boundary. con+qu (conquer, conquest) assimilates.
   // Native en- + hard g before a back vowel/r keeps the same boundary;
   // front-vowel hard-g names and the ambiguous gq/gl families stay unchanged.
   {
-    when: (w) => w.length >= 5 && (/^(?:(?:in|en|un)[ckq]|conc|non)/.test(w) || /^eng(?:[aou]|r)/.test(w)),
+    when: (w) => w.length >= 5 && !PREFIX_WEAK_LE_ROOT.test(w) && (/^(?:(?:in|en|un)[ckq]|conc|non)/.test(w) || /^eng(?:[aou]|r)/.test(w)),
     re: /^(.{1,3}?)ŋ([kɡ])/, sub: "$1n$2",
   },
   // Word-initial <ex> before a vowel voices to /ɡz/ when the stress
@@ -574,7 +558,6 @@ const POST_LEX_RULES: PostLexRule[] = [
   // /z/ (abbs, addams, airways). Greek/Latin -as/-us/-is endings keep
   // /s/ (barnabas, campus, tennis).
   { when: (w) => /tices$/.test(w), re: /səs$/, sub: "sɪz" },
-  { when: (w) => /[sxzcg]es$/.test(w), re: /([szʃʒ])əs$/, sub: "$1əz" },
   { when: (w) => w.endsWith("s") && !w.endsWith("ss"), re: /([bdɡvðmnŋɫlɹ])s$/, sub: "$1z" },
   { when: (w) => /[aeiouwy]s$/.test(w) && !/[uia]s$/.test(w), re: /([aɪʊoeiɔuəɝ])s$/, sub: "$1z" },
 
@@ -585,8 +568,7 @@ const POST_LEX_RULES: PostLexRule[] = [
 
 // --- Stress-mark conventions (applied AFTER the primary mark is inserted) ---
 
-const IPA_V = "aeiouɑæɛɪɔʊʌəɝ";
-const IPA_C = "pbtdkɡfvszʃʒθðmnŋɫlɹhjw";
+const IPA_V = "aeiouɑæɛɪɔʊʌəɝ", IPA_C = "pbtdkɡfvszʃʒθðmnŋɫlɹhjw";
 
 // Diphthongs read as ONE nucleus despite being two IPA characters, so the
 // hiatus offset below doesn't mistake an offglide for a second, separate
@@ -641,8 +623,7 @@ const ONSET_MAX_1_RE = new RegExp(`([${IPA_V}])([${IPA_C}])ˈ(?=[${IPA_V}])`, "g
 const ONSET_MAX_2_RE = new RegExp(
   `([${IPA_V}])([${IPA_C}])ˈ([${IPA_C}])(?=[${IPA_V}])`,
   "g",
-);
-const ONSET_CLUSTERS = new Set([
+), ONSET_CLUSTERS = new Set([
   "pɹ", "tɹ", "kɹ", "bɹ", "dɹ", "ɡɹ", "fɹ", "θɹ", "ʃɹ",
   "pl", "bl", "kl", "ɡl", "fl",
   "pɫ", "bɫ", "kɫ", "ɡɫ", "fɫ",
@@ -657,20 +638,11 @@ const ONSET_CLUSTERS = new Set([
 // orthographic syllabifier put the <x>: ex|ample gives it to the onset
 // (ɪˈɡzæmpəɫ), exh|aust to the coda once the h is gone (ɪɡzˈɔst). Both
 // want the same repair.
-const GZ_ONSET_RE = new RegExp(`([${IPA_V}])([ˈˌ])ɡz`, "g");
-const GZ_CODA_RE = new RegExp(`ɡz([ˈˌ])(?=[${IPA_V}])`, "g");
+const GZ_ONSET_RE = new RegExp(`([${IPA_V}])([ˈˌ])ɡz`, "g"), GZ_CODA_RE = new RegExp(`ɡz([ˈˌ])(?=[${IPA_V}])`, "g");
 
 /** Count distinct vowel nuclei (vowel-char runs) in ipa[from..to). */
 function nucleiBetween(ipa: string, from: number, to: number): number {
-  let n = 0;
-  let inV = false;
-  for (let i = from; i < to; i++) {
-    if (IPA_V.includes(ipa[i])) {
-      if (!inV) n++;
-      inV = true;
-    } else inV = false;
-  }
-  return n;
+  return ipa.slice(from, to).match(new RegExp(`[${IPA_V}]+`, "g"))?.length ?? 0;
 }
 
 /**
@@ -740,15 +712,9 @@ function addFullVowelSecondaries(ipa: string): string {
       runs.push([s, i]);
     } else i++;
   }
-  let primary = -1;
-  for (let r = 0; r < runs.length; r++)
-    if (runs[r][0] > pi) {
-      primary = r;
-      break;
-    }
+  const primary = runs.findIndex(([start]) => start > pi);
   if (primary < 0) return ipa;
-  let out = ipa;
-  let shift = 0;
+  let out = ipa, shift = 0;
   for (let r = primary + 2; r < runs.length; r++) {
     const [s, e] = runs[r];
     const nuc = ipa.slice(s, e);
@@ -767,10 +733,8 @@ function addFullVowelSecondaries(ipa: string): string {
 
 // Suffixes that carry secondary stress on their own syllable.
 const SECONDARY_SUFFIXES: Array<[RegExp, RegExp]> = [
-  [/iz(?:es?|ed|ing|ers?)?$/, /aɪz/],
-  [/at(?:es?|ed|ing)?$/, /eɪt(?!.*eɪt)/],
-  [/ism$/, /ɪzəm$/],
-  [/ory$/, /ɔɹi$/],
+  [/iz(?:es?|ed|ing|ers?)?$/, /aɪz/], [/at(?:es?|ed|ing)?$/, /eɪt(?!.*eɪt)/],
+  [/ism$/, /ɪzəm$/], [/ory$/, /ɔɹi$/],
 ];
 
 // -ation attracts primary stress onto its own syllable; the stem's
@@ -783,8 +747,7 @@ const ATION_SWAP_RE = /ˈ(.*)ˌeɪʃən$/;
 // /i/. Native stress sits earlier, leaving the penult reduced, so the
 // stressed-syllable-only match doesn't touch retina/candida. /ɹ/ is
 // excluded (NEAR vowel stays lax: biro ˈbɪɹoʊ). Measured 126:15.
-const LOAN_PENULT_ORTHO_RE = /[^aeiou]i[bdfgklmnpstvz][oai]$/;
-const LOAN_PENULT_RE = new RegExp(
+const LOAN_PENULT_ORTHO_RE = /[^aeiou]i[bdfgklmnpstvz][oai]$/, LOAN_PENULT_RE = new RegExp(
   `ˈ([${IPA_C}]*)ɪ([${IPA_C.replace("ɹ", "")}])(oʊ|[əai])$`,
 );
 
@@ -793,8 +756,7 @@ const LOAN_PENULT_RE = new RegExp(
 // against credit ˈkɹɛdət, artists ˈɑɹtɪsts against artist ˈɑɹtəst
 // (-its 21 ɪ : 8 ə, -ists 30 : 14). The -s handlers inherit the stem's
 // vowel, so the raising has to happen on the joined form.
-const INFLECTED_ITS_ORTHO_RE = /i(?:st|t)s$/;
-const INFLECTED_ITS_RE = /ə(sts|ts)$/;
+const INFLECTED_ITS_ORTHO_RE = /i(?:st|t)s$/, INFLECTED_ITS_RE = /ə(sts|ts)$/;
 
 /**
  * Post-join repair for the rule and morphology paths, applied after
@@ -802,10 +764,29 @@ const INFLECTED_ITS_RE = /ə(sts|ts)$/;
  * position, add suffix secondary stress, shift primary onto -ation, and
  * fix the inflected -its/-ists vowel.
  */
-export function applyPostStress(ipa: string, word: string): string {
+export function applyPostStress(ipa: string, word: string, pos?: string): string {
   // Negative-prefix morphology can weaken /-ed/ after /t/; the joined /oʊə/ hiatus also hides the initial beat in inflected coalesc-/coalition forms.
   let out = ipa; if (/^(?:un|dis|non).+ted$/.test(word)) out = out.replace(/təd$/, "tɪd"); if (/^(?:coalesc(?:ed|ence|ing)|coalitions)$/.test(word) && !out.includes("ˌ")) out = "ˌ" + out;
   if (out.indexOf("ˈ") < 0) return out;
+  // Pretonic de- retains KIT before a stressed /tɝ/ onset in derived forms.
+  if (word.startsWith("det")) out = out.replace(/^də(?=ˈtɝ)/, "dɪ");
+  // Keep unresolved /tʃə/ compound analyses intact; stressed onsets retain KIT.
+  // Unstressed emis before another weak syllable can reduce.
+  if (word.includes("emis")) out = out.replace(/(?<![ˈˌ])(?<![ˈˌ]s)(?<!tʃə)mɪs(?=tɹi|[əɪ]z)/g, "məs");
+  // Protect stressed n/sn onsets and transparent mini-/uni- boundaries.
+  if (word.includes("niv") && !/^(?:mini|uni)/.test(word)) out = out.replace(/(?<![ˈˌ])(?<![ˈˌ]s)nɪ(?=[ˈˌ]?v[əɝɔ])/g, "nə");
+  // Greek -iac keeps its separate TRAP vowel after the tense hiatus vowel.
+  if (/iacs?$/.test(word)) out = out.replace(/[iɪ]ək(s?)$/, "iæk$1");
+  // Lexical weak -ate in noun/adjective default readings differs from the
+  // productive verbal suffix (climate /mət/ vs. federate /reɪt/).
+  // Reduce a non-verbal final -ate only when it is a suffix-like tail of a
+  // multisyllabic word. Monosyllabic roots such as rate/late/crate retain
+  // /eɪt/, and lexical -state keeps the complete root in estate/prostate.
+  const weakAte = word.endsWith("ate") && !word.endsWith("state") &&
+    nucleiBetween(out, 0, out.length) > 1 && pos !== undefined && pos !== "V";
+  if (weakAte) out = out.replace(/eɪt$/, "ət");
+  // Weak final -ase/-ose after initial NURSE reduces without moving primary stress.
+  if (/(?:ase|ose)$/.test(word)) out = out.replace(/^(ˈ[^ˈˌ]*ɝ[^ˈˌ]+)(?:eɪs|oʊz)$/, "$1əs");
   // /zm/ splits before m; voicing must preserve the stressed onset after eviction.
   out = out.replace(/(?:ˈzm|zmˈ)(?=[aeiouɑæɛɪɔʊʌəɝ])/g, "zˈm");
   if (INFLECTED_ITS_ORTHO_RE.test(word))
@@ -825,19 +806,9 @@ export function applyPostStress(ipa: string, word: string): string {
     out = out.replace(/^ɪ(?=ˈɹ)/, "ˌɪ");
   if (PRICE_HIATUS_ARY_ROOT.test(word))
     out = out.replace(/(?<![ˈˌ])tɛɹi$/, "ˌtɛɹi");
-  if (word.endsWith("ation")) {
-    out = out.replace(ATION_SWAP_RE, "ˌ$1ˈeɪʃən");
-  } else {
-    let secondaried = false;
-    for (const [wordRe, ipaRe] of SECONDARY_SUFFIXES) {
-      if (wordRe.test(word)) {
-        out = addSecondary(out, ipaRe);
-        secondaried = true;
-        break;
-      }
-    }
-    if (!secondaried) out = addFullVowelSecondaries(out);
-  }
+  if (word.endsWith("ation")) return addInitialSecondary(out.replace(ATION_SWAP_RE, "ˌ$1ˈeɪʃən"));
+  const suffix = weakAte ? undefined : SECONDARY_SUFFIXES.find(([wordRe]) => wordRe.test(word));
+  out = suffix ? addSecondary(out, suffix[1]) : addFullVowelSecondaries(out);
   // Initial secondary stress on long Latinate words. It lives in
   // phonotactics.ts next to the other stress-mark rules but is called from
   // here so it never sees lexical output: applied to dict/exception-table
@@ -849,12 +820,25 @@ export function applyPostStress(ipa: string, word: string): string {
  * Apply the unconditional cleanup then the guarded corrections, in
  * table order, to the joined syllable IPA of the rule path.
  */
-export function applyPostLexical(ipa: string, word: string, sylCount: number, finalPrimary = false): string {
+export function applyPostLexical(
+  ipa: string,
+  word: string,
+  sylCount: number,
+  finalPrimary = false,
+  syllableContext?: { syllableIPA: readonly string[]; preserveInitialAR: boolean },
+): string {
   let out = ipa;
-  for (const [from, to] of POST_PROC_RULES) out = out.replace(from, to);
+  if (syllableContext?.preserveInitialAR) {
+    const parts = syllableContext.syllableIPA.slice();
+    const left = parts[0] ?? "", right = parts[1] ?? "";
+    if (left.endsWith("ə") && right.startsWith("ɹ")) parts[1] = `\uE000${right.slice(1)}`;
+    out = parts.join("");
+  }
+  for (const [from, to, preserveBoundPrimary] of POST_PROC_RULES) if (!preserveBoundPrimary || !finalPrimary || !BOUND_IO_VERB_ROOT.test(word)) out = out.replace(from, to);
+  out = out.replace(/\uE000/g, "ɹ");
   for (const rule of POST_LEX_RULES) {
     if (!rule.when(word, sylCount, finalPrimary)) continue;
-    out = rule.fn !== undefined ? out.replace(rule.re, rule.fn) : out.replace(rule.re, rule.sub!);
+    out = rule.fn !== undefined ? out.replace(rule.re, rule.fn) : out.replace(rule.re, rule.sub);
   }
   return out;
 }

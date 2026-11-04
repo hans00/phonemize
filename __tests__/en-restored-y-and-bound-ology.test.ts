@@ -1,4 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
+import { createPhonemizer } from "../src/core";
 import { toIPA } from "../src";
 
 describe.each([false, true])("restored y and bound suffix context (disableDict=%s)", disableDict => {
@@ -26,6 +27,27 @@ describe.each([false, true])("restored y and bound suffix context (disableDict=%
     expect(g2p.predict("methodology")).toMatch(/mɛθəˈdɑ/);
     expect(g2p.predict("immunology")).toMatch(/m[ˌ]?juˈnɑ/);
     expect(g2p.predict("biology")).toMatch(/baɪˈɑ/);
+  });
+  test("short vowel-initial roots take -ology stress on the whole spelling", () => {
+    expect(g2p.predict("apology")).toMatch(/^əˈpɑɫəˌ?dʒi$/);
+    expect(g2p.predict("astrology")).toBe("əˈstɹɑɫədʒi");
+    expect(g2p.predict("ecology")).toMatch(/^(?:ɪ|i)ˈkɑɫədʒi$/);
+    for (const word of ["astrology", "ecology"]) {
+      expect(g2p.predict(word, "en", "NN")).toBe(g2p.predict(word, "en"));
+    }
+  });
+  test("keeps the -ology readings and neighboring controls in sentence context", () => {
+    const api = createPhonemizer({ processors: [g2p] });
+    const tokens = api.phonemize(
+      "Ecology and astrology influence biology, technology, and psychology.",
+      { language: "en-US", returnArray: true },
+    );
+    const ipa = (word: string) => tokens.find(token => token.word.toLowerCase() === word)?.phoneme;
+    expect(ipa("ecology")).toMatch(/^(?:ɪ|i)ˈkɑɫədʒi$/);
+    expect(ipa("astrology")).toBe("əˈstɹɑɫədʒi");
+    expect(ipa("biology")).toBe("ˌbaɪˈɑɫədʒi");
+    expect(ipa("technology")).toBe("ˌtɛknˈɑɫədʒi");
+    expect(ipa("psychology")).toBe("ˌsaɪˈkɑɫədʒi");
   });
 });
 

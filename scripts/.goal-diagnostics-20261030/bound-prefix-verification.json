@@ -1,0 +1,55 @@
+{
+  "status": "qualified accumulated complete-prefix END and negative un+i rule batch; release target and historical parity incomplete",
+  "metrics": {
+    "full": [
+      63066,
+      83966
+    ],
+    "common": [
+      5813,
+      6468,
+      3172,
+      3413
+    ],
+    "cmu": [
+      4752,
+      4258
+    ],
+    "stress": 55014,
+    "exact": 46040,
+    "homographs": 1455
+  },
+  "remaining": 478,
+  "tests": 8373,
+  "suites": 472,
+  "counts": {
+    "g2p": 1150,
+    "syllabify": 1722,
+    "postlex": 470,
+    "morph-table": 20,
+    "morph-parser": 33,
+    "total": 3395
+  },
+  "exceptions": 53396,
+  "repins": 542,
+  "snapshot": "91681bbba1f2604bd8c3546c02fadfc68c99e1b7662831b8f1f14d91e5acf3db",
+  "rows": 1296684,
+  "changedGroups": 182,
+  "defaultParity": {
+    "n": 100835,
+    "strict": 94828,
+    "lenient": 100729
+  },
+  "sourceReferences": "unchanged; source-review.json records independent authorities and scope limits",
+  "rejections": [
+    "bare a prefix breaks existing rules-only Abend control",
+    "extra END root ownership breaks outspending stress"
+  ],
+  "neutralRegex": "duplicate ab alternative removed; actual stress worker fails before, passes after; all full predictions byte-identical",
+  "openClass": "unionfed rules-only worsens while default lexical output preserved; numerous synthetic nonstandard uni-derived forms have no independent gold and are retained for diagnosis, not counted as gains",
+  "legacyFailures": [
+    "CMU rules legacy90 floor;4258/5000 unchanged",
+    "parity-v2 old population contract; current strict +4, lenient unchanged"
+  ],
+  "aiArticles": "six output streams unchanged; no new stochastic score"
+}

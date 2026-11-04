@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-28",
+  "referenceVersion": "common-cohort-v69",
+  "referenceSha256": "a698757f1bdbf367a87a84c310771d26bf81e6dbb58d816a4b16b25471e11d8f",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.03290414878398,
+    "lenientAccuracy": 92.47496423462088
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 87.50345590268178,
+    "lenientAccuracy": 94.27702515897153
+  },
+  "provenance": {
+    "method": "Unchanged frozen before predictions rescored under v68 and v69; old floors retained.",
+    "oldContract": "common-cohort-v68",
+    "newContract": "common-cohort-v69",
+    "before": [
+      5804,
+      6463,
+      3165,
+      3409
+    ],
+    "after": [
+      5804,
+      6464,
+      3165,
+      3410
+    ],
+    "runtimeChanges": 0,
+    "referenceOnlyStrictDelta": 0,
+    "predictionsSha256": "d3063e418846209056fa2d3d8bc9037e4eb617850e680779d94502a76fb1d13d",
+    "sourceSnapshotSha256": "ef976beac223c0dbd2be9149384633a131527505decf6c6b549f87bbef35e8ae"
+  }
+}

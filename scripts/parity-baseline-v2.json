@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-24",
+  "words": 100816,
+  "strictAccuracy": 94.03864465957784,
+  "lenientAccuracy": 99.89485795905412,
+  "strictCorrect": 94806,
+  "lenientCorrect": 100710,
+  "referenceVersion": "runtime-parity-en-v2",
+  "referenceSha256": "f585084e29e264c4d6c5f767c2777102136fa1065d4363e62402bcbc75ef3400",
+  "provenance": {
+    "strictCorrect": 94806,
+    "lenientCorrect": 100710,
+    "snapshot": "frozen pre-rule prediction snapshot (captured locally)",
+    "snapshotSha256": "5dc2893f38e7b755cb77f3b4c5ae1178d192103732472b8706898746315c7eda",
+    "note": "Frozen immediately before the <cket> rule change; new Cambridge references are scored on the same prediction snapshot. Reference maintenance is not a pronunciation gain."
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-28",
+  "referenceVersion": "common-cohort-v74",
+  "referenceSha256": "9f561c4c7f2062758a2b1f29f6dd821bbe29dc555b49d5cd6ca9e2f9ab726c02",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.04721030042919,
+    "lenientAccuracy": 92.47496423462088
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 87.50345590268178,
+    "lenientAccuracy": 94.27702515897153
+  },
+  "provenance": {
+    "method": "Rescore the added genuine variant against the hash-verified original prediction snapshot; preserve all scores and historical references.",
+    "oldContract": "common-cohort-v73",
+    "newContract": "common-cohort-v74",
+    "before": [
+      5805,
+      6464,
+      3165,
+      3410
+    ],
+    "after": [
+      5805,
+      6464,
+      3165,
+      3410
+    ],
+    "runtimeChanges": 0,
+    "referenceOnlyStrictDelta": 0,
+    "referenceOnlyLenientDelta": 0,
+    "sourceSnapshotSha256": "0d5192518238eeab5a3fcfaa2e18675482b28016a607e95256f6d3cf4052fc15",
+    "source": "https://dictionary.cambridge.org/us/pronunciation/english/genuine"
+  }
+}

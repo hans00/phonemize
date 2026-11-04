@@ -60,7 +60,7 @@ const ADJECTIVE_ENDINGS = [
 // Common function words that indicate following word might be a noun
 const DEMONSTRATIVES = ["this", "that", "these", "those"];
 const POSSESSIVE_DETERMINERS = ["my", "your", "his", "her", "its", "our", "their"];
-const DETERMINERS = ["the", "a", "an", ...DEMONSTRATIVES, ...POSSESSIVE_DETERMINERS];
+export const DETERMINERS = ["the", "a", "an", ...DEMONSTRATIVES, ...POSSESSIVE_DETERMINERS];
 
 // Common auxiliary verbs and modal verbs
 const AUX_VERBS = [
@@ -100,8 +100,8 @@ const ATTRIBUTIVE_SUFFIX = /(ical|ial|ous|ful|less|ible|able|ular|ic|al|m[ai]nen
 const RELATIVE_PRONOUNS = ["that", "which", "who"];
 const PREVERBAL_ADVERBS = ["also", "often", "never", "always", "usually", "still", "sometimes", "rarely", "seldom", "then", "now"];
 const VERB_PARTICLES = new Set(["down", "up", "out", "off", "over", "under", "back"]);
-const BE_FORMS = ["am", "is", "are", "was", "were", "be", "being", "been"];
-const HAVE_FORMS = ["have", "has", "had", "having"];
+export const BE_FORMS = ["am", "is", "are", "was", "were", "be", "being", "been"];
+export const HAVE_FORMS = ["have", "has", "had", "having"];
 const CONTRACTED_BE_HAVE = /^(?:(?:he|she|it|that|there|what|who)['‘’]s|i['‘’]m|(?:you|we|they)['‘’]re)$/;
 
 function isNegatedBareAuxiliary(word: string): boolean {
@@ -168,8 +168,31 @@ function hasSubordinateFiniteSubject({ words, index }: PredictionContext): boole
   return lower(marker) !== "as" || marker === 0 || /^[,;:.!?]$/.test(lower(marker - 1)) || /^(?:and|or|but)$/.test(lower(marker - 1));
 }
 
-const quantified = (word: string) => /^(?:some|any|both|many|several|all|other|certain|few|such)$/.test(word);
+export const quantified = (word: string) => /^(?:some|any|both|many|several|all|other|certain|few|such)$/.test(word);
 const LOCATIVE_PREPOSITIONS = new Set(["at", "in", "on", "near", "around", "inside", "outside", "under", "over", "through", "across", "along", "within", "throughout"]);
+
+/** A lexical homograph at the closed end of a modified, determined NP is its nominal head. */
+function hasDeterminedNominalTail({ words, index }: PredictionContext): boolean {
+  const lower = (i: number) => (words[i] ?? "").toLowerCase();
+  const next = lower(index + 1);
+  const closedByCoordinator = CONJUNCTIONS.includes(next) && !RELATIVE_PRONOUNS.includes(next);
+  if (next && !/^[,;:.!?]$/.test(next) && !closedByCoordinator &&
+      !PREPOSITIONS.includes(next) && !BE_FORMS.includes(next) &&
+      !HAVE_FORMS.includes(next) && !MODAL_VERBS.includes(next)) return false;
+
+  let modifiers = 0, adjectivalEvidence = false;
+  for (let i = index - 1; i >= Math.max(0, index - 6); i--) {
+    const token = lower(i);
+    if (DETERMINERS.includes(token) || quantified(token))
+      return modifiers > 0 && adjectivalEvidence;
+    if (!/^[a-z]+$/.test(token) || CONJUNCTIONS.includes(token) || PREPOSITIONS.includes(token) ||
+        BE_FORMS.includes(token) || HAVE_FORMS.includes(token) || MODAL_VERBS.includes(token) ||
+        FUNCTION_WORDS.has(token)) return false;
+    modifiers++;
+    if (ATTRIBUTIVE_SUFFIX.test(token) || /(?:ed|ing)$/.test(token)) adjectivalEvidence = true;
+  }
+  return false;
+}
 
 /** A plural subject can remain the subject across one bounded PP before a bare predicate. */
 function hasPluralSubjectToInfinitiveFrame({ words, index }: PredictionContext): boolean {
@@ -183,7 +206,16 @@ function hasPluralSubjectToInfinitiveFrame({ words, index }: PredictionContext):
   const floor = Math.max(0, index - 10);
   for (let head = index - 1; head >= floor; head--) {
     const noun = lower(head);
-    if (!/[^s]s$/.test(noun) || /(?:us|is)$/.test(noun) || FUNCTION_WORDS.has(noun)) continue;
+    // An unmarked plural subject can precede a bare predicate; retain a following finite clause as a noun-phrase boundary.
+    const tail = words.slice(index + 3, index + 9).map(token => token.toLowerCase());
+    const boundary = tail.findIndex(token => CONJUNCTIONS.includes(token) || /^[,;:.!?]$/.test(token));
+    const local = boundary < 0 ? tail : tail.slice(0, boundary);
+    const unmarkedSubject = head === index - 1 && lower(head - 1) === "the" && /^[a-z]{3,}$/.test(noun) && words[index] === target &&
+      !/^[,;:.!?]$/.test(lower(index + 3)) && !local.some((token, i) =>
+        BE_FORMS.includes(token) || HAVE_FORMS.includes(token) ||
+        /[^s]s$/.test(token) && (!local[i + 1] || /^[a-z]{3,}$/.test(local[i + 1]) && !FUNCTION_WORDS.has(local[i + 1])) ||
+        /[^e]ed$/.test(token) && !(i === 0 && (BE_FORMS.includes(infinitive) || HAVE_FORMS.includes(infinitive))));
+    if ((!/[^s]s$/.test(noun) || /(?:us|is)$/.test(noun)) && !unmarkedSubject || FUNCTION_WORDS.has(noun)) continue;
 
     let determiner = head - 1, modifiers = 0;
     while (determiner >= floor && modifiers < 4 && !DETERMINERS.includes(lower(determiner)) &&
@@ -280,6 +312,13 @@ function hasSharedSubjectConjunctToFrame({ words, index }: PredictionContext): b
   return subject >= 0 && predicate;
 }
 
+/** An unmarked lexical complement can also be the head of a noun compound. */
+export function hasAmbiguousBareComplement({ words, index }: PredictionContext): boolean {
+  const next = (words[index + 1] ?? "").toLowerCase();
+  return words[index - 1] !== "-" && /^[a-z]{3,}$/.test(next) && !FUNCTION_WORDS.has(next) &&
+    !VERB_PARTICLES.has(next) && !LOCATIVE_PREPOSITIONS.has(next) && !isVerbAdverb(next);
+}
+
 /** Bounded subject/object syntax; no target-word or pronunciation lexicon. */
 export function hasFiniteObjectFrame({ words, index }: PredictionContext): boolean {
   const lower = (i: number) => (words[i] ?? "").toLowerCase();
@@ -296,12 +335,16 @@ export function hasFiniteObjectFrame({ words, index }: PredictionContext): boole
         /^[a-z]{3,}$/.test(lower(quantifier)) && !FUNCTION_WORDS.has(lower(quantifier)))) quantifier--;
   const quantifiedSubject = (pluralQuantifier(lower(quantifier)) || indefiniteQuantifier(lower(quantifier)) && plural(lower(quantifiedHead))) &&
     (quantifier === 0 || /^[,;:.!?]$/.test(lower(quantifier - 1)) || CONJUNCTIONS.includes(lower(quantifier - 1)) || lower(quantifier - 1) === "how");
-  if (quantifiedSubject) subjectIndex = quantifiedHead;
+  const partitivePronoun = /^(?:us|you|them)$/.test(lower(quantifiedHead)) && lower(quantifiedHead - 1) === "of" &&
+    (pluralQuantifier(lower(quantifiedHead - 2)) || indefiniteQuantifier(lower(quantifiedHead - 2)) || /^(?:all|most)$/.test(lower(quantifiedHead - 2))) &&
+    (quantifiedHead === 2 || /^[,;:.!?]$/.test(lower(quantifiedHead - 3)) || CONJUNCTIONS.includes(lower(quantifiedHead - 3))) &&
+    /e$/.test(target) && lower(index + 1) === "to" && /^[a-z]{3,}$/.test(lower(index + 2)) && !FUNCTION_WORDS.has(lower(index + 2));
+  if (quantifiedSubject || partitivePronoun) subjectIndex = quantifiedHead;
   // A nearby prepositional modifier can separate a plural subject head from
   // the predicate ("states with low population densities commonly permit").
   // Recover only a plural noun immediately before the preposition; this
   // avoids treating the modifier's own head as the clause subject.
-  if (!quantifiedSubject) {
+  if (!quantifiedSubject && !partitivePronoun) {
     for (let prep = quantifiedHead - 1; prep > Math.max(-1, quantifiedHead - 6); prep--) {
       const candidate = lower(prep - 1);
       const interrupted = words.slice(prep + 1, quantifiedHead).some(token => /^[,;:.!?]$/.test(token));
@@ -325,7 +368,15 @@ export function hasFiniteObjectFrame({ words, index }: PredictionContext): boole
   if (plural(target) && DETERMINERS.includes(lower(modifierStart)) && lower(modifierStart - 1) === "of" &&
       !plural(lower(modifierStart - 2)) && DETERMINERS.includes(lower(modifierStart - 3)) &&
       (modifierStart === 3 || /^[,;:.!?]$/.test(lower(modifierStart - 4)) || CONJUNCTIONS.includes(lower(modifierStart - 4)))) subjectIndex = modifierStart - 2;
-  const subject = lower(subjectIndex), subjectPlural = plural(subject) || quantifiedSubject;
+  const subject = lower(subjectIndex);
+  let quantifiedOfDeterminer = subjectIndex - 1;
+  while (quantifiedOfDeterminer >= Math.max(0, subjectIndex - 4) && /^[a-z][a-z'-]*$/.test(lower(quantifiedOfDeterminer)) &&
+      !FUNCTION_WORDS.has(lower(quantifiedOfDeterminer)) && !PREPOSITIONS.includes(lower(quantifiedOfDeterminer))) quantifiedOfDeterminer--;
+  const ofQuantifier = lower(quantifiedOfDeterminer - 2), inherentlyPlural = pluralQuantifier(ofQuantifier);
+  const quantifiedOfSubject = (plural(subject) || inherentlyPlural) && (inherentlyPlural || indefiniteQuantifier(ofQuantifier) || /^(?:all|most)$/.test(ofQuantifier)) &&
+    lower(quantifiedOfDeterminer - 1) === "of" && DETERMINERS.includes(lower(quantifiedOfDeterminer)) &&
+    (quantifiedOfDeterminer === 2 || /^[,;:.!?]$/.test(lower(quantifiedOfDeterminer - 3)) || CONJUNCTIONS.includes(lower(quantifiedOfDeterminer - 3)));
+  const subjectPlural = plural(subject) || quantifiedSubject || partitivePronoun || quantifiedOfSubject && inherentlyPlural;
   const bareAllSubject = subject === "all" &&
     (subjectIndex === 0 || lower(subjectIndex - 1) === "not" || /^[,;:.!?]$/.test(lower(subjectIndex - 1)) || CONJUNCTIONS.includes(lower(subjectIndex - 1)));
   const barePluralPredicate = words[index] === target && (subjectPlural || bareAllSubject) && !plural(target) && !/(?:ed|ing)$/.test(target);
@@ -353,19 +404,21 @@ export function hasFiniteObjectFrame({ words, index }: PredictionContext): boole
   const head = lower(headIndex);
   const bareObject = barePluralPredicate && /[a-z]{3,}ed$/.test(object) && plural(head) || (plural(object) || /(?:logy|graphy)$/.test(object) || NOUN_ENDINGS.some(ending => object.endsWith(ending))) && !FUNCTION_WORDS.has(object) && PREPOSITIONS.includes(head);
   // A bare compound object can be a singular noun followed by its nominal
-  // head ("permit bicycle use on ..."). The following preposition bounds
-  // the object phrase and distinguishes it from an adjective/predicate.
+  // head ("permit bicycle use on ..."). A preposition closes the phrase;
+  // a gerund head also permits a conjunction ("medley swimming as ...").
   const unmarkedCompoundObject = /^[a-z]{3,}$/.test(object) && !FUNCTION_WORDS.has(object) && !PREPOSITIONS.includes(object) &&
     !isCardinalToken(object) && !quantified(object) &&
     /^[a-z]{3,}$/.test(lower(objectIndex + 1)) &&
-    PREPOSITIONS.includes(lower(objectIndex + 2));
+    (PREPOSITIONS.includes(lower(objectIndex + 2)) ||
+     /[a-z]{3,}ing$/.test(lower(objectIndex + 1)) && CONJUNCTIONS.includes(lower(objectIndex + 2)));
   const particleObject = hasVerbParticle && /^[a-z]{3,}$/.test(object) && !FUNCTION_WORDS.has(object) && !PREPOSITIONS.includes(object) && !isCardinalToken(object) && !quantified(object);
   const nominalObject = bareObject || unmarkedCompoundObject || particleObject;
-  if (!/^[a-z]+$/.test(target) || !(plural(target) || /e$/.test(target) && subjectPlural || barePluralPredicate && (quantifiedObject || quantifiedBareObject || cardinalObject || nominalObject || /[a-z]{3,}ing$/.test(object) || bareAllSubject && object === "it")) || FUNCTION_WORDS.has(target) ||
-      !/^[a-z]{3,}$/.test(subject) || FUNCTION_WORDS.has(subject)) return false;
+  if (!/^[a-z]+$/.test(target) || !(plural(target) || /e$/.test(target) && subjectPlural || barePluralPredicate && (quantifiedObject || quantifiedBareObject || cardinalObject || nominalObject || /^(?:into|with)$/.test(object) || /[a-z]{3,}ing$/.test(object) || bareAllSubject && object === "it")) || FUNCTION_WORDS.has(target) ||
+      (!/^[a-z]{3,}$/.test(subject) || FUNCTION_WORDS.has(subject)) && !partitivePronoun) return false;
   let determiner = subjectIndex - 1;
   while (determiner > subjectIndex - 4 && determiner >= 0 &&
       (ATTRIBUTIVE_SUFFIX.test(lower(determiner)) || /(?:ary|ory)$/.test(lower(determiner)) ||
+       /ing$/.test(lower(determiner)) && !FUNCTION_WORDS.has(lower(determiner)) ||
        /e$/.test(target) && subjectIndex !== index - 1 && NOUN_ENDINGS.some(ending => lower(determiner).endsWith(ending)) ||
        /^[A-Z][a-z]+$/.test(words[determiner] ?? "") && !FUNCTION_WORDS.has(lower(determiner)) &&
          (plural(target) || subjectIndex !== index - 1))) determiner--;
@@ -387,7 +440,7 @@ export function hasFiniteObjectFrame({ words, index }: PredictionContext): boole
   const bareSubjectBoundary = bareSubjectStart === 0 || /^[,;:.!?]$/.test(lower(bareSubjectStart - 1)) || CONJUNCTIONS.includes(lower(bareSubjectStart - 1));
   const modifiedBareSubject = bareSubjectBoundary && subjectIndex - bareSubjectStart >= 2 && !/^[A-Z]/.test(words[subjectIndex] ?? "");
   const bareSubject = subjectPlural && (subjectIndex === 0 || modifiedBareSubject || subjectIndex === 1 && /^(?:[A-Z][a-z]+|[A-Z]{2,})$/.test(words[0]) && !FUNCTION_WORDS.has(lower(0)) && !quantified(lower(0)) && (ATTRIBUTIVE_SUFFIX.test(lower(0)) || NOUN_ENDINGS.some(ending => lower(0).endsWith(ending))));
-  const subjectFrame = determinedSubject ||
+  const subjectFrame = determinedSubject || quantifiedOfSubject || partitivePronoun ||
     /e$/.test(target) && subjectPlural && subjectIndex !== index - 1 && determiner === -1 || properSubject;
   const nominal = /(?:tion|sion|ment|ness|ity|ism|ogy|ing|ics)$/.test(subject);
   // Another finite predicate makes this a noun phrase; explicit subclauses are separate.
@@ -409,6 +462,7 @@ export function hasFiniteObjectFrame({ words, index }: PredictionContext): boole
     closedPronounObject;
 
   // Plural subjects license a silent-e bare predicate governing an infinitive.
+  if (barePluralPredicate && (subjectFrame || bareSubject) && (object === "into" || object === "with" && /^[,;:.!?]$/.test(lower(objectIndex + 2)) && !/^(?:more|less|become|becomes|became)$/.test(lower(index - 1))) && /^[a-z]{3,}$/.test(lower(objectIndex + 1))) return true;
   return barePluralPredicate && /e$/.test(target) && (subjectFrame || bareSubject) && object === "to" &&
       /^[a-z]{3,}$/.test(lower(objectIndex + 1)) && !FUNCTION_WORDS.has(lower(objectIndex + 1)) ||
     words[index] === target && infinitiveObject && (subjectFrame || bareSubject) && plural(target) !== subjectPlural ||
@@ -449,6 +503,21 @@ function hasSharedInfinitiveCoordinator({ words, index }: PredictionContext): bo
 function coordinatedVerbForm(context: PredictionContext): VerbForm | undefined {
   const { words, index } = context;
   const lower = (i: number) => (words[i] ?? "").toLowerCase().replace(/[‘’]/g, "'");
+  // A modal governs three bare predicates before their shared determined object.
+  const bare = (i: number) => /^[a-z]{3,}$/.test(lower(i)) && !FUNCTION_WORDS.has(lower(i)) && !/(?:ed|ing|[^s]s)$/.test(lower(i));
+  const first = lower(index - 1) === "," ? index - 2 : /^(?:and|or)$/.test(lower(index - 1)) ? index - 5 : -1;
+  if (first >= 0 && MODAL_VERBS.includes(lower(first - 1)) && bare(first) && lower(first + 1) === "," &&
+      bare(first + 2) && lower(first + 3) === "," && /^(?:and|or)$/.test(lower(first + 4)) && bare(first + 5) &&
+      DETERMINERS.includes(lower(first + 6)) && /^[a-z]{2,}$/.test(lower(first + 7)) && !FUNCTION_WORDS.has(lower(first + 7))) return "base";
+  // A shared modal licenses coordinated bare predicates with an overt object.
+  const afterObject = lower(index + 2);
+  if (lower(index - 1) === "and" && MODAL_VERBS.includes(lower(index - 3)) &&
+      /^[a-z]{3,}$/.test(lower(index - 2)) && !FUNCTION_WORDS.has(lower(index - 2)) &&
+      !/(?:ed|ing|[^s]s)$/.test(lower(index - 2)) && !/(?:ed|ing|[^s]s)$/.test(lower(index)) &&
+      /^[a-z]{3,}$/.test(lower(index + 1)) && !FUNCTION_WORDS.has(lower(index + 1)) &&
+      !BE_FORMS.includes(afterObject) && !HAVE_FORMS.includes(afterObject) && !MODAL_VERBS.includes(afterObject) &&
+      (!/^[a-z]{3,}$/.test(afterObject) || FUNCTION_WORDS.has(afterObject) || isVerbAdverb(afterObject) ||
+       /(?:ed|en)$/.test(afterObject) && /^(?:by|to)$/.test(lower(index + 3)))) return "base";
   let previous = precedingContextIndex(context);
   while (previous >= 0 && isVerbAdverb(lower(previous))) previous--;
   const pastObject = DETERMINERS.includes(lower(index + 1)) && !DEMONSTRATIVES.includes(lower(index + 1)) ||
@@ -489,7 +558,7 @@ function coordinatedVerbForm(context: PredictionContext): VerbForm | undefined {
 }
 
 /** Infer inflection separately from POS; no pronunciation or target-word table. */
-export function inferVerbForm({ words, index }: PredictionContext): VerbForm | undefined {
+export function inferVerbForm({ words, index }: PredictionContext, readings?: ReadonlyArray<{ pos: string; forms?: readonly string[] }>): VerbForm | undefined {
   if (hasPrefixedInfinitive({ words, index })) return "base";
   if (hasSharedInfinitiveCoordinator({ words, index })) return "base";
   if (hasPluralSubjectToInfinitiveFrame({ words, index }) || hasSharedSubjectConjunctToFrame({ words, index })) return "base";
@@ -510,7 +579,11 @@ export function inferVerbForm({ words, index }: PredictionContext): VerbForm | u
     auxiliary = lower(beforeSubject);
   }
   if (["to", "do", "does", "did", ...MODAL_VERBS].includes(auxiliary) || isNegatedBareAuxiliary(auxiliary)) return "base";
-  if (HAVE_FORMS.includes(auxiliary) || BE_FORMS.includes(auxiliary) || CONTRACTED_BE_HAVE.test(auxiliary) || /^(?:have|has|had)n't$|'ve$/.test(auxiliary)) return "participle";
+  if (HAVE_FORMS.includes(auxiliary) || BE_FORMS.includes(auxiliary) || CONTRACTED_BE_HAVE.test(auxiliary) || /^(?:have|has|had)n't$|'ve$/.test(auxiliary)) {
+    if (hasAmbiguousBareComplement({ words, index }) && readings?.some(entry => entry.pos === "!V" && entry.forms?.includes("base")) &&
+        readings.some(entry => entry.pos === "V" && entry.forms?.includes("participle"))) return undefined;
+    return "participle";
+  }
   const coordinated = coordinatedVerbForm({ words, index });
   if (coordinated) return coordinated;
   // A quoted nominal followed by a named by-agent supplies a reduced passive.
@@ -571,7 +644,7 @@ export function inferVerbForm({ words, index }: PredictionContext): VerbForm | u
 }
 
 // Common prepositions that indicate following word might be a noun
-const PREPOSITIONS = [
+export const PREPOSITIONS = [
   "in",
   "on",
   "at",
@@ -594,7 +667,7 @@ const PREPOSITIONS = [
 const IMPERATIVE_INDICATORS = ["please", "don't", "do", "doesn't", "never"];
 
 // Modal verbs that indicate following word is likely a verb
-const MODAL_VERBS = [
+export const MODAL_VERBS = [
   "shall",
   "can",
   "will",
@@ -607,11 +680,11 @@ const MODAL_VERBS = [
 ];
 
 // Subject pronouns that indicate following word is likely a verb
-const SUBJECT_PRONOUNS = ["i", "you", "he", "she", "it", "we", "they"];
+export const SUBJECT_PRONOUNS = ["i", "you", "he", "she", "it", "we", "they"];
 
 // All personal/object/reflexive pronouns (used as a function-word
 // indicator — they're unstressed in connected speech).
-const PRONOUNS = [
+export const PRONOUNS = [
   ...SUBJECT_PRONOUNS,
   "me", "him", "us", "them",
   "my", "your", "his", "her", "its", "our", "their",
@@ -708,7 +781,7 @@ export class SimplePOSTagger {
   /**
    * Tag a single word with its most likely POS
    */
-  public tagWord(word: string, context?: string[], sentence?: PredictionContext): POSResult {
+  public tagWord(word: string, context?: string[], sentence?: PredictionContext, hasReadingContrast = false, hasVerbalAdjective = false, hasAdjectiveReading = false): POSResult {
     const lowerWord = word.toLowerCase();
 
     // Check if current word is determiner first
@@ -733,7 +806,30 @@ export class SimplePOSTagger {
       if (sentence && sentence.words[sentence.index]?.toLowerCase() === lowerWord && hasSingularSubjectLocativeFrame(sentence))
         return { word, pos: "V", confidence: 0.8 };
 
+      // A base-form homograph can close a modified noun phrase several words
+      // after its determiner (a frequent high school required read).
+      if (hasReadingContrast && sentence && sentence.words[sentence.index]?.toLowerCase() === lowerWord &&
+          !/(?:ed|ing|s)$/.test(lowerWord) && !NEGATIVE_ADJECTIVAL_FORM.test(lowerWord) &&
+          !ADJECTIVE_ENDINGS.some(ending => lowerWord.endsWith(ending)) && hasDeterminedNominalTail(sentence))
+        return { word, pos: "N", confidence: 0.78 };
+
       // Enhanced detection patterns - highest priority first
+
+      // In an "as A and ADJ" predicate, the second conjunct supplies a
+      // syntactic category cue for an ambiguous adjective/verb homograph.
+      // Require both an independently available adjective reading and a
+      // strong adjectival ending on the coordinated head.
+      if (sentence && hasAdjectiveReading && lowerWord === sentence.words[sentence.index]?.toLowerCase() &&
+          prevWord === "as" && nextWord === "and" &&
+          /(?:ant|ent|able|ible|al|ial|ful|less|ous|ive|ic|ish|y)$/.test(sentence.words[sentence.index + 2]?.toLowerCase() ?? ""))
+        return { word, pos: "ADJ", confidence: 0.88 };
+
+      // An ordinal between a possessive and its head is a noun-phrase modifier.
+      if (sentence && /^(?:first|second|third|(?:four|fif|six|seven|eigh|nin|ten|eleven|twelf|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twentie|thirtie|fortie|fiftie|sixtie|seventie|eightie|ninetie|hundred|thousand|million)th|[0-9]+(?:st|nd|rd|th))$/.test(prevWord ?? "") && /['’]s$|s['’]$/.test(sentence.words[sentence.index - 2]?.toLowerCase() ?? "") && !/[^s]s$/.test(lowerWord) && (!nextWord || /^[,;:.!?]$/.test(nextWord) || PREPOSITIONS.includes(nextWord) || CONJUNCTIONS.includes(nextWord))) return { word, pos: "N", confidence: 0.8 };
+
+      // A sentence-initial modifier and gerund head form the subject of a copula.
+      if (hasReadingContrast && sentence?.index === 0 && /ate$/.test(lowerWord) && /[a-z]{3,}ing$/.test(nextWord ?? "") && BE_FORMS.includes(sentence.words[2]?.toLowerCase() ?? ""))
+        return { word, pos: "N", confidence: 0.75 };
 
       // A by-agent after an -ed form distinguishes a passive from a predicate adjective.
       if (sentence && /ed$/.test(lowerWord) && nextWord === "by") {
@@ -798,8 +894,11 @@ export class SimplePOSTagger {
       if (prevWord && prevWord.length > 4 && (ATTRIBUTIVE_SUFFIX.test(prevWord) || sentence &&
           /ing$/.test(prevWord) && !/s$/.test(lowerWord) && !DETERMINERS.includes(nextWord ?? "") &&
           DETERMINERS.includes(sentence.words[sentence.index - (OPEN_DELIMITER.test(sentence.words[sentence.index - 2] ?? "") ? 3 : 2)]?.toLowerCase())) &&
-          !(sentence && /^[A-Z][a-z]{2,}$/.test(sentence.words[sentence.index + 1] ?? "") &&
-            (PREPOSITIONS.includes(sentence.words[sentence.index + 2]?.toLowerCase()) || sentence.words[sentence.index + 2]?.toLowerCase() === "as") && hasFiniteObjectFrame(sentence))) {
+          !(sentence && (/^[A-Z][a-z]{2,}$/.test(sentence.words[sentence.index + 1] ?? "") &&
+            (PREPOSITIONS.includes(sentence.words[sentence.index + 2]?.toLowerCase()) || sentence.words[sentence.index + 2]?.toLowerCase() === "as") ||
+            PREPOSITIONS.includes(sentence.words[sentence.index - 3]?.toLowerCase() ?? "") &&
+            DETERMINERS.includes(sentence.words[sentence.index - 2]?.toLowerCase() ?? "") &&
+            /[^s]s$/.test(sentence.words[sentence.index - 4]?.toLowerCase() ?? "")) && hasFiniteObjectFrame(sentence))) {
         return { word, pos: "N", confidence: 0.6 };
       }
 
@@ -827,6 +926,14 @@ export class SimplePOSTagger {
         return { word, pos: "N", confidence: 0.95 };
       }
 
+      // A determiner anchors the first item of a comma-separated noun list.
+      if (sentence && sentence.words[sentence.index - 1] === "," && sentence.words[sentence.index + 1] === "," &&
+          DETERMINERS.includes(sentence.words[sentence.index - 3]?.toLowerCase() ?? "") &&
+          /^[a-z]{2,}$/i.test(sentence.words[sentence.index - 2] ?? "") &&
+          /^[a-z]{2,}$/i.test(sentence.words[sentence.index + 2] ?? "") &&
+          !FUNCTION_WORDS.has(sentence.words[sentence.index + 2]?.toLowerCase() ?? ""))
+        return { word, pos: "N", confidence: 0.75 };
+
       // An inflected s form after a preposition cannot be a bare infinitive.
       if (prevWord && PREPOSITIONS.includes(prevWord) && /[^s]s$/.test(lowerWord) &&
           !/(?:us|is)$/.test(lowerWord) && lowerWord.length > 3)
@@ -846,7 +953,7 @@ export class SimplePOSTagger {
         return { word, pos: "V", confidence: 0.8 };
 
       if (sentence && sentence.words[sentence.index]?.toLowerCase() === lowerWord &&
-          (prevWord === "and" || isVerbAdverb(prevWord ?? "")) && coordinatedVerbForm(sentence))
+          (prevWord === "and" || sentence.words[sentence.index - 1] === "," || isVerbAdverb(prevWord ?? "")) && coordinatedVerbForm(sentence))
         return { word, pos: "V", confidence: 0.8 };
 
       // Subject pronoun + word -> likely verb (I read, he leads, etc.)
@@ -880,11 +987,17 @@ export class SimplePOSTagger {
 
       // Negated verb: not + word (did not read, cannot refuse)
       if (prevWord === "not") {
+        // A copular complement is nonverbal unless its adjective shares the verb reading.
+        if (sentence && !hasVerbalAdjective && BE_FORMS.includes(sentence.words[sentence.index - 2]?.toLowerCase() ?? "") && (!nextWord || PREPOSITIONS.includes(nextWord) || /^[,;:.!?]$/.test(nextWord))) return { word, pos: "!V", confidence: 0.8 };
         return { word, pos: "V", confidence: 0.75 };
       }
 
       // Infinitive marker: to + word -> likely verb (to read, to present)
       if (prevWord === "to") {
+        // These compound prepositions take nominal complements; leave open
+        // modifiers and ordinary infinitives to the existing context rules.
+        if (sentence && /^(?:prior|subsequent|owing|according)$/.test(sentence.words[sentence.index - 2]?.toLowerCase() ?? "") &&
+            (!nextWord || /^(?:of|[.,;:!?])$/.test(nextWord) || BE_FORMS.includes(nextWord) || HAVE_FORMS.includes(nextWord))) return { word, pos: "N", confidence: 0.8 };
         // Passive placement plus a closed complement supplies a nominal state, not an infinitival object.
         if (sentence && sentence.words[sentence.index - 2]?.toLowerCase() === "put" &&
             (!sentence.words[sentence.index + 1] || /^[,;:.!?]$/.test(sentence.words[sentence.index + 1]))) {
@@ -900,6 +1013,11 @@ export class SimplePOSTagger {
       // verb the V reading of a homograph stands for. Measured on the
       // WikipediaHomographData train split: V is right 12% of the time here.
       if (prevWord && (BE_FORMS.includes(prevWord) || HAVE_FORMS.includes(prevWord))) {
+        // Some homographs explicitly share their verb pronunciation with an
+        // adjective (content). Keep the adjective POS so lookup selects that
+        // shared reading instead of the unrelated noun pronunciation.
+        if (BE_FORMS.includes(prevWord) && hasVerbalAdjective)
+          return { word, pos: "ADJ", confidence: 0.85 };
         return { word, pos: "!V", confidence: 0.8 };
       }
 
@@ -920,6 +1038,14 @@ export class SimplePOSTagger {
           NOUN_ENDINGS.some(ending => sentence.words[sentence.index - 1]?.toLowerCase().endsWith(ending)) &&
           /^(?:when|because|although|while|if|after|before|since|until|once|as|though|unless)$/.test(sentence.words[sentence.index - 2]?.toLowerCase() ?? ""))
         return { word, pos: "V", confidence: 0.75 };
+
+      // A determined subject NP can close before a regular past predicate and its object.
+      // A past modifier can close the same NP; preserve inflectional ambiguity there.
+      if (sentence && sentence.words[sentence.index + 1]?.toLowerCase() === nextWord && /^[a-z]{2,}[^e]ed$/.test(nextWord ?? "") &&
+          DETERMINERS.includes(sentence.words[sentence.index + 2]?.toLowerCase() ?? "") && !isVerbAdverb(lowerWord) && !/ed$/.test(lowerWord) && !hasReadingContrast &&
+          [1, 2, 3, 4].some(distance => DETERMINERS.includes(sentence.words[sentence.index - distance]?.toLowerCase() ?? "") &&
+            sentence.words.slice(sentence.index - distance + 1, sentence.index).every(token => /^[a-z]+$/i.test(token) &&
+              (!FUNCTION_WORDS.has(token.toLowerCase()) || isVerbAdverb(token.toLowerCase()))))) return { word, pos: "N", confidence: 0.75 };
 
       // Subject position: word + be/have/modal (the record was, the transform is)
       if (nextWord && (BE_FORMS.includes(nextWord) || HAVE_FORMS.includes(nextWord) || MODAL_VERBS.includes(nextWord))) {

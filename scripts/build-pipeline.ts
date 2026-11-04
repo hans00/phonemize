@@ -18,8 +18,6 @@
 import { spawnSync } from "child_process";
 import { join } from "path";
 
-const TSX = join("node_modules", ".bin", "tsx");
-
 interface Step {
   script: string;
   args?: string[];
@@ -59,9 +57,9 @@ for (const step of STEPS) {
         .join("")
     : "";
   const argSuffix = step.args?.length ? ` ${step.args.join(" ")}` : "";
-  console.log(`\n▶ ${envPrefix}tsx scripts/${step.script}${argSuffix}`);
+  console.log(`\n▶ ${envPrefix}node --require tsx/cjs scripts/${step.script}${argSuffix}`);
 
-  const res = spawnSync(TSX, [join("scripts", step.script), ...(step.args ?? [])], {
+  const res = spawnSync(process.execPath, ["--require", "tsx/cjs", join("scripts", step.script), ...(step.args ?? [])], {
     stdio: "inherit",
     env: { ...process.env, ...step.env },
   });

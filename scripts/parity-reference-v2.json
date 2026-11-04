@@ -1,0 +1,62 @@
+{
+  "version": "runtime-parity-en-v2",
+  "supersedes": "runtime-parity-en-v1",
+  "population": 100816,
+  "corrections": {
+    "becket": {
+      "from": "ˈbɛkət",
+      "to": "ˈbɛkɪt",
+      "source": "https://dictionary.cambridge.org/pronunciation/english/becket"
+    },
+    "cricket": {
+      "from": "ˈkɹɪkət",
+      "to": "ˈkɹɪkɪt",
+      "source": "https://dictionary.cambridge.org/pronunciation/english/cricket"
+    },
+    "docket": {
+      "from": "ˈdɑkət",
+      "to": "ˈdɑkɪt",
+      "source": "https://dictionary.cambridge.org/us/dictionary/english/docket"
+    },
+    "jacket": {
+      "from": "ˈdʒækət",
+      "to": "ˈdʒækɪt",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/jacket"
+    },
+    "packet": {
+      "from": "ˈpækət",
+      "to": "ˈpækɪt",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/packet"
+    },
+    "pocket": {
+      "from": "ˈpɑkət",
+      "to": "ˈpɑkɪt",
+      "source": "https://dictionary.cambridge.org/us/dictionary/english/pocket"
+    },
+    "rocket": {
+      "from": "ˈɹɑkət",
+      "to": "ˈɹɑkɪt",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/rocket"
+    },
+    "socket": {
+      "from": "ˈsɑkət",
+      "to": "ˈsɑkɪt",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/socket"
+    },
+    "sprocket": {
+      "from": "ˈspɹɑkət",
+      "to": "ˈspɹɑkɪt",
+      "source": "https://dictionary.cambridge.org/zht/pronunciation/english/sprocket"
+    },
+    "ticket": {
+      "from": "ˈtɪkət",
+      "to": "ˈtɪkɪt",
+      "source": "https://dictionary.cambridge.org/us/dictionary/english/ticket"
+    },
+    "ticketless": {
+      "from": "ˈtɪkətɫəs",
+      "to": "ˈtɪkɪtɫəs",
+      "source": "https://dictionary.cambridge.org/us/dictionary/english/ticket (productive -less derivation)"
+    }
+  }
+}

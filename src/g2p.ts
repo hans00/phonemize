@@ -16,10 +16,24 @@
 // === Type Definitions ===
 
 export type VerbForm = "base" | "past" | "participle";
+/** Diagnostic projections only; alternatives across tokens must not be recombined. */
+export interface SentenceTokenEvidence {
+  readonly tags: readonly string[];
+  readonly verbForms: readonly string[];
+  readonly basis: "closed-class" | "shape" | "unsupported";
+}
+export interface SentenceAnalysis {
+  readonly mode: "shadow";
+  readonly processorId: string;
+  readonly words: readonly string[];
+  readonly status: "parsed" | "unparsed" | "truncated";
+  readonly tokens: readonly SentenceTokenEvidence[];
+}
 /** Original token stream; index points to the word being predicted. */
 export interface PredictionContext {
   readonly words: readonly string[];
   readonly index: number;
+  readonly analysis?: SentenceAnalysis;
 }
 
 /**
@@ -55,6 +69,9 @@ export interface LanguageProcessor {
    * undefined — the tokenizer treats the absence as a no-op.
    */
   preProcess?(text: string): string;
+
+  /** Optional immutable sentence diagnosis; tagWord remains the occurrence override seam. */
+  analyzeSentence?(words: readonly string[], language?: string): SentenceAnalysis;
 
   /**
    * Optional per-token POS tag (mostly for homograph disambiguation).

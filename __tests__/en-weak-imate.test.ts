@@ -15,7 +15,13 @@ describe("weak /ɪ/ before final -mate", () => {
     expect(g2p.predict(word, "en-US")).toBe(ipa);
   });
 
-  it("keeps the /aɪ/ vowel team in climate outside the reduction", () => {
-    expect(g2p.predict("climate", "en-US")).toBe("ˈkɫaɪmeɪt");
+  it("uses the sourced climate root without generalizing -ate reduction", () => {
+    expect(g2p.predict("climate", "en-US")).toBe("ˈkɫaɪmət");
+    expect(g2p.predict("private", "en-US")).toBe("ˈpɹaɪvət");
+    expect(g2p.predict("evaluate", "en-US")).toBe("ɪˈvæɫjuˌeɪt");
+  });
+
+  it("uses the independently verified US citation form in the shipped dictionary", () => {
+    expect(new EnglishG2P().predict("climate", "en-US")).toBe("ˈkɫaɪmət");
   });
 });

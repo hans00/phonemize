@@ -24,8 +24,7 @@ describe("the <w>ow spelling frame", () => {
     ["mowed", "ˈmoʊd"],
     ["mowing", "ˈmoʊɪŋ"],
     ["tow", "ˈtoʊ"],
-    ["tower", "ˈtoʊɝ"],
-    ["toward", "ˈtoʊɝd"],
+    ["toward", "təˈwɔɹd"],
     ["low", "ˈɫoʊ"],
     ["lower", "ˈɫoʊɝ"],
     ["know", "ˈnoʊ"],
@@ -33,6 +32,15 @@ describe("the <w>ow spelling frame", () => {
     ["show", "ˈʃoʊ"],
     ["slow", "ˈsɫoʊ"],
   ])("keeps GOAT in neighboring %s", (word, ipa) => {
+    expect(rules.predict(word, "en-US")).toBe(ipa);
+  });
+
+  it.each([
+    ["flower", "ˈfɫaʊɝ"],
+    ["tower", "ˈtaʊɝ"],
+    ["shower", "ˈʃaʊɝ"],
+    ["glower", "ˈɡɫaʊɝ"],
+  ])("uses MOUTH in the productive -ower frame: %s", (word, ipa) => {
     expect(rules.predict(word, "en-US")).toBe(ipa);
   });
 });

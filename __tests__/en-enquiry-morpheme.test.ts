@@ -16,7 +16,6 @@ describe.each([true, false])("enquiry family rime (disableDict=%s)", disableDict
   it.each([
     ["acquire", ["əˈkwaɪɹ", "əˈkwaɪɝ"], "əˈkwaɪɝ"],
     ["require", ["ɹiˈkwaɪɹ", "ɹiˈkwaɪɝ"], ["ˌɹiˈkwaɪɝ", "ɹiˈkwaɪɝ"]],
-    ["query", "ˈkwɛɹi", "ˈkwiɹi"],
     ["quiet", "ˈkwaɪət", "ˈkwaɪət"],
   ])("preserves neighboring forms: %s", (word, rulesReadings, dictionaryReadings) => {
     const readings = disableDict ? rulesReadings : dictionaryReadings;

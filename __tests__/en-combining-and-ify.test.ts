@@ -15,12 +15,12 @@ describe.each([false, true])("combining forms and suffix context (disableDict=%s
 
   test("auto- keeps its component reading in compounds", () => {
     if (disableDict) {
-      expect(g2p.predict("automotive")).toBe("ˌɔtoʊˈmoʊtɪv");
+      expect(g2p.predict("automotive")).toBe("ˌɔtəˈmoʊtɪv");
       expect(g2p.predict("automotives")).toBe("ˌɔtəˈmoʊtɪvz");
       expect(g2p.predict("autoeurope")).toBe("ˌɔtoʊˈjʊɹəp");
       expect(g2p.predict("autopilot")).toBe("ˈɔtoʊˌpaɪɫət");
       expect(g2p.predict("autopacific")).toBe("ˌɔtoʊpəˈsɪfɪk");
-      expect(g2p.predict("non-automotive")).toBe("nɑnˈˌɔtoʊmoʊtɪv");
+      expect(g2p.predict("non-automotive")).toBe("nɑnˈˌɔtəmoʊtɪv");
     }
   });
 

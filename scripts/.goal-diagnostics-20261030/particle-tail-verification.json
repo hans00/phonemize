@@ -1,0 +1,68 @@
+{
+  "status": "validated accumulated root+particle batch; full release goal and historical parity contract remain incomplete",
+  "referenceContract": "common-cohort-v71",
+  "metrics": {
+    "full": [
+      63108,
+      83984
+    ],
+    "common": [
+      5815,
+      6469,
+      3173,
+      3414
+    ],
+    "cmu": [
+      4752,
+      4259
+    ],
+    "stress": 55057,
+    "exact": 46052,
+    "homographs": 1455,
+    "parity": {
+      "n": 100835,
+      "strict": 94834,
+      "lenient": 100729
+    }
+  },
+  "commonStrictGain": 1,
+  "fullStrictGain": 39,
+  "fullLenientGain": 14,
+  "stressGain": 39,
+  "exactGain": 9,
+  "runtimeParityGain": 6,
+  "remaining": 476,
+  "tests": 8461,
+  "suites": 474,
+  "counts": {
+    "g2p": 1149,
+    "syllabify": 1723,
+    "postlex": 470,
+    "morph-table": 20,
+    "morph-parser": 33,
+    "total": 3395
+  },
+  "exceptions": {
+    "before": 53393,
+    "after": 53355,
+    "added": [
+      "gallup",
+      "hangup"
+    ],
+    "removed": 40
+  },
+  "repins": 542,
+  "snapshot": "d6ff6618532dad7873eac9a1fcf43f7a68340962a7108535a08f2d4ee9123fb1",
+  "rows": 1296684,
+  "changedRows": 580,
+  "frozenRebuiltByteIdentical": true,
+  "context": "every eval/train reading, class, supported subset and complete report field preserved",
+  "prose": "20 full sentence streams; non-target words/spans preserved; six article streams unchanged",
+  "legacyFailures": [
+    "CMU rules legacy90 floor4259/5000 remains below90%",
+    "formal parity-v2 original population100816 differs from100835; original floor and reference contract untouched",
+    "pre-existing homograph train per-lemma floor issues unchanged"
+  ],
+  "sourceGap": "hangup source has an independently refuted extra g; no source/reference correction or claimed default correction in this batch",
+  "committed": false
+}

@@ -1,4 +1,5 @@
 import EnG2P from "../src/en/g2p";
+import { createPhonemizer } from "../src/core";
 
 // Rule-path regressions for the vowel classes fixed in the 2026-09
 // heuristic-learning pass. Every case is a rule, not a word: the word
@@ -113,6 +114,36 @@ describe("word-final suffix vowels", () => {
   });
 });
 
+describe("the final vowel in native -cket words", () => {
+  it.each([
+    ["packet", "ˈpækɪt"],
+    ["jacket", "ˈdʒækɪt"],
+    ["pocket", "ˈpɑkɪt"],
+    ["ticket", "ˈtɪkɪt"],
+    ["socket", "ˈsɑkɪt"],
+    ["cricket", "ˈkɹɪkɪt"],
+    ["rocket", "ˈɹɑkɪt"],
+    ["bracket", "ˈbɹækɪt"],
+    ["bucket", "ˈbʌkɪt"],
+    ["becket", "ˈbɛkɪt"],
+    ["docket", "ˈdɑkɪt"],
+    ["picket", "ˈpɪkɪt"],
+    ["racket", "ˈɹækɪt"],
+    ["locket", "ˈɫɑkɪt"],
+    ["thicket", "ˈθɪkɪt"],
+    ["wicket", "ˈwɪkɪt"],
+    ["sprocket", "ˈspɹɑkɪt"],
+    ["jackets", "ˈdʒækɪts"],
+    ["packets", "ˈpækɪts"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("keeps similar -ket words with schwa", () => {
+    expect(rules("basket")).toBe("ˈbæskət");
+    expect(rules("market")).toBe("ˈmɑɹkət");
+    expect(rules("blanket")).toBe("ˈbɫæŋkət");
+  });
+});
+
 describe("plural readings", () => {
   it("does not read this/his/has as plurals of a lexical stem", () => {
     expect(rules("this")).toBe("ˈðɪs");
@@ -201,6 +232,39 @@ describe("open e is tense in the magic-e frame and before -tion/-sion", () => {
     expect(rules("college")).toBe("ˈkɑɫɪdʒ");
     expect(rules("generous")).toBe("ˈdʒɛnɝəs");
     expect(rules("section")).toBe("ˈsɛkʃən");
+  });
+});
+
+describe("Latinate re-/de- before weak -cent", () => {
+  it.each([
+    ["recent", "ˈɹisənt"],
+    ["decent", "ˈdisənt"],
+    ["recently", "ˈɹisəntɫi"],
+    ["recentness", "ˈɹisəntnəs"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it("keeps strong-root -cent controls out of the weak suffix frame", () => {
+    expect(rules("accent")).toBe("ˈæksənt");
+    expect(rules("percent")).toBe("pɝˈsɛnt");
+    expect(rules("percentage")).toBe("pɝˈsɛntɪdʒ");
+    expect(rules("percentile")).toBe("pɝˈsɛntɪɫ");
+    expect(rules("cent")).toBe("ˈsɛnt");
+    expect(rules("vincent")).toBe("ˈvɪnsənt");
+  });
+
+  it("keeps the compositional unit reading in sentence context", () => {
+    const api = createPhonemizer({ processors: [new EnG2P({ disableDict: true })] });
+    const tokens = api.phonemize(
+      "Costs fell by ten percent. The recent report mentioned a decent rate and a clear accent.",
+      { language: "en-US", returnArray: true },
+    );
+    const readings = tokens.filter(token => ["percent", "recent", "decent", "accent"].includes(token.word.toLowerCase()));
+    expect(readings.map(token => [token.word.toLowerCase(), token.phoneme])).toEqual([
+      ["percent", "pɝˈsɛnt"],
+      ["recent", "ˈɹisənt"],
+      ["decent", "ˈdisənt"],
+      ["accent", "ˈæksənt"],
+    ]);
   });
 });
 
@@ -392,9 +456,30 @@ describe("indefinite compounds", () => {
   const g = new EnG2P({ disableDict: true });
   it.each([
     ["anything", /^ˈɛniˌθɪŋ$/],
+    ["nothing", /^ˈnʌθɪŋ$/],
     ["someone", /^ˈsʌmˌwʌn$/],
     ["somewhere", /ˌwɛɹ$/],
+    ["nohow", /^ˈnoʊˌhaʊ$/],
+    ["noone", /^ˈnoʊˌwʌn$/],
   ])("%s", (w, re) => expect(g.predict(w, "en")).toMatch(re));
+
+  it("composes weak an with the stressed free word other", () => {
+    expect(g.predict("another", "en")).toBe("əˈnʌðɝ");
+  });
+
+  it("keeps the composition in sentence tokenization and preserves other", () => {
+    const api = createPhonemizer({ processors: [g] });
+    const tokens = (sentence: string) => api.phonemize(sentence, { language: "en-US", returnArray: true });
+    expect(tokens("Another person arrived.").find(({ word }) => word.toLowerCase() === "another")?.phoneme).toBe("əˈnʌðɝ");
+    expect(tokens("The other person arrived.").find(({ word }) => word.toLowerCase() === "other")?.phoneme).toBe("ˈʌðɝ");
+  });
+
+  it("carries the lexicalized nothing reading into regular derivatives", () => {
+    expect(g.predict("nothingness", "en")).toBe("ˈnʌθɪŋnəs");
+    expect(g.predict("nothings", "en")).toBe("ˈnʌθɪŋz");
+    expect(g.predict("nohow", "en")).toBe("ˈnoʊˌhaʊ");
+    expect(g.predict("noone", "en")).toBe("ˈnoʊˌwʌn");
+  });
 });
 
 // a + w + a/o: the w is the next onset, not part of an aw digraph
@@ -432,4 +517,27 @@ describe("a bare -ic syllable", () => {
   // the text "$1" for these.
   it.each(["ickes", "lewicki"])("%s has no substitution residue", (w) =>
     expect(rules(w)).not.toContain("$"));
+});
+
+describe("word-final written <i> takes FLEECE in the rules path", () => {
+  const engine = new EnG2P({ disableDict: true });
+  it.each([
+    ["ski", "ˈski"],
+    ["Mississippi", "ˌmɪsɪsɪˈpi"],
+    ["taxi", "ˈtæksi"],
+    ["mini", "ˈmɪni"],
+  ])("%s → %s", (word, ipa) => expect(engine.predict(word, "en-US")).toBe(ipa));
+
+  it("preserves the final-i class and neighboring controls in a sentence", () => {
+    const api = createPhonemizer({ processors: [engine] });
+    const tokens = api.phonemize("A ski instructor from Mississippi took a taxi.", {
+      language: "en-US", returnArray: true,
+    });
+    // Attributive ski is stressless in this noun compound; the vowel stays
+    // FLEECE while the sentence-level stress controller owns the stress mark.
+    expect(tokens.find(token => token.word === "ski")?.phoneme).toBe("ski");
+    expect(tokens.find(token => token.word === "Mississippi")?.phoneme).toBe("ˌmɪsɪsɪˈpi");
+    expect(tokens.find(token => token.word === "taxi")?.phoneme).toBe("ˈtæksi");
+    expect(tokens.find(token => token.word === "instructor")?.phoneme).toBe(engine.predict("instructor", "en-US"));
+  });
 });

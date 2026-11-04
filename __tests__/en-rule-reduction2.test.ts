@@ -79,8 +79,8 @@ describe("a word-final <e> under a geminate t raises to /ɪ/", () => {
     ["brackett", "ˈbɹækɪt"],
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 
-  it("leaves the single-t rime on the schwa path", () => {
-    expect(rules("bracket")).toBe("ˈbɹækət");
+  it("recognizes the -cket KIT rime with a single t", () => {
+    expect(rules("bracket")).toBe("ˈbɹækɪt");
   });
 });
 
@@ -92,7 +92,7 @@ describe("the unstressed vowel before -ce reduces", () => {
   it.each([
     ["palace", "ɫəs"],
     ["notice", "tɪs"],
-    ["purchase", "tʃeɪs"],
+    ["purchase", "tʃəs"], // Oxford records the weak vowel for both noun and verb.
     ["furnace", "nəs"],
   ])("%s ends in %s", (word, tail) => expect(rules(word)).toMatch(new RegExp(`${tail}$`)));
 

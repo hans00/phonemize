@@ -37,6 +37,17 @@ describe.each([false, true])("contextual verb stems before silent-e restoration 
     expect(reading(target("readings", "readings"))).toEqual(reading("ˈɹidɪŋz"));
   });
 
+  it("uses the common process verb reading in derived forms and keeps the noun", () => {
+    expect(reading(target("They are processing the applications.", "processing")))
+      .toEqual(reading("ˈpɹɑsɛsɪŋ"));
+    expect(reading(target("The processed applications were archived.", "processed")))
+      .toEqual(reading("ˈpɹɑsɛst"));
+    expect(reading(target("They process the applications.", "process")))
+      .toEqual(reading("ˈpɹɑsɛs"));
+    expect(reading(target("The process was completed.", "process")))
+      .toEqual(reading("ˈpɹɑsɛs"));
+  });
+
   it("preserves a capitalized geographical reading", () => {
     expect(reading(target("They stopped in Reading yesterday.", "Reading"))).toEqual(reading("ˈɹɛdɪŋ"));
   });

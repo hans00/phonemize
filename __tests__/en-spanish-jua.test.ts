@@ -12,7 +12,6 @@ describe("internal Spanish-loan <jua>", () => {
 
   it.each([
     ["jua", "ˈdʒʌæ"],
-    ["juan", "ˈdʒʌæn"],
     ["juana", "dʒəˈænə"],
     ["juanita", "dʒəəˈnitə"],
     ["juarez", "dʒəˈæɹɛz"],
@@ -21,5 +20,9 @@ describe("internal Spanish-loan <jua>", () => {
     ["kajuahar", "ˈkædʒəəhɝ"],
   ])("preserves the contrasting <j> reading in %s", (word, expected) => {
     expect(rules.predict(word, "en-US")).toBe(expected);
+  });
+
+  it("uses the dictionary reading for the established name Juan", () => {
+    expect(rules.predict("juan", "en-US")).toBe("ˈhwɑn");
   });
 });

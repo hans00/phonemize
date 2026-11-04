@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-04",
+  "words": 100816,
+  "strictAccuracy": 94.04162037771782,
+  "lenientAccuracy": 99.89584986510077,
+  "referenceVersion": "runtime-parity-en-v6",
+  "referenceRowsSha256": "4b08f8ca16445622fbe22345c4d9be6583a639ee9d35c3f7e10b2bad906ca176",
+  "strictCorrect": 94809,
+  "lenientCorrect": 100711,
+  "provenance": {
+    "kind": "explicit reference-contract migration; frozen prediction snapshot retained",
+    "frozenSnapshotSha256": "5dc2893f38e7b755cb77f3b4c5ae1178d192103732472b8706898746315c7eda",
+    "frozenSnapshotArchive": "scripts/.prediction-cache/diagnostic-81373dbf5863771c61dafffa985ad8addf45ffb76975084e367d46f5a0147668.tar.gz",
+    "historicalV2BaselineSha256": "2e3f400bbc90e2463e4882807101f5cb3e7575ea53e9d75a132b38b27397fc8b",
+    "historicalV2Floor": [
+      94806,
+      100710
+    ],
+    "v6FrozenFloor": [
+      94806,
+      100709
+    ],
+    "change": "replaced the false hurricane plural reference with the Cambridge US singular pronunciation; v2 baseline file remains unchanged",
+    "snapshotSha256": "6939ab8913d75c2f7edb4affd2e91174a4293e06d8364e6030e193c10d2d94c2",
+    "snapshot": "/home/hans/Projects/phonemize/scripts/.prediction-cache/parity-6939ab8913d75c2f7edb4affd2e91174a4293e06d8364e6030e193c10d2d94c2.tsv.gz"
+  }
+}

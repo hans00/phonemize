@@ -1,5 +1,6 @@
 /**
- * Fixed top-5,000 English frequency benchmark against all CMUdict variants.
+ * Fixed top-5,000 English frequency benchmark against all CMUdict variants,
+ * plus independently verified Cambridge US variants in the versioned reference contract.
  * This is segment-match accuracy, not a stress/context or held-out score.
  * Missing references remain in the denominator and never count as correct.
  *
@@ -13,6 +14,8 @@ import { join, resolve } from "path";
 import { createPhonemizer } from "../src/core";
 import EnglishG2P from "../src/en/g2p";
 import sources = require("./common-accuracy-sources.json");
+import referenceV6 = require("./common-accuracy-reference-v7.json");
+import baselineV6 = require("./common-accuracy-baseline-v7.json");
 
 // Independent reference conversion: do not share the runtime converter or
 // phonotactics, since their bugs must remain visible to this benchmark.
@@ -50,6 +53,30 @@ export function parseCmu(text: string): Map<string, string[]> {
   }
   return entries;
 }
+
+export function applyReferenceCorrections(
+  reference: Map<string, string[]>,
+  corrections: Partial<Record<string, { retain: string[]; add: string[]; source: string }>> = referenceV6.corrections,
+): Map<string, string[]> {
+  const corrected = new Map([...reference].map(([word, variants]) => [word, [...variants]]));
+  for (const [word, correction] of Object.entries(corrections)) {
+    if (!correction) throw new Error(`Invalid reference correction: ${word}`);
+    const variants = corrected.get(word);
+    if (!variants || !correction.retain.every(ipa => variants.includes(ipa)))
+      throw new Error(`Reference correction does not match pinned CMU entry: ${word}`);
+    if (correction.add.some(ipa => !ipa || variants.includes(ipa)))
+      throw new Error(`Invalid or duplicate accepted variant for ${word}`);
+    variants.push(...correction.add);
+  }
+  return corrected;
+}
+
+if (baselineV6.metric !== referenceV6.version ||
+    baselineV6.frequencySha256 !== sources.frequency.sha256 ||
+    baselineV6.cmudictSha256 !== sources.reference.sha256 ||
+    baselineV6.referenceCorrections !== "common-accuracy-reference-v7.json" ||
+    createHash("sha256").update(JSON.stringify(referenceV6)).digest("hex") !== baselineV6.referenceCorrectionsSha256)
+  throw new Error("Common API accuracy baseline does not match its pinned source contract");
 
 export function scoreWords(
   words: string[],
@@ -107,16 +134,21 @@ async function main() {
   if (words.length !== 5000 || new Set(words).size !== 5000)
     throw new Error("Expected exactly 5,000 unique ranked items");
   const phonemizer = createPhonemizer({ processors: [new EnglishG2P({ disableDict })] });
-  const report = scoreWords(words, parseCmu(inputs[1]), (word) => phonemizer.toIPA(word, "en-US"));
+  const cmu = parseCmu(inputs[1]);
+  if (words.length !== referenceV6.population) throw new Error("Reference version population mismatch");
+  const report = scoreWords(words, applyReferenceCorrections(cmu, referenceV6.corrections), (word) => phonemizer.toIPA(word, "en-US"));
   const output = join(cache, disableDict ? "rules-report.json" : "default-report.json");
   writeFileSync(output, JSON.stringify({
-    metric: "common-en-5000-segments-v1", sources,
+    metric: referenceV6.version, sources, referenceCorrections: referenceV6.corrections,
     mode: disableDict ? "disableDict" : "default", ...report,
   }, null, 2) + "\n");
   console.log(`Mode: ${disableDict ? "disableDict" : "default"}; public toIPA API, en-US`);
   console.log(`Segment accuracy: ${report.correct}/${report.total} = ${report.accuracy.toFixed(2)}%`);
   console.log(`Mismatches: ${report.mismatches}; missing references (not correct): ${report.missing}`);
   console.log(`Report: ${output}`);
+  const baselineCorrect = disableDict ? baselineV6.rules.correct : baselineV6.default.correct;
+  console.log(`No-regression baseline: ${baselineCorrect}/${report.total} (${report.correct >= baselineCorrect ? "PASS" : "FAIL"})`);
+  if (report.correct < baselineCorrect) process.exitCode = 1;
   console.log(`90% gate: ${report.accuracy >= 90 ? "PASS" : "FAIL"}`);
   if (report.accuracy < 90) process.exitCode = 1;
 }

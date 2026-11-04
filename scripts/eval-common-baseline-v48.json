@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-24",
+  "referenceVersion": "common-cohort-v48",
+  "referenceSha256": "4d8f7c358c99c003158c972ae47bc83c3b09c4031bf8706c37f42c16bfecd2b4",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 82.18884120171673,
+    "lenientAccuracy": 92.26037195994277
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 86.42521426651922,
+    "lenientAccuracy": 94.00055294442909
+  }
+}

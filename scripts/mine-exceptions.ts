@@ -563,10 +563,12 @@ const RunA = reloadRuntime();
 const runtimeA = new RunA({ disableDict: true });
 const correctA = new Set<string>();
 const strictCorrectA = new Set<string>();
+const rawCorrectA = new Set<string>();
 for (const [word, dictIpa] of dictWords) {
   const pred = runtimeA.predict(word, "en");
   if (isExactMatch(pred, dictIpa)) correctA.add(word);
   if (isStrictMatch(pred, dictIpa)) strictCorrectA.add(word);
+  if (pred === dictIpa) rawCorrectA.add(word);
 }
 
 // Run B: same, but with every evicted stem restored — simulates
@@ -580,14 +582,17 @@ const RunB = reloadRuntime();
 const runtimeB = new RunB({ disableDict: true });
 const correctB = new Set<string>();
 const strictCorrectB = new Set<string>();
+const rawCorrectB = new Set<string>();
 for (const [word, dictIpa] of dictWords) {
   const pred = runtimeB.predict(word, "en");
   if (isExactMatch(pred, dictIpa)) correctB.add(word);
   if (isStrictMatch(pred, dictIpa)) strictCorrectB.add(word);
+  if (pred === dictIpa) rawCorrectB.add(word);
 }
 
 const flipSet = new Map<string, string>(); // wrong in A, exact in B
 const strictFlipSet = new Map<string, string>(); // strict wrong in A, exact in B
+const rawFlipSet = new Map<string, string>();
 let antiFlips = 0; // exact in A, wrong in B — blanket-restore risk
 for (const [word, dictIpa] of dictWords) {
   const a = correctA.has(word);
@@ -595,6 +600,7 @@ for (const [word, dictIpa] of dictWords) {
   if (!a && b) flipSet.set(word, dictIpa);
   if (a && !b) antiFlips++;
   if (!strictCorrectA.has(word) && strictCorrectB.has(word)) strictFlipSet.set(word, dictIpa);
+  if (!rawCorrectA.has(word) && rawCorrectB.has(word)) rawFlipSet.set(word, dictIpa);
 }
 console.log(
   `Rules-only (disableDict:true) mismatches under shippedMap: ${dictWords.length - correctA.size}`,
@@ -701,6 +707,23 @@ for (const [word, dictIpa] of strictFlipSet) {
 if (resolvedByStrictFallback.size > 0) {
   console.log(`Phase 1c (segmental strict stems): ${resolvedByStrictFallback.size}/${strictFlipSet.size}`);
 }
+
+// Preserve independently attested stem stress boundaries when eviction loses an exact reading.
+const resolvedRaw = new Set<string>();
+for (const [word, dictIpa] of rawFlipSet) {
+  if (!correctA.has(word) || !correctB.has(word)) continue;
+  const bucket = (evictedBuckets.get(word.slice(0, 3)) ?? []).filter(
+    stem => word === stem + "es" && /(?:sh|ch|s|x|z)$/.test(stem) && !AMBIGUOUS_CLUSTER_E.test(stem),
+  );
+  for (const stem of bucket) {
+    const probe = new AttribCtor({ disableDict: true });
+    probe.addPronunciation(stem, evictedMap.get(stem)!);
+    if (probe.predict(word, "en") !== dictIpa) continue;
+    if (!attributed.get(stem)?.includes(word)) attribute(stem, word);
+    resolvedRaw.add(word); break;
+  }
+}
+console.log(`Phase 1d (raw stress boundaries): ${resolvedRaw.size}/${rawFlipSet.size}`);
 
 // Phase 1b (prefix + inflection): an outer privative prefix hides the
 // inflection stem's first letters from the shared-prefix buckets above
@@ -839,7 +862,11 @@ for (let round = 0; round < 3; round++) {
   const benefit = new Map<string, number>();
   const withoutStem = new Map<string, InstanceType<typeof NetCtor>>();
   for (const [word, dictIpa] of dictWords) {
-    if (!correctA.has(word) || isExactMatch(netRuntime.predict(word, "en"), dictIpa)) continue;
+    if (!correctA.has(word)) continue;
+    const prediction = netRuntime.predict(word, "en");
+    const primaryLost = !isExactMatch(prediction, dictIpa);
+    const rawLost = rawCorrectA.has(word) && prediction !== dictIpa;
+    if (!primaryLost && !rawLost) continue;
     for (const stem of rePinned.keys()) {
       const culprit = word.startsWith(stem) || (word.length >= 8 && stem.length >= 3 && word.includes(stem));
       if (!culprit) continue;
@@ -852,7 +879,8 @@ for (let round = 0; round < 3; round++) {
         withoutStem.set(stem, probe);
       }
       // A spelling overlap is only a candidate; require actual pipeline rescue.
-      if (isExactMatch(probe.predict(word, "en"), dictIpa))
+      const restored = probe.predict(word, "en");
+      if ((!primaryLost || isExactMatch(restored, dictIpa)) && (!rawLost || restored === dictIpa))
         benefit.set(stem, (benefit.get(stem) ?? 0) + 1);
     }
   }
@@ -892,12 +920,21 @@ const finalMap: Record<string, string> = { ...shippedMap, ...Object.fromEntries(
 }
 
 // Load after the initial empty-table reset: evaluation phone helpers import G2P.
-const { protectOovPlurals } = require("./protect-oov-plurals") as typeof import("./protect-oov-plurals");
-const pluralPins = protectOovPlurals(
+const { protectEdRoots, protectOovDerivatives } = require("./protect-oov-plurals") as typeof import("./protect-oov-plurals");
+const derivativePins = protectOovDerivatives(
   reloadRuntime(), dict, finalMap, evictedMap,
   JSON.parse(readFileSync("./data/en/homographs.json", "utf8")),
 );
-for (const [root, ipa] of Object.entries(pluralPins)) {
+for (const [root, ipa] of Object.entries(derivativePins)) {
+  finalMap[root] = ipa;
+  rePinned.set(root, ipa);
+}
+const pastPins = protectEdRoots(
+  reloadRuntime(), dict, finalMap, evictedMap,
+  JSON.parse(readFileSync("./data/en/compound-parts.json", "utf8")).tails,
+  JSON.parse(readFileSync("./data/en/homographs.json", "utf8")),
+);
+for (const [root, ipa] of Object.entries(pastPins)) {
   finalMap[root] = ipa;
   rePinned.set(root, ipa);
 }

@@ -1,4 +1,4 @@
-import { preferCarefulFinalTs } from "../scripts/dict-variants";
+import { preferCarefulFinalTs, preferKitFinalCket } from "../scripts/dict-variants";
 
 describe("careful IPA-Dict variants before final -ts", () => {
   it("drops only t-deleted alternatives and preserves stress variants", () => {
@@ -39,5 +39,34 @@ describe("careful IPA-Dict variants before final -ts", () => {
 
     expect(preferCarefulFinalTs(notFinalTs, "act")).toBe(notFinalTs);
     expect(preferCarefulFinalTs(noPairedT, "flavorists")).toBe(noPairedT);
+  });
+});
+
+describe("careful -cket lexical vowel", () => {
+  it.each([
+    ["jacket", "ˈdʒækət", "ˈdʒækɪt"],
+    ["packet", "ˈpækət", "ˈpækɪt"],
+    ["pocket", "ˈpɑkət", "ˈpɑkɪt"],
+    ["bucket", "ˈbʌkət", "ˈbʌkɪt"],
+    ["sprocket", "ˈspɹɑkət", "ˈspɹɑkɪt"],
+    ["jackets", "ˈdʒækəts", "ˈdʒækɪts"],
+    ["jacketed", "ˈdʒækətɪd", "ˈdʒækɪtɪd"],
+    ["jacketing", "ˈdʒækətɪŋ", "ˈdʒækɪtɪŋ"],
+    ["ticketless", "ˈtɪkətɫəs", "ˈtɪkɪtɫəs"],
+    ["Nantucket", "nænˈtʌkət", "nænˈtʌkɪt"],
+    ["pocketful", "ˈpɑkətˌfʊɫ", "ˈpɑkɪtˌfʊɫ"],
+    ["pocketfuls", "ˈpɑkətˌfʊɫz", "ˈpɑkɪtˌfʊɫz"],
+    ["pocketbook", "ˈpɑkətˌbʊk", "ˈpɑkɪtˌbʊk"],
+    ["pocketbooks", "ˈpɑkətˌbʊks", "ˈpɑkɪtˌbʊks"],
+  ])("uses KIT for %s", (word, input, expected) => {
+    expect(preferKitFinalCket(input, word)).toBe(expected);
+  });
+
+  it.each([
+    ["bluejacket", "ˈbɫuˌdʒækɪt"],
+    ["mashantucket", "ˌmæʃənˈtʌkət"],
+    ["basket", "ˈbæskət"],
+  ])("leaves non-final -cket environments unchanged for %s", (word, ipa) => {
+    expect(preferKitFinalCket(ipa, word)).toBe(ipa);
   });
 });

@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-03",
+  "referenceVersion": "common-cohort-v85",
+  "referenceSha256": "1352825fd8d00e1d16751077f0fdb21d695cc9e5fe44a7c3f44f7b90a4b4c7fb",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.91988555078684,
+    "lenientAccuracy": 92.74678111587983
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 88.13934199612939,
+    "lenientAccuracy": 94.58114459496821
+  },
+  "provenance": {
+    "method": "Re-scored v84 frozen rule predictions under v85 with Cambridge US accepted variant for patent; no prediction changes. This is reference-only.",
+    "oldContract": "common-cohort-v84",
+    "newContract": "common-cohort-v85",
+    "before": [
+      5865,
+      6482,
+      3187,
+      3420
+    ],
+    "after": [
+      5866,
+      6483,
+      3188,
+      3421
+    ],
+    "runtimeChanges": 0,
+    "sourceSnapshotSha256": "7653119d6ff1e5e3f6a4912bacbd8b021adab04e2ff48936f2ee5d5ce3fa868b",
+    "sources": {
+      "patent": "https://dictionary.cambridge.org/us/dictionary/english/patent"
+    }
+  }
+}

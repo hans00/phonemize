@@ -44,6 +44,8 @@ function collapseInitialDoubleA(ipa: string): string {
   return ipa.replace(INIT_AA_RE, "$1ɑ");
 }
 
+
+
 // ─── Rule: word-final /dt/ → /t/ ──────────────────────────────────────────
 function simplifyDtFinal(ipa: string): string {
   const len = ipa.length;
@@ -184,9 +186,22 @@ export function restoreIreCodaBeforeAgent(ipa: string, word?: string): string {
 // NOT followed by a vowel, so hetero-syllabic /i.r/ (hero, serious, hero)
 // keeps tense /i/. Runs before the unstressed ɪɹ→ɝ coalescence below.
 const FLEECE_NEAR_RE = /iɹ(?![aeiouɑæɛɪɔʊʌəɝ])/g;
-function laxFleeceBeforeCodaR(ipa: string): string {
+// Keep the intervocalic /ɹ/ case separate: /iɹV/ normally stays FLEECE,
+// but after /w/ the checked class (queries, queried, weary) has NEAR.
+// Stress is transparent because it may be written between the nucleus and /ɹ/.
+const W_NEAR_HIATUS_RE = /(?<=w)i(?=[ˈˌ]?ɹ[aeiouɑæɛɪɔʊʌəɝ])/g;
+// The spelling-only class is for rules-generated readings; a whole-word
+// dictionary entry can carry an unrelated proper-name vowel.
+function laxFleeceAfterWBeforeR(ipa: string, preserveDictionaryReading = false): string {
+  if (preserveDictionaryReading || ipa.indexOf("wi") < 0) return ipa;
+  return ipa.replace(W_NEAR_HIATUS_RE, "ɪ");
+}
+
+function laxFleeceBeforeCodaR(ipa: string, word?: string): string {
   if (ipa.indexOf("iɹ") < 0) return ipa;
-  return ipa.replace(FLEECE_NEAR_RE, "ɪɹ");
+  const out = ipa.replace(FLEECE_NEAR_RE, "ɪɹ");
+  // A regular -est boundary retains the NEAR root; other intervocalic r readings stay intact.
+  return /(?:ear|eer)est(?:s|'s|ly|ness(?:es)?)?$/.test(word ?? "") ? out.replace(/iɹ(?=əst)/g, "ɪɹ") : out;
 }
 
 // ─── Rule: unstressed /ɪɹ/ → /ɝ/ ──────────────────────────────────────────
@@ -196,11 +211,13 @@ function laxFleeceBeforeCodaR(ipa: string): string {
 // /[aeoɔ]ɝ/ 10 (byron, admire, cyrus, abshire). Skipping the offglide is the
 // same DIPHTHONG_PRE_I guard tenseHiatusI and applyHappyTensing use.
 const RHOTIC_IR_RE = /ɪɹ/g;
-function coalesceUnstressedIR(ipa: string): string {
+function coalesceUnstressedIR(ipa: string, word?: string): string {
   if (ipa.indexOf("ɪɹ") < 0) return ipa;
   return ipa.replace(RHOTIC_IR_RE, (_m, offset) => {
     const pos = offset as number;
     if (pos > 0 && DIPHTHONG_PRE_I.indexOf(ipa[pos - 1]) >= 0) return "ɪɹ";
+    // Final -ere after an s-obstruent keeps its vowel; include plural -spheres.
+    if ((/ere(?:'s)?$/.test(word ?? "") || /sph(?=eres$)/.test(word ?? "")) && /s[ftpk]$/.test(ipa.slice(pos - 2, pos)) && /^[sz]?$/.test(ipa.slice(pos + 2))) return "ɪɹ";
     // Walk back for nearest stress mark vs vowel. Stress mark before
     // any other vowel → this ɪ is stressed → don't coalesce.
     for (let i = pos - 1; i >= 0; i--) {
@@ -402,7 +419,13 @@ function applyHappyTensing(ipa: string): string {
  * the -ed suffix test in fixPastTenseED). `pos` preserves lexical syllabic
  * -ed after velars outside verb readings.
  */
-export function applyPhonotactics(ipa: string, word?: string, pos?: string, lexicalVelarED = false): string {
+export function applyPhonotactics(
+  ipa: string,
+  word?: string,
+  pos?: string,
+  lexicalVelarED = false,
+  preserveDictionaryReading = false,
+): string {
   let cur = ipa;
   cur = collapseInitialDoubleA(cur);
   cur = simplifyDtFinal(cur);
@@ -410,8 +433,9 @@ export function applyPhonotactics(ipa: string, word?: string, pos?: string, lexi
   cur = dropSilentH(cur);
   cur = normalizeStrut(cur, word);
   cur = restoreIreCodaBeforeAgent(cur, word);
-  cur = laxFleeceBeforeCodaR(cur);
-  cur = coalesceUnstressedIR(cur);
+  cur = laxFleeceAfterWBeforeR(cur, preserveDictionaryReading);
+  cur = laxFleeceBeforeCodaR(cur, word);
+  cur = coalesceUnstressedIR(cur, word);
   cur = tenseHiatusI(cur);
   cur = simplifyPluralAfterVowel(cur);
   cur = weakVowelInflection(cur, word);

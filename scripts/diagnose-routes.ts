@@ -14,8 +14,8 @@ import * as ts from "typescript";
 import levenshtein from "fast-levenshtein";
 import EnglishG2P from "../src/en/g2p";
 import dictionary from "../data/en/dict.json";
-import commonCohort from "./common-cohort.json";
-import { commonGold } from "./common-cohort-gold";
+import commonCohort from "./common-cohort-v86.json";
+import { commonGoldVariants, commonReferenceContract } from "./common-cohort-gold";
 import { isForeign } from "./foreign-filter";
 
 const argv = process.argv.slice(2);
@@ -103,7 +103,7 @@ function canon(ipa: string): string {
     for (const variant of group.slice(1)) result = result.split(variant).join(group[0]);
   return result;
 }
-const score = (ipa: string, gold: string): number[] => [Number(strip(ipa) === strip(gold)), Number(levenshtein.get(canon(ipa), canon(gold)) <= 1)];
+const score = (ipa: string, gold: string[]): number[] => [Number(gold.some(g => strip(ipa) === strip(g))), Number(gold.some(g => levenshtein.get(canon(ipa), canon(g)) <= 1))];
 const frequencyPath = join(__dirname, ".common-accuracy-cache/frequency.txt");
 const frequency = new Set(readFileSync(frequencyPath, "utf8").trim().split(/\s+/));
 const words = (argv.includes("--all") || argv.includes("--include-long")
@@ -115,15 +115,18 @@ if (!argv.includes("--all") && !argv.includes("--include-long") && limit === Inf
   throw new Error(`Frozen common cohort mismatch: found ${words.length}, expected ${commonCohort.n}`);
 }
 type Row = { word: string; gold: string; baseline: string; alternative: string; delta: number[] };
+type RouteObservation = { word: string; label: string };
 type Group = { alternative: string; label: string; changed: number; strict: number[]; lenient: number[]; rows: Row[] };
 const groups = new Map<string, Group>();
+const routeObservations: RouteObservation[] = [];
 const totals: Record<string, number[]> = Object.fromEntries(["baseline", ...Object.keys(alternatives)].map(name => [name, [0, 0]]));
 for (const word of words) {
   activeWord = word.toLowerCase(); observed = undefined;
   const baseline = lab.predict(word, "en") ?? "";
   if (baseline !== (unmodified.predict(word, "en") ?? "")) throw new Error(`Instrumentation changed ${word}`);
   const label = observed ?? "outside-predictInternal";
-  const gold = commonGold(word, (dictionary as Record<string, string>)[word])!, before = score(baseline, gold);
+  routeObservations.push({ word, label });
+  const gold = commonGoldVariants(word, (dictionary as Record<string, string>)[word]), before = score(baseline, gold);
   before.forEach((count, i) => totals.baseline[i] += count);
   for (const [name, skipped] of Object.entries(alternatives)) {
     let alternative: string;
@@ -139,7 +142,7 @@ for (const word of words) {
     const group = groups.get(key) ?? { alternative: name, label, changed: 0, strict: [0, 0], lenient: [0, 0], rows: [] };
     group.changed++;
     delta.forEach((count, i) => { if (count) (i === 0 ? group.strict : group.lenient)[count > 0 ? 0 : 1]++; });
-    group.rows.push({ word, gold, baseline, alternative, delta }); groups.set(key, group);
+    group.rows.push({ word, gold: gold.join(" | "), baseline, alternative, delta }); groups.set(key, group);
   }
 }
 const sorted = [...groups.values()].sort((a, b) => (b.lenient[0] - b.lenient[1]) - (a.lenient[0] - a.lenient[1]));
@@ -148,8 +151,8 @@ const fingerprints = Object.fromEntries(["scripts/diagnose-routes.ts", ...readdi
   ...readdirSync(join(repo, "data/en")).filter(name => name.endsWith(".json")).map(name => `data/en/${name}`)].map(path => [path, hash(join(repo, path))]));
 mkdirSync(out, { recursive: true });
 writeFileSync(join(out, "report.json"), JSON.stringify({ scope: argv.includes("--all") ? "full dictionary" : "English subset", n: words.length,
-  limit: Number.isFinite(limit) ? limit : null, includeLong: argv.includes("--include-long"), baselineVerified: words.length, totals,
-  fingerprints, frequencyHash: hash(frequencyPath), labels, groups: sorted }, null, 2) + "\n");
+  limit: Number.isFinite(limit) ? limit : null, includeLong: argv.includes("--include-long"), baselineVerified: words.length, totals, routeObservations,
+  fingerprints, frequencyHash: hash(frequencyPath), commonReferenceContract, labels, groups: sorted }, null, 2) + "\n");
 console.log(`Verified ${words.length} baseline predictions; strict/lenient totals:`, totals);
 for (const group of sorted) console.log(`${group.alternative} ${group.label}: changed ${group.changed}, strict +${group.strict[0]}/-${group.strict[1]}, lenient +${group.lenient[0]}/-${group.lenient[1]}`);
 console.log(`Full win/loss evidence: ${join(out, "report.json")}`);

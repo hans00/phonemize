@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-03",
+  "referenceVersion": "common-cohort-v81",
+  "referenceSha256": "d01c1afaac115d71e53b932db0c23b95ab9e251d893e4b7645285c8fdc5f1bb8",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.89127324749643,
+    "lenientAccuracy": 92.73247496423463
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 88.11169477467514,
+    "lenientAccuracy": 94.55349737351396
+  },
+  "provenance": {
+    "method": "Re-scored the unchanged frozen prediction snapshot under v81; its presidential prediction matches the primary reference, so historical counts remain unchanged.",
+    "oldContract": "common-cohort-v80",
+    "newContract": "common-cohort-v81",
+    "before": [
+      5864,
+      6482,
+      3187,
+      3420
+    ],
+    "after": [
+      5864,
+      6482,
+      3187,
+      3420
+    ],
+    "runtimeChanges": 0,
+    "sourceSnapshotSha256": "7653119d6ff1e5e3f6a4912bacbd8b021adab04e2ff48936f2ee5d5ce3fa868b",
+    "sources": {
+      "presidential": "https://dictionary.cambridge.org/pronunciation/english/presidential"
+    }
+  }
+}

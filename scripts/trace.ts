@@ -19,6 +19,8 @@ for (const word of words) {
     console.log(`  rules-only:/${r.ipa}/`);
   if (r.syllables?.length)
     console.log(`  syllables: ${r.syllables.join(' · ')}`);
+  if (r.structure?.kind === "legacy-compound")
+    console.log(`  structure: ${r.structure.left.spelling} + ${r.structure.right.spelling} [${r.structure.boundary}; ${r.structure.stressOwner} stress]`);
   if (r.steps.length) {
     console.log('  rule hits:');
     for (const s of r.steps)

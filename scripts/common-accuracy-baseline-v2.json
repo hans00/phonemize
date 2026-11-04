@@ -1,0 +1,9 @@
+{
+  "metric": "common-en-5000-segments-v2",
+  "frequencySha256": "981c776dc7e8996accb256e5fea9d241331b9602efe0c977285734890e1ae729",
+  "cmudictSha256": "81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22",
+  "referenceCorrections": "common-accuracy-reference-v2.json",
+  "referenceCorrectionsSha256": "b34d8b5cc8f23fdbfd9bf27445f42f88629fe544bff0fc3f572e671cc5addcb2",
+  "default": { "total": 5000, "correct": 4748 },
+  "rules": { "total": 5000, "correct": 4227 }
+}

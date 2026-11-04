@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-28",
+  "referenceVersion": "common-cohort-v75",
+  "referenceSha256": "4f8176537a5427af767f9f4bd4200b77e3ce3ac263c14c4d03c94fc080d8a1e4",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.09012875536482,
+    "lenientAccuracy": 92.47496423462088
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 87.50345590268178,
+    "lenientAccuracy": 94.27702515897153
+  },
+  "provenance": {
+    "method": "Rescore four additional Cambridge readings against the hash-verified original predictions; preserve old readings and denominator.",
+    "oldContract": "common-cohort-v74",
+    "newContract": "common-cohort-v75",
+    "before": [
+      5805,
+      6464,
+      3165,
+      3410
+    ],
+    "after": [
+      5808,
+      6464,
+      3165,
+      3410
+    ],
+    "runtimeChanges": 0,
+    "referenceOnlyStrictDelta": 3,
+    "referenceOnlyLenientDelta": 0,
+    "sourceSnapshotSha256": "0d5192518238eeab5a3fcfaa2e18675482b28016a607e95256f6d3cf4052fc15",
+    "sources": {
+      "diploma": "https://dictionary.cambridge.org/pronunciation/english/diploma",
+      "soma": "https://dictionary.cambridge.org/us/pronunciation/english/soma",
+      "hypothesis": "https://dictionary.cambridge.org/us/pronunciation/english/hypothesis",
+      "republican": "https://dictionary.cambridge.org/pronunciation/english/republican"
+    }
+  }
+}

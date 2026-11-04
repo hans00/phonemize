@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-28",
+  "referenceVersion": "common-cohort-v71",
+  "referenceSha256": "29afdc61ff8b8de826ae3a32bfb61d7f085f40007bdc3bdce18c0e52ae084d7f",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.01859799713877,
+    "lenientAccuracy": 92.46065808297568
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 87.50345590268178,
+    "lenientAccuracy": 94.27702515897153
+  },
+  "provenance": {
+    "method": "Only changed reference row interim rescored from the hash-verified original v70 full snapshot; exact deltas applied to retained original baseline counts. All old floors retained; no missing predictions invented.",
+    "oldContract": "common-cohort-v70",
+    "newContract": "common-cohort-v71",
+    "before": [
+      5804,
+      6464,
+      3165,
+      3410
+    ],
+    "after": [
+      5803,
+      6463,
+      3165,
+      3410
+    ],
+    "runtimeChanges": 0,
+    "referenceOnlyStrictDelta": -1,
+    "predictionsSha256": "d3063e418846209056fa2d3d8bc9037e4eb617850e680779d94502a76fb1d13d",
+    "sourceSnapshotSha256": "0d5192518238eeab5a3fcfaa2e18675482b28016a607e95256f6d3cf4052fc15"
+  }
+}

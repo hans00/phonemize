@@ -17,4 +17,5 @@ scripts/.wikipron-cache/
 scripts/.common-accuracy-cache/
 scripts/.homograph-cache/
 scripts/.article-eval-cache/
+scripts/.prediction-cache/
 scripts/eval-data-wikipron/

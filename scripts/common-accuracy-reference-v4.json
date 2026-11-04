@@ -1,0 +1,10 @@
+{
+  "version": "common-en-5000-segments-v4",
+  "supersedes": "common-en-5000-segments-v3",
+  "population": 5000,
+  "corrections": {
+    "query": { "retain": ["kwiɹi"], "add": ["kwɪɹi"], "source": "https://dictionary.cambridge.org/pronunciation/english/query" },
+    "pocket": { "retain": ["pɑkət"], "add": ["pɑkɪt"], "source": "https://dictionary.cambridge.org/us/dictionary/english/pocket" },
+    "online": { "retain": ["ɔnlaɪn"], "add": ["ɑnlaɪn"], "source": "https://dictionary.cambridge.org/us/pronunciation/english/online" }
+  }
+}

@@ -16,7 +16,7 @@ describe("front as a productive English root", () => {
     ["frontz", "ˈfɹɑnts"],
     ["frontispiece", "ˌfɹɑntɪˈspis"],
     ["company", "ˈkʌmpəni"],
-    ["London", "ˈɫɑndən"],
+    ["London", "ˈɫʌndən"],
   ])("leaves the unrelated spelling control %s unchanged", (word, expected) => {
     expect(rules.toIPA(word, "en-US")).toBe(expected);
   });

@@ -23,7 +23,7 @@ describe("regular -s preserves the doubled-l -all rime", () => {
     expect(rules.predict("calling", "en-US")).toBe("ˈkɔɫɪŋ");
     expect(rules.predict("pal", "en-US")).toBe("ˈpæɫ");
     expect(rules.predict("pals", "en-US")).toBe("ˈpɔɫz");
-    expect(rules.predict("shall", "en-US")).toBe("ˈʃɔɫ");
+    expect(rules.predict("shall", "en-US")).toBe("ˈʃæɫ");
     expect(rules.predict("install", "en-US")).toBe("ˌɪnˈstɔɫ");
     expect(rules.predict("installment", "en-US")).toBe("ˌɪnˈstɔɫmənt");
   });

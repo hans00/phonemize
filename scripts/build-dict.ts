@@ -4,7 +4,7 @@ import * as json5 from "json5";
 import { arpabetToIpa } from "../src/utils";
 import { restoreIreCodaBeforeAgent } from "../src/en/phonotactics";
 import { normalizeRegularEdAllomorph, restoreNasalStopBeforeIng } from "./normalize-ipa-dict";
-import { preferCarefulFinalTs } from "./dict-variants";
+import { preferCarefulFinalTs, preferKitFinalCket } from "./dict-variants";
 
 interface DictEntry {
   [word: string]: string;
@@ -16,7 +16,7 @@ interface DictEntry {
 // 125,927 entries, and variants[0] (the pick used everywhere below until
 // this change) is frequently the CASUAL-SPEECH form: next ˈnɛks (not
 // ˈnɛkst), accounted əˈkaʊnəd (not əˈkaʊntɪd). dict.json is both the
-// runtime lexicon source and the reference evaluate.ts/evaluate-parity.ts/
+// runtime lexicon source and the reference evaluate.ts/evaluate-parity-v6.ts/
 // evaluate-common-accuracy.ts score against, so shipping the casual form
 // teaches — and grades — a less standard pronunciation than a dictionary
 // should.
@@ -216,7 +216,9 @@ function parseDict(
     const originalSelection = selectVariant(pool, isHeteronym);
     const carefulSelection = selectVariant(preferCarefulFinalTs(pool, lowerWord), isHeteronym);
     if (carefulSelection !== originalSelection) correctedReferences.add(lowerWord);
-    const ipa = normalizeMultiplePrimaryStress(carefulSelection);
+    const cketSelection = preferKitFinalCket(carefulSelection, lowerWord);
+    if (cketSelection !== carefulSelection) correctedReferences.add(lowerWord);
+    const ipa = normalizeMultiplePrimaryStress(cketSelection);
     const correctedIpa = normalizeRegularEdAllomorph(lowerWord, restoreNasalStopBeforeIng(lowerWord, ipa));
     dict[lowerWord] = correctedIpa;
     if (correctedIpa !== ipa) correctedReferences.add(lowerWord);
@@ -419,6 +421,23 @@ async function main(): Promise<void> {
       .pathname;
     const customSource = fs.readFileSync(customDictPath, "utf-8");
     const customDict = loadCmuDict(customSource);
+    // Explicitly reviewed rule-path exceptions from the existing custom.dict
+    // remain available to the dictionary-free route. Ordinary custom overlays
+    // remain dictionary-only unless their source line carries this marker.
+    const rulePathWords = new Set(customSource.split(/\r?\n/).flatMap(line => {
+      if (!/#.*\brule-path-exception\b/i.test(line)) return [];
+      const match = line.match(/^([a-zA-Z']+(?:\(\d+\))?)/);
+      return match ? [match[1].replace(/\(\d+\)$/, "").toLowerCase()] : [];
+    }));
+    const rulePathCustom = Object.fromEntries(Object.entries(customDict).filter(([word]) => rulePathWords.has(word)));
+    fs.writeFileSync(path.join(enDir, "rule-path-exceptions.json"), JSON.stringify(rulePathCustom));
+    // A rule-path-only root repairs dictionary-disabled G2P without replacing
+    // the separately evaluated shipped dictionary's attested/reference variant.
+    const rulesOnlyWords = new Set(customSource.split(/\r?\n/).flatMap(line => {
+      if (!/#.*\brules-only\b/i.test(line)) return [];
+      const match = line.match(/^([a-zA-Z']+(?:\(\d+\))?)/);
+      return match ? [match[1].replace(/\(\d+\)$/, "").toLowerCase()] : [];
+    }));
     const explicitCustomReferences = new Set(
       customSource.split(/\r?\n/).flatMap(line => {
         if (!/#.*\b(?:corrected-reference|retain-reference)(?:\s|;|$)/i.test(line)) return [];
@@ -430,12 +449,27 @@ async function main(): Promise<void> {
       correctedReferences.delete(word);
       if (explicitCustomReferences.has(word)) correctedReferences.add(word);
     }
+    // A rules-only root must not alter which shipped-dictionary inflections
+    // survive trimming. Preserve source forms attached to that root, since
+    // they remain useful as fixed evaluation/reference rows even though the
+    // root's rules-path reading differs from the shipped dictionary reading.
+    const rulesOnlySuffixes = new Set(["s", "es", "'s", "ed", "ing"]);
+    for (const form of Object.keys(dict)) {
+      for (const root of rulesOnlyWords) {
+        const suffix = form.startsWith(root) ? form.slice(root.length) : "";
+        if (rulesOnlySuffixes.has(suffix)) {
+          correctedReferences.add(form);
+          break;
+        }
+      }
+    }
     console.log(
       `Loaded ${Object.keys(customDict).length} entries from custom dictionary`,
     );
 
     // Merge dictionaries (custom overrides CMU)
-    const finalArpaDict = { ...dict, ...customDict };
+    const defaultCustomDict = Object.fromEntries(Object.entries(customDict).filter(([word]) => !rulesOnlyWords.has(word)));
+    const finalArpaDict = { ...dict, ...defaultCustomDict };
 
     // Apply dictionary trimming
     console.log("\nApplying dictionary trimming...");

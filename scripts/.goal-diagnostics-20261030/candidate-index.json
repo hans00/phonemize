@@ -1,0 +1,1699 @@
+{
+  "status": "Evaluation-only diagnostic index; no pronunciation gain, runtime import or baseline change",
+  "qualifiedCommonStrict": 5809,
+  "sourceHashes": {
+    "src/en/g2p.ts": "0cc9e522f48dd5416864ecadc8e6097d8c6eb28a0f352be15a111ef82a6cd3be",
+    "src/en/syllabify.ts": "977e12da973c52360fafcd53f9edcaae664e2947b9c67da943e2ce26dc642189",
+    "src/en/postlex.ts": "a0aa8a8fe53e72dbf2de6fc874d55e7b70ba6c049988dcc1b3c3b2e0c2b0e7fd",
+    "src/en/morph-parser.ts": "5c7c236b9f4e4e10a0a69cfe4b31269c7cde997147619db893f276810a7d9e54"
+  },
+  "candidates": [
+    {
+      "candidate": "priceOnset",
+      "decision": "rejected: full-dictionary regressions outweigh fixes",
+      "routes": {
+        "default": {
+          "changes": 19,
+          "strictWins": 0,
+          "strictLosses": 19,
+          "commonStrictDelta": 0
+        },
+        "rules": {
+          "changes": 48,
+          "strictWins": 8,
+          "strictLosses": 19,
+          "commonStrictDelta": 0
+        }
+      }
+    },
+    {
+      "candidate": "priceFoot",
+      "decision": "rejected: full-dictionary regressions outweigh fixes",
+      "routes": {
+        "default": {
+          "changes": 51,
+          "strictWins": 0,
+          "strictLosses": 51,
+          "commonStrictDelta": 0
+        },
+        "rules": {
+          "changes": 130,
+          "strictWins": 27,
+          "strictLosses": 51,
+          "commonStrictDelta": 2
+        }
+      }
+    },
+    {
+      "candidate": "voicedSb",
+      "decision": "no-op prototype, stress marks unavailable before postlex; superseded by syllable-context trial",
+      "routes": {
+        "default": {
+          "changes": 0,
+          "strictWins": 0,
+          "strictLosses": 0,
+          "commonStrictDelta": 0
+        },
+        "rules": {
+          "changes": 0,
+          "strictWins": 0,
+          "strictLosses": 0,
+          "commonStrictDelta": 0
+        }
+      }
+    },
+    {
+      "candidate": "stressedSb",
+      "decision": "rejected: full-dictionary regressions outweigh fixes",
+      "routes": {
+        "default": {
+          "changes": 36,
+          "strictWins": 0,
+          "strictLosses": 36,
+          "commonStrictDelta": 0
+        },
+        "rules": {
+          "changes": 108,
+          "strictWins": 17,
+          "strictLosses": 44,
+          "commonStrictDelta": 3
+        }
+      }
+    },
+    {
+      "candidate": "shortRegularIsh",
+      "decision": "rejected on productive OOV controls despite fixed-dictionary+1/-0",
+      "proof": "/tmp/phonemize-vowel-voicing-20261030/ish-premise-proof.json"
+    },
+    {
+      "candidate": "loanTerminalI",
+      "decision": "rejected on mini/wiki controls and independently vouched MIDI KIT reading; no reference changes",
+      "report": "/tmp/phonemize-vowel-voicing-20261030/loan-terminal-i-trial.json",
+      "source": "https://www.oxfordlearnersdictionaries.com/us/definition/english/midi"
+    },
+    {
+      "candidate": "rhoticBoundary",
+      "decision": "rejected under fixed strict/reference conventions; notation and stress-aware source audit remain separate",
+      "report": "/tmp/phonemize-vowel-voicing-20261030/rhotic-boundary-trial.json"
+    },
+    {
+      "candidate": "angelFoot+ownedWeakOus",
+      "decision": "qualified accumulating improvement; historical parity still unresolved",
+      "evidence": "/tmp/phonemize-angel-foot-20261030/verification.json",
+      "commonStrict": {
+        "before": 5811,
+        "after": 5812
+      },
+      "fullRulesStrict": {
+        "before": 63040,
+        "after": 63043
+      },
+      "sourceReferences": "/tmp/phonemize-angel-foot-20261030/source-references.json",
+      "earlyRebuildRegression": "complete-root loss repaired, not accepted",
+      "rawLenientLoss": "rangel rules only; aggregate +1; default unchanged"
+    },
+    {
+      "candidate": "weakBel",
+      "decision": "rejected: strict losses outweigh wins; no source change",
+      "evidence": "/tmp/phonemize-label-foot-20261030/trial.json",
+      "strictWins": 5,
+      "strictLosses": 18,
+      "commonStrictDelta": 1,
+      "reason": "two-syllable a+bel does not license a uniform tense vowel; default Babel and other lexical-exact roots also change",
+      "next": "do not add onset/name guards to evade counterexamples"
+    },
+    {
+      "candidate": "weakSb",
+      "decision": "not adopted: lenient loss; wider bd class also loses strict matches",
+      "evidence": "/tmp/phonemize-weak-voicing-20261030/trial.json",
+      "strictWins": 4,
+      "strictLosses": 4,
+      "lenientWins": 0,
+      "lenientLosses": 1,
+      "premise": "a reduced closed second foot alone licenses s voicing before a voiced stop",
+      "counterevidence": "hobsbawm has pre-s consonant cluster; sd also crosses lexical or derivational boundaries"
+    },
+    {
+      "candidate": "weakVoicedStop",
+      "decision": "not adopted: lenient loss; wider bd class also loses strict matches",
+      "evidence": "/tmp/phonemize-weak-voicing-20261030/trial.json",
+      "strictWins": 9,
+      "strictLosses": 25,
+      "lenientWins": 1,
+      "lenientLosses": 2,
+      "premise": "a reduced closed second foot alone licenses s voicing before a voiced stop",
+      "counterevidence": "hobsbawm has pre-s consonant cluster; sd also crosses lexical or derivational boundaries"
+    },
+    {
+      "candidate": "vowelWeakSb+ownedWeakRoot",
+      "decision": "qualified accumulating after dictionary restoration; historical parity still unresolved",
+      "evidence": "/tmp/phonemize-weak-voicing-20261030/verification.json",
+      "neutralProof": "/tmp/phonemize-weak-voicing-20261030/neutral-verification.json",
+      "replay": "/tmp/phonemize-weak-voicing-20261030/owned-vowel-trial-v2.json",
+      "commonStrict": {
+        "before": 5812,
+        "after": 5813
+      },
+      "fullRulesStrict": {
+        "before": 63043,
+        "after": 63045
+      },
+      "legacyFailures": [
+        "CMU rules legacy90 floor",
+        "historical parity-v2 population contract"
+      ],
+      "next": "do not repeat broad sb/sd or front-vowel root guards"
+    },
+    {
+      "candidate": "rePrefixBeforeSuffixPriority",
+      "decision": "route hypothesis refuted; no candidate applied",
+      "evidence": "/tmp/phonemize-prefix-suffix-20261030/route-review.json",
+      "reason": "most observed weak-re mismatches follow direct syllable rules, not an early prefix return"
+    },
+    {
+      "candidate": "adBeforeV",
+      "decision": "rejected: fixed strict counts regress despite valid weak-vowel variants",
+      "evidence": "/tmp/phonemize-pretonic-ad-20261030/trial.json",
+      "strictWins": 1,
+      "strictLosses": 22,
+      "reason": "advance improves but existing full-vowel advantage/advice/adventure/advise and other readings lose strict matches; no reference changes or narrowed word/name guards"
+    },
+    {
+      "candidate": "unI literal gate without outer ownership",
+      "decision": "not adopted: unionizing/unified/united boundary regressions",
+      "evidence": "/tmp/phonemize-un-i-20261030/trial.json",
+      "recoveryEvidence": "/tmp/phonemize-un-i-20261030/owned-recovery-trial.json",
+      "next": "prefer attested outer regular stem or nominal witness for iz/ify; no word-specific guard"
+    },
+    {
+      "candidate": "bare-a closed-end stress and universal root ownership",
+      "decision": "rejected: broad bare-a stress breaks pre-existing rules-only Abend control; root ownership changes outspending to incorrect compound-head primary. Both assumptions removed before build.",
+      "evidence": "/tmp/phonemize-bound-prefix-batch-20261030/",
+      "adopted": false
+    },
+    {
+      "candidate": "complete-prefix END stress and owned negative un-i boundary",
+      "decision": "qualified accumulated batch after frozen/rebuilt gates and neutral regex fix; common strict unchanged, common lenient+1, full strict+21, stress+26; no commit or baseline reset",
+      "evidence": "/tmp/phonemize-bound-prefix-batch-20261030/verification.json",
+      "adopted": true
+    },
+    {
+      "candidate": "three-slot prefix alignment for every weak prefix",
+      "decision": "rejected:33 raw strict wins against72 losses; syllabification does not itself witness a morphological boundary",
+      "evidence": "/tmp/phonemize-prefix-boundary-20261030/trial.json"
+    },
+    {
+      "candidate": "all inter/intra/infra short-prefix suppression plus lexical root composition",
+      "decision": "not adopted: broad lex ownership changes interpersonal weak vowels and intergovernmental stress; do not invent word guards to evade controls",
+      "evidence": "/tmp/phonemize-prefix-boundary-20261030/owned-root-trial.json"
+    },
+    {
+      "candidate": "vowel-followed long r-prefix stress and complete-root borrowing",
+      "decision": "validated for accumulation, current v71 common strict+2; reference-only delta\u22121 separated, old floors retained; no release/commit claim",
+      "evidence": "/tmp/phonemize-inter-vowel-batch-20261030/verification.json",
+      "retainedInWorkingTree": true
+    },
+    {
+      "candidate": "unattested -nse plural fallback to bare -ns",
+      "decision": "rejected: dictionary +1/-0 masks OOV paired rinses/menses regressions",
+      "evidence": "/tmp/phonemize-next-classes-20261030/ns-plural-decision.json",
+      "adopted": false
+    },
+    {
+      "candidate": "post-primary weak ur+r vowel continuation",
+      "decision": "promising screen +3 common strict and29 raw strict wins,0 raw losses, but NOT adopted: existing surreal boundary control changes; full gates not run",
+      "evidence": "/tmp/phonemize-next-classes-20261030/rhotic-boundary-decision.json",
+      "adopted": false
+    },
+    {
+      "candidate": "vouched monosyllabic root plus verb-particle tail using existing head attestation",
+      "decision": "validated accumulated after final build, all current non-regression/paired gates and neutral proof; historical parity contract remains open",
+      "evidence": "/tmp/phonemize-particle-tail-batch-20261030/verification.json",
+      "commonStrict": {
+        "before": 5814,
+        "after": 5815
+      },
+      "fullStrict": {
+        "before": 63069,
+        "after": 63108
+      },
+      "retainedInWorkingTree": true,
+      "committed": false
+    },
+    {
+      "candidate": "weak consonant-le nucleus and nasal-prefix ownership",
+      "decision": "frozen candidate passes current non-regression metrics,475 suites/8501 tests and40 paired controls; source predicate shared across postlex/morphology. NOT adopted until rebuild.",
+      "evidence": "/tmp/phonemize-weak-le-batch-20261030/frozen-metrics.json",
+      "screen": "/tmp/phonemize-next-classes-20261030/weak-l-owned-prefix-trial.json",
+      "sourceReview": "/tmp/phonemize-weak-le-batch-20261030/source-review.json",
+      "adopted": false
+    }
+  ],
+  "priorRelatedDiagnosis": [
+    {
+      "candidate": "stressedSb",
+      "oldReport": "/tmp/phonemize-sb-batch-20261027/trial.json",
+      "warning": "Already rejected in older actual-dispatch replay. Reuse family counterexamples before another full scan."
+    },
+    {
+      "candidate": "rOnset",
+      "oldReport": "/tmp/phonemize-rule-batch-20261027/r-onset-trial.json",
+      "warning": "Old attempted postlex stress-marker hook was a no-op; the new primary-boundary witness is a distinct real experiment."
+    }
+  ],
+  "learnerReports": [
+    "/tmp/phonemize-vowel-voicing-20261030/learner/cv-common-report.json",
+    "/tmp/phonemize-vowel-voicing-20261030/learner-strict/cv-common-report.json",
+    "/tmp/phonemize-vowel-voicing-20261030/learner-distance/cv-common-report.json"
+  ],
+  "npBoundaryTrain20261030": {
+    "status": "validated accumulating POS candidate; every frozen/rebuilt gate nondecreasing; no isolated-word release gain",
+    "evidence": "/tmp/phonemize-pos-np-boundary-20261030/",
+    "rejected": "bare/compound objects ending at sentence/punctuation caused 7 existing control regressions; see full-tests.log",
+    "selected": "ing subject modifier plus gerund compound object before conjunction",
+    "train": "default/auto 742->743, rules/auto 467->468; no changed readings elsewhere",
+    "tests": "464 suites, 8083 passed before final rebuild",
+    "releaseGap": 482,
+    "openControls": "rules-route noun record and modal read pre-existing errors remain unchanged; see open-controls.json",
+    "verification": "/tmp/phonemize-pos-np-boundary-20261030/verification.json",
+    "snapshot": "bed4ed141e63d0346cb45097e22ae7e0534f435075e51fefb110f630552f80ab"
+  },
+  "latestQualifiedCommonStrict": 5822,
+  "geonRime20261030": {
+    "status": "qualified accumulating rule gain; no commit/baseline reset; legacy release limits remain",
+    "verification": "/tmp/phonemize-geon-20261030/verification.json",
+    "commonStrict": [
+      5809,
+      5810
+    ],
+    "rawFullRulesStrict": [
+      63026,
+      63036
+    ],
+    "stressPhonemic": [
+      54969,
+      54982
+    ],
+    "rootRetention": "Initial rebuild failed burgeoned/burgeoning; fixed via shared noninitial geon borrowed-root frame; g2p source unchanged from before",
+    "tests": 8121,
+    "codeLines": 3395,
+    "gap": 481
+  },
+  "ctiveWeight20261030": {
+    "status": "NOOP; not a rule gain or adoption candidate",
+    "report": "/tmp/phonemize-ctive-20261030/trial.json",
+    "hypothesis": "Late sivePenult extension for [au]ctive weight",
+    "finding": "Actual full dispatch has zero changed predictions; locate earlier stress return before refining regex"
+  },
+  "ctiveRoot20261030": {
+    "status": "qualified accumulating general root-stress gain; no baseline reset or commit",
+    "verification": "/tmp/phonemize-ctive-20261030/verification.json",
+    "prototypeRawStrictWins": 2,
+    "officialFilteredFullStrict": [
+      63036,
+      63037
+    ],
+    "commonStrict": [
+      5810,
+      5811
+    ],
+    "stressPhonemic": [
+      54982,
+      54983
+    ],
+    "snapshotChanges": "Only 2 rule rows; frozen/rebuilt byte-identical",
+    "data": "all hashes unchanged",
+    "tests": 8143,
+    "codeLines": 3395,
+    "gap": 480
+  },
+  "parityUpstreamDrift20261030": {
+    "status": "hypothesis rejected; original frozen prediction snapshot still not recovered",
+    "proof": "/tmp/phonemize-ctive-20261030/upstream-provenance-proof.json",
+    "finding": "immutable en_US.txt at latest and historical cutoff is same commit/file hash as reconstruction input"
+  },
+  "neutralShip20261030": {
+    "status": "rejected; not applied to runtime",
+    "report": "/tmp/phonemize-ship-20261030/trial.json",
+    "rawStrict": {
+      "wins": 11,
+      "losses": 3
+    },
+    "commonStrictGain": 0,
+    "blockers": [
+      "default receivership loses strict through stem vowel convention",
+      "worship is misanalysed as WOR initialism + ship and loses common lenient"
+    ],
+    "lesson": "Do not add ship as an unrestricted neutral suffix or re-score references to hide a stem allomorph discrepancy"
+  },
+  "geminateEnt20261030": {
+    "status": "rejected; not applied",
+    "report": "/tmp/phonemize-geminate-ent-20261030/trial.json",
+    "rawStrict": {
+      "wins": 2,
+      "losses": 4
+    },
+    "defaultLosses": [
+      "bessent",
+      "tennent"
+    ],
+    "lesson": "Gemination alone cannot determine weak e retention; do not narrow the consonant list to evade these counterexamples"
+  },
+  "thetaY20261030": {
+    "status": "qualified accumulating phonemic gain; common strict unchanged; legacy floors still unresolved",
+    "verification": "/tmp/phonemize-theta-y-20261030/verification.json",
+    "strictFull": [
+      63037,
+      63040
+    ],
+    "lenientFull": [
+      83936,
+      83938
+    ],
+    "commonStrict": [
+      5811,
+      5811
+    ],
+    "commonLenient": [
+      6465,
+      6466
+    ],
+    "stressPhonemic": [
+      54983,
+      54986
+    ],
+    "tests": 8181,
+    "codeLines": 3395,
+    "gap": 480
+  },
+  "uppercasePronounceability20261030": {
+    "status": "rejected, not applied",
+    "report": "/tmp/phonemize-uppercase-20261030/trial.json",
+    "failure": "NASA improves, UAE and OOV become falsely pronounced words; pronounceability alone cannot determine acronym sense",
+    "next": "dictionary-backed coverage/case diagnosis; no ad-hoc list of exceptions"
+  },
+  "aiArticles20261030": {
+    "status": "complete optional stochastic default-route diagnostic; no deterministic rule gain",
+    "model": "gpt-6.1-sol",
+    "words": 1520,
+    "micro": 98.75,
+    "macro": 98.61715748797805,
+    "unscored": 0,
+    "proof": "/tmp/phonemize-theta-y-20261030/ai-input-proof.json",
+    "cache": "scripts/.article-eval-cache/report.json",
+    "legacyFailure": "gpt-5.5 unavailable for ChatGPT login; 0 score was unscored/incomplete"
+  },
+  "latestQualifiedEvidence": "/tmp/phonemize-phonemic-nuclei-20261030/verification.json",
+  "latestValidatedCommonStrict": 5822,
+  "latestValidatedReferenceContract": "common-cohort-v71",
+  "qualificationScope": "Current frozen/rebuilt metrics, paired controls, final build/tests and built entry points validated; formal historical parity contract remains open, so no release/commit qualification.",
+  "currentRouteCensus": {
+    "evidence": "/tmp/phonemize-routes-current-20261030/report.json",
+    "n": 6990,
+    "baseline": [
+      5814,
+      6469
+    ],
+    "withoutMorphology": [
+      4992,
+      5983
+    ],
+    "unsplit": [
+      4870,
+      5905
+    ],
+    "decision": "Do not broadly bypass morphology or compound dispatch"
+  },
+  "completeCleRoot20261030": {
+    "status": "validated accumulating gain; no commit or baseline reset; historical parity contract open",
+    "verification": "/tmp/phonemize-weak-le-batch-20261030/verification.json",
+    "commonStrict": [
+      5815,
+      5817
+    ],
+    "commonLenient": [
+      6469,
+      6470
+    ],
+    "rawFullStrict": [
+      63108,
+      63126
+    ],
+    "stress": [
+      55057,
+      55072
+    ],
+    "tests": 8532,
+    "suites": 475,
+    "codeLines": 3395,
+    "gap": 474,
+    "rejected": "Broad borrowed-root permission broke existing native control; separate plural boundary and supplied-stem priority",
+    "rebuiltSnapshot": "94b5e60aa1929b1eb5b68337356b3cba577f4182c145b0a3476b8806b32d8def"
+  },
+  "posttonicWeakI20261030": {
+    "status": "rejected; no production change",
+    "proof": "/tmp/phonemize-common-frontier-20261030/weak-i-decision.json",
+    "variants": {
+      "posttonicFinalIn": {
+        "strictWins": 92,
+        "strictLosses": 1599,
+        "lenientWins": 23,
+        "lenientLosses": 110
+      },
+      "posttonicLiquid": {
+        "strictWins": 82,
+        "strictLosses": 194,
+        "lenientWins": 30,
+        "lenientLosses": 76
+      },
+      "posttonicSter": {
+        "strictWins": 9,
+        "strictLosses": 31,
+        "lenientWins": 2,
+        "lenientLosses": 4
+      }
+    }
+  },
+  "familySVoicing20261030": {
+    "status": "rejected as POS-independent rule; no production change",
+    "proof": "/tmp/phonemize-common-frontier-20261030/family-voicing-proof.json",
+    "sources": [
+      "https://www.merriam-webster.com/dictionary/louse",
+      "https://www.oxfordlearnersdictionaries.com/definition/english/louse_1"
+    ],
+    "finding": "Past loused witnesses verb z but noun louse requires s. Runtime homograph label is absent,so an inflection witness cannot supply noun POS."
+  },
+  "rejectedNominalPredicate20261030": {
+    "status": "rejected; frozen production sources restored",
+    "proof": "/tmp/phonemize-pos-predicative-np-20261030/rejection.json"
+  },
+  "aryArian20261030": {
+    "status": "validated accumulating ary/arian root inheritance batch; release goal and historical parity contract incomplete",
+    "referenceContract": "common-cohort-v71",
+    "metrics": {
+      "full": [
+        63128,
+        84000
+      ],
+      "common": [
+        5818,
+        6470,
+        3173,
+        3414
+      ],
+      "cmu": [
+        4754,
+        4261
+      ],
+      "stress": 55074,
+      "exact": 46065,
+      "homographs": 1455,
+      "parity": {
+        "n": 100835,
+        "strict": 94834,
+        "lenient": 100729
+      }
+    },
+    "commonStrictGain": 1,
+    "fullStrictGain": 2,
+    "fullLenientGain": 1,
+    "stressGain": 2,
+    "exactGain": 0,
+    "errorBuckets": {
+      "before": {
+        "Stress-only mismatch": 5084,
+        "Vowel-quality only": 15054,
+        "Structural (consonant/syl)": 24135
+      },
+      "after": {
+        "Stress-only mismatch": 5086,
+        "Vowel-quality only": 15054,
+        "Structural (consonant/syl)": 24133
+      }
+    },
+    "remaining": 473,
+    "tests": 8569,
+    "suites": 476,
+    "focused": 37,
+    "counts": {
+      "g2p": 1150,
+      "syllabify": 1723,
+      "postlex": 457,
+      "morph-table": 20,
+      "morph-parser": 44,
+      "total": 3394
+    },
+    "exceptions": {
+      "before": 53335,
+      "after": 53333,
+      "added": [],
+      "removed": [
+        "librarian",
+        "ovarian"
+      ],
+      "changed": []
+    },
+    "repins": 542,
+    "snapshot": "d999a45dd576e947b8ad61fe27271d31f4ea1f88077696d36aae85394f9f740a",
+    "rows": 1296684,
+    "changedRows": 24,
+    "routes": {
+      "dict": 2,
+      "rule": 2,
+      "morph": 20
+    },
+    "frozenRebuiltByteIdentical": true,
+    "prose": "24 POS/prose rows,48 missing-root composition controls; all non-target tokens/spans unchanged; six full article streams unchanged",
+    "context": "all eval/train fields except metadata identical; full homograph train report unchanged",
+    "rejected": "Spelling-only arian ownership split disciplinarian through an unvouched root; handler-only ownership lost ed/ing/er/es vowels. Shared lookup now accepts only an actual aligned pretonic diphthong repair.",
+    "limitations": [
+      "22 other snapshot changes are secondary-stress variants supported by dictionary readings, not pronunciation gains",
+      "CMU rules legacy90 floor remains below90% at4261/5000",
+      "parity-v2 original100816-word population/reference snapshot remains unresolved; original floor unchanged",
+      "Common90% release target is not met"
+    ],
+    "committed": false,
+    "goalComplete": false
+  },
+  "nasalIle20261030": {
+    "status": "rejected and production source restored byte-for-byte",
+    "qualifiedCommonStrict": 5818,
+    "candidateCommonStrict": 5819,
+    "candidateFullStrict": 63132,
+    "candidateFullLenient": 84002,
+    "candidateTests": 8585,
+    "candidateSnapshotRows": 1296684,
+    "candidateSnapshotChanges": 14,
+    "reason": "Vornil caller root loses KIT in vorniles because an invented vornile overrides the supplied consonant-final stem. Full snapshot also exposes anafranil synthetic derivation changes. Score gains do not waive explicit controls.",
+    "redTests": "ownership-red.log",
+    "proof": "ownership-probes.json",
+    "restoredHashes": true,
+    "rebuilt": false,
+    "baselineChanged": false,
+    "next": "Fix generic known-stem priority over invented silent-e roots, with POS/prose and full corpus controls; only then retry long nasal ile candidate.",
+    "evidence": "/tmp/phonemize-nile-batch-20261030/decision.json",
+    "retainedRegression": "__tests__/en-supplied-stem-priority.test.ts",
+    "retainedRegressionResult": "2 passed on restored production",
+    "rejectionRationaleSupersededBy": "/tmp/phonemize-known-stem-priority-20261030/premise-correction.json"
+  },
+  "nasalIleR2_20261030": {
+    "status": "validated accumulating nasal ile batch; release and historical parity remain incomplete",
+    "referenceContract": "common-cohort-v71",
+    "metrics": {
+      "full": [
+        63132,
+        84002
+      ],
+      "common": [
+        5819,
+        6470,
+        3173,
+        3414
+      ],
+      "cmu": [
+        4754,
+        4261
+      ],
+      "stress": 55077,
+      "exact": 46067,
+      "homographs": 1455,
+      "parity": {
+        "n": 100835,
+        "strict": 94834,
+        "lenient": 100729
+      }
+    },
+    "gains": {
+      "commonStrict": 1,
+      "fullStrict": 4,
+      "fullLenient": 2,
+      "stress": 3,
+      "exact": 2
+    },
+    "remaining": 472,
+    "tests": 8587,
+    "suites": 478,
+    "focused": 18,
+    "jobs": {
+      "controls": 0,
+      "articles": 0,
+      "common-contracts": 0,
+      "focused": 0,
+      "types": 0,
+      "rollup": 0,
+      "context-train": 0,
+      "homographs-train": 0,
+      "tests": 0,
+      "built-check": 0
+    },
+    "counts": {
+      "g2p": 1150,
+      "syllabify": 1724,
+      "postlex": 457,
+      "morph-table": 20,
+      "morph-parser": 44,
+      "total": 3395
+    },
+    "exceptions": {
+      "before": 53333,
+      "after": 53329,
+      "removed": [
+        "juvenile",
+        "juvenile's",
+        "penile",
+        "senile"
+      ],
+      "added": [],
+      "changed": []
+    },
+    "repins": 542,
+    "errorBuckets": {
+      "before": {
+        "Stress-only mismatch": 5086,
+        "Vowel-quality only": 15054,
+        "Structural (consonant/syl)": 24133
+      },
+      "after": {
+        "Stress-only mismatch": 5087,
+        "Vowel-quality only": 15054,
+        "Structural (consonant/syl)": 24130
+      }
+    },
+    "snapshot": "76f4d8fa353e371aebe6fad15aa56d59badf59502b023bf742fe09d28c799bd7",
+    "rows": 1296684,
+    "changedRows": 32,
+    "routes": {
+      "dict": 1,
+      "rule": 4,
+      "morph": 27
+    },
+    "frozenRebuiltChanges": 18,
+    "classification": {
+      "scoredRuleRepairs": 4,
+      "secondaryStressOnly": 7,
+      "unverifiedSyntheticChanges": 21,
+      "unverifiedWords": [
+        "anafraniled",
+        "anafraniles",
+        "anafraniling",
+        "dumeniled",
+        "dumeniles",
+        "dumeniling",
+        "durniles",
+        "juvenile'sable",
+        "juvenile'sally",
+        "juvenile'sed",
+        "juvenile'ser",
+        "juvenile'ses",
+        "juvenile'sing",
+        "juvenile'sly",
+        "juvenile'sness",
+        "juvenilees",
+        "meniles",
+        "nileing",
+        "penilees",
+        "senilees",
+        "suniles"
+      ]
+    },
+    "prose": "84 isolated predictions asserted (36 related,48 unrelated);10 full prose streams preserve non-targets;6 article streams identical",
+    "context": "all eval/train fields except metadata identical; complete homograph train report identical",
+    "referenceMaintenance": "New unsupported vornil+es expectation corrected from independent plural-spelling authority; all benchmark gold/scorers/baselines unchanged. Not counted as gain.",
+    "limitations": [
+      "21 synthetic changes have no independent gold; not declared correct or counted as wins/losses",
+      "CMU rules legacy90 floor remains unmet4261/5000",
+      "Historical parity-v2 population provenance remains unresolved",
+      "472 common strict words still needed"
+    ],
+    "committed": false,
+    "goalComplete": false
+  },
+  "neutralY20261030": {
+    "status": "validated behavior-neutral compression",
+    "beforeCodeLines": 3395,
+    "counts": {
+      "g2p": 1149,
+      "syllabify": 1723,
+      "postlex": 455,
+      "morph-table": 20,
+      "morph-parser": 44,
+      "total": 3391
+    },
+    "retainedCap": 3395,
+    "g2pCap": 1150,
+    "rows": 1296684,
+    "snapshot": "76f4d8fa353e371aebe6fad15aa56d59badf59502b023bf742fe09d28c799bd7",
+    "byteIdentical": true,
+    "tests": 8587,
+    "suites": 478,
+    "typecheckExit": 0,
+    "changed": [
+      "src/en/g2p.ts",
+      "src/en/syllabify.ts",
+      "src/en/postlex.ts"
+    ],
+    "sourceHashes": {
+      "src/en/g2p.ts": "821fbf77ff253bd03d997736ebf273d518484d443fa6c1874ddfc42078575dc6",
+      "src/en/syllabify.ts": "e52109a993e2190113d35556fe2d6e649d8bf744d5830befd4744ed52f08dd9e",
+      "src/en/postlex.ts": "7106ce7505c94e45b8506e8c7fcd9e9af681b0e31bbd212a9e89a6408ed77691"
+    },
+    "dataUnchanged": true,
+    "metricEvidence": "/tmp/phonemize-nile-r2-20261030/verification.json",
+    "qualifiedCommonStrict": 5819,
+    "remaining": 472,
+    "pronunciationGain": 0,
+    "details": [
+      "Adjacent one-character KIT-y rules merged; only the empty-coda branch is gated by the next st onset. Closed m/n codas remain unconditional.",
+      "Postlex rule type now requires exactly one string/callback replacement; removed non-null assertion.",
+      "Adjacent same-type null-prototype lookup declarations grouped without reordering initialization."
+    ],
+    "committed": false,
+    "goalComplete": false
+  },
+  "currentResidualCensus": {
+    "evidence": "/tmp/phonemize-frontier-5821-20261030/report.json",
+    "strict": 5821,
+    "population": 6990,
+    "mismatches": 1169,
+    "snapshot": "6a61f8ebbc84da953d73452635c8b95639cd47fa6d2bb446bbe82498adff29dc",
+    "snapshotMissingWordsFilledFromActualPipeline": [
+      "credits",
+      "editors",
+      "editions",
+      "jackets",
+      "packets"
+    ]
+  },
+  "weakAdBeforeV20261030": {
+    "status": "rejected offline; no production source change",
+    "evidence": "/tmp/phonemize-ad-v-prefix-20261030/replay.json",
+    "rawStrictWins": 1,
+    "rawStrictLosses": 22,
+    "reason": "Broad prefix reduction loses existing fixed-reference matches, including multiple common words and default route; no adoption."
+  },
+  "posttonicLar20261030": {
+    "errorBuckets": {
+      "before": {
+        "Stress-only mismatch": 5087,
+        "Vowel-quality only": 15054,
+        "Structural (consonant/syl)": 24130
+      },
+      "rebuilt": {
+        "Stress-only mismatch": 5087,
+        "Vowel-quality only": 15053,
+        "Structural (consonant/syl)": 24130
+      }
+    },
+    "status": "validated accumulating lar batch; release gates incomplete",
+    "metrics": {
+      "full": [
+        63133,
+        84002
+      ],
+      "common": [
+        5820,
+        6470,
+        3174,
+        3414
+      ],
+      "cmu": [
+        4754,
+        4262
+      ],
+      "stress": 55077,
+      "exact": 46068,
+      "homographs": 1455,
+      "parity": {
+        "n": 100835,
+        "strict": 94834,
+        "lenient": 100729
+      }
+    },
+    "remaining": 471,
+    "tests": 8600,
+    "suites": 479,
+    "counts": {
+      "g2p": 1149,
+      "syllabify": 1727,
+      "postlex": 455,
+      "morph-table": 20,
+      "morph-parser": 44,
+      "total": 3395
+    },
+    "tables": {
+      "compound-parts.json": {
+        "before": 3,
+        "after": 3,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "dict.json": {
+        "before": 109177,
+        "after": 109177,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "exception-candidates.json": {
+        "before": 51941,
+        "after": 51938,
+        "removed": [
+          "dissimilar",
+          "similar",
+          "similarly"
+        ],
+        "added": [],
+        "changed": []
+      },
+      "exceptions.json": {
+        "before": 53329,
+        "after": 53326,
+        "removed": [
+          "dissimilar",
+          "similar",
+          "similarly"
+        ],
+        "added": [],
+        "changed": []
+      },
+      "homographs.json": {
+        "before": 495,
+        "after": 495,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "initialisms.json": {
+        "before": 268,
+        "after": 268,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "lts.json": {
+        "before": 4,
+        "after": 4,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "stress-grams.json": {
+        "before": 3,
+        "after": 3,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "stress-grams2.json": {
+        "before": 3,
+        "after": 3,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "stress-grams3.json": {
+        "before": 3,
+        "after": 3,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "vowel-grams.json": {
+        "before": 8,
+        "after": 8,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "vowel-grams2.json": {
+        "before": 8,
+        "after": 8,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "vowel-grams3.json": {
+        "before": 8,
+        "after": 8,
+        "removed": [],
+        "added": [],
+        "changed": []
+      }
+    },
+    "snapshot": {
+      "rows": 1296684,
+      "changes": 2,
+      "routes": {
+        "rule": 1,
+        "morph": 1
+      },
+      "sha256": "baaad4d4bbbb09f29a15f2745b784b9b50e016204b0ceb01e49b5f875ed804d9",
+      "changed": [
+        {
+          "route": "rule",
+          "word": "similar",
+          "before": "\u02c8s\u026am\u026a\u026b\u025d",
+          "after": "\u02c8s\u026am\u0259\u026b\u025d"
+        },
+        {
+          "route": "morph",
+          "word": "similarlyer",
+          "before": "\u02c8s\u026am\u0259\u026b\u025d\u026bi\u025d",
+          "after": "\u02ccs\u026am\u026a\u02c8\u026b\u0251\u0279\u026bj\u025d"
+        }
+      ]
+    },
+    "limitations": [
+      "Synthetic snapshot changes lack independent gold and are not counted as pronunciation gains",
+      "Historical parity-v2 provenance remains unresolved",
+      "CMU rules legacy 90 percent floor remains unmet"
+    ],
+    "committed": false,
+    "goalComplete": false
+  },
+  "priorResidualCensus5819": {
+    "evidence": "/tmp/phonemize-frontier-5819-20261030/report.json",
+    "strict": 5819,
+    "population": 6990,
+    "mismatches": 1171,
+    "snapshotMissingWordsFilledFromActualPipeline": [
+      "credits",
+      "editors",
+      "editions",
+      "jackets",
+      "packets"
+    ],
+    "status": "historical 5819 census; similar repaired by later validated lar batch; recompute before selecting next candidate"
+  },
+  "weakSole20261030": {
+    "errorBuckets": {
+      "before": {
+        "Stress-only mismatch": 5087,
+        "Vowel-quality only": 15053,
+        "Structural (consonant/syl)": 24130
+      },
+      "rebuilt": {
+        "Stress-only mismatch": 5087,
+        "Vowel-quality only": 15054,
+        "Structural (consonant/syl)": 24128
+      }
+    },
+    "status": "validated accumulating sole batch; release gates incomplete",
+    "metrics": {
+      "full": [
+        63134,
+        84004
+      ],
+      "common": [
+        5821,
+        6471,
+        3175,
+        3415
+      ],
+      "cmu": [
+        4754,
+        4263
+      ],
+      "stress": 55079,
+      "exact": 46069,
+      "homographs": 1455,
+      "parity": {
+        "n": 100835,
+        "strict": 94834,
+        "lenient": 100729
+      }
+    },
+    "classification": {
+      "strictRuleWins": 1,
+      "scoredRuleChanges": 2,
+      "unverifiedSyntheticChanges": 10,
+      "rebuildChanges": [
+        {
+          "before": "morph\tconsolees\t\u02c8k\u0251nso\u028a\u026bz",
+          "after": "morph\tconsolees\tk\u0259n\u02c8so\u028a\u026biz"
+        }
+      ]
+    },
+    "remaining": 470,
+    "tests": 8617,
+    "suites": 480,
+    "counts": {
+      "g2p": 1149,
+      "syllabify": 1727,
+      "postlex": 455,
+      "morph-table": 20,
+      "morph-parser": 44,
+      "total": 3395
+    },
+    "tables": {
+      "compound-parts.json": {
+        "before": 3,
+        "after": 3,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "dict.json": {
+        "before": 109177,
+        "after": 109177,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "exception-candidates.json": {
+        "before": 51938,
+        "after": 51937,
+        "removed": [
+          "console"
+        ],
+        "added": [],
+        "changed": []
+      },
+      "exceptions.json": {
+        "before": 53326,
+        "after": 53325,
+        "removed": [
+          "console"
+        ],
+        "added": [],
+        "changed": []
+      },
+      "homographs.json": {
+        "before": 495,
+        "after": 495,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "initialisms.json": {
+        "before": 268,
+        "after": 268,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "lts.json": {
+        "before": 4,
+        "after": 4,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "stress-grams.json": {
+        "before": 3,
+        "after": 3,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "stress-grams2.json": {
+        "before": 3,
+        "after": 3,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "stress-grams3.json": {
+        "before": 3,
+        "after": 3,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "vowel-grams.json": {
+        "before": 8,
+        "after": 8,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "vowel-grams2.json": {
+        "before": 8,
+        "after": 8,
+        "removed": [],
+        "added": [],
+        "changed": []
+      },
+      "vowel-grams3.json": {
+        "before": 8,
+        "after": 8,
+        "removed": [],
+        "added": [],
+        "changed": []
+      }
+    },
+    "snapshot": {
+      "rows": 1296684,
+      "changes": 12,
+      "routes": {
+        "rule": 2,
+        "morph": 10
+      },
+      "sha256": "6a61f8ebbc84da953d73452635c8b95639cd47fa6d2bb446bbe82498adff29dc",
+      "changed": [
+        {
+          "route": "rule",
+          "word": "console",
+          "before": "\u02c8k\u0251ns\u0259\u026b",
+          "after": "\u02c8k\u0251nso\u028a\u026b"
+        },
+        {
+          "route": "rule",
+          "word": "levamisole",
+          "before": "\u026b\u026a\u02c8v\u00e6m\u026as\u0259\u026b",
+          "after": "\u026b\u026a\u02c8v\u00e6m\u026a\u02ccso\u028a\u026b"
+        },
+        {
+          "route": "morph",
+          "word": "bedsoleing",
+          "before": "\u02c8b\u025bds\u0259\u02cc\u026be\u026a\u014b",
+          "after": "\u02c8b\u025bd\u02ccso\u028a\u026b\u026a\u014b"
+        },
+        {
+          "route": "morph",
+          "word": "consolees",
+          "before": "\u02c8k\u0251nso\u028a\u026bz",
+          "after": "k\u0259n\u02c8so\u028a\u026biz"
+        },
+        {
+          "route": "morph",
+          "word": "cortisoles",
+          "before": "\u02c8k\u0254\u0279t\u026as\u0259\u026bz",
+          "after": "\u02c8k\u0254\u0279t\u026a\u02ccso\u028a\u026bz"
+        },
+        {
+          "route": "morph",
+          "word": "ebersoleing",
+          "before": "\u026a\u02c8b\u025ds\u0259\u02cc\u026be\u026a\u014b",
+          "after": "\u02c8\u025bb\u025d\u02ccso\u028a\u026b\u026a\u014b"
+        },
+        {
+          "route": "morph",
+          "word": "eversoleing",
+          "before": "\u026a\u02c8v\u025ds\u0259\u02cc\u026be\u026a\u014b",
+          "after": "\u02c8\u025bv\u025d\u02ccso\u028a\u026b\u026a\u014b"
+        },
+        {
+          "route": "morph",
+          "word": "hydrosoles",
+          "before": "\u02c8ha\u026ad\u0279\u0259s\u0259\u026bz",
+          "after": "\u02c8ha\u026ad\u0279\u0259\u02ccso\u028a\u026bz"
+        },
+        {
+          "route": "morph",
+          "word": "lysoles",
+          "before": "\u02c8\u026b\u026as\u0259\u026bz",
+          "after": "\u02c8\u026b\u026aso\u028a\u026bz"
+        },
+        {
+          "route": "morph",
+          "word": "rosoles",
+          "before": "\u02c8\u0279\u0251s\u0259\u026bz",
+          "after": "\u02c8\u0279\u0251so\u028a\u026bz"
+        },
+        {
+          "route": "morph",
+          "word": "soleing",
+          "before": "\u02c8so\u028a\u026be\u026a\u014b",
+          "after": "\u02c8so\u028a\u026b\u026a\u014b"
+        },
+        {
+          "route": "morph",
+          "word": "tesoles",
+          "before": "\u02c8t\u025bs\u0259\u026bz",
+          "after": "\u02c8t\u025bso\u028a\u026bz"
+        }
+      ]
+    },
+    "limitations": [
+      "Synthetic snapshot changes lack independent gold and are not counted as pronunciation gains",
+      "Existing rules-only console verb stress is incorrect and unchanged; nucleus repair is not a complete verb pronunciation fix",
+      "Historical parity-v2 provenance remains unresolved",
+      "CMU rules legacy 90 percent floor remains unmet"
+    ],
+    "committed": false,
+    "goalComplete": false
+  },
+  "priorResidualCensus5820": {
+    "evidence": "/tmp/phonemize-frontier-5820-20261030/report.json",
+    "strict": 5820,
+    "population": 6990,
+    "mismatches": 1170,
+    "snapshot": "baaad4d4bbbb09f29a15f2745b784b9b50e016204b0ceb01e49b5f875ed804d9",
+    "snapshotMissingWordsFilledFromActualPipeline": [
+      "credits",
+      "editors",
+      "editions",
+      "jackets",
+      "packets"
+    ],
+    "status": "5820 historical census; console repaired by qualified sole batch; refresh before next selection"
+  },
+  "boundIOVerbs20261030": {
+    "verification": "/tmp/phonemize-bound-io-verb-20261030/verification.json",
+    "commonStrict": 5821,
+    "commonGain": 0,
+    "uniqueVerbReadingsFixed": 5,
+    "tests": 8646,
+    "suites": 481,
+    "snapshotChanges": 39,
+    "status": "validated accumulating POS batch; no release completion"
+  },
+  "initialTheta20261030": {
+    "status": "qualified accumulating batch; goal incomplete",
+    "directory": "/tmp/phonemize-theta-initial-20261030",
+    "broadRejected": {
+      "rawWins": 10,
+      "rawLosses": 4,
+      "commonGain": 0,
+      "evidence": "/tmp/phonemize-theta-initial-20261030/broad-screen.json"
+    },
+    "invalidHarness": "screen-v1-invalid.json; require-cache replacement did not reach existing dispatcher. Fixed by compiling candidate dependent g2p and asserting real thesaurus change.",
+    "preflight": [
+      "\u00f0\u0259\u02c8s\u0254\u0279\u0259s",
+      "\u03b8\u0259\u02c8s\u0254\u0279\u0259s"
+    ],
+    "ownedV1": {
+      "rawWins": 9,
+      "rawLosses": 2,
+      "commonWins": 1,
+      "decision": "not adopted: theirselves morphology restores silent e before theta lookup",
+      "evidence": "/tmp/phonemize-theta-initial-20261030/owned-screen.json"
+    },
+    "pairedProse": "/tmp/phonemize-theta-initial-20261030/paired-prose-v2.json",
+    "ownedV2": {
+      "rawWins": 9,
+      "rawLosses": 0,
+      "commonWins": 1,
+      "commonLosses": 0,
+      "population": 107917,
+      "evidence": "/tmp/phonemize-theta-initial-20261030/owned-screen-v2.json"
+    },
+    "routeProof": "/tmp/phonemize-theta-initial-20261030/reflexive-route-proof.log",
+    "next": "Freeze qualified bound-io source/data/reports; add source-checked paired tests and class rule; neutral compression snapshot proof; run frozen and rebuilt canonical gates. Do not count candidate common gain yet.",
+    "freezeManifest": "/tmp/phonemize-theta-initial-20261030/before-manifest.json",
+    "neutralCompression": {
+      "verification": "/tmp/phonemize-theta-initial-20261030/neutral-verification.json",
+      "counts": 3394,
+      "byteIdenticalRows": 1296684
+    },
+    "liveHandles": {},
+    "focused": {
+      "redFailed": 3,
+      "greenTests": 260,
+      "newTests": 24,
+      "log": "/tmp/phonemize-theta-initial-20261030/theta-green.log"
+    },
+    "frozen": {
+      "metrics": "/tmp/phonemize-theta-initial-20261030/frozen-metrics.json",
+      "commonStrict": 5822,
+      "full": [
+        63143,
+        84010
+      ],
+      "stress": 55087,
+      "exact": 46076,
+      "tests": 8670,
+      "suites": 482,
+      "snapshotChanges": 77,
+      "snapshotRoutes": {
+        "rule": 20,
+        "morph": 57
+      }
+    },
+    "additionalCallerControls": {
+      "tests": 26,
+      "log": "/tmp/phonemize-theta-initial-20261030/theta-custom-controls.log",
+      "note": "Two caller-owned custom-reading controls added after frozen full suite; final full suite must include8672 tests."
+    },
+    "build": {
+      "seconds": 116.63,
+      "repins": 542,
+      "exceptions": [
+        53321,
+        53311
+      ],
+      "candidates": [
+        51933,
+        51923
+      ],
+      "diff": "/tmp/phonemize-theta-initial-20261030/table-diff.json"
+    },
+    "stage1": {
+      "directory": "/tmp/phonemize-theta-initial-20261030/stage1",
+      "canonicalNoDrop": true,
+      "notQualified": "Thelmas/Theklas lose plural z after rule-exact root eviction; explicit new RED4 controls prove regression"
+    },
+    "weakAProtection": {
+      "helper": "scripts/protect-oov-plurals.ts",
+      "helperTests": 2,
+      "runtimeRed": 4,
+      "finalExpectedTests": 8677,
+      "finalExpectedFocused": 63,
+      "buildLog": "/tmp/phonemize-theta-initial-20261030/build-stage2.log",
+      "note": "Existing lexical-root retention only. No new names, readings or runtime lookup dataset."
+    },
+    "stage2": {
+      "buildSeconds": 159.18,
+      "repins": 2533,
+      "oovDependencyPins": 2042,
+      "unsafeCandidatesRemoved": 28,
+      "newExistingWeakARootPins": 1991,
+      "exceptions": 55302,
+      "runtimeAndHelperTests": 32,
+      "greenLog": "/tmp/phonemize-theta-initial-20261030/weak-a-stage2-green-v2.log",
+      "callerConvention": "/tmp/phonemize-theta-initial-20261030/caller-primary-convention.json",
+      "notQualified": "1991 additional roots caused10186 changes beyond current theta family; canonical counts above original, but articles changed NASA and frozen-to-rebuilt stress strings differed. Full artifacts retained in stage2; no baseline change or score adoption."
+    },
+    "stage3": {
+      "buildLog": "/tmp/phonemize-theta-initial-20261030/build-stage3.log",
+      "helperScope": "Existing -ic/-ian plus source-vouched theta-onset weak-a roots; same actual rescue/collision checks",
+      "helperTests": 2,
+      "greenLog": "/tmp/phonemize-theta-initial-20261030/theta-a-helper-green.log",
+      "finalExpectedTests": 8677,
+      "finalExpectedFocused": 63,
+      "next": "Poll23864; inspect new tables/pins; run32 root/helper controls; then rerun rebuilt8canonical gates, snapshot,10 final checks. Update table-review/verify only from audited current results; do not reuse stage2 qualification."
+    },
+    "review": "gpt-6-astra same-family fallback: no new concrete blocker; synthetic gold, historical parity and CMU rules limitations retained",
+    "remaining": 469
+  },
+  "rhoticBoundary20261030": {
+    "status": "rejected full combined class; runtime restored except qualified neutral compression",
+    "beforeCommonStrict": 5822,
+    "offlineScreen": {
+      "rawWins": 27,
+      "rawLosses": 0,
+      "commonGain": 2,
+      "scope": "alphabetic/apostrophe raw dictionary both routes; before added NURSE nucleus fix"
+    },
+    "evidence": "/tmp/phonemize-rhotic-boundary-20261030/rejected-combined",
+    "liveHandles": {},
+    "neutralEvidence": "/tmp/phonemize-rhotic-boundary-20261030/neutral-verification.json",
+    "sourceReferenceChanges": false,
+    "expectationCorrection": "surreal old control independently wrong per MW; new accepted full reading, no reference/scorer/source-data change counted as gain",
+    "open": "default surreal/surround existing lexical references remain incorrect; no claim default singular repaired",
+    "canonicalDrops": {
+      "fullLenient": -21,
+      "commonLenient": -1,
+      "cmuDefault": -1,
+      "cmuRules": -1
+    }
+  },
+  "phonemicNuclei20261030": {
+    "status": "qualified accumulating POS/context fix; zero isolated gain; goal incomplete",
+    "evidence": "/tmp/phonemize-phonemic-nuclei-20261030/verification.json",
+    "beforeCommonStrict": 5822,
+    "contextDiagnostic": {
+      "allFourCells": [
+        0,
+        4,
+        4
+      ]
+    },
+    "liveHandles": {},
+    "sourceReferenceChanges": false,
+    "neutralEvidence": "/tmp/phonemize-rhotic-boundary-20261030/neutral-verification.json",
+    "note": "Separate phonemic nucleus count for public stress from unchanged morphological vowel-run dispatch; stewards control restored. Existing current default source lacks primary; not claimed repaired.",
+    "review": "gpt-6-astra same-family fallback; RP blocker fixed, final runtime hashes/snapshot/logs independently checked; trail/proof saved",
+    "transcriptAudit": "/tmp/phonemize-phonemic-nuclei-20261030/transcript-audit.json",
+    "remaining": 469,
+    "next": "Fresh fixed-cohort failure clusters collected. Compression trigger on repeated a/e clusters; review general morphology/vowel classes, retaining rejected broad rhotic class and historical parity limits.",
+    "portableEvidence": {
+      "path": "/home/hans/Projects/phonemize/scripts/.prediction-cache/qualification-bd78fa4df89eb236024902ee033ff930520a0878c6110927bb45f25a6a25d1ea.tar.gz",
+      "sha256": "dd6c2a14c02fbe3b0432a63e0936d08b660d73f4aac88cc25ceb3e5e0166d7f9",
+      "bytes": 21231034,
+      "members": 210,
+      "manifestKey": "bd78fa4df89eb236024902ee033ff930520a0878c6110927bb45f25a6a25d1ea",
+      "verifiedPredictionArchives": true
+    },
+    "trailComplete": true,
+    "notes": "Actual build/gates/tests/controls verified; own-session proof and qualification pivots saved; portable bundle independently round-trip verified. No isolated pronunciation gain claimed."
+  },
+  "commonFailureAudit20261030": {
+    "status": "diagnosis-only",
+    "evidence": "/tmp/phonemize-phonemic-nuclei-20261030/cmu-overlap-audit.json",
+    "morphologyPriorities": "/tmp/phonemize-phonemic-nuclei-20261030/next-morphology-priorities.json",
+    "actualRoutes": "/tmp/phonemize-phonemic-nuclei-20261030/next-ity-routes.log",
+    "fixedStrict": 5822,
+    "remaining": 469,
+    "strictFailures": 1168,
+    "cmuSegmentOverlap": 114,
+    "nonoverlap": 1054,
+    "warning": "Overlap is not correctness: stress, reading/POS and context unverified. No score/reference/runtime change. ity failure endings have distinct root causes.",
+    "nextAction": "Audit secondary stress/prefix vowel preservation and bio+diversity route as classes; preserve accepted variants; compression required before adding rules."
+  },
+  "bioBoundaryReplay20261030": {
+    "status": "rejected-offline",
+    "population": 77,
+    "changedRouteRows": 31,
+    "strictWins": 10,
+    "strictLosses": 14,
+    "commonRuleWins": 0,
+    "commonRuleLosses": 1,
+    "biodiversityChanged": false,
+    "sourceUnchanged": true,
+    "limitation": "77 direct bio dictionary entries only. Not full recursive dependency screen, lenient/stress/context or adoption gates. No candidate applied.",
+    "evidence": "/tmp/phonemize-bio-boundaries-20261030/rejection.json",
+    "nextAction": "Do not generalize standalone lexical tails to stress-neutral combining roots; reuse existing Greek bound-root constraints in future candidate and test full readings."
+  },
+  "weakIReplay20261030": {
+    "status": "rejected-offline",
+    "population": 105338,
+    "wins": 264,
+    "losses": 682,
+    "commonWins": 32,
+    "commonLosses": 40,
+    "conclusion": "Post-primary position is insufficient to select KIT versus schwa. Some reference families accept opposite vowels in related forms; do not infer new rule exceptions from these score labels. Source audit required before a narrower linguistic class.",
+    "runtimeSourceUnchanged": true,
+    "limitation": "No canonical lenient/stress/context or rebuild gates; no adoption.",
+    "evidence": "/tmp/phonemize-bio-boundaries-20261030/weak-i-rejection.json"
+  },
+  "parityPopulationAudit20261030": {
+    "status": "open-provenance",
+    "evidence": "/tmp/phonemize-parity-population-20261030/population-audit.json",
+    "currentVsHistoricalReconstruction": {
+      "added": 22,
+      "removed": 3,
+      "net": 19
+    },
+    "previousAuditDifference": [
+      "cyclones added",
+      "hurricanes removed"
+    ],
+    "originalSnapshotRecovered": false,
+    "baselineChanged": false,
+    "warning": "Same100835 denominator does not imply same word cohort; historical reconstruction matching100816 is not proof of original baseline population."
+  },
+  "icableReplay20261030": {
+    "status": "rejected",
+    "evidence": "/tmp/phonemize-icable-20261030/rejection.json",
+    "wins": 5,
+    "losses": 7,
+    "commonScoreGainNotProvenPronunciationGain": true,
+    "nextAction": "Stop KIT-to-schwa spelling patches until independent variant audit; prioritize errors involving clear missing consonants, diphthongs or boundaries."
+  },
+  "openIReplay20261030": {
+    "status": "rejected",
+    "evidence": "/tmp/phonemize-open-i-20261030/rejection.json",
+    "strictWins": 174,
+    "strictLosses": 922,
+    "coveredCommonWins": 7,
+    "coveredCommonLosses": 64,
+    "nextAction": "Keep existing long-i whitelist; search morphological boundary errors with independent stem evidence,including recursive dependants."
+  },
+  "fixedFailureRoutes20261030": {
+    "evidence": "/tmp/phonemize-open-i-20261030/failure-routes.json",
+    "total": 1168,
+    "rules": 1000,
+    "morphology": 136,
+    "compound": 32,
+    "predictionsRevalidated": true,
+    "nextAction": "Review 32 compound failures with split/unsplit alternatives before another generic vowel rule; distinguish names from natural compounds."
+  },
+  "compoundAlternativeAudit20261030": {
+    "status": "diagnostic-only",
+    "population": 32,
+    "withSegmentMatchingAlternative": 7,
+    "matchingWords": [
+      "surface",
+      "acrobat",
+      "necklace",
+      "duncan",
+      "portland",
+      "oakland",
+      "highland"
+    ],
+    "remainingWithoutMatchingAlternative": 25,
+    "warning": "Alternative component IPA precedes shared phonotactics and stress/context adaptation; gold-based alternative selection is an oracle,not an implementable rule or accuracy gain. Alternatives list is constrained by legacy enumeration,not exhaustive linguistic analyses.",
+    "sourceHashes": {
+      "src/en/g2p.ts": "22f7b3e773b936b4e3f46883137c0cd35f9d687ff1830ffd560c74ea5136b6cb",
+      "src/en/analysis.ts": "0a9763e325ad1178a0add29e536cfb693cdc740aa70e42f40c2018a1a2e90bc0",
+      "src/en/ipa-plausibility.ts": "ace4d33a020da44530b88101691b3f008111c708b679e6a03ea7634a3fbb7e13"
+    },
+    "runtimeChanged": false,
+    "remainingTo6291": 469,
+    "evidence": "/tmp/phonemize-compound-audit-20261030/summary.json",
+    "nextAction": "Seven unsplit oracle matches do not define a boundary rule; inspect independently licensed prefix/tail classes and required compression before implementation."
+  },
+  "prefixCompoundReplay20261030": {
+    "status": "rejected",
+    "evidence": "/tmp/phonemize-prefix-compounds-20261030/rejection.json",
+    "strictWins": 10,
+    "strictLosses": 95,
+    "coveredCommonWins": 1,
+    "coveredCommonLosses": 12,
+    "nextAction": "Preserve prefix-root composition; any typed prefix path must reuse existing root retrieval and join behavior instead of simply rejecting compound candidates."
+  },
+  "prefixRootStress20261030": {
+    "status": "rejected-broad-stress-policy",
+    "evidence": "/tmp/phonemize-prefix-root-stress-20261030/rejection.json",
+    "changed": 3,
+    "liveHandles": {},
+    "nextAction": "Investigate independently licensed productive derivational suffix families before a narrower class;do not filter infidel by whole-word identity. Compression and full frozen/rebuilt/POS gates still required."
+  },
+  "structuralDiscovery20261030": {
+    "status": "completed-no-candidates",
+    "sessionsTerminal": [
+      60379,
+      21410,
+      16610
+    ],
+    "strictSupport20": "/tmp/phonemize-structural-discovery-20261030/cv-common-report.json",
+    "strictSupport5": "/tmp/phonemize-structural-discovery-support5-20261030/cv-common-report.json",
+    "distanceSupport5": "/tmp/phonemize-structural-distance-20261030/cv-common-report.json",
+    "scope": {
+      "inScope": 5050,
+      "total": 6990,
+      "spellingFamilies": 4620,
+      "folds": 10
+    },
+    "acceptedInEachRun": 0,
+    "positiveReplayControl": "/tmp/phonemize-structural-discovery-20261030/replay-positive-control.json",
+    "warning": "Same ordered v59/v71 population is not same reference contract; research only. No candidates here does not prove no possible improvement.",
+    "nextAction": "Investigate morphology and recursive stem ownership outside direct-render scope;do not lower rule-family support merely to select individual words."
+  },
+  "completeEdTails20261030": {
+    "status": "agent-stem-retention-rebuild-in-progress;prior-tracked-gates-pass-but-agent-control-required",
+    "evidence": "/tmp/phonemize-complete-ed-tails-20261030/candidate-state.json",
+    "candidate": "/tmp/phonemize-complete-ed-tails-20261030/dress-ed-candidate.ts",
+    "runtimeChanged": "only separately verified neutral compression remains",
+    "liveHandles": {
+      "realBuildAgentOwnership": 8292
+    },
+    "nextRequired": [
+      "complete missing tests/qualification through existing dictionary re-pin mechanism,not more word spelling guards",
+      "all pins must derive only from source dictionary/evicted roots;no CMU/evaluation gold used in selection",
+      "prioritize attested bare/restored-e root before compound candidate;full reading verification of pins",
+      "prototype full-dictionary/default/rules/POS snapshots and root consumers;review every loss before implementation",
+      "integrate into existing exception miner with tests then real rebuild andallfinalgates"
+    ],
+    "beforeSnapshot": {
+      "sha256": "546c02466a028d4eb960b567b9a9c5993d40f040fc0850ad72175aff23e506c5",
+      "rows": 1296684
+    },
+    "redRegression": {
+      "file": "__tests__/en-complete-ed-compounds.test.ts",
+      "passed": 9,
+      "failed": 9,
+      "tests": 18,
+      "log": "/tmp/phonemize-complete-ed-tails-20261030/red-v2.log",
+      "limitation": "Unapplied feature regression tests intentionally RED;initial wanted default vowel expectation corrected to actual frozen per-route value and not counted as featureRED."
+    },
+    "ownedCandidate": {
+      "path": "/tmp/phonemize-complete-ed-tails-20261030/owned-candidate.ts",
+      "population": 105338,
+      "changes": 25,
+      "segmentWins": 24,
+      "segmentLosses": 0,
+      "commonWins": 0,
+      "commonLosses": 0,
+      "pairedStreams": 24,
+      "nonTargetTokensExact": true,
+      "callerStemPosAndSentence": true,
+      "prefixFedUnchanged": true
+    },
+    "neutralCompression": {
+      "status": "verification-running",
+      "source": "src/en/g2p.ts:sAllomorph",
+      "controls": {
+        "status": "PASS",
+        "allomorphInputs": 65542,
+        "counts": {
+          "g2p": 1144,
+          "syllabify": 1727,
+          "postlex": 455,
+          "morph-table": 20,
+          "morph-parser": 44,
+          "total": 3390
+        },
+        "scope": "Exhaustive single UTF16-code-unit endings plus empty/newline/diacritic controls. Full snapshot and test evidence separate."
+      },
+      "typesExit": 0,
+      "snapshotSession": 41151,
+      "testsSession": 75910,
+      "warning": "Do not copy old owned-candidate source wholesale over neutral helper. Apply feature delta only after neutral snapshot result. Full tests expected to retain9newfeatureREDuntilimplementation."
+    },
+    "featureTests": {
+      "passed": 18,
+      "failed": 0,
+      "log": "/tmp/phonemize-complete-ed-tails-20261030/green.log"
+    },
+    "frozenCounts": {
+      "g2p": 1149,
+      "syllabify": 1727,
+      "postlex": 455,
+      "morph-table": 20,
+      "morph-parser": 44,
+      "total": 3395
+    },
+    "rejectedPriorityV1": {
+      "evidence": "/tmp/phonemize-complete-ed-tails-20261030/rejected-priority-v1/rejection.json",
+      "cmuDropBothModes": 1,
+      "existingTestFailures": 2,
+      "word": "seemed"
+    },
+    "digraphGuard": {
+      "scope": "ee/oo+one coda+ed retains regular stem priority",
+      "pairedCmu5000RowsChanged": 0,
+      "evidence": "/tmp/phonemize-complete-ed-tails-20261030/cmu-diff.json",
+      "recoveryCasesExact": 12,
+      "focusedTestsPassedBeforeAddingMoreDigraphAssertions": 30
+    },
+    "sourceRootOwnershipPrototype": {
+      "sourcePinsProposed": 68,
+      "selectionUsedEvaluationGold": false,
+      "sourceRecipe": "/tmp/phonemize-complete-ed-tails-20261030/source-root-pins.json",
+      "candidate": "/tmp/phonemize-complete-ed-tails-20261030/root-owned-candidate.ts",
+      "sourceRecipeCode": "/tmp/phonemize-complete-ed-tails-20261030/discover-root-pins.cjs",
+      "diagnosticCmuEdPopulation": 5125,
+      "defaultChanges": 0,
+      "rulesSegmentWins": 22,
+      "lossesBothModes": 0,
+      "evidence": "/tmp/phonemize-complete-ed-tails-20261030/root-owned-all-ed-cmu.json",
+      "limitations": "68 pins only injected into isolated existing exception-table copies;not shipped. Selection currently compares stress-stripped root segments;must tighten to full reading/primary as appropriate and review non-verb/name collisions plus all derivative effects. No canonical qualification or real build.",
+      "sourceInputs": [
+        "existing generated data/en/dict.json",
+        "existing generated data/en/compound-parts.json"
+      ],
+      "fullReadingAudit": {
+        "matches": 67,
+        "proposed": 68,
+        "mismatch": [
+          "petrow"
+        ],
+        "path": "/tmp/phonemize-complete-ed-tails-20261030/source-root-pin-reading-audit.json",
+        "note": "Audit retains primary/secondary marks,adapts only existing STRUT/l conventions;full POS/verb status still unproved. 68-pin prototype results are not a67-pin rerun."
+      }
+    },
+    "reviewerFlags": [
+      "Root membership lacks verb POS;names must not become a new name lexicon.",
+      "Build selection uses generated source full dictionary and existing compound-parts,not evaluation references.",
+      "Pins can affect non-ed derivatives and defaultlexical lookup;full snapshots/gates required.",
+      "Feature is reverted;new compound regression9RED intentionally unresolved."
+    ],
+    "latestEvidence": "/tmp/phonemize-complete-ed-tails-20261030/candidate-state.json",
+    "officialCommonStrict": 5822,
+    "officialGap": 469
+  }
+}

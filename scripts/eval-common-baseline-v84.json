@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-03",
+  "referenceVersion": "common-cohort-v84",
+  "referenceSha256": "65fcadaa4b4d45cfb03fc427aacf4921fad039ea0e93ad0840d3b4011ea16427",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 83.90557939914163,
+    "lenientAccuracy": 92.73247496423463
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 88.11169477467514,
+    "lenientAccuracy": 94.55349737351396
+  },
+  "provenance": {
+    "method": "Added Cambridge US biodiversity /ˌbaɪ.oʊ.dɪˈvɝː.sə.t̬i/ as an accepted variant; fixed populations and primary references are unchanged. The archived full rule snapshot contains the biodiversity row and its prediction already matches this source, increasing the re-scored full-cohort baseline by one strict case and leaving lenient and top-5000 counts unchanged. This is a reference correction, not a pronunciation gain.",
+    "oldContract": "common-cohort-v83",
+    "newContract": "common-cohort-v84",
+    "before": [
+      5864,
+      6482,
+      3187,
+      3420
+    ],
+    "after": [
+      5865,
+      6482,
+      3187,
+      3420
+    ],
+    "runtimeChanges": 0,
+    "sourceSnapshotSha256": "7653119d6ff1e5e3f6a4912bacbd8b021adab04e2ff48936f2ee5d5ce3fa868b",
+    "sources": {
+      "biodiversity": "https://dictionary.cambridge.org/pronunciation/english/biodiversity"
+    }
+  }
+}

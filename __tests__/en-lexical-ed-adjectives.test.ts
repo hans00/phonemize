@@ -12,6 +12,11 @@ describe("lexical adjectives ending in -ed", () => {
     expect(shipped.predict(word, "en-US")).toBe(expected);
   });
 
+  it("preserves the verb reading when caller POS selects it", () => {
+    expect(shipped.predict("wicked", "en-US", "V")).toBe("wɪkt");
+    expect(rules.predict("wicked", "en-US", "V")).toBe("wɪkt");
+  });
+
   it.each([
     ["marked", "ˈmɑɹkt"],
     ["baked", "ˈbeɪkt"],

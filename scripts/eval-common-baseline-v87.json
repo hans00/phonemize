@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-04",
+  "referenceVersion": "common-cohort-v87",
+  "referenceSha256": "13b4da76ff0236282e6c4b2fd4c9cfa17378d1f9cc9e2c568131c0b633ebf6a2",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 85.43633762517882,
+    "lenientAccuracy": 93.53361945636624
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 90.29582526956041,
+    "lenientAccuracy": 95.82526956040918
+  },
+  "provenance": {
+    "method": "Reference-only migration from common-cohort-v86; the old frozen predictions match the retained CMU primary variants, so all baseline counts and the prediction snapshot are preserved.",
+    "oldContract": "common-cohort-v86",
+    "newContract": "common-cohort-v87",
+    "before": [
+      6033,
+      6591,
+      3300,
+      3495
+    ],
+    "after": [
+      6033,
+      6591,
+      3300,
+      3495
+    ],
+    "runtimeChanges": 0,
+    "sourceSnapshotSha256": "c31a3278ddc302a1f00cdf5849352638e24e5ee8ece79ef1100da1916ecbabcf",
+    "sources": {
+      "knowledge": "https://dictionary.cambridge.org/us/pronunciation/english/knowledge",
+      "plaintiff": "https://dictionary.cambridge.org/us/pronunciation/english/plaintiff",
+      "eternal": "https://dictionary.cambridge.org/us/pronunciation/english/eternal",
+      "quantitative": "https://dictionary.cambridge.org/us/pronunciation/english/quantitative",
+      "narrative": "https://dictionary.cambridge.org/pronunciation/english/narrative"
+    },
+    "beforeSnapshotSha256": "c31a3278ddc302a1f00cdf5849352638e24e5ee8ece79ef1100da1916ecbabcf",
+    "afterSnapshotSha256": "aa2bd041b85b59897cc8f56a2b9a604bc8a74a0f4c518afb366e95af6de8dca1",
+    "changedPredictions": [
+      {
+        "word": "minister",
+        "before": "ˈmɪnɪstɝ",
+        "after": "ˈmɪnəstɝ"
+      },
+      {
+        "word": "diamond",
+        "before": "daɪˈæmənd",
+        "after": "ˈdaɪmənd"
+      },
+      {
+        "word": "narrative",
+        "before": "ˈnɑɹətɪv",
+        "after": "ˈnɛɹətɪv"
+      }
+    ]
+  }
+}

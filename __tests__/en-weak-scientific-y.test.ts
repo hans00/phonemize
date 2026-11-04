@@ -8,7 +8,8 @@ describe.each([false, true])("weak thematic y in final scientific nouns (disable
     ["polymer", "ˈpɑɫəmɝ"], ["polymer's", "ˈpɑɫəmɝz"],
     ["analysis", "əˈnæɫəsəs"], ["anonymous", "əˈnɑnəməs"],
     ["hydrogen", "ˈhaɪdɹədʒən"], ["halogen", "ˈhæɫədʒən"],
-    ["nitrogen", disableDict ? "ˈnɪtɹədʒən" : "ˈnaɪtɹədʒən"],
+    // Cambridge gives the US reading /ˈnaɪ.trə.dʒən/ in both dictionary and rule paths.
+    ["nitrogen", "ˈnaɪtɹədʒən"],
     ["polymeric", "pəɫiˈmɛɹɪk"], ["oxygenic", "əksiˈdʒɛnɪk"],
   ])("retains the thematic vowel or neighboring frame in %s", (word, ipa) => {
     expect(engine.predict(word)).toBe(ipa);

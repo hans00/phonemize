@@ -1,0 +1,1008 @@
+{
+  "toolSha256": "51d837170924fb1093a16e412a33b8de66a57b2dad07df9b4e95eaf7deeda485",
+  "objective": "strict",
+  "dictionarySha256": "0d4ca88b5558393bda98fc191e0b13fb966ccf030c26acaa138eb21b87ee26ef",
+  "frequencySha256": "981c776dc7e8996accb256e5fea9d241331b9602efe0c977285734890e1ae729",
+  "baselineSha256": "08392cf5d3f49169aea2aaf2e9324f1d631449fe66d8e4cb88558d9d9d9a3b88",
+  "structuralFeatures": false,
+  "familyGrouped": true,
+  "maxWordLength": 12,
+  "longWordsInScope": 0,
+  "kFolds": 10,
+  "minSupport": 5,
+  "maxRules": 30,
+  "seed": 20260928,
+  "replay": "actual predict() with an isolated ruleSyllables hook; no replica tail",
+  "diagnosticFilterUsesTrainOnly": true,
+  "population": {
+    "commonTestable": 6995,
+    "inScope": 5065,
+    "coveragePct": 72.40886347390993
+  },
+  "totalAccepted": 8,
+  "totalPassed": 0,
+  "meanPassedPerFold": 0,
+  "heldStrictPctBefore": {
+    "mean": 76.44611798457952,
+    "std": 3.067466808239804,
+    "perFold": [
+      74.55621301775149,
+      78.50098619329388,
+      74.16173570019724,
+      82.24852071005917,
+      73.17554240631164,
+      75.29644268774703,
+      72.92490118577075,
+      79.64426877470355,
+      79.44664031620553,
+      74.50592885375494
+    ]
+  },
+  "heldStrictPctAfterAllAccepted": {
+    "mean": 76.34734273530259,
+    "strictCorrect": 3867,
+    "total": 5065
+  },
+  "heldStrictPctAfterPassed": {
+    "mean": 76.44611798457952,
+    "std": 3.067466808239804,
+    "perFold": [
+      74.55621301775149,
+      78.50098619329388,
+      74.16173570019724,
+      82.24852071005917,
+      73.17554240631164,
+      75.29644268774703,
+      72.92490118577075,
+      79.64426877470355,
+      79.44664031620553,
+      74.50592885375494
+    ]
+  },
+  "heldMetrics": {
+    "before": {
+      "strict": 3872,
+      "lenient": 4575,
+      "distance": 2005,
+      "n": 5065
+    },
+    "after": {
+      "strict": 3867,
+      "lenient": 4572,
+      "distance": 2018,
+      "n": 5065
+    }
+  },
+  "selection": "strict train objective, max-rules fixed; held-out never selects or stops",
+  "perFold": [
+    {
+      "fold": 0,
+      "trainN": 4558,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 378,
+        "lenient": 449,
+        "n": 507,
+        "distance": 226
+      },
+      "metricsAfter": {
+        "strict": 378,
+        "lenient": 449,
+        "n": 507,
+        "distance": 228
+      },
+      "mismatchCount": 1056,
+      "candPoolSize": 13984,
+      "prunedSize": 451,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 74.55621301775149,
+      "heldStrictPctAfterAllAccepted": 74.55621301775149,
+      "heldStrictPctAfterPassed": 74.55621301775149,
+      "rules": [
+        {
+          "keyStr": "d\u0000leftLetter+stress\u0000e,unstressed\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "d",
+            "template": "leftLetter+stress",
+            "value": "e,unstressed",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 3,
+          "trainFixes": 5,
+          "trainBreaks": 3,
+          "trainLenientNet": -4,
+          "trainDistanceGain": -7,
+          "affected": 14,
+          "fixRate": 0.35714285714285715,
+          "heldFixes": 0,
+          "heldBreaks": 0,
+          "top5000Fixes": 3,
+          "top5000Breaks": 2,
+          "top5000DistUp": 4,
+          "pass": false,
+          "reason": "fails: affected=14<20 fixRate=0.36<0.75 top5000Break=2>0 top5000DistUp=4>0",
+          "examplesFixed": [
+            {
+              "word": "credit",
+              "before": "ˈkɹɛdɪt",
+              "after": "ˈkɹɛdət",
+              "gold": "ˈkɹɛdət"
+            },
+            {
+              "word": "edit",
+              "before": "ˈɛdɪt",
+              "after": "ˈɛdət",
+              "gold": "ˈɛdət"
+            },
+            {
+              "word": "editor",
+              "before": "ˈɛdɪtɝ",
+              "after": "ˈɛdətɝ",
+              "gold": "ˈɛdətɝ"
+            },
+            {
+              "word": "medicaid",
+              "before": "ˈmɛdɪˌkeɪd",
+              "after": "ˈmɛdəˌkeɪd",
+              "gold": "ˈmɛdəˌkeɪd"
+            },
+            {
+              "word": "medicare",
+              "before": "ˈmɛdɪˌkɛɹ",
+              "after": "ˈmɛdəˌkɛɹ",
+              "gold": "ˈmɛdəˌkɛɹ"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "media",
+              "before": "ˈmidiə",
+              "after": "ˈmidoʊ",
+              "gold": "ˈmidiə"
+            },
+            {
+              "word": "median",
+              "before": "ˈmidiən",
+              "after": "ˈmidəən",
+              "gold": "ˈmidiən"
+            },
+            {
+              "word": "medium",
+              "before": "ˈmidiəm",
+              "after": "ˈmidəəm",
+              "gold": "ˈmidiəm"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 1,
+      "trainN": 4558,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 398,
+        "lenient": 448,
+        "n": 507,
+        "distance": 207
+      },
+      "metricsAfter": {
+        "strict": 397,
+        "lenient": 448,
+        "n": 507,
+        "distance": 208
+      },
+      "mismatchCount": 1074,
+      "candPoolSize": 13802,
+      "prunedSize": 448,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 78.50098619329388,
+      "heldStrictPctAfterAllAccepted": 78.30374753451676,
+      "heldStrictPctAfterPassed": 78.50098619329388,
+      "rules": [
+        {
+          "keyStr": "n\u0000right2\u0000it\u0000ə\u0000ɪ",
+          "key": {
+            "grapheme": "n",
+            "template": "right2",
+            "value": "it",
+            "p": "ə",
+            "q": "ɪ"
+          },
+          "complexity": 4,
+          "trainFixes": 4,
+          "trainBreaks": 3,
+          "trainLenientNet": 0,
+          "trainDistanceGain": 1,
+          "affected": 9,
+          "fixRate": 0.4444444444444444,
+          "heldFixes": 0,
+          "heldBreaks": 1,
+          "top5000Fixes": 1,
+          "top5000Breaks": 1,
+          "top5000DistUp": 1,
+          "pass": false,
+          "reason": "fails: affected=9<20 fixRate=0.44<0.75 top5000Fix=1<3 top5000Break=1>0 top5000DistUp=1>0",
+          "examplesFixed": [
+            {
+              "word": "furniture",
+              "before": "ˈfɝnətʃɝ",
+              "after": "ˈfɝnɪtʃɝ",
+              "gold": "ˈfɝnɪtʃɝ"
+            },
+            {
+              "word": "humanity",
+              "before": "hjuˈmænəti",
+              "after": "hjuˈmænɪti",
+              "gold": "hjuˈmænɪti"
+            },
+            {
+              "word": "manitoba",
+              "before": "ˌmænəˈtoʊbə",
+              "after": "ˌmænɪˈtoʊbə",
+              "gold": "ˌmænɪˈtoʊbə"
+            },
+            {
+              "word": "maternity",
+              "before": "məˈtɝnəti",
+              "after": "məˈtɝnɪti",
+              "gold": "məˈtɝnɪti"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "community",
+              "before": "kəˈmjunəti",
+              "after": "kəˈmjunɪti",
+              "gold": "kəmˈjunəti"
+            },
+            {
+              "word": "infinite",
+              "before": "ˈɪnfənət",
+              "after": "ˈɪnfənɪt",
+              "gold": "ˈɪnfənət"
+            },
+            {
+              "word": "unity",
+              "before": "ˈjunəti",
+              "after": "ˈjunɪti",
+              "gold": "ˈjunəti"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 2,
+      "trainN": 4558,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 376,
+        "lenient": 450,
+        "n": 507,
+        "distance": 228
+      },
+      "metricsAfter": {
+        "strict": 376,
+        "lenient": 450,
+        "n": 507,
+        "distance": 229
+      },
+      "mismatchCount": 1053,
+      "candPoolSize": 13825,
+      "prunedSize": 429,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 74.16173570019724,
+      "heldStrictPctAfterAllAccepted": 74.16173570019724,
+      "heldStrictPctAfterPassed": 74.16173570019724,
+      "rules": [
+        {
+          "keyStr": "d\u0000leftLetter+stress\u0000e,unstressed\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "d",
+            "template": "leftLetter+stress",
+            "value": "e,unstressed",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 3,
+          "trainFixes": 5,
+          "trainBreaks": 3,
+          "trainLenientNet": -4,
+          "trainDistanceGain": -8,
+          "affected": 14,
+          "fixRate": 0.35714285714285715,
+          "heldFixes": 0,
+          "heldBreaks": 0,
+          "top5000Fixes": 3,
+          "top5000Breaks": 2,
+          "top5000DistUp": 5,
+          "pass": false,
+          "reason": "fails: affected=14<20 fixRate=0.36<0.75 top5000Break=2>0 top5000DistUp=5>0",
+          "examplesFixed": [
+            {
+              "word": "credit",
+              "before": "ˈkɹɛdɪt",
+              "after": "ˈkɹɛdət",
+              "gold": "ˈkɹɛdət"
+            },
+            {
+              "word": "edit",
+              "before": "ˈɛdɪt",
+              "after": "ˈɛdət",
+              "gold": "ˈɛdət"
+            },
+            {
+              "word": "editor",
+              "before": "ˈɛdɪtɝ",
+              "after": "ˈɛdətɝ",
+              "gold": "ˈɛdətɝ"
+            },
+            {
+              "word": "medicaid",
+              "before": "ˈmɛdɪˌkeɪd",
+              "after": "ˈmɛdəˌkeɪd",
+              "gold": "ˈmɛdəˌkeɪd"
+            },
+            {
+              "word": "medicare",
+              "before": "ˈmɛdɪˌkɛɹ",
+              "after": "ˈmɛdəˌkɛɹ",
+              "gold": "ˈmɛdəˌkɛɹ"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "media",
+              "before": "ˈmidiə",
+              "after": "ˈmidoʊ",
+              "gold": "ˈmidiə"
+            },
+            {
+              "word": "median",
+              "before": "ˈmidiən",
+              "after": "ˈmidəən",
+              "gold": "ˈmidiən"
+            },
+            {
+              "word": "medium",
+              "before": "ˈmidiəm",
+              "after": "ˈmidəəm",
+              "gold": "ˈmidiəm"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 3,
+      "trainN": 4558,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 417,
+        "lenient": 475,
+        "n": 507,
+        "distance": 149
+      },
+      "metricsAfter": {
+        "strict": 417,
+        "lenient": 474,
+        "n": 507,
+        "distance": 151
+      },
+      "mismatchCount": 1093,
+      "candPoolSize": 14480,
+      "prunedSize": 474,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 82.24852071005917,
+      "heldStrictPctAfterAllAccepted": 82.24852071005917,
+      "heldStrictPctAfterPassed": 82.24852071005917,
+      "rules": [
+        {
+          "keyStr": "d\u0000leftLetter+stress\u0000e,unstressed\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "d",
+            "template": "leftLetter+stress",
+            "value": "e,unstressed",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 3,
+          "trainFixes": 5,
+          "trainBreaks": 3,
+          "trainLenientNet": -3,
+          "trainDistanceGain": -7,
+          "affected": 14,
+          "fixRate": 0.35714285714285715,
+          "heldFixes": 0,
+          "heldBreaks": 0,
+          "top5000Fixes": 3,
+          "top5000Breaks": 2,
+          "top5000DistUp": 5,
+          "pass": false,
+          "reason": "fails: affected=14<20 fixRate=0.36<0.75 top5000Break=2>0 top5000DistUp=5>0",
+          "examplesFixed": [
+            {
+              "word": "credit",
+              "before": "ˈkɹɛdɪt",
+              "after": "ˈkɹɛdət",
+              "gold": "ˈkɹɛdət"
+            },
+            {
+              "word": "edit",
+              "before": "ˈɛdɪt",
+              "after": "ˈɛdət",
+              "gold": "ˈɛdət"
+            },
+            {
+              "word": "editor",
+              "before": "ˈɛdɪtɝ",
+              "after": "ˈɛdətɝ",
+              "gold": "ˈɛdətɝ"
+            },
+            {
+              "word": "medicaid",
+              "before": "ˈmɛdɪˌkeɪd",
+              "after": "ˈmɛdəˌkeɪd",
+              "gold": "ˈmɛdəˌkeɪd"
+            },
+            {
+              "word": "medicare",
+              "before": "ˈmɛdɪˌkɛɹ",
+              "after": "ˈmɛdəˌkɛɹ",
+              "gold": "ˈmɛdəˌkɛɹ"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "media",
+              "before": "ˈmidiə",
+              "after": "ˈmidoʊ",
+              "gold": "ˈmidiə"
+            },
+            {
+              "word": "median",
+              "before": "ˈmidiən",
+              "after": "ˈmidəən",
+              "gold": "ˈmidiən"
+            },
+            {
+              "word": "medium",
+              "before": "ˈmidiəm",
+              "after": "ˈmidəəm",
+              "gold": "ˈmidiəm"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 4,
+      "trainN": 4558,
+      "heldN": 507,
+      "metricsBefore": {
+        "strict": 371,
+        "lenient": 450,
+        "n": 507,
+        "distance": 219
+      },
+      "metricsAfter": {
+        "strict": 371,
+        "lenient": 450,
+        "n": 507,
+        "distance": 219
+      },
+      "mismatchCount": 1049,
+      "candPoolSize": 13782,
+      "prunedSize": 430,
+      "acceptedCount": 0,
+      "passedCount": 0,
+      "heldStrictPctBefore": 73.17554240631164,
+      "heldStrictPctAfterAllAccepted": 73.17554240631164,
+      "heldStrictPctAfterPassed": 73.17554240631164,
+      "rules": [],
+      "passingRules": []
+    },
+    {
+      "fold": 5,
+      "trainN": 4559,
+      "heldN": 506,
+      "metricsBefore": {
+        "strict": 381,
+        "lenient": 453,
+        "n": 506,
+        "distance": 215
+      },
+      "metricsAfter": {
+        "strict": 381,
+        "lenient": 453,
+        "n": 506,
+        "distance": 215
+      },
+      "mismatchCount": 1059,
+      "candPoolSize": 13955,
+      "prunedSize": 472,
+      "acceptedCount": 0,
+      "passedCount": 0,
+      "heldStrictPctBefore": 75.29644268774703,
+      "heldStrictPctAfterAllAccepted": 75.29644268774703,
+      "heldStrictPctAfterPassed": 75.29644268774703,
+      "rules": [],
+      "passingRules": []
+    },
+    {
+      "fold": 6,
+      "trainN": 4559,
+      "heldN": 506,
+      "metricsBefore": {
+        "strict": 369,
+        "lenient": 463,
+        "n": 506,
+        "distance": 215
+      },
+      "metricsAfter": {
+        "strict": 369,
+        "lenient": 463,
+        "n": 506,
+        "distance": 215
+      },
+      "mismatchCount": 1046,
+      "candPoolSize": 13988,
+      "prunedSize": 458,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 72.92490118577075,
+      "heldStrictPctAfterAllAccepted": 72.92490118577075,
+      "heldStrictPctAfterPassed": 72.92490118577075,
+      "rules": [
+        {
+          "keyStr": "d\u0000leftLetter+stress\u0000e,unstressed\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "d",
+            "template": "leftLetter+stress",
+            "value": "e,unstressed",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 3,
+          "trainFixes": 5,
+          "trainBreaks": 3,
+          "trainLenientNet": -4,
+          "trainDistanceGain": -9,
+          "affected": 15,
+          "fixRate": 0.3333333333333333,
+          "heldFixes": 0,
+          "heldBreaks": 0,
+          "top5000Fixes": 3,
+          "top5000Breaks": 2,
+          "top5000DistUp": 5,
+          "pass": false,
+          "reason": "fails: affected=15<20 fixRate=0.33<0.75 top5000Break=2>0 top5000DistUp=5>0",
+          "examplesFixed": [
+            {
+              "word": "credit",
+              "before": "ˈkɹɛdɪt",
+              "after": "ˈkɹɛdət",
+              "gold": "ˈkɹɛdət"
+            },
+            {
+              "word": "edit",
+              "before": "ˈɛdɪt",
+              "after": "ˈɛdət",
+              "gold": "ˈɛdət"
+            },
+            {
+              "word": "editor",
+              "before": "ˈɛdɪtɝ",
+              "after": "ˈɛdətɝ",
+              "gold": "ˈɛdətɝ"
+            },
+            {
+              "word": "medicaid",
+              "before": "ˈmɛdɪˌkeɪd",
+              "after": "ˈmɛdəˌkeɪd",
+              "gold": "ˈmɛdəˌkeɪd"
+            },
+            {
+              "word": "medicare",
+              "before": "ˈmɛdɪˌkɛɹ",
+              "after": "ˈmɛdəˌkɛɹ",
+              "gold": "ˈmɛdəˌkɛɹ"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "media",
+              "before": "ˈmidiə",
+              "after": "ˈmidoʊ",
+              "gold": "ˈmidiə"
+            },
+            {
+              "word": "median",
+              "before": "ˈmidiən",
+              "after": "ˈmidəən",
+              "gold": "ˈmidiən"
+            },
+            {
+              "word": "medium",
+              "before": "ˈmidiəm",
+              "after": "ˈmidəəm",
+              "gold": "ˈmidiəm"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 7,
+      "trainN": 4559,
+      "heldN": 506,
+      "metricsBefore": {
+        "strict": 403,
+        "lenient": 472,
+        "n": 506,
+        "distance": 158
+      },
+      "metricsAfter": {
+        "strict": 402,
+        "lenient": 471,
+        "n": 506,
+        "distance": 161
+      },
+      "mismatchCount": 1080,
+      "candPoolSize": 14282,
+      "prunedSize": 479,
+      "acceptedCount": 2,
+      "passedCount": 0,
+      "heldStrictPctBefore": 79.64426877470355,
+      "heldStrictPctAfterAllAccepted": 79.44664031620553,
+      "heldStrictPctAfterPassed": 79.64426877470355,
+      "rules": [
+        {
+          "keyStr": "d\u0000leftLetter+stress\u0000e,unstressed\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "d",
+            "template": "leftLetter+stress",
+            "value": "e,unstressed",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 3,
+          "trainFixes": 5,
+          "trainBreaks": 3,
+          "trainLenientNet": -3,
+          "trainDistanceGain": -7,
+          "affected": 14,
+          "fixRate": 0.35714285714285715,
+          "heldFixes": 0,
+          "heldBreaks": 0,
+          "top5000Fixes": 3,
+          "top5000Breaks": 2,
+          "top5000DistUp": 4,
+          "pass": false,
+          "reason": "fails: affected=14<20 fixRate=0.36<0.75 top5000Break=2>0 top5000DistUp=4>0",
+          "examplesFixed": [
+            {
+              "word": "credit",
+              "before": "ˈkɹɛdɪt",
+              "after": "ˈkɹɛdət",
+              "gold": "ˈkɹɛdət"
+            },
+            {
+              "word": "edit",
+              "before": "ˈɛdɪt",
+              "after": "ˈɛdət",
+              "gold": "ˈɛdət"
+            },
+            {
+              "word": "editor",
+              "before": "ˈɛdɪtɝ",
+              "after": "ˈɛdətɝ",
+              "gold": "ˈɛdətɝ"
+            },
+            {
+              "word": "medicaid",
+              "before": "ˈmɛdɪˌkeɪd",
+              "after": "ˈmɛdəˌkeɪd",
+              "gold": "ˈmɛdəˌkeɪd"
+            },
+            {
+              "word": "medicare",
+              "before": "ˈmɛdɪˌkɛɹ",
+              "after": "ˈmɛdəˌkɛɹ",
+              "gold": "ˈmɛdəˌkɛɹ"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "media",
+              "before": "ˈmidiə",
+              "after": "ˈmidoʊ",
+              "gold": "ˈmidiə"
+            },
+            {
+              "word": "median",
+              "before": "ˈmidiən",
+              "after": "ˈmidəən",
+              "gold": "ˈmidiən"
+            },
+            {
+              "word": "medium",
+              "before": "ˈmidiəm",
+              "after": "ˈmidəəm",
+              "gold": "ˈmidiəm"
+            }
+          ]
+        },
+        {
+          "keyStr": "b\u0000right2\u0000it\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "b",
+            "template": "right2",
+            "value": "it",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 4,
+          "trainFixes": 4,
+          "trainBreaks": 3,
+          "trainLenientNet": -1,
+          "trainDistanceGain": 0,
+          "affected": 8,
+          "fixRate": 0.5,
+          "heldFixes": 0,
+          "heldBreaks": 1,
+          "top5000Fixes": 0,
+          "top5000Breaks": 2,
+          "top5000DistUp": 3,
+          "pass": false,
+          "reason": "fails: affected=8<20 fixRate=0.50<0.75 top5000Fix=0<3 top5000Break=2>0 top5000DistUp=3>0",
+          "examplesFixed": [
+            {
+              "word": "arbitrary",
+              "before": "ˈɑɹbɪˌtɹɛɹi",
+              "after": "ˈɑɹbəˌtɹɛɹi",
+              "gold": "ˈɑɹbəˌtɹɛɹi"
+            },
+            {
+              "word": "habitat",
+              "before": "ˈhæbɪtæt",
+              "after": "ˈhæbətæt",
+              "gold": "ˈhæbəˌtæt"
+            },
+            {
+              "word": "orbit",
+              "before": "ˈɔɹbɪt",
+              "after": "ˈɔɹbət",
+              "gold": "ˈɔɹbət"
+            },
+            {
+              "word": "rabbit",
+              "before": "ˈɹæbɪt",
+              "after": "ˈɹæbət",
+              "gold": "ˈɹæbət"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "bit",
+              "before": "ˈbɪt",
+              "after": "ˈbʌt",
+              "gold": "ˈbɪt"
+            },
+            {
+              "word": "bite",
+              "before": "ˈbaɪt",
+              "after": "ˈbaət",
+              "gold": "ˈbaɪt"
+            },
+            {
+              "word": "exhibit",
+              "before": "ɪɡˈzɪbɪt",
+              "after": "ɪɡˈzɪbət",
+              "gold": "ɪɡˈzɪbɪt"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 8,
+      "trainN": 4559,
+      "heldN": 506,
+      "metricsBefore": {
+        "strict": 402,
+        "lenient": 471,
+        "n": 506,
+        "distance": 159
+      },
+      "metricsAfter": {
+        "strict": 399,
+        "lenient": 470,
+        "n": 506,
+        "distance": 163
+      },
+      "mismatchCount": 1080,
+      "candPoolSize": 14185,
+      "prunedSize": 448,
+      "acceptedCount": 1,
+      "passedCount": 0,
+      "heldStrictPctBefore": 79.44664031620553,
+      "heldStrictPctAfterAllAccepted": 78.85375494071147,
+      "heldStrictPctAfterPassed": 79.44664031620553,
+      "rules": [
+        {
+          "keyStr": "d\u0000leftLetter\u0000e\u0000ɪ\u0000ə",
+          "key": {
+            "grapheme": "d",
+            "template": "leftLetter",
+            "value": "e",
+            "p": "ɪ",
+            "q": "ə"
+          },
+          "complexity": 2,
+          "trainFixes": 4,
+          "trainBreaks": 1,
+          "trainLenientNet": -5,
+          "trainDistanceGain": -8,
+          "affected": 15,
+          "fixRate": 0.26666666666666666,
+          "heldFixes": 1,
+          "heldBreaks": 4,
+          "top5000Fixes": 2,
+          "top5000Breaks": 1,
+          "top5000DistUp": 5,
+          "pass": false,
+          "reason": "fails: affected=15<20 fixRate=0.27<0.75 top5000Fix=2<3 top5000Break=1>0 top5000DistUp=5>0",
+          "examplesFixed": [
+            {
+              "word": "edit",
+              "before": "ˈɛdɪt",
+              "after": "ˈɛdət",
+              "gold": "ˈɛdət"
+            },
+            {
+              "word": "editor",
+              "before": "ˈɛdɪtɝ",
+              "after": "ˈɛdətɝ",
+              "gold": "ˈɛdətɝ"
+            },
+            {
+              "word": "medicaid",
+              "before": "ˈmɛdɪˌkeɪd",
+              "after": "ˈmɛdəˌkeɪd",
+              "gold": "ˈmɛdəˌkeɪd"
+            },
+            {
+              "word": "medicare",
+              "before": "ˈmɛdɪˌkɛɹ",
+              "after": "ˈmɛdəˌkɛɹ",
+              "gold": "ˈmɛdəˌkɛɹ"
+            }
+          ],
+          "examplesBroken": [
+            {
+              "word": "medium",
+              "before": "ˈmidiəm",
+              "after": "ˈmidəəm",
+              "gold": "ˈmidiəm"
+            }
+          ]
+        }
+      ],
+      "passingRules": []
+    },
+    {
+      "fold": 9,
+      "trainN": 4559,
+      "heldN": 506,
+      "metricsBefore": {
+        "strict": 377,
+        "lenient": 444,
+        "n": 506,
+        "distance": 229
+      },
+      "metricsAfter": {
+        "strict": 377,
+        "lenient": 444,
+        "n": 506,
+        "distance": 229
+      },
+      "mismatchCount": 1057,
+      "candPoolSize": 13910,
+      "prunedSize": 445,
+      "acceptedCount": 0,
+      "passedCount": 0,
+      "heldStrictPctBefore": 74.50592885375494,
+      "heldStrictPctAfterAllAccepted": 74.50592885375494,
+      "heldStrictPctAfterPassed": 74.50592885375494,
+      "rules": [],
+      "passingRules": []
+    }
+  ],
+  "pooledCandidates": [
+    {
+      "keyStr": "d\u0000leftLetter+stress\u0000e,unstressed\u0000ɪ\u0000ə",
+      "key": {
+        "grapheme": "d",
+        "template": "leftLetter+stress",
+        "value": "e,unstressed",
+        "p": "ɪ",
+        "q": "ə"
+      },
+      "foldsAccepted": 5,
+      "foldsPassed": 0,
+      "sumTrainFix": 25,
+      "sumTrainBreak": 15,
+      "sumTop5000Fix": 15,
+      "sumTop5000Break": 10,
+      "meanAffected": 14.2,
+      "meanFixRate": 0.35238095238095235
+    },
+    {
+      "keyStr": "d\u0000leftLetter\u0000e\u0000ɪ\u0000ə",
+      "key": {
+        "grapheme": "d",
+        "template": "leftLetter",
+        "value": "e",
+        "p": "ɪ",
+        "q": "ə"
+      },
+      "foldsAccepted": 1,
+      "foldsPassed": 0,
+      "sumTrainFix": 4,
+      "sumTrainBreak": 1,
+      "sumTop5000Fix": 2,
+      "sumTop5000Break": 1,
+      "meanAffected": 15,
+      "meanFixRate": 0.26666666666666666
+    },
+    {
+      "keyStr": "n\u0000right2\u0000it\u0000ə\u0000ɪ",
+      "key": {
+        "grapheme": "n",
+        "template": "right2",
+        "value": "it",
+        "p": "ə",
+        "q": "ɪ"
+      },
+      "foldsAccepted": 1,
+      "foldsPassed": 0,
+      "sumTrainFix": 4,
+      "sumTrainBreak": 3,
+      "sumTop5000Fix": 1,
+      "sumTop5000Break": 1,
+      "meanAffected": 9,
+      "meanFixRate": 0.4444444444444444
+    },
+    {
+      "keyStr": "b\u0000right2\u0000it\u0000ɪ\u0000ə",
+      "key": {
+        "grapheme": "b",
+        "template": "right2",
+        "value": "it",
+        "p": "ɪ",
+        "q": "ə"
+      },
+      "foldsAccepted": 1,
+      "foldsPassed": 0,
+      "sumTrainFix": 4,
+      "sumTrainBreak": 3,
+      "sumTop5000Fix": 0,
+      "sumTop5000Break": 2,
+      "meanAffected": 8,
+      "meanFixRate": 0.5
+    }
+  ]
+}

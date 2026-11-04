@@ -1,0 +1,60 @@
+{
+  "version": "runtime-parity-historical-en-v5",
+  "supersedes": "runtime-parity-en-v4",
+  "status": "diagnostic-only; existing v2 baseline remains required",
+  "baseDictionarySha256": "154b612082db16dcc1c5959337a606b5a52fb7912da2cf6c0c0edacc635f1a72",
+  "frozenSnapshotSha256": "5dc2893f38e7b755cb77f3b4c5ae1178d192103732472b8706898746315c7eda",
+  "variants": {
+    "brackets": {
+      "from": "ˈbɹækəts",
+      "to": "ˈbɹækɪts",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/bracket"
+    },
+    "cyclone": {
+      "from": "sɪˈkɫoʊn",
+      "to": "ˈsaɪkɫoʊn",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/cyclone"
+    },
+    "hurricane": {
+      "from": "ˈhəɹəˌkeɪnz",
+      "to": "ˈhɝəˌkeɪn",
+      "source": "https://dictionary.cambridge.org/dictionary/english/hurricane"
+    },
+    "picketed": {
+      "from": "ˈpɪkətɪd",
+      "to": "ˈpɪkɪtɪd",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/picket"
+    },
+    "picketing": {
+      "from": "ˈpɪkətɪŋ",
+      "to": "ˈpɪkɪtɪŋ",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/picket"
+    },
+    "pickets": {
+      "from": "ˈpɪkəts",
+      "to": "ˈpɪkɪts",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/picket"
+    },
+    "pickpocket": {
+      "from": "ˈpɪkˌpɑkət",
+      "to": "ˈpɪkˌpɑkɪt",
+      "source": "https://dictionary.cambridge.org/pronunciation/english/pickpocket"
+    },
+    "pocketful": {
+      "from": "ˈpɑkətˌfʊɫ",
+      "to": "ˈpɑkɪtˌfʊɫ",
+      "source": "https://dictionary.cambridge.org/dictionary/english/pocketful"
+    },
+    "thickets": {
+      "from": "ˈθɪkəts",
+      "to": "ˈθɪkɪts",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/thicket"
+    },
+    "webpage": {
+      "from": "ˈwɛbpɪdʒ",
+      "to": "ˈwɛbˌpeɪdʒ",
+      "source": "https://dictionary.cambridge.org/us/pronunciation/english/web-page"
+    }
+  },
+  "referenceSha256": "7c14df5687147d20c2079290a5f3f6ea11a337cd5ac2acd3a33126d8198c94d9"
+}

@@ -1,14 +1,15 @@
 import EnglishG2P from '../src/en/g2p';
 import dictionary from '../data/en/dict.json';
-import commonCohort = require('./common-cohort.json');
-import { commonReferences } from './common-cohort-gold';
+import commonCohort = require('./common-cohort-v89.json');
+import { commonAcceptedVariants, commonReferences } from './common-cohort-gold';
+import { assertCommonBaselineUpdate } from './common-baseline-guard';
 import fs from 'fs';
 import { createHash } from 'crypto';
 import { join, resolve } from 'path';
 import levenshtein from 'fast-levenshtein';
 
 const BASELINE_PATH = join(__dirname, 'eval-baseline.json');
-const COMMON_BASELINE_PATH = join(__dirname, 'eval-common-baseline.json');
+const COMMON_BASELINE_PATH = join(__dirname, 'eval-common-baseline-v89.json');
 const MAX_WORD_LENGTH = 12; // Words longer than this are considered "compound" and excluded.
 
 interface Baseline {
@@ -27,6 +28,8 @@ interface SubsetBaselineSlice {
 
 interface CommonBaseline {
   date: string;
+  referenceVersion: string;
+  referenceSha256: string;
   full: SubsetBaselineSlice;
   top5000: SubsetBaselineSlice;
 }
@@ -168,7 +171,7 @@ interface ScoreResult {
 }
 
 /** Scores one word list with the strict/lenient definitions shared by every subset. */
-function scoreWordList(wordList: string[], dict: Record<string, string>, g2p: EnglishG2P): ScoreResult {
+function scoreWordList(wordList: string[], dict: Record<string, string>, g2p: EnglishG2P, variants: Record<string, string[]> = {}): ScoreResult {
   let strictCorrect = 0;
   let lenientCorrect = 0;
   const total = wordList.length;
@@ -181,17 +184,17 @@ function scoreWordList(wordList: string[], dict: Record<string, string>, g2p: En
 
     const predictedPron = g2p.predict(word, 'en');
 
-    const normExpected = normalizePhonemes(expectedPron);
+    const acceptedVariants = Object.prototype.hasOwnProperty.call(variants, word) ? variants[word] : [];
+    const normExpecteds = [expectedPron, ...acceptedVariants].map(normalizePhonemes);
     const normPredicted = normalizePhonemes(predictedPron || '');
 
-    if (normExpected === normPredicted) {
+    if (normExpecteds.includes(normPredicted)) {
       strictCorrect++;
       lenientCorrect++;
       allDistances.push(0);
     } else {
-      const canonExpected = canonizePhonemeString(normExpected);
       const canonPredicted = canonizePhonemeString(normPredicted);
-      const distance = levenshtein.get(canonExpected, canonPredicted);
+      const distance = Math.min(...normExpecteds.map(expected => levenshtein.get(canonizePhonemeString(expected), canonPredicted)));
       allDistances.push(distance);
 
       if (distance <= 1) {
@@ -200,9 +203,9 @@ function scoreWordList(wordList: string[], dict: Record<string, string>, g2p: En
 
       mismatches.push({
         word,
-        expected: expectedPron,
+        expected: [expectedPron, ...acceptedVariants].join(' | '),
         predicted: predictedPron || '',
-        distance: levenshtein.get(normExpected, normPredicted),
+        distance: Math.min(...normExpecteds.map(expected => levenshtein.get(expected, normPredicted))),
       });
     }
   }
@@ -264,7 +267,7 @@ function writeMismatchReport(
 async function evaluateFullDict(g2p: EnglishG2P, dict: Record<string, string>, testableWords: string[]) {
   console.log(`Evaluating ${testableWords.length} testable words from the dictionary...`);
 
-  const result = scoreWordList(testableWords, dict, g2p);
+  const result = scoreWordList(testableWords, dict, g2p, commonAcceptedVariants);
 
   let baseline: Baseline | null = null;
   if (fs.existsSync(BASELINE_PATH)) {
@@ -353,12 +356,16 @@ async function evaluateCommonSubset(g2p: EnglishG2P, dict: Record<string, string
   }
 
   const commonReferenceDict = { ...dict, ...commonReferences };
-  const fullResult = scoreWordList(fullSubset, commonReferenceDict, g2p);
-  const top5000Result = scoreWordList(top5000Subset, commonReferenceDict, g2p);
+  const fullResult = scoreWordList(fullSubset, commonReferenceDict, g2p, commonAcceptedVariants);
+  const top5000Result = scoreWordList(top5000Subset, commonReferenceDict, g2p, commonAcceptedVariants);
 
   let baseline: CommonBaseline | null = null;
   if (fs.existsSync(COMMON_BASELINE_PATH)) {
     try { baseline = JSON.parse(fs.readFileSync(COMMON_BASELINE_PATH, 'utf-8')); } catch { /* ignore */ }
+  }
+  if (baseline && (baseline.referenceVersion !== commonCohort.referenceVersion ||
+      baseline.referenceSha256 !== commonCohort.referenceSha256)) {
+    throw new Error(`Common baseline does not match ${commonCohort.referenceVersion} reference contract`);
   }
 
   console.log(`\n--- G2P Rule-based Evaluation Results (English subset: frequency list, non-foreign) ---`);
@@ -384,8 +391,11 @@ async function evaluateCommonSubset(g2p: EnglishG2P, dict: Record<string, string
   if (cliArgs.cluster) clusterFailures(fullResult.mismatches, g2p);
 
   if (cliArgs.updateBaseline) {
+    assertCommonBaselineUpdate({ full: fullResult, top5000: top5000Result }, baseline);
     const b: CommonBaseline = {
       date: new Date().toISOString().slice(0, 10),
+      referenceVersion: commonCohort.referenceVersion,
+      referenceSha256: commonCohort.referenceSha256,
       full: { n: fullResult.total, strictAccuracy: fullResult.strictAccuracy, lenientAccuracy: fullResult.lenientAccuracy },
       top5000: { n: top5000Result.total, strictAccuracy: top5000Result.strictAccuracy, lenientAccuracy: top5000Result.lenientAccuracy },
     };

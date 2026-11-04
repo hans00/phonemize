@@ -316,7 +316,8 @@ failures of the shipped *composition* — exception table, morphology,
 fallbacks, rules — not of the rule tables the older `yarn test:eval` score
 measures. Two gates were added to make that path visible:
 
-- `yarn test:parity` (`scripts/evaluate-parity.ts`) scores the default
+- `yarn test:parity` (`scripts/evaluate-parity-v6.ts`; legacy
+  `scripts/evaluate-parity.ts` forwards here) scores the default
   `EnglishG2P` over every dictionary word and exits non-zero when strict
   parity drops. A rule change only reaches this number after
   `yarn build-dict` re-mines the exception table, so parity is judged after
@@ -610,6 +611,21 @@ from another contract is rejected before comparison, and partial-cell baseline
 capture is rejected. Frozen-reference/scorer changes are new measurement versions,
 not pronunciation improvements. The normal +1-point commit rule still applies.
 
+The default comparator now uses `scripts/context-ipa-baseline-v3.json`
+(`context-ipa-contract-v3`, 2026-11-01). It retains all 432 original predictions,
+all cell/reading/class counts and every supported-POS summary field. The original
+baseline remains unchanged. Migration independently re-scored those stored
+predictions from the unchanged v2 baseline under the current scorer and required complete summary equality;
+it did not capture current runtime predictions as a replacement floor.
+The phone fingerprint now hashes the independent ARPAbet inventory itself,
+rather than unrelated reference/evaluation code in `evaluate-common-accuracy.ts`.
+Reference, cohort, scorer, loader and evaluator fingerprints remain protected.
+The new baseline records legacy-file and prediction hashes in its provenance.
+This is contract maintenance with zero pronunciation gain. Live CLI checks also
+reject an altered phone inventory and refuse to overwrite a valid stronger
+baseline when one labelled reading regresses. Evidence:
+`/tmp/phonemize-contract-audit-20261028/`.
+
 Validation evidence is in `/tmp/phonemize-ipa-implementation/`: scorer and public
 path tests, source/script typecheck, legacy-score replay, identical new-metric
 replays, the Yarn/legacy-alias entry points, and negative CLI checks for score
@@ -708,5 +724,22 @@ No gold labels, cohort, scorer, baselines or runtime were changed by this check.
 The legacy gate remains intact; any later reference revision needs a separate
 version and unchanged-prediction re-scoring, not a reset of release progress.
 Local evidence: /tmp/phonemize-next-release/after-c2dd9aa-nominal-reiteration-probe.
+
+## 14. Runtime parity fixed cohort v6 (2026-11-02)
+
+The v2 runtime parity baseline covered 100,816 words while the live dictionary
+contains 100,842 alphabetic entries, so the prior command could not make a
+valid same-population comparison. The v6 contract freezes the original 100,816
+word population and reference rows, with one source-checked correction:
+*hurricane* uses Cambridge's US singular pronunciation rather than the
+erroneous plural `/həɹəˌkeɪnz/`. The v2 baseline and reference contract remain
+unchanged. The same frozen prediction snapshot scores 94,806 strict and
+100,709 lenient under v6. On 2026-11-03, current predictions score
+94,811 strict and 100,712 lenient, five and three above that frozen floor.
+The changed reference is a contract correction, not a pronunciation-accuracy
+improvement. `yarn test:parity
+--before FILE --dump FILE` checks both the migrated v6 floor and an optional
+same-cohort before-run snapshot. The extra live-dictionary score is diagnostic
+only. See [Cambridge US hurricane pronunciation](https://dictionary.cambridge.org/us/pronunciation/english/hurricane).
 
 套件驗證：open-i 批次已從全新打包的 81 個安全成員解壓，CJS／ESM 的 main、core、English 入口在 default／rules 路徑全部通過；包含大小寫、詞根衍生、句中讀音及 issue #28 控制。

@@ -23,6 +23,8 @@ import EnglishG2P from "../src/en/g2p";
 import dictionary from "../data/en/dict.json";
 import fs from "fs";
 import { join } from "path";
+import { createHash } from "crypto";
+import { gzipSync, gunzipSync } from "zlib";
 
 const out = process.argv[2];
 if (!out) {
@@ -70,5 +72,19 @@ for (const t of [...tokens].sort()) {
   lines.push(`pos:IN\t${t}\t${g2pDict.predict(t, "en", "IN")}`);
 }
 
-fs.writeFileSync(out, lines.join("\n") + "\n");
+const payload = Buffer.from(lines.join("\n") + "\n");
+const sha256 = createHash("sha256").update(payload).digest("hex");
+const cacheDir = join(__dirname, ".prediction-cache");
+fs.mkdirSync(cacheDir, { recursive: true });
+const archived = join(cacheDir, `${sha256}.tsv.gz`);
+if (!fs.existsSync(archived)) fs.writeFileSync(archived, gzipSync(payload), { flag: "wx" });
+if (!gunzipSync(fs.readFileSync(archived)).equals(payload)) {
+  throw new Error(`Prediction archive does not match snapshot: ${archived}`);
+}
+const metadata = join(cacheDir, `${sha256}.json`);
+if (!fs.existsSync(metadata)) {
+  fs.writeFileSync(metadata, JSON.stringify({ format: "phonemize-full-snapshot-v1", sha256, rows: lines.length }) + "\n", { flag: "wx" });
+}
+fs.writeFileSync(out, payload);
 console.log(`${lines.length} predictions → ${out}`);
+console.log(`Verified archive → ${archived}`);

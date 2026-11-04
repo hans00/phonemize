@@ -20,6 +20,22 @@ describe("com- keeps the primary over a lax root", () => {
   ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
 });
 
+describe("manufactur- keeps its bound-root stress and glide across derivatives", () => {
+  it.each([
+    ["manufacture", "ˌmænjəˈfæktʃɝ"],
+    ["manufactured", "ˌmænjəˈfæktʃɝd"],
+    ["manufacturing", "ˌmænjəˈfæktʃɝɪŋ"],
+    ["manufacturable", "ˌmænjəˈfæktʃɝəbəɫ"],
+    ["manufacturer", "ˌmænjəˈfæktʃɝɝ"],
+  ])("%s → %s", (word, ipa) => expect(rules(word)).toBe(ipa));
+
+  it.each([
+    ["manufactory", "ˌmænəˈfæktɝi"],
+    ["manure", "ˈmænʊɹ"],
+    ["factory", "ˈfæktɝi"],
+  ])("leaves neighboring %s in its own frame", (word, ipa) => expect(rules(word)).toBe(ipa));
+});
+
 describe("com- gives the primary away over a tense root", () => {
   // A vowel digraph or a silent-e in the root marks it as the stress
   // bearer, which is the unconditional behaviour of the other prefixes.

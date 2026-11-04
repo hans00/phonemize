@@ -32,4 +32,17 @@ describe("Issue #28: doubled-final-consonant name variants", () => {
     expect(toIPA("O'Reilly Media")).toBe("oʊˈɹaɪɫi ˈmidiə");
     expect(toIPA("O’Reilly Media")).toBe("oʊˈɹaɪɫi ˈmidiə");
   });
+
+  it("composes listed O'-surnames from their independently listed roots", () => {
+    const g2p = new EnglishG2P();
+    const isolated = g2p as unknown as { dictionary: Record<string, string> };
+    isolated.dictionary = { ...isolated.dictionary };
+    for (const name of ["o'reilly", "o'neill", "o'brien"]) delete isolated.dictionary[name];
+
+    expect(g2p.predict("O'Reilly")).toBe("oʊˈɹaɪɫi");
+    expect(g2p.predict("O'Neill")).toBe("oʊˈniɫ");
+    expect(g2p.predict("O'Brien")).toBe("oʊˈbɹaɪən");
+    expect(g2p.predict("O'Reilly's")).toBe("oʊˈɹaɪɫiz");
+    expect(g2p.predict("O'Clock")).toBe("əˈkɫɑk");
+  });
 });

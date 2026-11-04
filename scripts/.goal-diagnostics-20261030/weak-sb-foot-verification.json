@@ -1,0 +1,45 @@
+{
+  "status": "qualified accumulating weak b-foot rule improvement; release target and historical parity incomplete",
+  "metrics": {
+    "full": [
+      63045,
+      83939
+    ],
+    "common": [
+      5813,
+      6467,
+      3172,
+      3412
+    ],
+    "cmu": [
+      4752,
+      4258
+    ],
+    "stress": 54988,
+    "exact": 46034,
+    "homographs": 1455
+  },
+  "remaining": 478,
+  "tests": 8261,
+  "suites": 469,
+  "counts": {
+    "g2p": 1150,
+    "syllabify": 1722,
+    "postlex": 470,
+    "morph-table": 20,
+    "morph-parser": 33,
+    "total": 3395
+  },
+  "exceptions": 53406,
+  "snapshot": "89bae9a25e391907ee66185ffeede114df3a42e1550cbe46d7ebb0794075fc5c",
+  "rows": 1296684,
+  "changedGroups": 12,
+  "syntheticMorphChanges": 5,
+  "sourceReferences": "unchanged; Cambridge independently verifies husband noun and verb",
+  "rawLoss": "Osbon/Osbun rules-only lexical s variants remain wrong; default readings and regular plurals/possessives restored after rebuild",
+  "legacyFailures": [
+    "CMU rules legacy90 floor;4258/5000 (+1)",
+    "parity-v2 old population contract; current default parity bytes unchanged"
+  ],
+  "aiArticles": "six streams unchanged; previous completed default diagnostic inputs preserved; no new stochastic score"
+}

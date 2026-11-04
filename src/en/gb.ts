@@ -103,7 +103,7 @@ function applyRPRules(word: string, ipa: string): string {
  */
 export function transformAmericanToRP(word: string, ipaUS: string): string {
   const lower = word.toLowerCase();
-  const lex = RP_LEXICAL[lower];
+  const lex = Object.prototype.hasOwnProperty.call(RP_LEXICAL, lower) ? RP_LEXICAL[lower] : undefined;
   if (lex) return lex;
 
   return applyRPRules(lower, ipaUS);

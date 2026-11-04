@@ -18,8 +18,8 @@ describe("Cambridge US unstressed -ical references", () => {
     for (const [word, ipa] of words) expect(engine.predict(word, "en-US")).toBe(ipa);
   });
 
-  it("keeps political as a separate /ə/ class in the dictionary route", () => {
+  it("keeps political as a separate /ə/ class on both pronunciation routes", () => {
     expect(new EnglishG2P().predict("political", "en-US")).toBe("pəˈɫɪtəkəɫ");
-    expect(new EnglishG2P({ disableDict: true }).predict("political", "en-US")).toBe("pəˈɫɪtɪkəɫ");
+    expect(new EnglishG2P({ disableDict: true }).predict("political", "en-US")).toBe("pəˈɫɪtəkəɫ");
   });
 });

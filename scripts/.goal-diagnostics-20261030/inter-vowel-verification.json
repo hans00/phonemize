@@ -1,0 +1,63 @@
+{
+  "status": "validated accumulated long-prefix vowel boundary and root-recovery batch; formal legacy gates and release goal incomplete",
+  "referenceContract": "common-cohort-v71",
+  "metrics": {
+    "full": [
+      63069,
+      83970
+    ],
+    "common": [
+      5814,
+      6469,
+      3173,
+      3414
+    ],
+    "cmu": [
+      4752,
+      4259
+    ],
+    "stress": 55018,
+    "exact": 46043,
+    "homographs": 1455
+  },
+  "ruleCommonStrictGain": 2,
+  "referenceOnlyDelta": [
+    -1,
+    -1,
+    0,
+    0
+  ],
+  "netHeadlineStrictVsPriorV70": 1,
+  "remaining": 477,
+  "tests": 8419,
+  "suites": 473,
+  "counts": {
+    "g2p": 1149,
+    "syllabify": 1723,
+    "postlex": 470,
+    "morph-table": 20,
+    "morph-parser": 33,
+    "total": 3395
+  },
+  "exceptions": 53393,
+  "repins": 542,
+  "snapshot": "f8a7fbaab5509a787ff6af37399b7771adc66adfea47eca2325ca9ed792659b5",
+  "rows": 1296684,
+  "changedGroups": 77,
+  "frozenRebuiltByteIdentical": true,
+  "defaultParity": {
+    "n": 100835,
+    "strict": 94828,
+    "lenient": 100729
+  },
+  "sourceAuthorities": "source-review.json; no reference change beyond independently sourced interim; all old contracts retained",
+  "rootEviction": "interest/interested/interurban removed; noninterest prefix restored by shared frame; root requires separate nucleus",
+  "neutral": "g2p formatting fold verified with 1296684 identical predictions, retained cap3395",
+  "legacyFailures": [
+    "CMU rules legacy90 floor remains4259/5000 (+1)",
+    "parity-v2 original population100816 differs from current100835; original floor not reset",
+    "homograph TRAIN retains existing per-lemma floor failures; micro12928 and protected train fields unchanged"
+  ],
+  "aiArticles": "all six streams unchanged; no new stochastic score",
+  "historicalBaselineProof": "Only changed reference row rescored from hash-verified original snapshot; five absent unchanged cohort keys retain original contribution, no invented predictions"
+}

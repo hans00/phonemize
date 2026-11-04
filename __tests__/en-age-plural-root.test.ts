@@ -26,7 +26,7 @@ describe("retained -age stems before plural -s", () => {
     ["percentages", "pɝˈsɛntɪdʒəz"],
     ["wages", "ˈweɪdʒəz"],
     ["damages", "ˈdæmɪdʒɪz"],
-    ["mortgages", "ˈmɔɹɡədʒəz"],
+    ["mortgages", "ˈmɔɹɡɪdʒɪz"],
   ])("preserves the distinct neighboring plural %s", (plural, expected) => {
     const g2p = new EnglishG2P({ disableDict: true });
     expect(g2p.predict(plural, "en-US")).toBe(expected);

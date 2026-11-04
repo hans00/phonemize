@@ -20,6 +20,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join, resolve } from "path";
 import { createPhonemizer } from "../src/core";
 import EnglishG2P from "../src/en/g2p";
+import { assertHomographBaseline } from "./homograph-baseline-guard";
 
 export const source: { repo: string; commit: string; license: string; contentSha256: string } =
   JSON.parse(readFileSync(join(__dirname, "homograph-sources.json"), "utf8"));
@@ -192,12 +193,10 @@ async function main() {
   console.log(`\nFailures: ${reportPath}`);
 
   if (split !== "eval") return;
+  assertHomographBaseline({ sentences: rows.length, correct: rows.filter(r => r.predicted === r.gold).length, macro }, baseline);
   if (argv.includes("--update-baseline")) {
     writeFileSync(BASELINE_PATH, JSON.stringify({ date: new Date().toLocaleDateString("sv-SE"), sentences: rows.length, eval: accuracy, evalMacro: macro }, null, 2) + "\n");
     console.log(`Baseline updated: ${BASELINE_PATH}`);
-  } else if (baseline && accuracy < baseline.eval) {
-    console.error("Homograph accuracy fell below baseline.");
-    process.exit(1);
   }
 }
 

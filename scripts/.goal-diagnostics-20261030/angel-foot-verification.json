@@ -1,0 +1,46 @@
+{
+  "status": "qualified accumulating lateral-foot rule improvement; release target and historical parity unresolved",
+  "metrics": {
+    "full": [
+      63043,
+      83939
+    ],
+    "common": [
+      5812,
+      6467,
+      3171,
+      3412
+    ],
+    "cmu": [
+      4752,
+      4257
+    ],
+    "stress": 54987,
+    "exact": 46034,
+    "homographs": 1455
+  },
+  "remaining": 479,
+  "tests": 8217,
+  "suites": 468,
+  "counts": {
+    "g2p": 1150,
+    "syllabify": 1722,
+    "postlex": 470,
+    "morph-table": 20,
+    "morph-parser": 33,
+    "total": 3395
+  },
+  "exceptions": 53406,
+  "rows": 1296684,
+  "snapshot": "df4119a262962caf94964564930d8d272b21ae873ce4bf45466cfe5b2cc46f18",
+  "changedGroups": 22,
+  "syntheticMorphChanges": 13,
+  "syntheticNote": "No independent gold or gain claim for mechanically appended suffix forms",
+  "rawLoss": "rangel rules-only lenient -1; aggregate lenient +1; default lexical output unchanged",
+  "references": "unchanged; Oxford independently verifies angel",
+  "legacyFailures": [
+    "CMU rules legacy90 floor;4257/5000 (+1)",
+    "parity-v2 historical population guard; current100835 predictions byte-identical"
+  ],
+  "aiArticles": "same default inputs as completed 98.75% diagnostic; no new stochastic score"
+}

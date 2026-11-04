@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-04",
+  "referenceVersion": "common-cohort-v88",
+  "referenceSha256": "976383949cd93b78257539c047fced4069328e783c938db7320a6e30b8e5795e",
+  "full": {
+    "n": 6990,
+    "strictAccuracy": 85.43633762517882,
+    "lenientAccuracy": 93.53361945636624
+  },
+  "top5000": {
+    "n": 3617,
+    "strictAccuracy": 90.29582526956041,
+    "lenientAccuracy": 95.82526956040918
+  },
+  "provenance": {
+    "method": "Add independently sourced Cambridge US readings for four lexicalized common loan nouns; retain CMU primary references and fixed populations. Frozen pre-change predictions are re-scored before measuring the runtime dictionary-root candidate.",
+    "oldContract": "common-cohort-v87",
+    "newContract": "common-cohort-v88",
+    "before": [
+      6035,
+      6591,
+      3301,
+      3495
+    ],
+    "after": [
+      6035,
+      6591,
+      3301,
+      3495
+    ],
+    "runtimeChanges": 0,
+    "sourceSnapshotSha256": "8f1017ff433fcf500070bda7fcffed5efa266e18cf12ede887f923773238d0ea",
+    "sources": {
+      "anime": "https://dictionary.cambridge.org/us/pronunciation/english/anime",
+      "lingerie": "https://dictionary.cambridge.org/us/pronunciation/english/lingerie",
+      "karaoke": "https://dictionary.cambridge.org/us/pronunciation/english/karaoke",
+      "ballet": "https://dictionary.cambridge.org/us/pronunciation/english/ballet"
+    },
+    "beforeSnapshotSha256": "8f1017ff433fcf500070bda7fcffed5efa266e18cf12ede887f923773238d0ea",
+    "afterSnapshotSha256": "8f1017ff433fcf500070bda7fcffed5efa266e18cf12ede887f923773238d0ea"
+  }
+}

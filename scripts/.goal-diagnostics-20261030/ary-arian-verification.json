@@ -1,0 +1,88 @@
+{
+  "status": "validated accumulating ary/arian root inheritance batch; release goal and historical parity contract incomplete",
+  "referenceContract": "common-cohort-v71",
+  "metrics": {
+    "full": [
+      63128,
+      84000
+    ],
+    "common": [
+      5818,
+      6470,
+      3173,
+      3414
+    ],
+    "cmu": [
+      4754,
+      4261
+    ],
+    "stress": 55074,
+    "exact": 46065,
+    "homographs": 1455,
+    "parity": {
+      "n": 100835,
+      "strict": 94834,
+      "lenient": 100729
+    }
+  },
+  "commonStrictGain": 1,
+  "fullStrictGain": 2,
+  "fullLenientGain": 1,
+  "stressGain": 2,
+  "exactGain": 0,
+  "errorBuckets": {
+    "before": {
+      "Stress-only mismatch": 5084,
+      "Vowel-quality only": 15054,
+      "Structural (consonant/syl)": 24135
+    },
+    "after": {
+      "Stress-only mismatch": 5086,
+      "Vowel-quality only": 15054,
+      "Structural (consonant/syl)": 24133
+    }
+  },
+  "remaining": 473,
+  "tests": 8569,
+  "suites": 476,
+  "focused": 37,
+  "counts": {
+    "g2p": 1150,
+    "syllabify": 1723,
+    "postlex": 457,
+    "morph-table": 20,
+    "morph-parser": 44,
+    "total": 3394
+  },
+  "exceptions": {
+    "before": 53335,
+    "after": 53333,
+    "added": [],
+    "removed": [
+      "librarian",
+      "ovarian"
+    ],
+    "changed": []
+  },
+  "repins": 542,
+  "snapshot": "d999a45dd576e947b8ad61fe27271d31f4ea1f88077696d36aae85394f9f740a",
+  "rows": 1296684,
+  "changedRows": 24,
+  "routes": {
+    "dict": 2,
+    "rule": 2,
+    "morph": 20
+  },
+  "frozenRebuiltByteIdentical": true,
+  "prose": "24 POS/prose rows,48 missing-root composition controls; all non-target tokens/spans unchanged; six full article streams unchanged",
+  "context": "all eval/train fields except metadata identical; full homograph train report unchanged",
+  "rejected": "Spelling-only arian ownership split disciplinarian through an unvouched root; handler-only ownership lost ed/ing/er/es vowels. Shared lookup now accepts only an actual aligned pretonic diphthong repair.",
+  "limitations": [
+    "22 other snapshot changes are secondary-stress variants supported by dictionary readings, not pronunciation gains",
+    "CMU rules legacy90 floor remains below90% at4261/5000",
+    "parity-v2 original100816-word population/reference snapshot remains unresolved; original floor unchanged",
+    "Common90% release target is not met"
+  ],
+  "committed": false,
+  "goalComplete": false
+}

@@ -1,0 +1,388 @@
+Do not use tools or inspect files. Judge only the supplied text and IPA.
+You are a phonetician auditing a rule-based grapheme-to-phoneme (G2P) system for English (US).
+Each line is one TOKEN OCCURRENCE in the complete source text below.
+English labels are the actual expanded spoken tokens (including numbers and abbreviations).
+Check each expansion against the original text as well as its pronunciation.
+Repeated words are intentionally present and must be judged independently using
+their local sentence context. The listed IPA is the system output for that
+occurrence; punctuation is not scored.
+
+Source text:
+How Does GPS Work? It’s Friday night and you want some pizza. Fast. But somebody is going to have to pick that pizza up, and that means they need to know how to get to the closest pizzeria. In this modern world that is no problem! Just plug ‘pizza’ into a smartphone and it tells you exactly how to get there. But how exactly does the phone know where you are? Something called a Global Positioning System, or GPS, tells you, that’s how. When your phone tells you where you are, it may actually be listening to signals from satellites high up in space. There are over 30 satellites used for GPS, orbiting over 16,000 miles (26,000km) above the Earth! Your phone just needs to figure out how far away you are from some of them. If your phone knows how far away it is from four satellites, then there is only one place on Earth you can be! Your phone, or any device with a GPS, is programmed to know where all the satellites are at any given time. The phone uses that information—along with the amount of time the signal took to reach it—to figure out how far away the satellites are. By doing that, it computes its location. So when you search for the nearest pizza place in your smartphone, this is what your phone is thinking: “What satellites are talking to me right now? Hey there, satellites! I know you guys! And I know where you are in the sky right now, too! Let me listen to your signal to figure out how far away I am from each of you… Oh! I must be right here! There’s no other place that is the right distance away from each of you! OK, let me check the internet to see what pizza places are near me…” And all that happens in an instant. Good thing, too. You’re only getting hungrier.
+
+Judge at the PHONEMIC level — the level that distinguishes one word from another in
+English (US). Two things matter, and only these:
+  (a) the segmental phonemes (the consonant and vowel phonemes of the language);
+  (b) any SUPRASEGMENTAL feature that is lexically contrastive in English (US) — i.e.
+      that can change a word's meaning or identity. Apply only what the language uses:
+      lexical stress (e.g. English, Russian), lexical tone (e.g. Mandarin), or
+      pitch accent (e.g. Japanese). If English (US) has no contrastive feature of a
+      given kind, ignore that kind entirely.
+
+IGNORE everything sub-phonemic — detail that never distinguishes words in English (US):
+predictable allophonic variation and assimilation, aspiration, vowel length where
+non-contrastive, syllabic-consonant notation, narrow diacritics, and non-contrastive
+secondary stress. Accept ANY pronunciation that is standard or a legitimate, widely
+used regional/free variant: if the word has several valid pronunciations and the
+prediction matches any one of them, it is OK.
+
+Assign EXACTLY ONE verdict per entry:
+  OK    = phonemically correct — segments and any contrastive suprasegmental are valid
+          for a standard (or accepted variant) pronunciation of the word.
+  MINOR = the right word and clearly intelligible, but one sub-optimal phonemic choice a
+          careful transcriber would correct, short of changing the word's identity.
+  WRONG = a phonemic error that changes or obscures the word: a wrong phoneme in a
+          salient position, a wrong contrastive suprasegmental (stress/tone/pitch
+          accent), or an inserted / deleted phoneme.
+
+Rigor — you are graded on ACCURACY, so do not over-flag:
+  - Default to OK. Use WRONG only when you are confident the transcription is genuinely
+    not a valid pronunciation of the word. If you are unsure, it is OK.
+  - Before marking a STRESS error, recall the word's actual standard primary-stress
+    syllable and check the prediction truly differs. Do NOT flag stress from a vague
+    impression — long Latinate words (e.g. the -ation/-ity/-ic families: ˌɛdʒəˈkeɪʃən,
+    pəˈsɪbɪlɪti, ˌɛkəˈnɑmɪk) carry predictable primary stress; verify before flagging.
+  - Treat unstressed-vowel quality (ɪ~ə~i in reduced syllables) and secondary-stress
+    placement as never-WRONG; at most MINOR.
+A real phonemic error (wrong stem vowel like chase→/ɑ/, a deleted/inserted segment,
+primary stress on a demonstrably wrong syllable) must still be marked WRONG — accuracy
+means catching those, not waving them through.
+
+Words (index, word, predicted IPA):
+1	How	haʊ
+2	Does	dəz
+3	GPS	ˌɡipiˈɛs
+4	Work	wɝk
+5	It's	ɪts
+6	Friday	ˈfɹaɪˌdeɪ
+7	night	naɪt
+8	and	ənd
+9	you	ju
+10	want	wɑnt
+11	some	sʌm
+12	pizza	ˈpitsə
+13	Fast	fæst
+14	But	bət
+15	somebody	ˈsʌmˌbɑdi
+16	is	ɪz
+17	going	ˈɡoʊɪŋ
+18	to	tu
+19	have	həv
+20	to	tə
+21	pick	pɪk
+22	that	ðət
+23	pizza	ˈpitsə
+24	up	ʌp
+25	and	ənd
+26	that	ðət
+27	means	minz
+28	they	ðeɪ
+29	need	nid
+30	to	tə
+31	know	noʊ
+32	how	haʊ
+33	to	tə
+34	get	ɡɛt
+35	to	tə
+36	the	ðə
+37	closest	ˈkɫoʊsəst
+38	pizzeria	ˌpitsɝˈiə
+39	In	ɪn
+40	this	ðɪs
+41	modern	ˈmɑdɝn
+42	world	wɝɫd
+43	that	ðət
+44	is	ɪz
+45	no	noʊ
+46	problem	ˈpɹɑbɫəm
+47	Just	dʒʌst
+48	plug	pɫʌɡ
+49	pizza'	ˈpitsə
+50	into	ˈɪntu
+51	a	ə
+52	smartphone	ˈsmɑɹtˌfoʊn
+53	and	ənd
+54	it	ɪt
+55	tells	tɛɫz
+56	you	ju
+57	exactly	ɪɡˈzæktɫi
+58	how	haʊ
+59	to	tə
+60	get	ɡɛt
+61	there	ðɛɹ
+62	But	bət
+63	how	haʊ
+64	exactly	ɪɡˈzæktɫi
+65	does	dəz
+66	the	ðə
+67	phone	foʊn
+68	know	noʊ
+69	where	hwəɹ
+70	you	ju
+71	are	ɑɹ
+72	Something	ˈsʌmθɪŋ
+73	called	kɔɫd
+74	a	ə
+75	Global	ˈɡɫoʊbəɫ
+76	Positioning	pəˈzɪʃənɪŋ
+77	System	ˈsɪstəm
+78	or	əɹ
+79	GPS	ˌɡipiˈɛs
+80	tells	tɛɫz
+81	you	ju
+82	that's	ðəts
+83	how	haʊ
+84	When	hwən
+85	your	jəɹ
+86	phone	foʊn
+87	tells	tɛɫz
+88	you	ju
+89	where	hwəɹ
+90	you	ju
+91	are	ɑɹ
+92	it	ɪt
+93	may	meɪ
+94	actually	ˈæktʃuəɫi
+95	be	bi
+96	listening	ˈɫɪsənɪŋ
+97	to	tə
+98	signals	ˈsɪɡnəɫz
+99	from	fɹəm
+100	satellites	ˈsætəˌɫaɪts
+101	high	haɪ
+102	up	ʌp
+103	in	ɪn
+104	space	speɪs
+105	There	ðɛɹ
+106	are	ɑɹ
+107	over	ˈoʊvɝ
+108	thirty	ˈθɝˌdi
+109	satellites	ˈsætəˌɫaɪts
+110	used	just
+111	for	fəɹ
+112	GPS	ˌɡipiˈɛs
+113	orbiting	ˈɔɹbətɪŋ
+114	over	ˈoʊvɝ
+115	sixteen	ˌsɪksˈtin
+116	zero	ˈziɹoʊ
+117	miles	ˈmaɪəɫz
+118	twenty	ˈtwɛnti
+119	six	sɪks
+120	000km	ˈkm
+121	above	əˈbʌv
+122	the	ðə
+123	Earth	ɝθ
+124	Your	jəɹ
+125	phone	foʊn
+126	just	dʒʌst
+127	needs	nidz
+128	to	tə
+129	figure	ˈfɪɡjɝ
+130	out	aʊt
+131	how	haʊ
+132	far	fɑɹ
+133	away	əˈweɪ
+134	you	ju
+135	are	ɑɹ
+136	from	fɹəm
+137	some	sʌm
+138	of	əv
+139	them	ðɛm
+140	If	ɪf
+141	your	jəɹ
+142	phone	foʊn
+143	knows	noʊz
+144	how	haʊ
+145	far	fɑɹ
+146	away	əˈweɪ
+147	it	ɪt
+148	is	ɪz
+149	from	fɹəm
+150	four	fɔɹ
+151	satellites	ˈsætəˌɫaɪts
+152	then	ðɛn
+153	there	ðɛɹ
+154	is	ɪz
+155	only	ˈoʊnɫi
+156	one	wʌn
+157	place	pɫeɪs
+158	on	ɑn
+159	Earth	ɝθ
+160	you	ju
+161	can	kən
+162	be	bi
+163	Your	jəɹ
+164	phone	foʊn
+165	or	əɹ
+166	any	ˈɛni
+167	device	dɪˈvaɪs
+168	with	wɪð
+169	a	ə
+170	GPS	ˌɡipiˈɛs
+171	is	ɪz
+172	programmed	ˈpɹoʊˌɡɹæmd
+173	to	tə
+174	know	noʊ
+175	where	hwəɹ
+176	all	ɔɫ
+177	the	ðə
+178	satellites	ˈsætəˌɫaɪts
+179	are	ɑɹ
+180	at	ət
+181	any	ˈɛni
+182	given	ˈɡɪvən
+183	time	taɪm
+184	The	ðə
+185	phone	foʊn
+186	uses	ˈjuzəz
+187	that	ðət
+188	information	ˌɪnfɝˈmeɪʃən
+189	along	əˈɫɔŋ
+190	with	wɪð
+191	the	ðə
+192	amount	əˈmaʊnt
+193	of	əv
+194	time	taɪm
+195	the	ðə
+196	signal	ˈsɪɡnəɫ
+197	took	tʊk
+198	to	tə
+199	reach	ɹitʃ
+200	it	ɪt
+201	to	tə
+202	figure	ˈfɪɡjɝ
+203	out	aʊt
+204	how	haʊ
+205	far	fɑɹ
+206	away	əˈweɪ
+207	the	ðə
+208	satellites	ˈsætəˌɫaɪts
+209	are	ɑɹ
+210	By	baɪ
+211	doing	duɪŋ
+212	that	ðət
+213	it	ɪt
+214	computes	kəmˈpjuts
+215	its	ɪts
+216	location	ˌɫoʊˈkeɪʃən
+217	So	soʊ
+218	when	hwən
+219	you	ju
+220	search	sɝtʃ
+221	for	fəɹ
+222	the	ðə
+223	nearest	ˈnɪɹəst
+224	pizza	ˈpitsə
+225	place	pɫeɪs
+226	in	ɪn
+227	your	jəɹ
+228	smartphone	ˈsmɑɹtˌfoʊn
+229	this	ðɪs
+230	is	ɪz
+231	what	hwət
+232	your	jəɹ
+233	phone	foʊn
+234	is	ɪz
+235	thinking	ˈθɪŋkɪŋ
+236	What	hwət
+237	satellites	ˈsætəˌɫaɪts
+238	are	ɑɹ
+239	talking	ˈtɔkɪŋ
+240	to	tə
+241	me	mi
+242	right	ɹaɪt
+243	now	naʊ
+244	Hey	heɪ
+245	there	ðɛɹ
+246	satellites	ˈsætəˌɫaɪts
+247	I	aɪ
+248	know	noʊ
+249	you	ju
+250	guys	ɡʌɪz
+251	And	ənd
+252	I	aɪ
+253	know	noʊ
+254	where	hwəɹ
+255	you	ju
+256	are	ɑɹ
+257	in	ɪn
+258	the	ðə
+259	sky	skaɪ
+260	right	ɹaɪt
+261	now	naʊ
+262	too	tu
+263	Let	ɫɛt
+264	me	mi
+265	listen	ˈɫɪsən
+266	to	tə
+267	your	jəɹ
+268	signal	ˈsɪɡnəɫ
+269	to	tu
+270	figure	ˈfɪɡjɝ
+271	out	aʊt
+272	how	haʊ
+273	far	fɑɹ
+274	away	əˈweɪ
+275	I	aɪ
+276	am	əm
+277	from	fɹəm
+278	each	itʃ
+279	of	əv
+280	you	ju
+281	Oh	oʊ
+282	I	aɪ
+283	must	məst
+284	be	bi
+285	right	ɹaɪt
+286	here	hɪɹ
+287	There's	ðɛɹz
+288	no	noʊ
+289	other	ˈʌðɝ
+290	place	pɫeɪs
+291	that	ðət
+292	is	ɪz
+293	the	ðə
+294	right	ɹaɪt
+295	distance	ˈdɪstəns
+296	away	əˈweɪ
+297	from	fɹəm
+298	each	itʃ
+299	of	əv
+300	you	ju
+301	OK	ˈoʊˈkeɪ
+302	let	ɫɛt
+303	me	mi
+304	check	tʃɛk
+305	the	ðə
+306	internet	ˈɪntɝˌnɛt
+307	to	tə
+308	see	si
+309	what	hwət
+310	pizza	ˈpitsə
+311	places	ˈpɫeɪsəz
+312	are	ɑɹ
+313	near	nɪɹ
+314	me	mi
+315	And	ənd
+316	all	ɔɫ
+317	that	ðət
+318	happens	ˈhæpənz
+319	in	ɪn
+320	an	ən
+321	instant	ˈɪnstənt
+322	Good	ɡʊd
+323	thing	θɪŋ
+324	too	tu
+325	You're	juɝ
+326	only	ˈoʊnɫi
+327	getting	ˈɡɛtɪŋ
+328	hungrier	ˈhʌŋɡɹiɝ
+
+Output ONLY verdict lines, one per word, between the two markers, in this exact format:
+<index> | <OK|MINOR|WRONG> | <reason in ≤8 words, or - >
+
+BEGIN_VERDICTS
+1 | ... | ...
+END_VERDICTS
+
+Output nothing after END_VERDICTS.

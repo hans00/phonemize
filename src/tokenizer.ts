@@ -12,6 +12,8 @@ import {
   LanguageRegistry,
   preProcessByScript,
   type PredictionContext,
+  type LanguageProcessor,
+  type SentenceAnalysis,
 } from "./g2p";
 import { ipaToArpabet, convertChineseTonesToArrows } from "./utils";
 import type ChineseG2P from "./zh/g2p";
@@ -211,7 +213,7 @@ export class Tokenizer {
     segments: LanguageSegment[];
   } {
     const words = text.split(/(\s+)/);
-    const languageMap: Record<string, string> = {};
+    const languageMap: Record<string, string> = Object.create(null);
     const segments: LanguageSegment[] = [];
 
     let currentSegment = "";
@@ -495,17 +497,31 @@ export class Tokenizer {
     // the G2P (en-g2p.predict), not here — the tokenizer only supplies the
     // contextual POS signal.
     const connectedContext = cleanWords.length > 1;
+    const analyses = new Map<LanguageProcessor, Map<readonly string[], Map<string, SentenceAnalysis>>>();
     const cleanInfo = cleanWords.map((entry, i) => {
       const lang = resolveLang(entry.token);
       if (!connectedContext) return { lang, pos: undefined, context: undefined };
       const proc = this.registry.findBestProcessor(entry.token, lang);
+      let context = entry.context;
+      if (proc?.analyzeSentence) {
+        let sentences = analyses.get(proc); if (!sentences) { sentences = new Map(); analyses.set(proc, sentences); }
+        let dialects = sentences.get(context.words); if (!dialects) { dialects = new Map(); sentences.set(context.words, dialects); }
+        let analysis = dialects.get(lang ?? "");
+        if (!analysis) {
+          analysis = proc.analyzeSentence(context.words, lang);
+          if (analysis.tokens.length !== context.words.length || analysis.words.length !== context.words.length || analysis.words.some((word, j) => word !== context.words[j]))
+            throw new Error("Sentence analysis must preserve token indices and surface forms");
+          dialects.set(lang ?? "", analysis);
+        }
+        context = { ...context, analysis };
+      }
       const prev = i > 0 && !entry.sentenceStart ? cleanWords[i - 1].token : undefined;
       const next =
         i + 1 < cleanWords.length && !cleanWords[i + 1].sentenceStart
           ? cleanWords[i + 1].token
           : undefined;
-      const posRes = proc?.tagWord?.(entry.token, { prev, next, sentence: entry.context });
-      return { lang, pos: posRes?.pos, context: entry.context };
+      const posRes = proc?.tagWord?.(entry.token, { prev, next, sentence: context });
+      return { lang, pos: posRes?.pos, context };
     });
 
     const results: (PhonemeToken | { phoneme: string })[] = [];

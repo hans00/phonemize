@@ -10,16 +10,31 @@ A|AX|EY1|!V
 #Cambridge Dictionary read: base /ri:d/, past and past participle /red/.
 #https://dictionary.cambridge.org/dictionary/english/read
 READ|R IY1 D|R EH1 D|V,N|base|past,participle
+#Cambridge: upset as adjective and verb is final-stressed; the noun is initial-stressed.
+#https://dictionary.cambridge.org/pronunciation/english/upset
+UPSET|AH0 P S EH1 T|AH1 P S EH2 T|V,ADJ
+#Cambridge: compact shares the verb reading with the adjective; noun stress is initial.
+#https://dictionary.cambridge.org/pronunciation/english/compact
+COMPACT|K AH0 M P AE1 K T|K AA1 M P AE0 K T|V,ADJ
 LEAD|L EH1 D|L IY1 D|N
 TEAR|T EH1 R|T IH1 R|V
 WIND|W AY1 N D|W IH1 N D|V
 BOW|B AW1|B OW1|V
 CLOSE|K L OW1 Z|K L OW1 S|V
 LIVE|L IH1 V|L AY1 V|V
+# Cambridge distinguishes live verb /lɪv/ from live adjective /laɪv/; the
+# regular verb past/participle keeps the verb vowel, while adjective -lived
+# also has the Oxford-documented /laɪvd/ reading.
+# https://dictionary.cambridge.org/us/pronunciation/english/live
+# https://dictionary.cambridge.org/us/pronunciation/english/long-lived
+# https://www.oxfordlearnersdictionaries.com/definition/english/long-lived
+LIVED|L IH1 V D|L AY1 V D|V|past,participle|
 #/waʊnd/ is only ever the verb (past of wind); the noun and the verb "to wound" are /wund/.
 #Oxford wound1_2: the existing /wund/ variant is also the base verb injure.
 #https://www.oxfordlearnersdictionaries.com/us/definition/english/wound1_2
-WOUND|W AW1 N D|W UW1 N D|V||base
+#Cambridge: /waʊnd/ is the past and past participle of wind.
+#https://dictionary.cambridge.org/us/pronunciation/english/wound
+WOUND|W AW1 N D|W UW1 N D|V|past,participle|base
 PRESENT|P R IH0 Z EH1 N T|P R EH1 Z AH0 N T|V
 OBJECT|AH0 B JH EH1 K T|AA1 B JH EH0 K T|V
 PERMIT|P ER0 M IH1 T|P ER1 M IH0 T|V
@@ -59,6 +74,10 @@ CLOSER|K L OW1 S ER0|K L OW1 S ER0|N
 #noun evidence (a learned man, the Blessed Virgin), N scheme. dogged is mostly
 #the adjective: verb only when tagged V, like crooked/jagged/ragged upstream.
 BLESSED|B L EH1 S IH0 D|B L EH1 S T|N
+# Cambridge separates the attributive adjective meaning old from the of-age reading.
+# The former is noun-like/adjectival; the latter remains in V contexts (aged 18).
+# https://dictionary.cambridge.org/pronunciation/english/aged
+AGED|EY1 JH IH0 D|EY1 JH D|N,ADJ
 #Cambridge EDUCATED adjective: https://dictionary.cambridge.org/pronunciation/english/learned
 LEARNED|L ER1 N IH0 D|L ER1 N D|N,ADJ
 DOGGED|D AO1 G D|D AO1 G IH0 D|V
@@ -75,3 +94,27 @@ CROOKED|K R UH1 K IH0 D|K R UH1 K T|N,ADJ
 #https://dictionary.cambridge.org/pronunciation/english/interchange
 #https://dictionary.cambridge.org/pronunciation/english/interchangeable
 INTERCHANGE|IH2 N T ER0 CH EY1 N JH|IH1 N T ER0 CH EY2 N JH|V
+
+# Cambridge US gives the ordinary noun and "deal with" verb /ˈprɑː.ses/;
+# the upstream verb entry /ˌprɔˈsɛs/ matches neither reading. Use the common
+# verb reading so morphology inherits it. The separate rare "walk slowly"
+# sense /prəˈses/ cannot be represented by the current one-reading-per-POS
+# table.
+# https://dictionary.cambridge.org/us/pronunciation/english/process
+PROCESS|P R AA1 S EH0 S|P R AA1 S EH0 S|V
+
+# Upstream reverses these POS readings. Cambridge US keeps initial stress
+# in segment but contrasts the final vowel; torment shifts primary stress.
+# https://dictionary.cambridge.org/us/pronunciation/english/segment
+# https://dictionary.cambridge.org/pronunciation/english/torment
+SEGMENT|S EH1 G M EH0 N T|S EH1 G M AH0 N T|V
+TORMENT|T AO0 R M EH1 N T|T AO1 R M EH2 N T|V
+
+# Cambridge's telephone adjective/adverb shares the verb reading; the prayer is a noun.
+# https://dictionary.cambridge.org/us/dictionary/english/collect
+COLLECT|K AH0 L EH1 K T|K AA1 L EH0 K T|V,ADJ,ADV
+
+# The upstream table reverses the noun and verb readings. Cambridge US
+# confirms the noun's weak final -ate and the verb's full /eɪt/.
+# https://dictionary.cambridge.org/us/pronunciation/english/certificate
+CERTIFICATE|S ER0 T IH1 F AH0 K AH0 T|S ER0 T IH1 F IH0 K EY1 T|N

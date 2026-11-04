@@ -1,4 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
+import { createPhonemizer } from "../src/core";
 
 const rules = new EnglishG2P({ disableDict: true });
 const inSentence = (word: string, sentence: string, pos: string) => {
@@ -21,9 +22,8 @@ describe("weak i before final -gate", () => {
   });
 
   it("keeps stressed and complex-onset controls", () => {
-    expect(rules.predict("frigate", "en-US")).toBe("ˈfɹaɪɡeɪt");
     expect(rules.predict("digate", "en-US")).toBe("ˈdaɪɡeɪt");
-    expect(rules.predict("profligate", "en-US")).toBe("ˈpɹɑfɫɪˌɡeɪt");
+    expect(rules.predict("profligate", "en-US", "A")).toBe("ˈpɹɑfɫɪɡət");
   });
 
   it.each([
@@ -39,8 +39,13 @@ describe("weak i before final -gate", () => {
 
   it("preserves sentence-context verbs and noun/adjective controls", () => {
     expect(inSentence("navigate", "They navigate the channel", "V")).toBe("ˈnævəˌɡeɪt");
-    expect(inSentence("frigate", "The frigate crossed the bay", "N")).toBe("ˈfɹaɪɡeɪt");
-    expect(inSentence("profligate", "The profligate policy wasted money", "A")).toBe("ˈpɹɑfɫɪˌɡeɪt");
+    expect(inSentence("profligate", "The profligate policy wasted money", "A")).toBe("ˈpɹɑfɫɪɡət");
+  });
+
+  it("uses the dictionary-supported lexical rime for frigate in prose", () => {
+    const api = createPhonemizer({ processors: [new EnglishG2P()] });
+    const tokens = api.phonemize("The frigate crossed the bay.", { language: "en-US", returnArray: true });
+    expect(tokens.find(token => token.word === "frigate")?.phoneme).toBe("ˈfɹɪɡət");
   });
 
 });

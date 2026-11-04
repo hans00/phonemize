@@ -1,0 +1,12 @@
+{
+  "version": "common-en-5000-segments-v2",
+  "supersedes": "common-en-5000-segments-v1",
+  "population": 5000,
+  "corrections": {
+    "query": {
+      "retain": ["kwiɹi"],
+      "add": ["kwɪɹi"],
+      "source": "https://dictionary.cambridge.org/pronunciation/english/query"
+    }
+  }
+}

@@ -7,8 +7,8 @@ import * as ts from "typescript";
 import levenshtein from "fast-levenshtein";
 import EnglishG2P from "../src/en/g2p";
 import dictionary from "../data/en/dict.json";
-import commonCohort from "./common-cohort.json";
-import { commonGold } from "./common-cohort-gold";
+import commonCohort from "./common-cohort-v86.json";
+import { commonGoldVariants, commonReferenceContract } from "./common-cohort-gold";
 import { isForeign } from "./foreign-filter";
 
 const argv = process.argv.slice(2);
@@ -30,7 +30,7 @@ const replace = (text: string, needle: string, replacement: string): string => {
 let instrumented = source + `
 export const __lab = {
   skip: -1, active: "", observe: true, touched: new Map<number, Set<string>>(),
-  rows: [...POST_PROC_RULES.map(([re, sub]) => ({kind: "proc", re: String(re), sub})),
+  rows: [...POST_PROC_RULES.map(([re, sub, preserveBoundPrimary]) => ({kind: "proc", re: String(re), sub, preserveBoundPrimary})),
     ...POST_LEX_RULES.map(r => ({kind: "lex", re: String(r.re), when: String(r.when),
       sub: r.sub, fn: r.fn ? String(r.fn) : undefined}))],
 };
@@ -41,10 +41,11 @@ function __touch(index: number, before: string, after: string): void {
 }
 `;
 instrumented = replace(instrumented,
-  "for (const [from, to] of POST_PROC_RULES) out = out.replace(from, to);",
+  "for (const [from, to, preserveBoundPrimary] of POST_PROC_RULES) if (!preserveBoundPrimary || !finalPrimary || !BOUND_IO_VERB_ROOT.test(word)) out = out.replace(from, to);",
   `for (let index = 0; index < POST_PROC_RULES.length; index++) {
     if (__lab.skip === index) continue;
-    const [from, to] = POST_PROC_RULES[index], before = out;
+    const [from, to, preserveBoundPrimary] = POST_PROC_RULES[index], before = out;
+    if (preserveBoundPrimary && finalPrimary && BOUND_IO_VERB_ROOT.test(word)) continue;
     out = out.replace(from, to); __touch(index, before, out);
   }`);
 instrumented = replace(instrumented, "for (const rule of POST_LEX_RULES) {",
@@ -52,7 +53,7 @@ instrumented = replace(instrumented, "for (const rule of POST_LEX_RULES) {",
     const key = index + POST_PROC_RULES.length;
     if (__lab.skip === key) continue;
     const rule = POST_LEX_RULES[index], before = out;`);
-const substitution = "out = rule.fn !== undefined ? out.replace(rule.re, rule.fn) : out.replace(rule.re, rule.sub!);";
+const substitution = "out = rule.fn !== undefined ? out.replace(rule.re, rule.fn) : out.replace(rule.re, rule.sub);";
 instrumented = replace(instrumented, substitution, substitution + "\n    __touch(key, before, out);");
 
 type Rule = { kind: string; re: string; when?: string; sub?: string; fn?: string };
@@ -103,7 +104,7 @@ function canon(ipa: string): string {
     for (const variant of group.slice(1)) value = value.split(variant).join(group[0]);
   return value;
 }
-const score = (ipa: string, gold: string): number[] => [Number(strip(ipa) === strip(gold)), Number(levenshtein.get(canon(ipa), canon(gold)) <= 1)];
+const score = (ipa: string, gold: string[]): number[] => [Number(gold.some(g => strip(ipa) === strip(g))), Number(gold.some(g => levenshtein.get(canon(ipa), canon(g)) <= 1))];
 const old = new EnglishG2P({ disableDict: true }), next = new Constructor({ disableDict: true });
 const baseline = new Map<string, string>();
 for (const word of words) {
@@ -124,18 +125,18 @@ const results = [...control.touched].map(([index, touched]) => {
     const before = baseline.get(word)!, after = next.predict(word);
     if (!after) throw new Error(`No ablated prediction: ${word}`);
     if (before === after) continue;
-    const gold = commonGold(word, dictionary[word as keyof typeof dictionary])!, b = score(before, gold);
+    const gold = commonGoldVariants(word, dictionary[word as keyof typeof dictionary]), b = score(before, gold);
     const delta = score(after, gold).map((value, i) => value - b[i]), isCommon = common(word);
     for (const scope of isCommon ? ["all", "common"] as const : ["all"] as const)
       delta.forEach((value, i) => { counts[scope][i] += value; if (value) winsLosses[scope][i][value > 0 ? 0 : 1]++; });
-    rows.push({ word, before, after, gold, delta, common: isCommon });
+    rows.push({ word, before, after, gold: gold.join(" | "), delta, common: isCommon });
   }
   return { index, rule: control.rows[index], affected: touched.size, changed: rows.length, counts, winsLosses, rows };
 }).sort((a, b) => b.counts.common[1] - a.counts.common[1] || b.counts.common[0] - a.counts.common[0]);
 mkdirSync(out, { recursive: true });
 const hashes = Object.fromEntries(["src/en/postlex.ts", "src/en/g2p.ts", "src/en/syllabify.ts", "data/en/exceptions.json", "data/en/dict.json"].map(file =>
   [file, createHash("sha256").update(readFileSync(join(repo, file))).digest("hex")]));
-writeFileSync(join(out, "results.json"), JSON.stringify({ n: words.length, options: argv, hashes, results }, null, 2) + "\n");
+writeFileSync(join(out, "results.json"), JSON.stringify({ n: words.length, options: argv, hashes, commonReferenceContract, results }, null, 2) + "\n");
 console.log(`Replayed ${words.length} words; ${results.length} rules fired. Removing a rule has the following diagnostic deltas:`);
 console.table(results.map(result => ({ index: result.index, rule: result.rule.re,
   changed: result.changed, strict: result.counts.all[0], lenient: result.counts.all[1],

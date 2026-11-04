@@ -15,7 +15,7 @@ describe("Greek criterion root PRICE vowel", () => {
   it.each([
     ["crime", "ˈkɹaɪm"],
     ["critical", "ˈkɹɪtɪkəɫ"],
-    ["cricket", "ˈkɹɪkət"],
+    ["cricket", "ˈkɹɪkɪt"],
     ["cried", "ˈkɹaɪd"],
   ])("preserves neighboring <cri> words: %s", (word, ipa) => {
     expect(g2p.predict(word, "en-US")).toBe(ipa);

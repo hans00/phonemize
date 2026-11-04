@@ -1,0 +1,132 @@
+{
+  "status": "validated accumulating nasal ile batch; release and historical parity remain incomplete",
+  "referenceContract": "common-cohort-v71",
+  "metrics": {
+    "full": [
+      63132,
+      84002
+    ],
+    "common": [
+      5819,
+      6470,
+      3173,
+      3414
+    ],
+    "cmu": [
+      4754,
+      4261
+    ],
+    "stress": 55077,
+    "exact": 46067,
+    "homographs": 1455,
+    "parity": {
+      "n": 100835,
+      "strict": 94834,
+      "lenient": 100729
+    }
+  },
+  "gains": {
+    "commonStrict": 1,
+    "fullStrict": 4,
+    "fullLenient": 2,
+    "stress": 3,
+    "exact": 2
+  },
+  "remaining": 472,
+  "tests": 8587,
+  "suites": 478,
+  "focused": 18,
+  "jobs": {
+    "controls": 0,
+    "articles": 0,
+    "common-contracts": 0,
+    "focused": 0,
+    "types": 0,
+    "rollup": 0,
+    "context-train": 0,
+    "homographs-train": 0,
+    "tests": 0,
+    "built-check": 0
+  },
+  "counts": {
+    "g2p": 1150,
+    "syllabify": 1724,
+    "postlex": 457,
+    "morph-table": 20,
+    "morph-parser": 44,
+    "total": 3395
+  },
+  "exceptions": {
+    "before": 53333,
+    "after": 53329,
+    "removed": [
+      "juvenile",
+      "juvenile's",
+      "penile",
+      "senile"
+    ],
+    "added": [],
+    "changed": []
+  },
+  "repins": 542,
+  "errorBuckets": {
+    "before": {
+      "Stress-only mismatch": 5086,
+      "Vowel-quality only": 15054,
+      "Structural (consonant/syl)": 24133
+    },
+    "after": {
+      "Stress-only mismatch": 5087,
+      "Vowel-quality only": 15054,
+      "Structural (consonant/syl)": 24130
+    }
+  },
+  "snapshot": "76f4d8fa353e371aebe6fad15aa56d59badf59502b023bf742fe09d28c799bd7",
+  "rows": 1296684,
+  "changedRows": 32,
+  "routes": {
+    "dict": 1,
+    "rule": 4,
+    "morph": 27
+  },
+  "frozenRebuiltChanges": 18,
+  "classification": {
+    "scoredRuleRepairs": 4,
+    "secondaryStressOnly": 7,
+    "unverifiedSyntheticChanges": 21,
+    "unverifiedWords": [
+      "anafraniled",
+      "anafraniles",
+      "anafraniling",
+      "dumeniled",
+      "dumeniles",
+      "dumeniling",
+      "durniles",
+      "juvenile'sable",
+      "juvenile'sally",
+      "juvenile'sed",
+      "juvenile'ser",
+      "juvenile'ses",
+      "juvenile'sing",
+      "juvenile'sly",
+      "juvenile'sness",
+      "juvenilees",
+      "meniles",
+      "nileing",
+      "penilees",
+      "senilees",
+      "suniles"
+    ]
+  },
+  "prose": "84 isolated predictions asserted (36 related,48 unrelated);10 full prose streams preserve non-targets;6 article streams identical",
+  "context": "all eval/train fields except metadata identical; complete homograph train report identical",
+  "referenceMaintenance": "New unsupported vornil+es expectation corrected from independent plural-spelling authority; all benchmark gold/scorers/baselines unchanged. Not counted as gain.",
+  "limitations": [
+    "21 synthetic changes have no independent gold; not declared correct or counted as wins/losses",
+    "CMU rules legacy90 floor remains unmet4261/5000",
+    "Historical parity-v2 population provenance remains unresolved",
+    "472 common strict words still needed"
+  ],
+  "committed": false,
+  "goalComplete": false
+}

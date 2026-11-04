@@ -22,6 +22,8 @@ const LANG_NAMES: Record<string, string> = {
   ru: 'Russian',
 };
 
+const DEFAULT_CODEX_EVAL_MODEL = 'gpt-6.1-sol';
+
 const { provider, evalModel, langFilter, dataDir, contextMode, minScore, reportDir } = parseArgs(process.argv.slice(2));
 
 function parseArgs(argv: string[]): {
@@ -64,7 +66,7 @@ function parseArgs(argv: string[]): {
 
 Options:
   -p, --provider   AI provider for scoring: codex (ChatGPT auth) or openai (API key)
-  -m, --model      Model name (default: gpt-5.5 for codex, o3-mini for openai)
+  -m, --model      Model name (default: ${DEFAULT_CODEX_EVAL_MODEL} for codex, o3-mini for openai)
   -l, --lang       Comma-separated language codes to evaluate (repeatable).
                    Omit to run all cases. Example: --lang en,zh
   -d, --data-dir   Directory of .txt eval cases (default: scripts/eval-data).
@@ -87,7 +89,7 @@ Supported languages: ${Object.keys(LANG_NAMES).join(', ')}.`);
     throw new Error(`Invalid provider: ${provider} (expected "codex" or "openai")`);
   }
   provider ??= 'codex';
-  evalModel ??= provider === 'codex' ? 'gpt-5.5' : 'o3-mini';
+  evalModel ??= provider === 'codex' ? DEFAULT_CODEX_EVAL_MODEL : 'o3-mini';
   dataDir ??= resolve(__dirname, 'eval-data');
   if (!Number.isFinite(minScore) || minScore < 0 || minScore > 100) throw new Error("Invalid --min-score");
   return { provider, evalModel, langFilter, dataDir, contextMode, minScore, reportDir };
@@ -105,10 +107,13 @@ async function scoreWithOpenAI(prompt: string): Promise<string | null> {
 function scoreWithCodex(prompt: string): string | null {
   const dir = mkdtempSync(join(tmpdir(), 'phonemize-eval-'));
   const outFile = join(dir, 'last.txt');
+  const sandbox = process.env.PHONEMIZE_CODEX_EVAL_SANDBOX === 'workspace-write'
+    ? 'workspace-write'
+    : 'read-only';
   try {
     const res = spawnSync(
       'codex',
-      ['exec', '--sandbox', 'read-only', '--skip-git-repo-check', '-m', evalModel, '-o', outFile, '-'],
+      ['exec', '--ephemeral', '--sandbox', sandbox, '--skip-git-repo-check', '-m', evalModel, '-o', outFile, '-'],
       // stdout → 'ignore' (the judge's answer is read from outFile); stderr
       // captured to a pipe so codex's live token stream doesn't clutter output —
       // it's surfaced only when the run actually fails (usage limit, auth).

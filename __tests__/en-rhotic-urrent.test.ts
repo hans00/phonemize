@@ -31,8 +31,8 @@ describe("rhotic vowel before the second r in -urrent/-urrant", () => {
     const tokens = api.phonemize("The current rate and currant buns recur.", {
       language: "en-US", returnArray: true,
     });
-    expect(tokens.find(token => token.word === "current")?.phoneme).toBe("kɝənt");
-    expect(tokens.find(token => token.word === "currant")?.phoneme).toBe("kɝənt");
+    expect(tokens.find(token => token.word === "current")?.phoneme).toBe("ˈkɝənt");
+    expect(tokens.find(token => token.word === "currant")?.phoneme).toBe("ˈkɝənt");
     expect(tokens.find(token => token.word === "rate")?.phoneme).toBe("ɹeɪt");
     expect(tokens.find(token => token.word === "recur")?.phoneme).toBe("ɹiˈkɝ");
   });
