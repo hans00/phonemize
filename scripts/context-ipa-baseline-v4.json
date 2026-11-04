@@ -1,0 +1,1658 @@
+{
+  "contract": {
+    "version": "context-ipa-contract-v4",
+    "metric": "context-ipa-v1",
+    "normalizer": "en-US-phones-v1",
+    "adapter": "reading-upos-v1",
+    "gate": "per-reading-pos-subset-v2",
+    "referenceSha256": "dfbd0428231156778738203d00d4790b7d8e8d7c6ad15cfcb6fbf92c52370d33",
+    "corpusSha256": "dc8e0ef0e60c52f23bbba6dbe7cc1bcbf3a596a01c0db8996029938963ca8dd7",
+    "cohortSha256": "03704a005a45c5b8bb519c693296af78ff4d02e03194bf799905242396be60b7",
+    "evaluatorSha256": "8c6a4aeabaeccb32f6e6f2a619bc7bd57b875fd32c0e0c0f9b9b4d198bf392d7",
+    "scorerSha256": "c04b3729d1038b88e90e008591c1d77f6397287ca1d8d3fcae254297870b43e3",
+    "loaderSha256": "ddd6f00b61028f2729a358f9b19e427d7fee9117c8dc7cd547353b0a014b7452",
+    "phonesSha256": "93c747e250b90b3d7f428ee7a2c5aadd9cbe11377a771d2eac5dc31dd48faf6d"
+  },
+  "cells": {
+    "default/auto": {
+      "n": 108,
+      "strict": 89,
+      "lenient": 89,
+      "reading": 89,
+      "stress": 107,
+      "segments": 89,
+      "macro": 0.8530885780885781,
+      "balanced": 0.891053391053391,
+      "phoneErrors": 19,
+      "referencePhones": 448,
+      "slices": {
+        "morphology": {
+          "n": 13,
+          "strict": 11,
+          "lenient": 11
+        },
+        "neutral": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "noun-adjective": {
+          "n": 21,
+          "strict": 20,
+          "lenient": 20
+        },
+        "pos-segments": {
+          "n": 20,
+          "strict": 20,
+          "lenient": 20
+        },
+        "pos-stress": {
+          "n": 31,
+          "strict": 31,
+          "lenient": 31
+        },
+        "sense": {
+          "n": 21,
+          "strict": 5,
+          "lenient": 5
+        }
+      },
+      "readings": {
+        "bass": {
+          "n": 10,
+          "strict": 0,
+          "lenient": 0
+        },
+        "bass_corp": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "bow_nou-knot": {
+          "n": 4,
+          "strict": 4,
+          "lenient": 4
+        },
+        "bow_nou-ship": {
+          "n": 6,
+          "strict": 0,
+          "lenient": 0
+        },
+        "cat_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "day_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invalid_adj": {
+          "n": 9,
+          "strict": 8,
+          "lenient": 8
+        },
+        "invalid_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invite_nou": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "invite_vrb": {
+          "n": 8,
+          "strict": 8,
+          "lenient": 8
+        },
+        "learned_adj": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "learned_vrb": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "permit_nou": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "permit_vrb": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "read_past": {
+          "n": 7,
+          "strict": 5,
+          "lenient": 5
+        },
+        "read_present": {
+          "n": 6,
+          "strict": 6,
+          "lenient": 6
+        },
+        "record_nou": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "record_vrb": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "use_nou": {
+          "n": 4,
+          "strict": 4,
+          "lenient": 4
+        },
+        "use_vrb": {
+          "n": 6,
+          "strict": 6,
+          "lenient": 6
+        },
+        "uses_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "uses_vrb": {
+          "n": 9,
+          "strict": 9,
+          "lenient": 9
+        }
+      }
+    },
+    "default/gold": {
+      "n": 108,
+      "strict": 85,
+      "lenient": 85,
+      "reading": 85,
+      "stress": 88,
+      "segments": 85,
+      "macro": 0.8216783216783217,
+      "balanced": 0.8441558441558441,
+      "phoneErrors": 53,
+      "referencePhones": 448,
+      "slices": {
+        "morphology": {
+          "n": 13,
+          "strict": 10,
+          "lenient": 10
+        },
+        "neutral": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "noun-adjective": {
+          "n": 21,
+          "strict": 21,
+          "lenient": 21
+        },
+        "pos-segments": {
+          "n": 20,
+          "strict": 20,
+          "lenient": 20
+        },
+        "pos-stress": {
+          "n": 31,
+          "strict": 31,
+          "lenient": 31
+        },
+        "sense": {
+          "n": 21,
+          "strict": 1,
+          "lenient": 1
+        }
+      },
+      "readings": {
+        "bass": {
+          "n": 10,
+          "strict": 0,
+          "lenient": 0
+        },
+        "bass_corp": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "bow_nou-knot": {
+          "n": 4,
+          "strict": 0,
+          "lenient": 0
+        },
+        "bow_nou-ship": {
+          "n": 6,
+          "strict": 0,
+          "lenient": 0
+        },
+        "cat_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "day_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invalid_adj": {
+          "n": 9,
+          "strict": 9,
+          "lenient": 9
+        },
+        "invalid_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invite_nou": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "invite_vrb": {
+          "n": 8,
+          "strict": 8,
+          "lenient": 8
+        },
+        "learned_adj": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "learned_vrb": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "permit_nou": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "permit_vrb": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "read_past": {
+          "n": 7,
+          "strict": 4,
+          "lenient": 4
+        },
+        "read_present": {
+          "n": 6,
+          "strict": 6,
+          "lenient": 6
+        },
+        "record_nou": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "record_vrb": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "use_nou": {
+          "n": 4,
+          "strict": 4,
+          "lenient": 4
+        },
+        "use_vrb": {
+          "n": 6,
+          "strict": 6,
+          "lenient": 6
+        },
+        "uses_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "uses_vrb": {
+          "n": 9,
+          "strict": 9,
+          "lenient": 9
+        }
+      }
+    },
+    "rules/auto": {
+      "n": 108,
+      "strict": 55,
+      "lenient": 55,
+      "reading": 64,
+      "stress": 90,
+      "segments": 62,
+      "macro": 0.5857808857808858,
+      "balanced": 0.606060606060606,
+      "phoneErrors": 66,
+      "referencePhones": 448,
+      "slices": {
+        "morphology": {
+          "n": 13,
+          "strict": 7,
+          "lenient": 7
+        },
+        "neutral": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "noun-adjective": {
+          "n": 21,
+          "strict": 12,
+          "lenient": 12
+        },
+        "pos-segments": {
+          "n": 20,
+          "strict": 16,
+          "lenient": 16
+        },
+        "pos-stress": {
+          "n": 31,
+          "strict": 13,
+          "lenient": 13
+        },
+        "sense": {
+          "n": 21,
+          "strict": 5,
+          "lenient": 5
+        }
+      },
+      "readings": {
+        "bass": {
+          "n": 10,
+          "strict": 0,
+          "lenient": 0
+        },
+        "bass_corp": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "bow_nou-knot": {
+          "n": 4,
+          "strict": 4,
+          "lenient": 4
+        },
+        "bow_nou-ship": {
+          "n": 6,
+          "strict": 0,
+          "lenient": 0
+        },
+        "cat_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "day_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invalid_adj": {
+          "n": 9,
+          "strict": 0,
+          "lenient": 0
+        },
+        "invalid_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invite_nou": {
+          "n": 2,
+          "strict": 0,
+          "lenient": 0
+        },
+        "invite_vrb": {
+          "n": 8,
+          "strict": 8,
+          "lenient": 8
+        },
+        "learned_adj": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "learned_vrb": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "permit_nou": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "permit_vrb": {
+          "n": 5,
+          "strict": 0,
+          "lenient": 0
+        },
+        "read_past": {
+          "n": 7,
+          "strict": 7,
+          "lenient": 7
+        },
+        "read_present": {
+          "n": 6,
+          "strict": 0,
+          "lenient": 0
+        },
+        "record_nou": {
+          "n": 10,
+          "strict": 0,
+          "lenient": 0
+        },
+        "record_vrb": {
+          "n": 1,
+          "strict": 0,
+          "lenient": 0
+        },
+        "use_nou": {
+          "n": 4,
+          "strict": 4,
+          "lenient": 4
+        },
+        "use_vrb": {
+          "n": 6,
+          "strict": 2,
+          "lenient": 2
+        },
+        "uses_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "uses_vrb": {
+          "n": 9,
+          "strict": 9,
+          "lenient": 9
+        }
+      }
+    },
+    "rules/gold": {
+      "n": 108,
+      "strict": 51,
+      "lenient": 51,
+      "reading": 61,
+      "stress": 71,
+      "segments": 58,
+      "macro": 0.5524475524475525,
+      "balanced": 0.5606060606060606,
+      "phoneErrors": 100,
+      "referencePhones": 448,
+      "slices": {
+        "morphology": {
+          "n": 13,
+          "strict": 7,
+          "lenient": 7
+        },
+        "neutral": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "noun-adjective": {
+          "n": 21,
+          "strict": 12,
+          "lenient": 12
+        },
+        "pos-segments": {
+          "n": 20,
+          "strict": 16,
+          "lenient": 16
+        },
+        "pos-stress": {
+          "n": 31,
+          "strict": 13,
+          "lenient": 13
+        },
+        "sense": {
+          "n": 21,
+          "strict": 1,
+          "lenient": 1
+        }
+      },
+      "readings": {
+        "bass": {
+          "n": 10,
+          "strict": 0,
+          "lenient": 0
+        },
+        "bass_corp": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "bow_nou-knot": {
+          "n": 4,
+          "strict": 0,
+          "lenient": 0
+        },
+        "bow_nou-ship": {
+          "n": 6,
+          "strict": 0,
+          "lenient": 0
+        },
+        "cat_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "day_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invalid_adj": {
+          "n": 9,
+          "strict": 0,
+          "lenient": 0
+        },
+        "invalid_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invite_nou": {
+          "n": 2,
+          "strict": 0,
+          "lenient": 0
+        },
+        "invite_vrb": {
+          "n": 8,
+          "strict": 8,
+          "lenient": 8
+        },
+        "learned_adj": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "learned_vrb": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "permit_nou": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "permit_vrb": {
+          "n": 5,
+          "strict": 0,
+          "lenient": 0
+        },
+        "read_past": {
+          "n": 7,
+          "strict": 7,
+          "lenient": 7
+        },
+        "read_present": {
+          "n": 6,
+          "strict": 0,
+          "lenient": 0
+        },
+        "record_nou": {
+          "n": 10,
+          "strict": 0,
+          "lenient": 0
+        },
+        "record_vrb": {
+          "n": 1,
+          "strict": 0,
+          "lenient": 0
+        },
+        "use_nou": {
+          "n": 4,
+          "strict": 4,
+          "lenient": 4
+        },
+        "use_vrb": {
+          "n": 6,
+          "strict": 2,
+          "lenient": 2
+        },
+        "uses_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "uses_vrb": {
+          "n": 9,
+          "strict": 9,
+          "lenient": 9
+        }
+      }
+    }
+  },
+  "supportedPosCells": {
+    "default/auto": {
+      "n": 88,
+      "strict": 85,
+      "lenient": 85,
+      "reading": 85,
+      "stress": 87,
+      "segments": 85,
+      "macro": 0.9769230769230769,
+      "balanced": 0.9791144527986632,
+      "phoneErrors": 3,
+      "referencePhones": 398,
+      "slices": {
+        "morphology": {
+          "n": 13,
+          "strict": 11,
+          "lenient": 11
+        },
+        "neutral": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "noun-adjective": {
+          "n": 21,
+          "strict": 20,
+          "lenient": 20
+        },
+        "pos-segments": {
+          "n": 20,
+          "strict": 20,
+          "lenient": 20
+        },
+        "pos-stress": {
+          "n": 31,
+          "strict": 31,
+          "lenient": 31
+        },
+        "sense": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        }
+      },
+      "readings": {
+        "bass_corp": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "cat_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "day_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invalid_adj": {
+          "n": 9,
+          "strict": 8,
+          "lenient": 8
+        },
+        "invalid_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invite_nou": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "invite_vrb": {
+          "n": 8,
+          "strict": 8,
+          "lenient": 8
+        },
+        "learned_adj": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "learned_vrb": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "permit_nou": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "permit_vrb": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "read_past": {
+          "n": 7,
+          "strict": 5,
+          "lenient": 5
+        },
+        "read_present": {
+          "n": 6,
+          "strict": 6,
+          "lenient": 6
+        },
+        "record_nou": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "record_vrb": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "use_nou": {
+          "n": 4,
+          "strict": 4,
+          "lenient": 4
+        },
+        "use_vrb": {
+          "n": 6,
+          "strict": 6,
+          "lenient": 6
+        },
+        "uses_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "uses_vrb": {
+          "n": 9,
+          "strict": 9,
+          "lenient": 9
+        }
+      }
+    },
+    "default/gold": {
+      "n": 88,
+      "strict": 85,
+      "lenient": 85,
+      "reading": 85,
+      "stress": 88,
+      "segments": 85,
+      "macro": 0.9790209790209791,
+      "balanced": 0.9774436090225563,
+      "phoneErrors": 3,
+      "referencePhones": 398,
+      "slices": {
+        "morphology": {
+          "n": 13,
+          "strict": 10,
+          "lenient": 10
+        },
+        "neutral": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "noun-adjective": {
+          "n": 21,
+          "strict": 21,
+          "lenient": 21
+        },
+        "pos-segments": {
+          "n": 20,
+          "strict": 20,
+          "lenient": 20
+        },
+        "pos-stress": {
+          "n": 31,
+          "strict": 31,
+          "lenient": 31
+        },
+        "sense": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        }
+      },
+      "readings": {
+        "bass_corp": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "cat_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "day_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invalid_adj": {
+          "n": 9,
+          "strict": 9,
+          "lenient": 9
+        },
+        "invalid_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invite_nou": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "invite_vrb": {
+          "n": 8,
+          "strict": 8,
+          "lenient": 8
+        },
+        "learned_adj": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "learned_vrb": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "permit_nou": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "permit_vrb": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "read_past": {
+          "n": 7,
+          "strict": 4,
+          "lenient": 4
+        },
+        "read_present": {
+          "n": 6,
+          "strict": 6,
+          "lenient": 6
+        },
+        "record_nou": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "record_vrb": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "use_nou": {
+          "n": 4,
+          "strict": 4,
+          "lenient": 4
+        },
+        "use_vrb": {
+          "n": 6,
+          "strict": 6,
+          "lenient": 6
+        },
+        "uses_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "uses_vrb": {
+          "n": 9,
+          "strict": 9,
+          "lenient": 9
+        }
+      }
+    },
+    "rules/auto": {
+      "n": 88,
+      "strict": 51,
+      "lenient": 51,
+      "reading": 60,
+      "stress": 70,
+      "segments": 58,
+      "macro": 0.6853146853146853,
+      "balanced": 0.6491228070175438,
+      "phoneErrors": 50,
+      "referencePhones": 398,
+      "slices": {
+        "morphology": {
+          "n": 13,
+          "strict": 7,
+          "lenient": 7
+        },
+        "neutral": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "noun-adjective": {
+          "n": 21,
+          "strict": 12,
+          "lenient": 12
+        },
+        "pos-segments": {
+          "n": 20,
+          "strict": 16,
+          "lenient": 16
+        },
+        "pos-stress": {
+          "n": 31,
+          "strict": 13,
+          "lenient": 13
+        },
+        "sense": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        }
+      },
+      "readings": {
+        "bass_corp": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "cat_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "day_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invalid_adj": {
+          "n": 9,
+          "strict": 0,
+          "lenient": 0
+        },
+        "invalid_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invite_nou": {
+          "n": 2,
+          "strict": 0,
+          "lenient": 0
+        },
+        "invite_vrb": {
+          "n": 8,
+          "strict": 8,
+          "lenient": 8
+        },
+        "learned_adj": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "learned_vrb": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "permit_nou": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "permit_vrb": {
+          "n": 5,
+          "strict": 0,
+          "lenient": 0
+        },
+        "read_past": {
+          "n": 7,
+          "strict": 7,
+          "lenient": 7
+        },
+        "read_present": {
+          "n": 6,
+          "strict": 0,
+          "lenient": 0
+        },
+        "record_nou": {
+          "n": 10,
+          "strict": 0,
+          "lenient": 0
+        },
+        "record_vrb": {
+          "n": 1,
+          "strict": 0,
+          "lenient": 0
+        },
+        "use_nou": {
+          "n": 4,
+          "strict": 4,
+          "lenient": 4
+        },
+        "use_vrb": {
+          "n": 6,
+          "strict": 2,
+          "lenient": 2
+        },
+        "uses_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "uses_vrb": {
+          "n": 9,
+          "strict": 9,
+          "lenient": 9
+        }
+      }
+    },
+    "rules/gold": {
+      "n": 88,
+      "strict": 51,
+      "lenient": 51,
+      "reading": 61,
+      "stress": 71,
+      "segments": 58,
+      "macro": 0.6853146853146853,
+      "balanced": 0.6491228070175438,
+      "phoneErrors": 50,
+      "referencePhones": 398,
+      "slices": {
+        "morphology": {
+          "n": 13,
+          "strict": 7,
+          "lenient": 7
+        },
+        "neutral": {
+          "n": 2,
+          "strict": 2,
+          "lenient": 2
+        },
+        "noun-adjective": {
+          "n": 21,
+          "strict": 12,
+          "lenient": 12
+        },
+        "pos-segments": {
+          "n": 20,
+          "strict": 16,
+          "lenient": 16
+        },
+        "pos-stress": {
+          "n": 31,
+          "strict": 13,
+          "lenient": 13
+        },
+        "sense": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        }
+      },
+      "readings": {
+        "bass_corp": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "cat_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "day_control": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invalid_adj": {
+          "n": 9,
+          "strict": 0,
+          "lenient": 0
+        },
+        "invalid_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "invite_nou": {
+          "n": 2,
+          "strict": 0,
+          "lenient": 0
+        },
+        "invite_vrb": {
+          "n": 8,
+          "strict": 8,
+          "lenient": 8
+        },
+        "learned_adj": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "learned_vrb": {
+          "n": 10,
+          "strict": 10,
+          "lenient": 10
+        },
+        "permit_nou": {
+          "n": 5,
+          "strict": 5,
+          "lenient": 5
+        },
+        "permit_vrb": {
+          "n": 5,
+          "strict": 0,
+          "lenient": 0
+        },
+        "read_past": {
+          "n": 7,
+          "strict": 7,
+          "lenient": 7
+        },
+        "read_present": {
+          "n": 6,
+          "strict": 0,
+          "lenient": 0
+        },
+        "record_nou": {
+          "n": 10,
+          "strict": 0,
+          "lenient": 0
+        },
+        "record_vrb": {
+          "n": 1,
+          "strict": 0,
+          "lenient": 0
+        },
+        "use_nou": {
+          "n": 4,
+          "strict": 4,
+          "lenient": 4
+        },
+        "use_vrb": {
+          "n": 6,
+          "strict": 2,
+          "lenient": 2
+        },
+        "uses_nou": {
+          "n": 1,
+          "strict": 1,
+          "lenient": 1
+        },
+        "uses_vrb": {
+          "n": 9,
+          "strict": 9,
+          "lenient": 9
+        }
+      }
+    }
+  },
+  "predictions": {
+    "default/auto": [
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "ˌɪnˈvæɫəd",
+      "ˈɪnvəɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˈɪnvəɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˈɪnvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˈɪnvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ˈpɝmɪt",
+      "pɝˈmɪt",
+      "ˈpɝmɪt",
+      "pɝˈmɪt",
+      "ˈpɝmɪt",
+      "pɝˈmɪt",
+      "ˈpɝmɪt",
+      "pɝˈmɪt",
+      "pɝˈmɪt",
+      "ˈpɝmɪt",
+      "ɹid",
+      "ɹid",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹid",
+      "ɹid",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹid",
+      "ɹɛd",
+      "ɹid",
+      "ɹid",
+      "ɹid",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "juz",
+      "juz",
+      "juz",
+      "juz",
+      "jus",
+      "juz",
+      "jus",
+      "juz",
+      "jus",
+      "jus",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjusəz",
+      "kæt",
+      "deɪ",
+      "ɹɪˈkɔɹd",
+      "ˈɫɝnɪd",
+      "bæs"
+    ],
+    "default/gold": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "ˌɪnˈvæɫəd",
+      "ˈɪnvəɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˌɪnˈvæɫəd",
+      "ˈɪnvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˈɪnvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ˌɪnˈvaɪt",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ˈpɝmɪt",
+      "pɝˈmɪt",
+      "ˈpɝmɪt",
+      "pɝˈmɪt",
+      "ˈpɝmɪt",
+      "pɝˈmɪt",
+      "ˈpɝmɪt",
+      "pɝˈmɪt",
+      "pɝˈmɪt",
+      "ˈpɝmɪt",
+      "ɹid",
+      "ɹid",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹid",
+      "ɹid",
+      "ɹid",
+      "ɹɛd",
+      "ɹid",
+      "ɹɛd",
+      "ɹid",
+      "ɹid",
+      "ɹid",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "ˈɹɛkɝd",
+      "juz",
+      "juz",
+      "juz",
+      "juz",
+      "jus",
+      "juz",
+      "jus",
+      "juz",
+      "jus",
+      "jus",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjusəz",
+      "kæt",
+      "deɪ",
+      "ɹɪˈkɔɹd",
+      "ˈɫɝnɪd",
+      "bæs"
+    ],
+    "rules/auto": [
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "bæs",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "boʊ",
+      "ɪnˈvæɫɪd",
+      "ˈɪnvəɫəd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ˈɪnvəɫəd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "juz",
+      "jus",
+      "jus",
+      "jus",
+      "jus",
+      "jus",
+      "jus",
+      "juz",
+      "jus",
+      "jus",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjusəz",
+      "kæt",
+      "deɪ",
+      "ɹiˈkɔɹd",
+      "ˈɫɝnɪd",
+      "bæs"
+    ],
+    "rules/gold": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "ɪnˈvæɫɪd",
+      "ˈɪnvəɫəd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvæɫɪd",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɪnˈvaɪt",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ɫɝnd",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ˈpɝmɪt",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹɛd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "ɹiˈkɔɹd",
+      "juz",
+      "jus",
+      "jus",
+      "jus",
+      "jus",
+      "jus",
+      "jus",
+      "juz",
+      "jus",
+      "jus",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjuzəz",
+      "ˈjusəz",
+      "kæt",
+      "deɪ",
+      "ɹiˈkɔɹd",
+      "ˈɫɝnɪd",
+      "bæs"
+    ]
+  },
+  "provenance": {
+    "migration": "context-ipa-contract-v4; unchanged stored predictions independently rescored",
+    "legacyBaseline": "scripts/context-ipa-baseline-v3.json",
+    "legacyBaselineSha256": "1a5ffc30723b73bc22308a7542fad4b199a85bc7e29dc59f53632b574b4517d3",
+    "predictionsSha256": "6f5eea670584771132ce1805c8e85dc02ae2c2d5e9f669b85132ebf618ec7bae",
+    "rescoredPredictions": 432,
+    "allSummaryFieldsIdentical": true
+  }
+}

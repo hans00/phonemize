@@ -626,6 +626,13 @@ reject an altered phone inventory and refuse to overwrite a valid stronger
 baseline when one labelled reading regresses. Evidence:
 `/tmp/phonemize-contract-audit-20261028/`.
 
+The default comparator now uses `scripts/context-ipa-baseline-v4.json`
+(`context-ipa-contract-v4`). Its evaluator and loader fingerprints changed
+after v3, so migration re-scored the unchanged 432 stored predictions. All
+four prediction arrays and every cell and supported-POS summary are identical
+to v3; v2 and v3 remain immutable history. This is contract maintenance with
+zero pronunciation gain.
+
 Validation evidence is in `/tmp/phonemize-ipa-implementation/`: scorer and public
 path tests, source/script typecheck, legacy-score replay, identical new-metric
 replays, the Yarn/legacy-alias entry points, and negative CLI checks for score

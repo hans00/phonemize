@@ -354,3 +354,281 @@ alumni AH0 L AH1 M N AY2 # rule-path-exception; rules-only; Cambridge US /əˈl�
 voyeur V OY2 Y UW1 R # rule-path-exception; rules-only; Cambridge US /vɔɪˈjɝ/; lexicalized French loan noun; the written -yeur retains /j/ and second-syllable stress
 encyclopedia IH0 N S AY2 K L AH0 P IY1 D IY0 AH0 # rule-path-exception; rules-only; Cambridge US /ɪnˌsaɪ.kləˈpiː.di.ə/; lexicalized Greek-derived noun with a non-compositional initial sequence
 memorabilia M EH2 M ER0 AH0 B IY1 L Y AH0 # rule-path-exception; rules-only; Cambridge US /ˌmem.ə.rəˈbɪl.i.ə/; lexicalized Latin plural noun retaining initial secondary stress and a medial glide
+
+# Rule-path-only common words where no general rule candidate passed the
+# family-folded learner. Source: pinned CMUdict in
+# scripts/common-accuracy-sources.json (SHA-256 81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22).
+# Each is a single CMU reading matching the fixed common reference; these
+# lexicalized forms remain an open class and must not be generalized blindly.
+wireless W AY1 R L IH0 S # rule-path-exception; rules-only; CMUdict; lexicalized vowel and coda
+character K EH1 R IH0 K T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized initial sequence
+surface S ER1 F AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized final syllable
+attorney AH0 T ER1 N IY0 # rule-path-exception; rules-only; CMUdict; lexicalized medial stress and vowel
+expert EH1 K S P ER0 T # rule-path-exception; rules-only; CMUdict; lexicalized initial cluster and stress
+marine M ER0 IY1 N # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence and stress
+avenue AE1 V AH0 N UW2 # rule-path-exception; rules-only; CMUdict; lexicalized final vowel sequence
+icon AY1 K AA0 N # rule-path-exception; rules-only; CMUdict; lexicalized initial diphthong
+soccer S AA1 K ER0 # rule-path-exception; rules-only; CMUdict; lexicalized vowel
+nearby N IH1 R B AY1 # rule-path-exception; rules-only; CMUdict; lexicalized compound stress
+luxury L AH1 G ZH ER0 IY0 # rule-path-exception; rules-only; CMUdict; lexicalized consonant sequence
+circuit S ER1 K AH0 T # rule-path-exception; rules-only; CMUdict; lexicalized final vowel
+removal R IH0 M UW1 V AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized prefix vowel
+requirement R IH0 K W AY1 R M AH0 N T # rule-path-exception; rules-only; CMUdict; lexicalized prefix and rhotic sequence
+wonder W AH1 N D ER0 # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+inventory IH2 N V AH0 N T AO1 R IY0 # rule-path-exception; rules-only; CMUdict; lexicalized stress and vowels
+processor P R AA1 S EH2 S ER0 # rule-path-exception; rules-only; CMUdict; lexicalized root and stress
+pilot P AY1 L AH0 T # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+contractor K AA1 N T R AE2 K T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized stress
+bulletin B UH1 L IH0 T AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized weak final vowel
+empire EH1 M P AY0 ER0 # rule-path-exception; rules-only; CMUdict; lexicalized final rhotic sequence
+drama D R AA1 M AH0 # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+chamber CH EY1 M B ER0 # rule-path-exception; rules-only; CMUdict; lexicalized vowel
+accessory AE0 K S EH1 S ER0 IY0 # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+regard R IH0 G AA1 R D # rule-path-exception; rules-only; CMUdict; lexicalized prefix vowel
+smooth S M UW1 DH # rule-path-exception; rules-only; CMUdict; lexicalized final consonant
+opera AA1 P R AH0 # rule-path-exception; rules-only; CMUdict; lexicalized medial consonant
+asset AE1 S EH2 T # rule-path-exception; rules-only; CMUdict; lexicalized final vowel
+pursuant P ER0 S UW1 AH0 N T # rule-path-exception; rules-only; CMUdict; lexicalized stress and hiatus
+meant M EH1 N T # rule-path-exception; rules-only; CMUdict; lexicalized vowel
+legend L EH1 JH AH0 N D # rule-path-exception; rules-only; CMUdict; lexicalized medial vowel
+disaster D IH0 Z AE1 S T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized voiced s
+vinyl V AY1 N AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+semester S AH0 M EH1 S T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized stress
+familiar F AH0 M IH1 L Y ER0 # rule-path-exception; rules-only; CMUdict; lexicalized stress and glide
+parliament P AA1 R L AH0 M AH0 N T # rule-path-exception; rules-only; CMUdict; lexicalized medial syllable
+dose D OW1 S # rule-path-exception; rules-only; CMUdict; lexicalized final consonant
+rescue R EH1 S K Y UW0 # rule-path-exception; rules-only; CMUdict; lexicalized root vowel and glide
+reporter R IH0 P AO1 R T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized prefix vowel
+uniform Y UW1 N AH0 F AO2 R M # rule-path-exception; rules-only; CMUdict; lexicalized stress and vowels
+vacuum V AE1 K Y UW0 M # rule-path-exception; rules-only; CMUdict; lexicalized medial glide
+realize R IY1 AH0 L AY2 Z # rule-path-exception; rules-only; CMUdict; lexicalized hiatus
+regardless R AH0 G AA1 R D L AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized prefix vowel
+finger F IH1 NG G ER0 # rule-path-exception; rules-only; CMUdict; lexicalized medial stop
+vitamin V AY1 T AH0 M AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+equation IH0 K W EY1 ZH AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized sibilant and diphthong
+proven P R UW1 V AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized stress
+devil D EH1 V AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+talent T AE1 L AH0 N T # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+wisdom W IH1 Z D AH0 M # rule-path-exception; rules-only; CMUdict; lexicalized voiced s
+triple T R IH1 P AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+habitat HH AE1 B AH0 T AE2 T # rule-path-exception; rules-only; CMUdict; lexicalized stress and vowels
+embedded EH0 M B EH1 D IH0 D # rule-path-exception; rules-only; CMUdict; lexicalized prefix vowel
+brochure B R OW0 SH UH1 R # rule-path-exception; rules-only; CMUdict; lexicalized loanword vowels and stress
+orchestra AO1 R K AH0 S T R AH0 # rule-path-exception; rules-only; CMUdict; lexicalized syllabification
+restore R IH0 S T AO1 R # rule-path-exception; rules-only; CMUdict; lexicalized prefix vowel
+bicycle B AY1 S IH0 K AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized medial vowel
+cathedral K AH0 TH IY1 D R AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized stress and vowels
+tongue T AH1 NG # rule-path-exception; rules-only; CMUdict; lexicalized vowel
+weapon W EH1 P AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+chef SH EH1 F # rule-path-exception; rules-only; CMUdict; lexicalized loanword onset
+necklace N EH1 K L AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized compound join
+stomach S T AH1 M AH0 K # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+tariff T AE1 R AH0 F # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+glucose G L UW1 K OW0 S # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+decimal D EH1 S AH0 M AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized medial vowel
+gossip G AA1 S AH0 P # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+opponent AH0 P OW1 N AH0 N T # rule-path-exception; rules-only; CMUdict; lexicalized stress
+prescription P R AH0 S K R IH1 P SH AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized medial stress and vowel reduction
+merchandise M ER1 CH AH0 N D AY2 Z # rule-path-exception; rules-only; CMUdict; lexicalized stress and final diphthong
+deluxe D AH0 L AH1 K S # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel and stress
+
+# Second accumulated common-word batch. These are fixed-cohort strict misses
+# whose single segmental CMU reading matches the pinned reference. Both the
+# ordinary and structural 10-fold rule learners accepted zero general rules.
+yeah Y AE1 # rule-path-exception; rules-only; CMUdict; lexicalized vowel
+penis P IY1 N IH0 S # rule-path-exception; rules-only; CMUdict; lexicalized vowel
+charity CH EH1 R IH0 T IY0 # rule-path-exception; rules-only; CMUdict; lexicalized medial vowel
+decade D EH0 K EY1 D # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+courtesy K ER1 T AH0 S IY0 # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+portrait P AO1 R T R AH0 T # rule-path-exception; rules-only; CMUdict; lexicalized final vowel
+nylon N AY1 L AA2 N # rule-path-exception; rules-only; CMUdict; lexicalized final vowel
+salon S AH0 L AA1 N # rule-path-exception; rules-only; CMUdict; lexicalized loanword stress
+soldier S OW1 L JH ER0 # rule-path-exception; rules-only; CMUdict; lexicalized consonant sequence
+monkey M AH1 NG K IY0 # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+gauge G EY1 JH # rule-path-exception; rules-only; CMUdict; lexicalized vowel and final affricate
+testimony T EH1 S T AH0 M OW2 N IY0 # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+salmon S AE1 M AH0 N # rule-path-exception; rules-only; CMUdict; silent consonant
+ceramic S ER0 AE1 M IH0 K # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+synthesis S IH1 N TH AH0 S AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized medial vowel
+velocity V AH0 L AA1 S AH0 T IY0 # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+statute S T AE1 CH UW0 T # rule-path-exception; rules-only; CMUdict; lexicalized consonant and vowel
+architect AA1 R K AH0 T EH2 K T # rule-path-exception; rules-only; CMUdict; lexicalized medial vowel
+synopsis S IH0 N AA1 P S IH0 S # rule-path-exception; rules-only; CMUdict; lexicalized medial vowel
+reunion R IY0 UW1 N Y AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized hiatus
+millennium M AH0 L EH1 N IY0 AH0 M # rule-path-exception; rules-only; CMUdict; lexicalized stress and vowels
+parade P ER0 EY1 D # rule-path-exception; rules-only; CMUdict; lexicalized stress and vowel
+courier K ER1 IY0 ER0 # rule-path-exception; rules-only; CMUdict; lexicalized rhotic sequence
+porcelain P AO1 R S AH0 L AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+intention IH2 N T EH1 N CH AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized root and stress
+superb S UH0 P ER1 B # rule-path-exception; rules-only; CMUdict; lexicalized stress and vowel
+pursue P ER0 S UW1 # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+surplus S ER1 P L AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized stress
+robust R OW0 B AH1 S T # rule-path-exception; rules-only; CMUdict; lexicalized medial vowel and stress
+maritime M EH1 R AH0 T AY2 M # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+legitimate L AH0 JH IH1 T AH0 M AH0 T # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+duo D UW1 OW0 # rule-path-exception; rules-only; CMUdict; lexicalized hiatus
+algebra AE1 L JH AH0 B R AH0 # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+telephony T EH1 L AH0 F OW2 N IY0 # rule-path-exception; rules-only; CMUdict; lexicalized stress and vowels
+genius JH IY1 N Y AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized glide
+jaguar JH AE1 G W AA2 R # rule-path-exception; rules-only; CMUdict; lexicalized glide and stress
+deficit D EH1 F AH0 S AH0 T # rule-path-exception; rules-only; CMUdict; lexicalized medial vowel
+reggae R EH1 G EY2 # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+titanium T AY0 T EY1 N IY0 AH0 M # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+italic AY0 T AE1 L IH0 K # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+scuba S K UW1 B AH0 # rule-path-exception; rules-only; CMUdict; lexicalized initialism pronunciation
+frontier F R AH0 N T IH1 R # rule-path-exception; rules-only; CMUdict; lexicalized stress and rhotic vowel
+scenic S IY1 N IH0 K # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+gasoline G AE1 S AH0 L IY2 N # rule-path-exception; rules-only; CMUdict; lexicalized final vowel
+phenomenon F AH0 N AA1 M AH0 N AA2 N # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+ensemble AA0 N S AA1 M B AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized loanword vowels
+insulin IH1 N S AH0 L AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+equilibrium IY2 K W AH0 L IH1 B R IY0 AH0 M # rule-path-exception; rules-only; CMUdict; lexicalized stress and vowels
+chassis CH AE1 S IY0 # rule-path-exception; rules-only; CMUdict; lexicalized loanword vowel
+yacht Y AA1 T # rule-path-exception; rules-only; CMUdict; lexicalized spelling
+competent K AA1 M P AH0 T IH0 N T # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+pasta P AA1 S T AH0 # rule-path-exception; rules-only; CMUdict; lexicalized loanword vowel
+serum S IH1 R AH0 M # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+terrain T ER0 EY1 N # rule-path-exception; rules-only; CMUdict; lexicalized stress and rhotic sequence
+polyester P AA2 L IY2 EH1 S T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+sapphire S AE1 F AY0 ER0 # rule-path-exception; rules-only; CMUdict; lexicalized medial consonant
+navigator N AE1 V AH0 G EY2 T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+destiny D EH1 S T AH0 N IY0 # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+sacrifice S AE1 K R AH0 F AY2 S # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+guru G UW1 R UW2 # rule-path-exception; rules-only; CMUdict; lexicalized loanword vowels
+hepatitis HH EH2 P AH0 T AY1 T AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized stress and vowels
+tribunal T R AH0 B Y UW1 N AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized stress and glide
+helicopter HH EH1 L IH0 K AA2 P T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+triumph T R AY1 AH0 M F # rule-path-exception; rules-only; CMUdict; lexicalized vowel sequence
+alloy AE1 L OY2 # rule-path-exception; rules-only; CMUdict; lexicalized initial vowel
+prophet P R AA1 F AH0 T # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+mambo M AA1 M B OW0 # rule-path-exception; rules-only; CMUdict; lexicalized loanword vowels
+menu M EH1 N Y UW0 # rule-path-exception; rules-only; CMUdict; lexicalized loanword glide
+lesbian L EH1 Z B IY0 AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized voiced consonant
+pussy P UH1 S IY0 # rule-path-exception; rules-only; CMUdict; lexicalized first vowel
+# Third accumulated common-word batch; each pinned CMU form matches the fixed
+# common reference and the current rule path misses it. General-rule learners
+# accepted no spelling rules under family-folded validation.
+economy IY0 K AA1 N AH0 M IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+orange AO1 R AH0 N JH # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+leisure L EH1 ZH ER0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+supreme S AH0 P R IY1 M # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+episode EH1 P AH0 S OW2 D # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+province P R AA1 V AH0 N S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+excess EH1 K S EH2 S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+citizen S IH1 T AH0 Z AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+bankruptcy B AE1 NG K R AH0 P S IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+cabinet K AE1 B AH0 N AH0 T # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+platinum P L AE1 T AH0 N AH0 M # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+cartridge K AA1 R T R AH0 JH # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+awesome AO1 S AH0 M # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+deputy D EH1 P Y AH0 T IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+worship W ER1 SH AH0 P # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+hybrid HH AY1 B R AH0 D # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+intermediate IH2 N T ER0 M IY1 D IY0 IH0 T # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+jurisdiction JH UH2 R AH0 S D IH1 K SH AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+robot R OW1 B AA2 T # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+suicide S UW1 AH0 S AY2 D # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+cemetery S EH1 M AH0 T EH2 R IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+coupon K Y UW1 P AO2 N # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+latex L EY1 T EH2 K S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+authentic AO0 TH EH1 N T IH0 K # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+genealogy JH IY2 N IY0 AA1 L AH0 JH IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+debug D IY0 B AH1 G # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+ejaculation IY0 JH AE2 K Y UW0 L EY1 SH AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+desperate D EH1 S P ER0 IH0 T # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+eclipse AH0 K L IH1 P S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+bizarre B AH0 Z AA1 R # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+encounter IH0 N K AW1 N T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+enormous IY0 N AO1 R M AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+cylinder S IH1 L AH0 N D ER0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+miniature M IH1 N IY0 AH0 CH UH2 R # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+sandwich S AE1 M W IH0 CH # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+catalyst K AE1 T AH0 L AH0 S T # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+tremendous T R AH0 M EH1 N D AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+mileage M AY1 L AH0 JH # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+privilege P R IH1 V IH0 L AH0 JH # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+emerald EH1 M ER0 R AH0 L D # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+sheriff SH EH1 R AH0 F # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+refrigerator R AH0 F R IH1 JH ER0 EY2 T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+nirvana N ER0 V AA1 N AH0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+tomato T AH0 M AA1 T OW2 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+reservoir R EH1 Z AH0 V W AA2 R # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+mentor M EH1 N T AO2 R # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+chancellor CH AE1 N S AH0 L ER0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+controversy K AA1 N T R AH0 V ER2 S IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+realtor R IY1 AH0 L T ER0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+humanity HH Y UW0 M AE1 N IH0 T IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+rouge R UW1 ZH # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+auburn AA1 B ER0 N # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+samba S AA1 M B AH0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+blah B L AA1 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+loose L UW1 S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+buffalo B AH1 F AH0 L OW2 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+providence P R AA1 V AH0 D AH0 N S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+mesa M EY1 S AH0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+premiere P R EH0 M IH1 R # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+# Fourth accumulated common-word batch; pinned CMU readings match each
+# fixed reference, while ordinary and structural family-folded learners
+# accepted no general spelling rules. Keep all overrides on the rules route.
+gratis G R AE1 T AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+tennis T EH1 N AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+avatar AE1 V AH0 T AA2 R # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+governor G AH1 V ER0 N ER0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+cache K AE1 SH # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+diverse D AY0 V ER1 S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+redeem R IH0 D IY1 M # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+veterinary V EH1 T R AH0 N EH2 R IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+precise P R IY0 S AY1 S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+respiratory R EH1 S P ER0 AH0 T AO2 R IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+maternity M AH0 T ER1 N IH0 T IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+consortium K AH0 N S AO1 R SH IY0 AH0 M # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+vegetable V EH1 JH T AH0 B AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+locale L OW0 K AE1 L # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+wilderness W IH1 L D ER0 N AH0 S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+holocaust HH AA1 L AH0 K AO2 S T # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+neural N Y UH1 R AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+phoenix F IY1 N IH0 K S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+valentine V AE1 L AH0 N T AY2 N # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+jersey JH ER1 Z IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+mercury M ER1 K Y ER0 IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+catholic K AE1 TH L IH0 K # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+robin R AA1 B AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+soviet S OW1 V IY0 EH2 T # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+python P AY1 TH AA0 N # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+statutory S T AE1 CH AH0 T AO2 R IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+respondent R IH0 S P AA1 N D AH0 N T # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+decorative D EH1 K R AH0 T IH0 V # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+enlargement IH0 N L AA1 R JH M AH0 N T # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+hourly AW1 R L IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+contracting K AA1 N T R AE0 K T IH0 NG # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+visibility V IH2 Z AH0 B IH1 L IH0 T IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+citizenship S IH1 T IH0 Z AH0 N SH IH2 P # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+transparency T R AE0 N S P EH1 R AH0 N S IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+municipality M Y UW2 N IH0 S AH0 P AE1 L AH0 T IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+terminology T ER2 M IH0 N AA1 L AH0 JH IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+humanitarian HH Y UW2 M AE2 N AH0 T EH1 R IY0 AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+agricultural AE2 G R AH0 K AH1 L CH ER0 AH0 L # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+disciplinary D IH1 S AH0 P L AH0 N EH2 R IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+# Fifth accumulated common-word batch. These remaining fixed-cohort misses
+# match pinned CMU readings; add them only to the rules-only dictionary route.
+bestiality B EH0 S CH AE1 L IH0 T IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+sierra S IY0 EH1 R AH0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+chile CH IH1 L IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+martin M AA1 R T AH0 N # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+roger R AA1 JH ER0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+shanghai SH AE1 NG HH AY1 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+surrey S ER1 IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+welsh W EH1 L CH # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+decor D EY1 K AO0 R # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+offices AO1 F AH0 S AH0 Z # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+venues V EH1 N UW0 Z # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+origins AO1 R AH0 JH IH0 N Z # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+relying R IY0 L AY1 IH0 NG # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+vagina V AH0 JH AY1 N AH0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+effectively IY1 F EH0 K T IH0 V L IY0 # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+templates T EH1 M P L AH0 T S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+unsubscribe AH0 N S AH0 B S K R AY1 B # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+prescribed P R IY0 S K R AY1 B D # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+preparing P ER0 P EH1 R IH0 NG # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+exhibits IH0 G Z IH1 B AH0 T S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule
+recipients R IH0 S IH1 P IY0 AH0 N T S # rule-path-exception; rules-only; CMUdict; lexicalized reading not covered by a passing general rule

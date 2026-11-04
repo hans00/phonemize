@@ -4,12 +4,12 @@
   "referenceSha256": "dc500cfeea39d7247651932629b4f1bb5da3a8a6d5e791da56161b051fee5df7",
   "full": {
     "n": 6990,
-    "strictAccuracy": 86.52360515021459,
-    "lenientAccuracy": 94.46351931330472
+    "strictAccuracy": 90.07153075822603,
+    "lenientAccuracy": 95.72246065808298
   },
   "top5000": {
     "n": 3617,
-    "strictAccuracy": 91.4846557920929,
-    "lenientAccuracy": 96.82056953276195
+    "strictAccuracy": 93.88996405861211,
+    "lenientAccuracy": 97.56704451202654
   }
 }

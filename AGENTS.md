@@ -74,8 +74,8 @@ with the same arguments when the `tsx` CLI's IPC is unavailable in the sandbox.
 - Current worktree score baselines: `scripts/eval-common-baseline-v85.json` (current versioned common-reference contract; v47-v84 are historical),
   `scripts/parity-baseline-v6.json` (fixed 100,816-word runtime-parity contract; migrated from the unchanged v2 frozen predictions after correcting the false hurricane plural reference; v2 remains historical),
   `eval-strict-baseline.json`, `homograph-baseline.json`. `context-ipa-baseline.json` is the initial
-  version-specific context baseline; `scripts/context-ipa-baseline-v3.json` is the current contract,
-  migrated from v2 by re-scoring the same 432 stored predictions with every summary field unchanged.
+  version-specific context baseline; `scripts/context-ipa-baseline-v4.json` is the current contract,
+  migrated from v3 by re-scoring the same 432 stored predictions with every summary field unchanged.
   Read the files and current checkout;
   historical narrative scores may be stale.
 - `scripts/eval-baseline.json` is the retained **86.998% historical lenient target**, reached with

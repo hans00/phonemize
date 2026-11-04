@@ -12,7 +12,7 @@ import { PHONES } from "./evaluate-common-accuracy";
 
 const ROOT = join(__dirname, "..");
 const REFERENCE = join(__dirname, "context-ipa-reference.json");
-const BASELINE = join(__dirname, "context-ipa-baseline-v3.json");
+const BASELINE = join(__dirname, "context-ipa-baseline-v4.json");
 export const POS_ADAPTER: Record<string, string> = { NOUN: "N", VERB: "V", ADJ: "ADJ" };
 export type Case = { id: string; split: string; word: string; gold: string; sentence: string; start: number; end: number; upos?: string };
 const hash = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
@@ -154,7 +154,7 @@ export async function main(argv = process.argv.slice(2)) {
     if (!manifest.readings[c.gold] || c.upos !== undefined && (!controlIds.has(c.id) || !POS_ADAPTER[c.upos])) throw new Error(`Invalid case annotation ${c.id}`);
   }
   const readingCounts = Object.fromEntries(Object.keys(manifest.readings).map(id => [id, cases.filter(c => c.gold === id).length]));
-  const contract = { version: "context-ipa-contract-v3", metric: manifest.metric, normalizer: NORMALIZER, adapter: manifest.adapter, gate: "per-reading-pos-subset-v2",
+  const contract = { version: "context-ipa-contract-v4", metric: manifest.metric, normalizer: NORMALIZER, adapter: manifest.adapter, gate: "per-reading-pos-subset-v2",
     referenceSha256: hash(referenceBytes), corpusSha256: source.contentSha256, cohortSha256: hash(JSON.stringify(cases)),
     evaluatorSha256: hash(readFileSync(__filename)), scorerSha256: hash(readFileSync(join(__dirname, "context-ipa.ts"))),
     loaderSha256: hash(readFileSync(join(__dirname, "evaluate-homographs.ts"))),

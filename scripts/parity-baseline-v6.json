@@ -21,7 +21,7 @@
       100709
     ],
     "change": "replaced the false hurricane plural reference with the Cambridge US singular pronunciation; v2 baseline file remains unchanged",
-    "snapshotSha256": "6939ab8913d75c2f7edb4affd2e91174a4293e06d8364e6030e193c10d2d94c2",
-    "snapshot": "/home/hans/Projects/phonemize/scripts/.prediction-cache/parity-6939ab8913d75c2f7edb4affd2e91174a4293e06d8364e6030e193c10d2d94c2.tsv.gz"
+    "snapshotSha256": "a4251e76b5284fccdf6ee769b304c936861cdf09620d530a3cb71556a8ee2a0f",
+    "snapshot": "/home/hans/Projects/phonemize/scripts/.prediction-cache/parity-a4251e76b5284fccdf6ee769b304c936861cdf09620d530a3cb71556a8ee2a0f.tsv.gz"
   }
 }

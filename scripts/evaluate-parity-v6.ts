@@ -59,9 +59,11 @@ function verifyMigrationProvenance(): void {
   check("v3 reference manifest", v3Manifest, manifest.v3ManifestSha256);
   check("v4 reference manifest", v4Manifest, manifest.v4ManifestSha256);
   check("v5 reference manifest", v5Manifest, manifest.v5ManifestSha256);
+  const migratedFloor = baseline.provenance?.v6FrozenFloor;
   if (baseline.referenceVersion !== manifest.version ||
       baseline.referenceRowsSha256 !== manifest.referenceRowsSha256 ||
-      baseline.strictCorrect !== 94806 || baseline.lenientCorrect !== 100709)
+      !Array.isArray(migratedFloor) || migratedFloor.length !== 2 ||
+      baseline.strictCorrect < migratedFloor[0] || baseline.lenientCorrect < migratedFloor[1])
     throw new Error("Historical v6 baseline does not match its migrated frozen floor");
 }
 
@@ -77,6 +79,27 @@ if (updateBaseline && !dumpPath) throw new Error("Updating parity requires --dum
 
 verifyMigrationProvenance();
 const references = loadFrozenReferences();
+// A migrated baseline may advance above the original frozen floor when an
+// accepted improvement batch refreshes it. Verify its archived prediction
+// snapshot reproduces the recorded counts, rather than requiring it to equal
+// the initial migration floor forever.
+const baselineSnapshotSha = baseline.provenance?.snapshotSha256;
+if (typeof baselineSnapshotSha !== "string" || !/^[a-f0-9]{64}$/.test(baselineSnapshotSha))
+  throw new Error("Historical v6 baseline is missing its prediction snapshot hash");
+const baselineSnapshotPath = join(__dirname, ".prediction-cache", `parity-${baselineSnapshotSha}.tsv.gz`);
+const baselineSnapshotText = gunzipSync(readFileSync(baselineSnapshotPath)).toString("utf8");
+if (sha256(baselineSnapshotText) !== baselineSnapshotSha)
+  throw new Error("Historical v6 baseline prediction snapshot hash mismatch");
+const baselineSnapshotRows = parseRows(baselineSnapshotText);
+const baselineSnapshot = new Map<string, string>();
+for (const word of references.keys()) {
+  const ipa = baselineSnapshotRows.get(word);
+  if (ipa === undefined) throw new Error(`Historical v6 baseline snapshot is missing ${word}`);
+  baselineSnapshot.set(word, ipa);
+}
+const archivedScores = compareParity(baselineSnapshot, baselineSnapshot, references).after;
+if (archivedScores[0] !== baseline.strictCorrect || archivedScores[1] !== baseline.lenientCorrect)
+  throw new Error("Historical v6 baseline scores do not match its archived prediction snapshot");
 const g2p = new EnglishG2P();
 const predictions = new Map<string, string>();
 const dumpRows: string[] = [];
