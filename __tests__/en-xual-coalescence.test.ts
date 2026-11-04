@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("velar-sibilant before ual, disableDict=%s", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -24,9 +25,7 @@ describe.each([false, true])("velar-sibilant before ual, disableDict=%s", disabl
   });
   it("composes caller roots and respects explicit children", () => {
     const own = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(own, "dictionary") };
-    delete dictionary.sexual;
-    Reflect.set(own, "dictionary", dictionary);
+    withoutDictionaryEntries(own, ["sexual"]);
     own.addPronunciation("sex", "ˈzɛks");
     expect(own.predict("sexual")).toBe("ˈzɛkʃuəɫ");
     own.addPronunciation("sexual", "ˈkɛŋ");

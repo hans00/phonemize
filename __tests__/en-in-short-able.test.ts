@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("in- before short silent-e -able roots (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -32,10 +32,8 @@ describe.each([false, true])("in- before short silent-e -able roots (disableDict
     expect(custom.predict("incapable")).toBe("ˌɪnˈkæpəbəɫ");
   });
   it("preserves adjective, noun and verb readings in full sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The incapable reader will work on an incurable problem.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The incapable reader will work on an incurable problem.");
     expect(tokens.find(t => t.word === "incapable")?.phoneme).toBe("ˌɪnˈkeɪpəbəɫ");
     expect(tokens.find(t => t.word === "incurable")?.phoneme).toBe("ˌɪnˈkjʊɹəbəɫ");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

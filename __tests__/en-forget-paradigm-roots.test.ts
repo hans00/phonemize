@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("forget irregular paradigm roots", () => {
   it.each([false, true])("uses the sourced present and past forms without shifting derived controls (dictionary disabled: %s)", (disableDict) => {
@@ -11,11 +11,8 @@ describe("forget irregular paradigm roots", () => {
     expect(engine.predict("forgotten", "en-US", "VBN")).toBe("fɝˈɡɑtən");
     expect(engine.predict("regret", "en-US", "VB")).toBe(disableDict ? "ɹiˈɡɹɛt" : "ɹəˈɡɹɛt");
 
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("I forget what I forgot, though I have not forgotten it.", {
-      language: "en-US",
-      returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "I forget what I forgot, though I have not forgotten it.");
     const readings = tokens.filter(token => ["forget", "forgot", "forgotten"].includes(token.word.toLowerCase()));
     expect(readings.map(token => token.phoneme)).toEqual(["fɝˈɡɛt", "fɝˈɡɑt", "fɝˈɡɑtən"]);
   });

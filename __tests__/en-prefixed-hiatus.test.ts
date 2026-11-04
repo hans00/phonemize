@@ -1,9 +1,9 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("Prefixed open roots before -ing (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
-  const api = createPhonemizer({ processors: [engine] });
+
   it.each([
     ["ongoing", "ˈɑnˌɡoʊɪŋ"], ["misdoing", "ˌmɪsˈduɪŋ"],
     ["reseeing", "ˌɹiˈsiɪŋ"], ["onseeing", "ˈɑnˌsiɪŋ"],
@@ -27,9 +27,7 @@ describe.each([false, true])("Prefixed open roots before -ing (disableDict=%s)",
   });
 
   it("preserves adjective, noun and verb controls in a full sentence", () => {
-    const tokens = api.phonemize("The ongoing work is useful; they will work.", {
-      language: "en-US", returnArray: true,
-    });
+    const tokens = englishTokens(engine, "The ongoing work is useful; they will work.");
     expect(tokens.find(t => t.word === "ongoing")?.phoneme).toBe("ˈɑnˌɡoʊɪŋ");
     expect(tokens.find(t => t.word === "useful")?.phoneme).toBe(engine.predict("useful", "en-US", "!V"));
     expect(tokens.filter(t => t.word === "work").map(t => t.phoneme)).toEqual(["wɝk", "wɝk"]);

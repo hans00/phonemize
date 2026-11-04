@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("ear before a written stop (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -34,8 +34,8 @@ describe.each([false, true])("ear before a written stop (disableDict=%s)", disab
     expect(custom.predict("hearts")).toBe("ˈhɪɹts");
   });
   it("preserves adjective, noun and finite verb controls in prose", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The hearty reader will start.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The hearty reader will start.");
     expect(tokens.find(t => t.word === "hearty")?.phoneme).toBe("ˈhɑɹti");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");
     expect(tokens.find(t => t.word === "start")?.phoneme).toBe("stɑɹt");

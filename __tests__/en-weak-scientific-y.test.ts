@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("weak thematic y in final scientific nouns (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -45,8 +45,8 @@ describe.each([false, true])("weak thematic y in final scientific nouns (disable
   });
   it.each([["oxygen", "ˈɑksədʒən"], ["polymer", "ˈpɑɫəmɝ"]])(
     "retains noun, adjective and finite verb controls with %s", (word, ipa) => {
-      const api = createPhonemizer({ processors: [engine] });
-      const tokens = api.phonemize(`The clever reader will work with ${word}.`, { language: "en-US", returnArray: true });
+
+      const tokens = englishTokens(engine, `The clever reader will work with ${word}.`);
       expect(tokens.find(t => t.word === word)?.phoneme).toBe(ipa);
       expect(tokens.find(t => t.word === "clever")?.phoneme).toBe("ˈkɫɛvɝ");
       expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

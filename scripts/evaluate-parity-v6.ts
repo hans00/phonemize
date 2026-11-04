@@ -167,7 +167,11 @@ if (updateBaseline) {
   writeFileSync(BASELINE_PATH, JSON.stringify({
     ...baseline, date: new Date().toISOString().slice(0, 10), strictCorrect: current[0], lenientCorrect: current[1],
     strictAccuracy: 100 * current[0] / total, lenientAccuracy: 100 * current[1] / total,
-    provenance: { ...priorProvenance, snapshotSha256, snapshot: archive },
+    provenance: {
+      ...priorProvenance,
+      snapshotSha256,
+      snapshot: `scripts/.prediction-cache/parity-${snapshotSha256}.tsv.gz`,
+    },
   }, null, 2) + "\n");
   console.log(`Baseline updated: ${BASELINE_PATH}`);
 }

@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("weak ci in Latinate derivations (rules=%s)", (disableDict) => {
   const engine = new EnglishG2P({ disableDict });
@@ -26,8 +26,8 @@ describe.each([false, true])("weak ci in Latinate derivations (rules=%s)", (disa
     expect(engine.predict(word)).toBe(expected);
   });
   it("preserves the noun and adjective beside the target verb", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("They anticipate a fanciful plan.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "They anticipate a fanciful plan.");
     expect(tokens.find((token) => token.word === "anticipate")?.phoneme).toMatch(/sə/);
     expect(tokens.find((token) => token.word === "fanciful")?.phoneme).toBe("ˈfænsɪfəɫ");
     expect(tokens.find((token) => token.word === "plan")?.phoneme).toMatch(/pɫæn$/);

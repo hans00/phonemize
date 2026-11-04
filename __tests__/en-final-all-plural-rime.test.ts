@@ -1,5 +1,5 @@
-import { createPhonemizer } from "../src/core";
 import EnglishG2P from "../src/en/g2p";
+import { englishTokens } from "./helpers/english";
 
 describe("regular -s preserves the doubled-l -all rime", () => {
   const rules = new EnglishG2P({ disableDict: true });
@@ -29,11 +29,8 @@ describe("regular -s preserves the doubled-l -all rime", () => {
   });
 
   it("keeps plural rimes intact in sentence tokenization", () => {
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize("Calls came from the halls and walls.", {
-      language: "en-US",
-      returnArray: true,
-    });
+
+    const tokens = englishTokens(rules, "Calls came from the halls and walls.");
     expect(tokens.find(token => token.word === "Calls")?.phoneme).toBe("kɔɫz");
     expect(tokens.find(token => token.word === "halls")?.phoneme).toBe("hɔɫz");
     expect(tokens.find(token => token.word === "walls")?.phoneme).toBe("wɔɫz");

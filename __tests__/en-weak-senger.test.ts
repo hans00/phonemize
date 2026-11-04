@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
+
 describe.each([false, true])("weak e before a nasal affricate, disableDict=%s", disableDict => {
  const engine = new EnglishG2P({disableDict});
  it.each([["messenger","ˈmɛsəndʒɝ"],["passenger","ˈpæsəndʒɝ"]])("preserves %s and its inflections",(word,ipa)=>{
@@ -11,8 +12,8 @@ describe.each([false, true])("weak e before a nasal affricate, disableDict=%s", 
  it("preserves stressed e and the adjacent verb",()=>{
    expect(engine.predict("send")).toBe("ˈsɛnd");
    expect(engine.predict("sensing")).toBe("ˈsɛnsɪŋ");
-   const api=createPhonemizer({processors:[engine]});
-   const tokens=api.phonemize("The sensible messenger sent a note to the passenger.",{language:"en-US",returnArray:true});
+
+   const tokens = englishTokens(engine, "The sensible messenger sent a note to the passenger.");
    expect(tokens.find(t=>t.word==="messenger")?.phoneme).toBe("ˈmɛsəndʒɝ");
    expect(tokens.find(t=>t.word==="passenger")?.phoneme).toBe("ˈpæsəndʒɝ");
    expect(tokens.find(t=>t.word==="sent")?.phoneme).toBe("sɛnt");

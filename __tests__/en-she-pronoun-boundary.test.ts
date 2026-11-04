@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("standalone she rule boundary (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -15,11 +15,8 @@ describe.each([false, true])("standalone she rule boundary (disableDict=%s)", di
   });
 
   it("keeps pronoun and noun readings distinct in a sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("She said the shekel is gone.", {
-      language: "en-US",
-      returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "She said the shekel is gone.");
     expect(tokens.find(t => t.word.toLowerCase() === "she")?.phoneme).toBe("ʃi");
     expect(tokens.find(t => t.word.toLowerCase() === "shekel")?.phoneme).toBe("ˈʃɛkəɫ");
   });

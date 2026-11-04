@@ -1,5 +1,6 @@
 import { createPhonemizer } from "../src/core";
 import EnglishG2P from "../src/en/g2p";
+import { englishTokens } from "./helpers/english";
 
 describe("Dictionary-attested initialisms", () => {
   const phonemizer = createPhonemizer({ processors: [new EnglishG2P()] });
@@ -46,10 +47,8 @@ describe("Dictionary-attested initialisms", () => {
   });
 
   it("preserves triple-letter readings and neighboring lexical controls in a sentence", () => {
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize("aaa and ieee work with gas and the app.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(rules, "aaa and ieee work with gas and the app.");
     const phones = (ipa: string) => ipa.replace(/[ˈˌ]/g, "");
     for (const [word, ipa] of [
       ["aaa", "ˌtɹɪpəˈɫeɪ"], ["ieee", "ˌaɪˌtɹɪpɫəˈi"],

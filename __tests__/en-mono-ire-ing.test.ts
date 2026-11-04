@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("rule-derived unprefixed -ire before -ing (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -44,10 +44,8 @@ describe.each([false, true])("rule-derived unprefixed -ire before -ing (disableD
     ]) expect(evicted.predict(word)).toBe(ipa);
   });
   it("preserves adjective, noun and verb readings in full sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The tiring reader will work on wiring.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The tiring reader will work on wiring.");
     expect(tokens.find(t => t.word === "tiring")?.phoneme).toBe("ˈtaɪɹɪŋ");
     expect(tokens.find(t => t.word === "wiring")?.phoneme).toBe("ˈwaɪɹɪŋ");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

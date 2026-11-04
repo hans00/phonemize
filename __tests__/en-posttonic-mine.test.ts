@@ -1,6 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { isWeakAMineRoot } from "../src/en/syllabify";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("posttonic a + mine (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -39,10 +39,8 @@ describe.each([false, true])("posttonic a + mine (disableDict=%s)", disableDict 
     expect(custom.predict("examining")).toBe("ˈkɛŋ");
   });
   it("preserves noun, adjective and finite verb readings in a sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader will examine the carpet.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The clever reader will examine the carpet.");
     for (const [word, ipa] of [["examine", "ɪɡˈzæmɪn"], ["clever", "ˈkɫɛvɝ"],
       ["reader", "ˈɹidɝ"], ["carpet", "ˈkɑɹpət"]])
       expect(tokens.find(t => t.word === word)?.phoneme).toBe(ipa);

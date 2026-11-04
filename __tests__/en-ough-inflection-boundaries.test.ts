@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("ough at a vowel suffix boundary, rules=%s", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -26,8 +26,8 @@ describe.each([false, true])("ough at a vowel suffix boundary, rules=%s", disabl
     expect(own.predict("roughen")).toBe("ˈzɛŋ");
   });
   it("retains full sentence noun, adjective and verb controls", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("They record the kind minder choosing the toughest protocol.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "They record the kind minder choosing the toughest protocol.");
     expect(tokens.find(t => t.word === "kind")?.phoneme).toBe("kaɪnd");
     expect(tokens.find(t => t.word === "minder")?.phoneme).toBe("ˈmaɪndɝ");
     expect(tokens.find(t => t.word === "toughest")?.phoneme).toBe("ˈtʌfəst");

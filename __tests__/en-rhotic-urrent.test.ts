@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("rhotic vowel before the second r in -urrent/-urrant", () => {
   const rules = new EnglishG2P({ disableDict: true });
@@ -27,10 +27,8 @@ describe("rhotic vowel before the second r in -urrent/-urrant", () => {
   });
 
   it("keeps word context and neighboring content words stable", () => {
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize("The current rate and currant buns recur.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(rules, "The current rate and currant buns recur.");
     expect(tokens.find(token => token.word === "current")?.phoneme).toBe("ˈkɝənt");
     expect(tokens.find(token => token.word === "currant")?.phoneme).toBe("ˈkɝənt");
     expect(tokens.find(token => token.word === "rate")?.phoneme).toBe("ɹeɪt");

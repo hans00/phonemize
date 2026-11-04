@@ -1,13 +1,12 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 // Cambridge muscle/corpuscle: final -scle is /səl/; muscular retains /skj/.
 describe.each([false, true])("final scle and sounded scul, rules=%s", disableDict => {
   it("retains the complete silent-c root after eviction", () => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.muscle;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["muscle"]);
     for (const [word, ipa] of [["muscle", "ˈmʌsəɫ"], ["muscles", "ˈmʌsəɫz"],
       ["muscled", "ˈmʌsəɫd"], ["muscling", "ˈmʌsəɫɪŋ"]]) expect(engine.predict(word)).toBe(ipa);
   });

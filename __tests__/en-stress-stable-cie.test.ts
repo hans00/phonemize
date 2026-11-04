@@ -1,12 +1,11 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("stress-stable Latin cie, rules=%s", disableDict => {
   it("keeps the complete singular rime when species leaves the table", () => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.species;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["species"]);
     for (const [word, ipa] of [
       ["specie", "ˈspiʃi"], ["species", "ˈspiʃiz"], ["species'", "ˈspiʃiz"], ["specie's", "ˈspiʃiz"],
       ["speciation", "spiʃiˈeɪʃən"],
@@ -23,9 +22,7 @@ describe.each([false, true])("stress-stable Latin cie, rules=%s", disableDict =>
   });
   it.each(["specie", "specy"])("respects a supplied %s stem and full child", stem => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.species;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["species"]);
     engine.addPronunciation(stem, "ˈzɛŋ");
     expect(engine.predict("species")).toBe("ˈzɛŋz");
     engine.addPronunciation("species", "ˈkɛŋ");

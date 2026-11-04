@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("weak open rhotic u (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -24,10 +24,8 @@ describe.each([false, true])("weak open rhotic u (disableDict=%s)", disableDict 
     expect(custom.predict("centuries")).toBe("ˈsɛŋz");
   });
   it("preserves noun, adjective and verb controls in a complete sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader will work for a century.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The clever reader will work for a century.");
     for (const [word, ipa] of [["century", "ˈsɛntʃɝi"], ["clever", "ˈkɫɛvɝ"],
       ["reader", "ˈɹidɝ"], ["work", "wɝk"]])
       expect(tokens.find(t => t.word === word)?.phoneme).toBe(ipa);

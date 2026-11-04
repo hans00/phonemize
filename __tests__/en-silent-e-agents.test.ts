@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 const restored = [
   ["cubist", "ˈkjubɪst"], ["cubism", "ˈkjubɪzəm"],
@@ -48,10 +48,8 @@ describe.each([false, true])("silent-e agent roots (disableDict=%s)", disableDic
     }
   });
   it("keeps noun, adjective and finite verb readings in a complete sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever typist will harvest beside the carpet.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The clever typist will harvest beside the carpet.");
     for (const [word, ipa] of [["typist", "ˈtaɪpɪst"], ["clever", "ˈkɫɛvɝ"],
       ["harvest", "ˈhɑɹvəst"], ["carpet", "ˈkɑɹpət"]])
       expect(tokens.find(t => t.word === word)?.phoneme).toBe(ipa);

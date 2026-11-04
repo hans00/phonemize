@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 const RECOMMEND = "ˌɹɛkəˈmɛnd";
 
@@ -21,10 +21,8 @@ describe.each([false, true])("Cambridge-sourced recommend root (disableDict=%s)"
 
 test("keeps verb POS and the complement's subjunctive reading in context", () => {
   const engine = new EnglishG2P();
-  const api = createPhonemizer({ processors: [engine] });
-  const tokens = api.phonemize("I recommend that he read the book.", {
-    language: "en-US", returnArray: true,
-  });
+
+  const tokens = englishTokens(engine, "I recommend that he read the book.");
   expect(tokens.find(token => token.word === "recommend")?.phoneme).toBe(RECOMMEND);
   expect(tokens.find(token => token.word === "read")?.phoneme).toBe("ɹid");
 });

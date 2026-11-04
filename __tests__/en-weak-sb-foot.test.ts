@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge US husband, both noun and verb: /ˈhʌz.bənd/.
 // https://dictionary.cambridge.org/dictionary/english/husband
@@ -25,8 +25,8 @@ describe.each([false, true])("singleton s before a weak b foot (rules=%s)", disa
     expect(owned.predict("visbands")).toBe("ˈvɪsˌbændz");
   });
   test("preserves noun, adjective and verb controls in full sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("Her husband records the careful speech. They husband the resources.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "Her husband records the careful speech. They husband the resources.");
     for (const token of tokens.filter(token => token.word === "husband")) expect(token.phoneme).toBe(engine.predict("husband", "en-US", "V"));
     expect(tokens.find(token => token.word === "records")?.phoneme).toBe(engine.predict("records", "en-US", "V"));
     expect(tokens.find(token => token.word === "careful")?.phoneme).toBe(engine.predict("careful", "en-US", "ADJ"));

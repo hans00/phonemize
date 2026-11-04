@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("undoubled roots before -able (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -48,10 +48,8 @@ describe.each([false, true])("undoubled roots before -able (disableDict=%s)", di
     expect(custom.predict("livable")).toBe("ˈɫɪvəbəɫ");
   });
   it("preserves noun, adjective and finite verb controls in full sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The capable reader will work with a livable plan.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The capable reader will work with a livable plan.");
     expect(tokens.find(t => t.word === "capable")?.phoneme).toBe("ˈkeɪpəbəɫ");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");
     expect(tokens.find(t => t.word === "work")?.phoneme).toBe("wɝk");

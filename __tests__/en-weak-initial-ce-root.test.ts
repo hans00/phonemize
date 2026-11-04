@@ -1,5 +1,5 @@
 import { EnglishG2P } from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("weak initial ce- in the celebr- family", () => {
   const g2p = new EnglishG2P({ disableDict: true });
@@ -25,10 +25,8 @@ describe("weak initial ce- in the celebr- family", () => {
   });
 
   it("preserves the target and its stressed controls in a sentence", () => {
-    const api = createPhonemizer({ processors: [g2p] });
-    const tokens = api.phonemize("A celebrity celebrated a celestial event.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(g2p, "A celebrity celebrated a celestial event.");
     expect(tokens.find(token => token.word === "celebrity")?.phoneme).toBe("səˈɫɛbɹəti");
     expect(tokens.find(token => token.word === "celebrated")?.phoneme).toBe("ˈsɛɫəˌbɹeɪtɪd");
     expect(tokens.find(token => token.word === "celestial")?.phoneme).toBe("sɪˈɫɛstiəɫ");

@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge atrium /eɪ/; Collins patriarch /peɪtriɑrk/.
 // https://dictionary.cambridge.org/dictionary/chinese-traditional-english/心房
@@ -36,8 +36,8 @@ describe.each([false, true])("stressed a before tri hiatus and Greek -iarch, rul
     expect(own.predict("zatrium")).toBe("ˈzɛŋ");
   });
   it("preserves surrounding noun, adjective and verb controls", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("They record a kind minder following the patriarch.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "They record a kind minder following the patriarch.");
     expect(tokens.find(t => t.word === "kind")?.phoneme).toBe("kaɪnd");
     expect(tokens.find(t => t.word === "minder")?.phoneme).toBe("ˈmaɪndɝ");
     expect(tokens.find(t => t.word === "patriarch")?.phoneme.replace(/ˌ/g, "")).toBe("ˈpeɪtɹiɑɹk");

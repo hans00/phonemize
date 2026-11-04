@@ -1,6 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
 import { parseIpa } from "../scripts/context-ipa";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("final silent gn stress (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -30,8 +30,8 @@ describe.each([false, true])("final silent gn stress (disableDict=%s)", disableD
     expect(custom.predict("aligned")).toBe("əˈɫeɪnd");
   });
   it("checks adjective, noun and verb readings in a complete sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The malign reader will align the sign.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The malign reader will align the sign.");
     expect(tokens.find(t => t.word === "malign")?.phoneme).toBe("məˈɫaɪn");
     expect(tokens.find(t => t.word === "align")?.phoneme).toBe("əˈɫaɪn");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

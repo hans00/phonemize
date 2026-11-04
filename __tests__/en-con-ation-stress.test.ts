@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("con- noun stress retraction (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -36,8 +36,8 @@ describe.each([false, true])("con- noun stress retraction (disableDict=%s)", dis
     if (!disableDict) expect(fresh.predict("reconfirmation")).toMatch(/kɑnfɝˈmeɪʃən$/);
   });
   it("preserves noun, adjective and verb controls in a full sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("After confirmation, the clever reader will work.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "After confirmation, the clever reader will work.");
     expect(tokens.find(t => t.word === "confirmation")?.phoneme).toBe("ˌkɑnfɝˈmeɪʃən");
     expect(tokens.find(t => t.word === "clever")?.phoneme).toBe("ˈkɫɛvɝ");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

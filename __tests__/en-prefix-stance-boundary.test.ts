@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("bound -stance after prefixes (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -29,10 +29,8 @@ describe.each([false, true])("bound -stance after prefixes (disableDict=%s)", di
     expect(custom.predict("noninstance")).toMatch(/ɪnstæns$/);
   });
   it("preserves adjective, noun and verb context in complete sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The instant reader will work with this substance, for instance.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The instant reader will work with this substance, for instance.");
     expect(tokens.find(t => t.word === "substance")?.phoneme).toBe("ˈsʌbstəns");
     expect(tokens.find(t => t.word === "instance")?.phoneme).toBe("ˈɪnstəns");
     expect(tokens.find(t => t.word === "instant")?.phoneme).toBe("ˈɪnstənt");

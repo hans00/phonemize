@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 // Transparent adjectival in- allomorphs reuse their independently vouched roots.
 describe.each([false, true])("assimilated negative adjective roots, rules=%s", disableDict => {
@@ -43,9 +44,7 @@ describe.each([false, true])("assimilated negative adjective roots, rules=%s", d
   });
   it("retains caller weak vowels without applying lexical weakening", () => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.irreligious;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["irreligious"]);
     engine.addPronunciation("religious", "ɹiˈzɛŋ");
     expect(engine.predict("irreligious")).toBe("ˌɪɹiˈzɛŋ");
   });

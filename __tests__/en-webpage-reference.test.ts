@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge and Oxford both retain PAGE's /eɪ/ in WEB PAGE.
 // https://dictionary.cambridge.org/us/pronunciation/english/web-page
@@ -14,8 +14,8 @@ describe.each([false, true])("verified webpage source reading (rules=%s)", disab
     expect(engine.predict(word)).toBe(ipa);
   });
   test("preserves every occurrence in complete prose", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The webpage is useful. Another webpage is useful.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The webpage is useful. Another webpage is useful.");
     expect(tokens.filter(token => token.word === "webpage").map(token => token.phoneme)).toEqual(["ˈwɛbˌpeɪdʒ", "ˈwɛbˌpeɪdʒ"]);
     expect(tokens.filter(token => token.word === "useful").map(token => token.phoneme)).toEqual(["ˈjusfəɫ", "ˈjusfəɫ"]);
   });

@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("unvouched open stop-r ed (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -29,8 +29,8 @@ describe.each([false, true])("unvouched open stop-r ed (disableDict=%s)", disabl
     expect(custom.predict("sacred")).toBe("ˈsækɹd");
   });
   it("retains adjective, noun and finite verb controls in full prose", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The sacred reader will work without hatred.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The sacred reader will work without hatred.");
     expect(tokens.find(t => t.word === "sacred")?.phoneme).toBe("ˈseɪkɹəd");
     expect(tokens.find(t => t.word === "hatred")?.phoneme).toBe("ˈheɪtɹəd");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

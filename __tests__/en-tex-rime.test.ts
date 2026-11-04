@@ -1,9 +1,9 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("closed -tex rime, rules=%s", disableDict => {
   const engine = new EnglishG2P({ disableDict });
-  const api = createPhonemizer({ processors: [engine] });
+
 
   test("preserves the vowel in citation forms and regular plurals", () => {
     for (const word of ["vertex", "vertexes", "cortex", "cortexes", "vortex", "vortexes"]) {
@@ -14,7 +14,7 @@ describe.each([false, true])("closed -tex rime, rules=%s", disableDict => {
   });
 
   test("preserves the same pronunciation in sentences", () => {
-    const tokens = api.phonemize("The vortexes surround the cortex.", { language: "en-US", returnArray: true });
+    const tokens = englishTokens(engine, "The vortexes surround the cortex.");
     expect(tokens.find(token => token.word.toLowerCase() === "vortexes")?.phoneme).toContain("tɛks");
     expect(tokens.find(token => token.word.toLowerCase() === "cortex")?.phoneme).toContain("tɛks");
   });

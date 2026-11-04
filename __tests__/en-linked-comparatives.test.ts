@@ -1,9 +1,9 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("Fused comparative phrases (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
-  const api = createPhonemizer({ processors: [engine] });
+
   it.each([
     ["nevertheless", "ˌnɛvɝðəˈɫɛs"], ["nonetheless", "ˌnʌnðəˈɫɛs"],
     ["allthemore", "ˌɔɫðəˈmɔɹ"], ["nonethemore", "ˌnʌnðəˈmɔɹ"],
@@ -18,9 +18,7 @@ describe.each([false, true])("Fused comparative phrases (disableDict=%s)", disab
     });
 
   it("preserves noun, adjective and verb readings in a complete sentence", () => {
-    const tokens = api.phonemize("Nevertheless, the fearless reader will read the record.", {
-      language: "en-US", returnArray: true,
-    });
+    const tokens = englishTokens(engine, "Nevertheless, the fearless reader will read the record.");
     expect(tokens.find(t => t.word === "Nevertheless")?.phoneme).toBe("ˌnɛvɝðəˈɫɛs");
     expect(tokens.find(t => t.word === "fearless")?.phoneme).toMatch(/ɫ[əɪ]s$/);
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

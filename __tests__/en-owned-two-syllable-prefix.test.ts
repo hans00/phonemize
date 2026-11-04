@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 // Collins antivirus and Cambridge anti-missile attest both anti- vowel variants.
 describe.each([false, true])("owned two-syllable prefix roots, disableDict=%s", disableDict => {
@@ -20,9 +21,7 @@ describe.each([false, true])("owned two-syllable prefix roots, disableDict=%s", 
 
   it("honors custom prefix, root and whole-token readings after lexical eviction", () => {
     const en = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(en, "dictionary") };
-    delete dictionary.antivirus;
-    Reflect.set(en, "dictionary", dictionary);
+    withoutDictionaryEntries(en, ["antivirus"]);
     en.addPronunciation("anti", "ˈbɹi");
     en.addPronunciation("virus", "ˈtɛst");
     expect(en.predict("antivirus")).toBe("ˌbɹiˈtɛst");

@@ -1,10 +1,10 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // References: existing pinned dictionary readings; secondary stress varies.
 describe.each([false, true])("Deictic compound boundaries (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
-  const api = createPhonemizer({ processors: [engine] });
+
   it.each([
     ["hereby", /hɪɹˈbaɪ$/], ["herein", /hɪ(?:ˈɹ|ɹˈ)ɪn$/],
     ["thereby", /ðɛɹˈbaɪ$/], ["therein", /ðɛˈɹɪn$/],
@@ -22,9 +22,7 @@ describe.each([false, true])("Deictic compound boundaries (disableDict=%s)", dis
   });
 
   it("keeps adjective, noun and verb readings in the full sentence", () => {
-    const tokens = api.phonemize("The invalid record whereby they record results was removed.", {
-      language: "en-US", returnArray: true,
-    });
+    const tokens = englishTokens(engine, "The invalid record whereby they record results was removed.");
     expect(tokens.find(t => t.word === "whereby")?.phoneme).toMatch(/hwɛɹˈbaɪ$/);
     expect(tokens.filter(t => t.word === "record").map(t => t.phoneme))
       .toEqual([engine.predict("record", "en-US", "N"), engine.predict("record", "en-US", "V")]);

@@ -1,6 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
 import { toIPA } from "../src";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("restored y and bound suffix context (disableDict=%s)", disableDict => {
   const g2p = new EnglishG2P({ disableDict });
@@ -37,11 +37,8 @@ describe.each([false, true])("restored y and bound suffix context (disableDict=%
     }
   });
   test("keeps the -ology readings and neighboring controls in sentence context", () => {
-    const api = createPhonemizer({ processors: [g2p] });
-    const tokens = api.phonemize(
-      "Ecology and astrology influence biology, technology, and psychology.",
-      { language: "en-US", returnArray: true },
-    );
+
+    const tokens = englishTokens(g2p, "Ecology and astrology influence biology, technology, and psychology.");
     const ipa = (word: string) => tokens.find(token => token.word.toLowerCase() === word)?.phoneme;
     expect(ipa("ecology")).toMatch(/^(?:ɪ|i)ˈkɑɫədʒi$/);
     expect(ipa("astrology")).toBe("əˈstɹɑɫədʒi");

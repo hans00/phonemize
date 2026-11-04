@@ -1,6 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
 import { parseIpa } from "../scripts/context-ipa";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("English weigh rime (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -22,8 +22,8 @@ describe.each([false, true])("English weigh rime (disableDict=%s)", disableDict 
     expect(engine.predict(word)).toBe(ipa);
   });
   it("preserves noun, adjective and verb sentence controls", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader will weigh the load.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The clever reader will weigh the load.");
     expect(tokens.find(t => t.word === "weigh")?.phoneme).toBe("weɪ");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");
     expect(tokens.find(t => t.word === "clever")?.phoneme).toBe("ˈkɫɛvɝ");

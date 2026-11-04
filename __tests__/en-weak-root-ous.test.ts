@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("weak disyllabic ous roots, rules=%s", disableDict => {
   it("recovers neutral adjectives after whole-target eviction", () => {
@@ -19,9 +20,7 @@ describe.each([false, true])("weak disyllabic ous roots, rules=%s", disableDict 
   });
   it("retains supplied root and complete-child pronunciation ownership", () => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.poisonous;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["poisonous"]);
     engine.addPronunciation("poison", "ˈzɛŋ");
     expect(engine.predict("poisonous")).toBe("ˈzɛŋəs");
     engine.addPronunciation("poisonous", "ˈkɛŋ");

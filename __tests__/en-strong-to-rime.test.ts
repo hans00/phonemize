@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("strong to and compounds ending in -to", () => {
   const rules = new EnglishG2P({ disableDict: true });
@@ -15,8 +15,8 @@ describe("strong to and compounds ending in -to", () => {
   );
 
   it("keeps weak to in connected speech", () => {
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize("I want to go into town.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(rules, "I want to go into town.");
     expect(tokens.find(token => token.word === "to")?.phoneme).toBe("tə");
     expect(tokens.find(token => token.word === "into")?.phoneme).toBe("ˈɪntu");
   });

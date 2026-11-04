@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("vouched ind agents, disableDict=%s", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -13,9 +14,7 @@ describe.each([false, true])("vouched ind agents, disableDict=%s", disableDict =
   });
   it("retains an independently vouched root after lexical eviction in noun context", () => {
     const evicted = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(evicted, "dictionary") };
-    delete dictionary.blind;
-    Reflect.set(evicted, "dictionary", dictionary);
+    withoutDictionaryEntries(evicted, ["blind"]);
     const api = createPhonemizer({ processors: [evicted] });
     const tokens = api.phonemize("Early timber venetian blinds provide shade.", { language: "en-US", returnArray: true });
     expect(tokens.find(t => t.word === "blinds")?.phoneme).toBe("bɫaɪndz");

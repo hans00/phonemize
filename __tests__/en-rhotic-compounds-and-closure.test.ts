@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("vouched rhotic compounds and closure roots (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -46,10 +46,8 @@ describe.each([false, true])("vouched rhotic compounds and closure roots (disabl
     expect(originalTables.predict("enclosures")).toBe(disableDict ? "ɛnˈkɫoʊʒɝz" : "ɪnˈkɫoʊʒɝz");
   });
   it("preserves noun, adjective and finite verb controls in a complete sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader will harvest beside the enclosure.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The clever reader will harvest beside the enclosure.");
     for (const [word, ipa] of [["enclosure", "ɛnˈkɫoʊʒɝ"], ["clever", "ˈkɫɛvɝ"],
       ["reader", "ˈɹidɝ"], ["harvest", "ˈhɑɹvəst"]])
       expect(tokens.find(t => t.word === word)?.phoneme).toBe(ipa);

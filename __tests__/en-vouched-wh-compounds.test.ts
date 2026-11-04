@@ -1,13 +1,12 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 // Oxford meanwhile retains PRICE in the independent while root in both dialects.
 describe.each([false, true])("vouched heads and grammatical wh tails, disableDict=%s", disableDict => {
   const cold = () => {
     const en = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(en, "dictionary") };
-    delete dictionary.meanwhile;
-    Reflect.set(en, "dictionary", dictionary);
+    withoutDictionaryEntries(en, ["meanwhile"]);
     return en;
   };
   it("recovers the root after eviction and keeps ordinary inflections", () => {

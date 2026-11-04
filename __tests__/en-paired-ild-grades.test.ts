@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens, withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("paired PRICE-ild grades, disableDict=%s", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -12,9 +12,7 @@ describe.each([false, true])("paired PRICE-ild grades, disableDict=%s", disableD
   });
   it("preserves an owned base with an independent counterpart after eviction", () => {
     const own = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(own, "dictionary") };
-    delete dictionary.milder;
-    Reflect.set(own, "dictionary", dictionary);
+    withoutDictionaryEntries(own, ["milder"]);
     own.addPronunciation("mildest", "ˈmaɪɫdəst");
     own.addPronunciation("mild", "ˈzɛŋ");
     expect(own.predict("milder")).toBe("ˈzɛŋɝ");
@@ -29,8 +27,8 @@ describe.each([false, true])("paired PRICE-ild grades, disableDict=%s", disableD
     expect(own.predict("zilder")).toBe("ˈbɛŋ");
   });
   it("preserves noun, adjective and verb neighbours in a sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The kind minder will hinder the milder child.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The kind minder will hinder the milder child.");
     expect(tokens.filter(t => ["kind", "minder", "hinder", "milder", "child"].includes(t.word)).map(t => t.phoneme))
       .toEqual(["kaɪnd", "ˈmaɪndɝ", "ˈhɪndɝ", "ˈmaɪɫdɝ", "tʃaɪɫd"]);
   });

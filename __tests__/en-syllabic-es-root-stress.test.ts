@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge US: estate /ɪˈsteɪt/, escape /ɪˈskeɪp/, establish
 // /ɪˈstæblɪʃ/. Their initial written e is a weak es- syllable, with primary
@@ -29,10 +29,8 @@ describe("weak initial es- before the estate/escape/establish roots", () => {
   });
 
   it("keeps sentence tokenization and phrase context intact", () => {
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize("They escaped the estate after officials established a plan.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(rules, "They escaped the estate after officials established a plan.");
     expect(tokens.find(token => token.word === "escaped")?.phoneme).toBe("ɪˈskeɪpt");
     expect(tokens.find(token => token.word === "estate")?.phoneme).toBe("ɪˈsteɪt");
     expect(tokens.find(token => token.word === "established")?.phoneme).toBe("ɪˈstæbɫɪʃt");

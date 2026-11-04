@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("en- before native hard-g roots (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -47,8 +47,8 @@ describe.each([false, true])("en- before native hard-g roots (disableDict=%s)", 
   });
 
   it("preserves adjective, noun and verb controls in a full sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The engaged reader will work.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The engaged reader will work.");
     expect(tokens.find(t => t.word === "engaged")?.phoneme).toBe("ɛnˈɡeɪdʒd");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");
     expect(tokens.find(t => t.word === "work")?.phoneme).toBe("wɝk");

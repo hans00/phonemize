@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 // Cambridge cosmic/seismic independently support these consonants.
 describe.each([false, true])("Greek sm roots, rules=%s", disableDict => {
@@ -54,9 +55,7 @@ describe.each([false, true])("ex- root and coalesced geminate, rules=%s", disabl
   });
   it("keeps the correct onset after root eviction", () => {
     const own = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(own, "dictionary") };
-    delete dictionary.seismology;
-    Reflect.set(own, "dictionary", dictionary);
+    withoutDictionaryEntries(own, ["seismology"]);
     expect(own.predict("seismology")).toBe("ˌsaɪzˈmɑɫədʒi");
   });
 });

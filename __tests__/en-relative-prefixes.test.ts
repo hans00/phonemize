@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 // Oxford/MW infrastructure retain head stress; Cambridge infrared retains root stress.
 describe.each([false, true])("relative prefixes and owned roots, rules=%s", disableDict => {
@@ -22,9 +23,7 @@ describe.each([false, true])("relative prefixes and owned roots, rules=%s", disa
   });
   it("keeps caller prefix/root and child ownership", () => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.infrared;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["infrared"]);
     engine.addPronunciation("infra", "ˈzɛŋ");
     engine.addPronunciation("red", "ˈkɛŋ");
     expect(engine.predict("infrared")).toBe("ˌzɛŋˈkɛŋ");

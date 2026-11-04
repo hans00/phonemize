@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("weak /ɪ/ in the -acquisition spelling family", () => {
   const g2p = new EnglishG2P({ disableDict: true });
@@ -28,10 +28,8 @@ describe("weak /ɪ/ in the -acquisition spelling family", () => {
   });
 
   it("keeps the acquisition/inquisition contrast in a sentence", () => {
-    const api = createPhonemizer({ processors: [g2p] });
-    const tokens = api.phonemize("The acquisition followed an inquisition.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(g2p, "The acquisition followed an inquisition.");
     expect(tokens.find(token => token.word === "acquisition")?.phoneme).toBe("ˌækwəˈzɪʃən");
     expect(tokens.find(token => token.word === "inquisition")?.phoneme).toBe("ˌɪnkwɪˈzɪʃən");
   });

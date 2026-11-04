@@ -1,5 +1,5 @@
-import { createPhonemizer } from "../src/core";
 import EnglishG2P from "../src/en/g2p";
+import { englishTokens } from "./helpers/english";
 
 describe("nitroge- keeps the nitrogen root's PRICE vowel", () => {
   const rules = new EnglishG2P({ disableDict: true });
@@ -20,11 +20,8 @@ describe("nitroge- keeps the nitrogen root's PRICE vowel", () => {
   });
 
   it("preserves the noun and adjective readings in sentence context", () => {
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize("Nitrogen supports nitrogenous compounds.", {
-      language: "en-US",
-      returnArray: true,
-    });
+
+    const tokens = englishTokens(rules, "Nitrogen supports nitrogenous compounds.");
     expect(tokens.find(token => token.word === "Nitrogen")?.phoneme).toBe("ˈnaɪtɹədʒən");
     expect(tokens.find(token => token.word === "nitrogenous")?.phoneme).toBe("naɪˈtɹɑdʒənəs");
   });

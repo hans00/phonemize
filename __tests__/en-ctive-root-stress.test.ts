@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Oxford US reproductive /ˌriːprəˈdʌktɪv/ and reconstructive /ˌriːkənˈstrʌktɪv/:
 // https://www.oxfordlearnersdictionaries.com/definition/english/reproductive
@@ -26,8 +26,8 @@ describe.each([false, true])("prefixed act/duct + ive (rules=%s)", disableDict =
     expect(engine.predict("additive", "en-US", "N")).toBe("ˈædətɪv");
   });
   test("preserves full adjective, noun and verb sentence controls", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The reproductive cycle is short. The surgeon performs reconstructive surgery. The additive is safe. The addictive substance is dangerous. They reproduce the report.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The reproductive cycle is short. The surgeon performs reconstructive surgery. The additive is safe. The addictive substance is dangerous. They reproduce the report.");
     expect(tokens.find(t => t.word === "reproductive")?.phoneme).toBe("ˌɹipɹəˈdʌktɪv");
     expect(tokens.find(t => t.word === "reconstructive")?.phoneme).toBe("ˌɹikənˈstɹʌktɪv");
     expect(tokens.find(t => t.word === "additive")?.phoneme).toBe("ˈædətɪv");

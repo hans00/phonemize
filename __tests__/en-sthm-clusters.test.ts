@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 // Merriam-Webster asthma, isthmus and isthmian supply the independent AmE readings.
 describe.each([false, true])("Greek sth before m, disableDict=%s", disableDict => {
@@ -32,9 +33,7 @@ describe.each([false, true])("Greek sth before m, disableDict=%s", disableDict =
   });
   it("retains a complete root after dictionary eviction", () => {
     const own = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(own, "dictionary") };
-    delete dictionary.asthma;
-    Reflect.set(own, "dictionary", dictionary);
+    withoutDictionaryEntries(own, ["asthma"]);
     expect(own.predict("asthmas")).toBe("ˈæzməz");
     expect(own.predict("asthmas", "en-GB")).toBe("ˈæsməz");
   });

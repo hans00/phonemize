@@ -1,5 +1,5 @@
-import { createPhonemizer } from "../src/core";
 import EnglishG2P from "../src/en/g2p";
+import { englishTokens } from "./helpers/english";
 
 describe("checked final -mat rime", () => {
   const rules = new EnglishG2P({ disableDict: true });
@@ -40,11 +40,8 @@ describe("checked final -mat rime", () => {
   });
 
   it("keeps noun and verb uses stable in full sentence context", () => {
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize("They format the report, then save the format.", {
-      language: "en-US",
-      returnArray: true,
-    });
+
+    const tokens = englishTokens(rules, "They format the report, then save the format.");
     expect(tokens.filter(token => token.word === "format").map(token => token.phoneme)).toEqual([
       "ˈfɔɹmæt",
       "ˈfɔɹmæt",

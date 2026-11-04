@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge US: departmental, experimental, and regimental.
 // https://dictionary.cambridge.org/pronunciation/english/departmental
@@ -24,11 +24,8 @@ test("preserves the base and the -ment adjective's -ly form", () => {
 });
 
 test("keeps noun, verb, and adjective readings in sentence context", () => {
-  const api = createPhonemizer({ processors: [rules] });
-  const tokens = api.phonemize(
-    "The department approved the departmental plan. They experiment with an experimental method.",
-    { language: "en-US", returnArray: true },
-  );
+
+  const tokens = englishTokens(rules, "The department approved the departmental plan. They experiment with an experimental method.");
   expect(tokens.filter(token => ["department", "departmental", "experiment", "experimental"].includes(token.word.toLowerCase()))
     .map(token => [token.word.toLowerCase(), token.phoneme]))
     .toEqual([

@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("vouched -ind stems remain available to derivation (rules=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -15,8 +15,8 @@ describe.each([false, true])("vouched -ind stems remain available to derivation 
     expect(engine.predict("hinder", "en-US", "V")).toBe("ˈhɪndɝ");
   });
   test("preserves a complete noun subject and verb control", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The finder is active. They hinder progress.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The finder is active. They hinder progress.");
     expect(tokens.find(token => token.word === "finder")?.phoneme).toBe("ˈfaɪndɝ");
     expect(tokens.find(token => token.word === "hinder")?.phoneme).toBe("ˈhɪndɝ");
     expect(tokens.find(token => token.word === "active")?.phoneme).toBe("ˈæktɪv");

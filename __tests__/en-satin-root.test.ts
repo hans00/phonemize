@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("satin lexical weak vowel", () => {
   it.each([false, true])("preserves the weak final vowel across inflections and context (dictionary disabled: %s)", (disableDict) => {
@@ -10,11 +10,8 @@ describe("satin lexical weak vowel", () => {
     expect(engine.predict("Latin", "en-US", "JJ")).toBe(disableDict ? "ˈɫætɪn" : "ˈɫætən");
     expect(engine.predict("captain", "en-US", "NN")).toBe("ˈkæptən");
 
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The satin ribbon was softer than the captain.", {
-      language: "en-US",
-      returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The satin ribbon was softer than the captain.");
     const satin = tokens.find(token => token.word.toLowerCase() === "satin")?.phoneme;
     expect(satin).toBe("ˈsætən");
     expect(tokens.find(token => token.word.toLowerCase() === "captain")?.phoneme).toBe("ˈkæptən");

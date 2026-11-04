@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge US distinguishes segment by vowel and torment by primary stress.
 // https://dictionary.cambridge.org/us/pronunciation/english/segment
@@ -15,8 +15,8 @@ test.each([
 });
 
 test("distinguishes nominal and verbal readings in complete sentences", () => {
-  const api = createPhonemizer({ processors: [engine] });
-  const tokens = api.phonemize("The segment is short. They segment the market. The torment is severe. They torment the prisoners.", { language: "en-US", returnArray: true });
+
+  const tokens = englishTokens(engine, "The segment is short. They segment the market. The torment is severe. They torment the prisoners.");
   expect(tokens.filter(t => t.word === "segment").map(t => t.phoneme)).toEqual(["ˈsɛɡmənt", "ˈsɛɡmɛnt"]);
   expect(tokens.filter(t => t.word === "torment").map(t => t.phoneme)).toEqual(["ˈtɔɹˌmɛnt", "tɔɹˈmɛnt"]);
   expect(tokens.find(t => t.word === "short")?.phoneme).toBe("ʃɔɹt");

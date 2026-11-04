@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
+
 describe.each([false, true])("prefixed enge verbs, disableDict=%s", disableDict => {
  const engine = new EnglishG2P({disableDict});
  it.each(["avenge", "revenge"])("keeps the soft coda of %s", root => {
@@ -16,8 +17,8 @@ describe.each([false, true])("prefixed enge verbs, disableDict=%s", disableDict 
    expect(engine.predict("clevenger")).toBe("ˈkɫɛvɪndʒɝ");
  });
  it("retains the verb in full sentences", () => {
-   const api=createPhonemizer({processors:[engine]});
-   const tokens=api.phonemize("The reader avenged the victim while another reader was avenging a friend.",{language:"en-US",returnArray:true});
+
+   const tokens = englishTokens(engine, "The reader avenged the victim while another reader was avenging a friend.");
    expect(tokens.find(t=>t.word==="avenged")?.phoneme).toBe("əˈvɛndʒd");
    expect(tokens.find(t=>t.word==="avenging")?.phoneme).toBe("əˈvɛndʒɪŋ");
  });

@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("ui before -ition (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -28,10 +28,8 @@ describe.each([false, true])("ui before -ition (disableDict=%s)", disableDict =>
     const custom = new EnglishG2P({ disableDict });
     custom.addPronunciation("fruition", "fɹuˈɪʃən");
     expect(custom.predict("fruition")).toBe("fɹuˈɪʃən");
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader will work toward fruition.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The clever reader will work toward fruition.");
     expect(tokens.find(t => t.word === "fruition")?.phoneme).toBe("fɹuˈɪʃən");
     expect(tokens.find(t => t.word === "clever")?.phoneme).toBe("ˈkɫɛvɝ");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

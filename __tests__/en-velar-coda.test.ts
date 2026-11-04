@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens, withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("final velar coda, disableDict=%s", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -15,9 +15,7 @@ describe.each([false, true])("final velar coda, disableDict=%s", disableDict => 
   });
   it("keeps caller root and direct child ownership", () => {
     const own = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(own, "dictionary") };
-    delete dictionary.lengths;
-    Reflect.set(own, "dictionary", dictionary);
+    withoutDictionaryEntries(own, ["lengths"]);
     own.addPronunciation("length", "ˈzɛŋθ");
     expect(own.predict("length")).toBe("ˈzɛŋθ");
     expect(own.predict("lengths")).toBe("ˈzɛŋθs");
@@ -25,8 +23,8 @@ describe.each([false, true])("final velar coda, disableDict=%s", disableDict => 
     expect(own.predict("lengths")).toBe("ˈkɛŋ");
   });
   it("retains noun/adjective and verb context", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The lengthy report will strengthen their case with its length and strength.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The lengthy report will strengthen their case with its length and strength.");
     expect(tokens.find(t => t.word === "length")?.phoneme).toMatch(/ŋkθ$/);
     expect(tokens.find(t => t.word === "strength")?.phoneme).toMatch(/ŋkθ$/);
     expect(tokens.find(t => t.word === "lengthy")?.phoneme).toMatch(/ŋθi$/);

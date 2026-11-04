@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // MW lookup/hang-up and Cambridge cookout independently attest these roots.
 // https://www.merriam-webster.com/dictionary/lookup
@@ -23,10 +23,8 @@ describe.each([false, true])("vouched particle tails (disableDict=%s)", disableD
     expect(engine.predict(word)).toBe(expected);
   });
   test("keeps noun, adjective and verb controls in the full sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The careful reader used a lookup table during the cookout.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The careful reader used a lookup table during the cookout.");
     expect(phones(tokens.find(t => t.word === "lookup")?.phoneme)).toBe("ˈɫʊkəp");
     expect(phones(tokens.find(t => t.word === "cookout")?.phoneme)).toBe("ˈkʊkaʊt");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

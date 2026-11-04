@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge US: resign /rɪˈzaɪn/ and resort /rɪˈzɔːrt/.
 describe("lexical resign and resort", () => {
@@ -15,14 +15,14 @@ describe("lexical resign and resort", () => {
   });
 
   test("keeps the lexical readings in sentence context", () => {
-    const api = createPhonemizer({ processors: [engine] });
+
     for (const [sentence, word, expected] of [
       ["They resign from the company.", "resign", "ɹɪˈzaɪn"],
       ["She resigned yesterday.", "resigned", "ɹɪˈzaɪnd"],
       ["The resort was busy.", "resort", "ɹɪˈzɔɹt"],
       ["They resorted to the courts.", "resorted", "ɹɪˈzɔɹtɪd"],
     ]) {
-      const tokens = api.phonemize(sentence, { language: "en-US", returnArray: true });
+      const tokens = englishTokens(engine, sentence);
       expect(tokens.find(token => token.word === word)?.phoneme).toBe(expected);
     }
   });

@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 // Cambridge accord/afford: primary FORCE survives the weak -ford suffix.
 describe.each([false, true])("closed assimilated prefixes, disableDict=%s", disableDict => {
@@ -53,9 +54,7 @@ describe("vouched co- roots", () => {
   });
   it.each([false, true])("respects caller prefix, root and child ownership (%s)", disableDict => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.coarticulate;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["coarticulate"]);
     engine.addPronunciation("co", "ˈzɛŋ");
     engine.addPronunciation("articulate", "ˈkɛŋ");
     expect(engine.predict("coarticulate")).toBe("ˌzɛŋˈkɛŋ");

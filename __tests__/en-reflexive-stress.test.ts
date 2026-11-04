@@ -1,7 +1,7 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
 import { assignStress, syllabify } from "../src/en/syllabify";
 import { parseIpa } from "../scripts/context-ipa";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("closed-class self stress (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -25,8 +25,8 @@ describe.each([false, true])("closed-class self stress (disableDict=%s)", disabl
     expect(custom.predict("himself")).toBe("ˈzɛd");
   });
   it("retains noun, adjective and finite-verb sentence controls", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader will work by himself.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The clever reader will work by himself.");
     expect(tokens.find(t => t.word === "himself")?.phoneme).toBe("hɪmˈsɛɫf");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");
     expect(tokens.find(t => t.word === "clever")?.phoneme).toBe("ˈkɫɛvɝ");

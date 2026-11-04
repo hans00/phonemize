@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("vouched ish roots, rules=%s", disableDict => {
   it("retains complete roots and the suffix vowel after target eviction", () => {
@@ -26,9 +27,7 @@ describe.each([false, true])("vouched ish roots, rules=%s", disableDict => {
       engine.addPronunciation(root, ipa);
       expect(engine.predict(root + "ish")).toBe(ipa + "ɪʃ");
     }
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.bluish;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["bluish"]);
     engine.addPronunciation("blue", "ˈzɛŋ");
     expect(engine.predict("bluish")).toBe("ˈzɛŋɪʃ");
     engine.addPronunciation("bluish", "ˈkɛŋ");

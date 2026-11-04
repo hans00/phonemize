@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("diamond lexical stress", () => {
   it.each([false, true])("keeps the sourced noun/adjective root and derived compound (dictionary disabled: %s)", (disableDict) => {
@@ -11,11 +11,8 @@ describe("diamond lexical stress", () => {
     expect(engine.predict("diameter", "en-US", "NN")).toBe("daɪˈæmətɝ");
     expect(engine.predict("diary", "en-US", "NN")).toBe("ˈdaɪɝi");
 
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The diamond has a diamond-shaped face.", {
-      language: "en-US",
-      returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The diamond has a diamond-shaped face.");
     expect(tokens.find(token => token.word.toLowerCase() === "diamond")?.phoneme).toBe("ˈdaɪmənd");
   });
 });

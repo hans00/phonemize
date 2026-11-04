@@ -1,5 +1,5 @@
-import { createPhonemizer } from "../src/core";
 import EnglishG2P from "../src/en/g2p";
+import { englishTokens } from "./helpers/english";
 
 describe("-ivity composition preserves aligned root schwa", () => {
   const engine = new EnglishG2P({ disableDict: true });
@@ -19,7 +19,7 @@ describe("-ivity composition preserves aligned root schwa", () => {
   });
 
   test("keeps the corrected noun reading in full sentence contexts", () => {
-    const api = createPhonemizer({ processors: [engine] });
+
     const cases = [
       ["Sensitivity is essential.", "sensitivity", "ˌsɛnsəˈtɪvəti"],
       ["The sensor’s sensitivity is high.", "sensitivity", "ˌsɛnsəˈtɪvəti"],
@@ -28,7 +28,7 @@ describe("-ivity composition preserves aligned root schwa", () => {
     ] as const;
 
     for (const [sentence, target, expected] of cases) {
-      const tokens = api.phonemize(sentence, { language: "en-US", returnArray: true });
+      const tokens = englishTokens(engine, sentence);
       expect(tokens.find(token => token.word.toLowerCase() === target)?.phoneme).toBe(expected);
     }
   });

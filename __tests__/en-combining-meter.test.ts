@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens, withoutDictionaryEntries } from "./helpers/english";
 
 // Collins: https://www.collinsdictionary.com/dictionary/english-pronunciations/thermometer
 // Combining -meter carries root stress; a unit such as nanometer stays a compound.
@@ -24,15 +24,13 @@ describe.each([false, true])("combining meter, rules=%s", disableDict => {
   });
   it("uses a caller-owned tail after the whole target is evicted", () => {
     const own = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(own, "dictionary") };
-    delete dictionary.thermometer;
-    Reflect.set(own, "dictionary", dictionary);
+    withoutDictionaryEntries(own, ["thermometer"]);
     own.addPronunciation("meter", "ˈzɛŋ");
     expect(own.predict("thermometer")).toBe("ˈθɝmoʊˌzɛŋ");
   });
   it("retains surrounding noun, adjective and verb readings", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("They record a kind minder beside the thermometer.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "They record a kind minder beside the thermometer.");
     expect(tokens.find(t => t.word === "kind")?.phoneme).toBe("kaɪnd");
     expect(tokens.find(t => t.word === "minder")?.phoneme).toBe("ˈmaɪndɝ");
     expect(tokens.find(t => t.word === "thermometer")?.phoneme).toBe("θɝˈmɑmətɝ");

@@ -1,5 +1,6 @@
 import { createPhonemizer } from "../src";
 import EnglishG2P from "../src/en/g2p";
+import { englishTokens } from "./helpers/english";
 
 describe("rhotic cleanup respects lexical and syllable boundaries", () => {
   const rules = new EnglishG2P({ disableDict: true });
@@ -16,11 +17,8 @@ describe("rhotic cleanup respects lexical and syllable boundaries", () => {
     expect(rules.predict("general", "en-US")).toBe("ˈdʒɛnɝəɫ");
     expect(rules.predict("different", "en-US")).toBe("ˈdɪfɝənt");
 
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize("We walked around the park.", {
-      language: "en-US",
-      returnArray: true,
-    });
+
+    const tokens = englishTokens(rules, "We walked around the park.");
     expect(tokens.find(token => token.word === "around")?.phoneme).toBe("əˈɹaʊnd");
   });
 });

@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("short particle compounds (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -32,8 +32,8 @@ describe.each([false, true])("short particle compounds (disableDict=%s)", disabl
     expect(fresh.predict("onsets")).toBe("ˈɑnˌsɛts");
   });
   it("preserves noun, adjective and verb controls in a full sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader will input numbers.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The clever reader will input numbers.");
     expect(tokens.find(t => t.word === "input")?.phoneme).toBe("ˈɪnˌpʊt");
     expect(tokens.find(t => t.word === "clever")?.phoneme).toBe("ˈkɫɛvɝ");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

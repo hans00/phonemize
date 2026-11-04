@@ -1,5 +1,5 @@
-import { createPhonemizer } from "../src/core";
 import EnglishG2P from "../src/en/g2p";
+import { englishTokens } from "./helpers/english";
 
 describe("secondary-stressed bio- retains its combining vowel", () => {
   const rules = new EnglishG2P({ disableDict: true });
@@ -25,11 +25,8 @@ describe("secondary-stressed bio- retains its combining vowel", () => {
   });
 
   it("keeps secondary bio- vowels in sentence context", () => {
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize(
-      "The biomaterial protects biodiversity while biology studies living systems.",
-      { language: "en-US", returnArray: true },
-    );
+
+    const tokens = englishTokens(rules, "The biomaterial protects biodiversity while biology studies living systems.");
     expect(tokens.find(token => token.word === "biomaterial")?.phoneme).toBe("ˌbaɪoʊməˈtɪɹiəɫ");
     expect(tokens.find(token => token.word === "biodiversity")?.phoneme).toBe("ˌbaɪoʊdɪˈvɝsəti");
     expect(tokens.find(token => token.word === "biology")?.phoneme).toBe("ˌbaɪˈɑɫədʒi");

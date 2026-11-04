@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("micro-w boundary, rules=%s", disableDict => {
   it("retains the vouched w root and head stress after target eviction", () => {
@@ -14,9 +15,7 @@ describe.each([false, true])("micro-w boundary, rules=%s", disableDict => {
     const engine = new EnglishG2P({ disableDict });
     expect(engine.predict("microbe")).toBe("ˈmaɪkɹoʊb");
     expect(engine.predict("microscope")).toBe("ˈmaɪkɹəˌskoʊp");
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.microwave;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["microwave"]);
     engine.addPronunciation("wave", "ˈzɛŋ");
     expect(engine.predict("microwave")).toBe("ˈmaɪkɹəˌzɛŋ");
     engine.addPronunciation("micro", "ˈkɛŋ");

@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("co before vouched polysyllabic w roots, rules=%s", disableDict => {
   it("retains the root consonants after whole-target eviction", () => {
@@ -16,9 +17,7 @@ describe.each([false, true])("co before vouched polysyllabic w roots, rules=%s",
     expect(engine.predict("cowart")).toBe(disableDict ? "ˈkoʊɑɹt" : "ˈkaʊɑɹt");
     const owner = new EnglishG2P({ disableDict });
     owner.addPronunciation("worker", "ˈzɛŋ");
-    const dictionary = { ...Reflect.get(owner, "dictionary") };
-    delete dictionary.coworker;
-    Reflect.set(owner, "dictionary", dictionary);
+    withoutDictionaryEntries(owner, ["coworker"]);
     expect(owner.predict("coworker")).toBe("ˌkoʊˈzɛŋ");
     owner.addPronunciation("coworker", "ˈkɛŋ");
     expect(owner.predict("coworker")).toBe("ˈkɛŋ");

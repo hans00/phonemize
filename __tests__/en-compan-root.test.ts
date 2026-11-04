@@ -1,5 +1,5 @@
-import { createPhonemizer } from "../src/core";
 import EnglishG2P from "../src/en/g2p";
+import { englishTokens } from "./helpers/english";
 
 describe("the compan- root keeps its source-checked STRUT vowel", () => {
   const rules = new EnglishG2P({ disableDict: true });
@@ -29,11 +29,8 @@ describe("the compan- root keeps its source-checked STRUT vowel", () => {
   });
 
   it("keeps the readings in sentence context", () => {
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize(
-      "The company will accompany its companion to Germany.",
-      { language: "en-US", returnArray: true },
-    );
+
+    const tokens = englishTokens(rules, "The company will accompany its companion to Germany.");
     for (const [word, ipa] of [
       ["company", "ˈkʌmpəni"],
       ["accompany", "əˈkʌmpəni"],

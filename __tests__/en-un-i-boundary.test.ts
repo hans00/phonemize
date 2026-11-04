@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // These controls own prefix boundaries, not every pre-existing stress/weak-vowel variant.
 describe.each([false, true])("un before an i-initial base (rules=%s)", disableDict => {
@@ -26,8 +26,8 @@ describe.each([false, true])("un before an i-initial base (rules=%s)", disableDi
     expect(owned.predict("unilingual")?.replace(/[ˈˌ]/g, "")).toMatch(/^[ʌə]n/);
   });
   test("preserves noun, adjective and verb controls in a complete sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The unilingual speaker records an unintended event.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The unilingual speaker records an unintended event.");
     expect(tokens.find(token => token.word === "unilingual")?.phoneme.replace(/[ˈˌ]/g, "")).toMatch(/^ju/);
     for (const [word, pos] of [["speaker", "N"], ["records", "V"], ["unintended", "ADJ"]])
       expect(tokens.find(token => token.word === word)?.phoneme).toBe(engine.predict(word, "en-US", pos));

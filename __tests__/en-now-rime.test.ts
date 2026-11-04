@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("MOUTH in the temporal now root", () => {
   const rules = new EnglishG2P({ disableDict: true });
@@ -17,10 +17,8 @@ describe("MOUTH in the temporal now root", () => {
   });
 
   it("preserves both readings in sentence context", () => {
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize("Now, nowadays we know why.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(rules, "Now, nowadays we know why.");
     expect(tokens.find(token => token.word === "Now")?.phoneme).toBe("naʊ");
     expect(tokens.find(token => token.word === "nowadays")?.phoneme).toBe("ˈnaʊədeɪz");
     expect(tokens.find(token => token.word === "know")?.phoneme).toBe("noʊ");

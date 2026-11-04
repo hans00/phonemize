@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
+
 describe.each([false, true])("a- before a checked velar root, disableDict=%s", disableDict => {
   const engine = new EnglishG2P({ disableDict });
   it("keeps weak a- before the heavy root", () => {
@@ -13,8 +14,8 @@ describe.each([false, true])("a- before a checked velar root, disableDict=%s", d
     expect(engine.predict("amber")).toBe("ˈæmbɝ");
   });
   it("preserves full sentence context and explicit custom output", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The aging reader will walk along the river.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The aging reader will walk along the river.");
     expect(tokens.find(t => t.word === "along")?.phoneme).toBe("əˈɫɔŋ");
     expect(tokens.find(t => t.word === "aging")?.phoneme).toBe("ˈeɪdʒɪŋ");
     const custom = new EnglishG2P({ disableDict });

@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Oxford US thirsty /ˈθɜːrsti/, thirty /ˈθɜːrti/:
 // https://www.oxfordlearnersdictionaries.com/us/definition/english/thirsty
@@ -17,8 +17,8 @@ describe.each([false, true])("initial th with clustered y foot (rules=%s)", disa
     expect(engine.predict(word)?.replace(/[ˈˌ]/g, "")).toMatch(new RegExp("^" + onset));
   });
   test("preserves adjective, noun and verb readings in complete sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("They think that this thing is theirs. The thirsty child drinks water. Thirty children record the results.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "They think that this thing is theirs. The thirsty child drinks water. Thirty children record the results.");
     expect(tokens.find(t => t.word === "thirsty")?.phoneme).toBe("ˈθɝsti");
     expect(tokens.find(t => t.word === "Thirty")?.phoneme).toMatch(/^ˈθ/);
     expect(tokens.find(t => t.word === "think")?.phoneme).toBe(engine.predict("think", "en-US", "V"));

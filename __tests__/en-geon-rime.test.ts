@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge US surgeon /ˈsɝː.dʒən/ and Oxford bludgeon/burgeon,
 // including the Oxford-listed -s/-ed/-ing forms:
@@ -28,8 +28,8 @@ describe.each([false, true])("final geon rime (rules=%s)", disableDict => {
       expect(engine.predict(word)?.replace(/[ˈˌ]/g, "")).toMatch(/dʒən$/);
   });
   test("preserves POS readings in full sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The surgeon records the event. They bludgeon the wall. The burgeoning town is quiet.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The surgeon records the event. They bludgeon the wall. The burgeoning town is quiet.");
     for (const [word, pos] of [["surgeon", "N"], ["bludgeon", "V"], ["burgeoning", "ADJ"]])
       expect(tokens.find(token => token.word === word)?.phoneme).toBe(engine.predict(word, "en-US", pos));
     expect(tokens.find(token => token.word === "records")?.phoneme).toBe(engine.predict("records", "en-US", "V"));

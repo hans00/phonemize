@@ -1,6 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { preservePretonicSchwa } from "../src/en/morph-parser";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // The schwa and primary stress agree with Cambridge US intellectual and continual.
 describe("inherited pretonic schwa", () => {
@@ -32,8 +32,8 @@ describe.each([false, true])("bound -ual composition (rules=%s)", disableDict =>
     expect(engine.predict("individual")).toContain("ˈvɪdʒ");
   });
   test("preserves adjective/noun contexts and unrelated verb controls", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The intellectual is active. They face continual problems. We print books.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The intellectual is active. They face continual problems. We print books.");
     expect(tokens.find(token => token.word === "intellectual")?.phoneme).toBe("ˌɪntəˈɫɛktʃuəɫ");
     expect(tokens.find(token => token.word === "continual")?.phoneme).toBe("kənˈtɪnjuəɫ");
     expect(tokens.find(token => token.word === "active")?.phoneme).toBe("ˈæktɪv");

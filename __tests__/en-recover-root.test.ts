@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("recover root and inflections", () => {
   it.each([false, true])("keeps the reduced re- vowel across the family (dictionary disabled: %s)", (disableDict) => {
@@ -15,11 +15,8 @@ describe("recover root and inflections", () => {
     expect((engine.predict("recovery", "en-US", "NN") ?? "").replace(/[ˈˌ]/g, "")).toBe("ɹɪkʌvɝi");
     expect(engine.predict("misery", "en-US", "NN")).toBe(disableDict ? "ˈmɪsɝi" : "ˈmɪzɝi");
 
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("She hopes to recover, and her discovery and recovery have been steady.", {
-      language: "en-US",
-      returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "She hopes to recover, and her discovery and recovery have been steady.");
     expect(tokens.find(token => token.word.toLowerCase() === "recover")?.phoneme).toBe("ɹɪˈkʌvɝ");
     expect(tokens.find(token => token.word.toLowerCase() === "recovery")?.phoneme).toBe("ɹɪˈkʌvɝi");
     expect(tokens.find(token => token.word.toLowerCase() === "discovery")?.phoneme).toBe(disableDict ? "dɪsˈkʌvɝi" : "ˌdɪsˈkʌvɹi");

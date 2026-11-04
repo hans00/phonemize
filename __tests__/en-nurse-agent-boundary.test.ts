@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("NURSE agent boundary (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -30,8 +30,8 @@ describe.each([false, true])("NURSE agent boundary (disableDict=%s)", disableDic
     expect(custom.predict("merger")).toBe("ˈmɝɡɝ");
   });
   it("preserves noun, adjective and finite verb controls in prose", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The larger merger will work.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The larger merger will work.");
     expect(tokens.find(t => t.word === "larger")?.phoneme).toBe("ˈɫɑɹdʒɝ");
     expect(tokens.find(t => t.word === "merger")?.phoneme).toBe("ˈmɝdʒɝ");
     expect(tokens.find(t => t.word === "work")?.phoneme).toBe("wɝk");

@@ -58,6 +58,8 @@ describe("versioned evaluation baseline migrations", () => {
     expect(v6.strictCorrect).toBeGreaterThanOrEqual(v6.provenance.v6FrozenFloor[0]);
     expect(v6.lenientCorrect).toBeGreaterThanOrEqual(v6.provenance.v6FrozenFloor[1]);
     expect(v6.provenance.snapshotSha256).toMatch(/^[a-f0-9]{64}$/);
-    expect(v6.provenance.snapshot).toContain(`parity-${v6.provenance.snapshotSha256}.tsv.gz`);
+    expect(v6.provenance.snapshot).toBe(
+      `scripts/.prediction-cache/parity-${v6.provenance.snapshotSha256}.tsv.gz`,
+    );
   });
 });

@@ -1,12 +1,11 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("dental ern rime, rules=%s", disableDict => {
   it("recovers the whole root with its target entry removed", () => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.southern;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["southern"]);
     expect(engine.predict("southern")).toBe("ˈsʌðɝn");
     expect(engine.predict("nonsouthern")?.replace(/ˌ/g, "")).toBe("nɑnˈsʌðɝn");
     expect(engine.predict("unsouthern")?.replace(/ˌ/g, "")).toBe("ənˈsʌðɝn");
@@ -14,9 +13,7 @@ describe.each([false, true])("dental ern rime, rules=%s", disableDict => {
   });
   it("retains independent vouched roots in agent derivations", () => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.southerner; delete dictionary.southerners;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["southerner","southerners"]);
     expect(engine.predict("southerner")).toBe("ˈsʌðɝnɝ");
     expect(engine.predict("southerners")).toBe("ˈsʌðɝnɝz");
   });
@@ -30,9 +27,7 @@ describe.each([false, true])("dental ern rime, rules=%s", disableDict => {
   });
   it("preserves literal caller roots and complete children", () => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.southerner; delete dictionary.southerners;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["southerner","southerners"]);
     engine.addPronunciation("southern", "ˈzɛŋ");
     expect(engine.predict("southern")).toBe("ˈzɛŋ");
     expect(engine.predict("southerner")).toBe("ˈzɛŋɝ");

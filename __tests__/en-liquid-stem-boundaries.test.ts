@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("liquid stem boundaries (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -28,8 +28,8 @@ describe.each([false, true])("liquid stem boundaries (disableDict=%s)", disableD
     expect(fresh.predict("starling's")).toBe("ˈstɑɹɫɪŋz");
   });
   it("retains noun, adjective and verb readings in a full sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader is sampling a dumpling.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The clever reader is sampling a dumpling.");
     for (const [word, ipa] of [["clever", "ˈkɫɛvɝ"], ["reader", "ˈɹidɝ"], ["sampling", "ˈsæmpɫɪŋ"], ["dumpling", "ˈdʌmpɫɪŋ"]]) {
       expect(tokens.find(t => t.word === word)?.phoneme).toBe(ipa);
     }

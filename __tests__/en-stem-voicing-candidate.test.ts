@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 test.each([false, true])( "a voiced stem keeps its consonant in derivatives and neighbors stay unchanged, rules=%s", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -10,8 +10,8 @@ test.each([false, true])( "a voiced stem keeps its consonant in derivatives and 
     expect(engine.predict("procession", "en", pos)).toBe("pɹəˈsɛʃən");
     expect(engine.predict("confession", "en", pos)).toBe("kənˈfɛʃən");
   }
-  const api = createPhonemizer({ processors: [engine] });
-  const tokens = api.phonemize("The possession is hers; the procession will proceed.", { language: "en-US", returnArray: true });
+
+  const tokens = englishTokens(engine, "The possession is hers; the procession will proceed.");
   expect(tokens.find(t => t.word.toLowerCase() === "possession")?.phoneme).toBe("pəˈzɛʃən");
   expect(tokens.find(t => t.word.toLowerCase() === "procession")?.phoneme).toBe("pɹəˈsɛʃən");
 });

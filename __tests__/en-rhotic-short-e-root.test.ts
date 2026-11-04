@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("short rhotic e roots (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -39,10 +39,8 @@ describe.each([false, true])("short rhotic e roots (disableDict=%s)", disableDic
     expect(custom.predict("noncarpet")).toMatch(/pɛt$/);
   });
   it("preserves noun, adjective and finite verb readings in full sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader will harvest beside the carpet.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The clever reader will harvest beside the carpet.");
     expect(tokens.find(t => t.word === "harvest")?.phoneme).toBe("ˈhɑɹvəst");
     expect(tokens.find(t => t.word === "carpet")?.phoneme).toBe("ˈkɑɹpət");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");

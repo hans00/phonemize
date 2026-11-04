@@ -1,6 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
 import { BORROWED_ROOT_FRAME } from "../src/en/syllabify";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge noun/adjective interim and noun/verb interest retain initial primary.
 // https://dictionary.cambridge.org/us/dictionary/english/interim
@@ -40,8 +40,8 @@ describe.each([false, true])("long r-final prefix before a vowel (rules=%s)", di
     expect(owned.predict("interests")).toBe("ˈzɛndz");
   });
   test("preserves the noun, verb and adjective in complete sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("Her interest in the internal report grew. The report will interest the careful reader. The interim leader read the record.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "Her interest in the internal report grew. The report will interest the careful reader. The interim leader read the record.");
     const interests = tokens.filter(token => token.word === "interest");
     expect(interests).toHaveLength(2);
     expect(interests[0].phoneme).toBe(engine.predict("interest", "en-US", "N"));

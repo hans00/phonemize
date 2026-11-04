@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("MOUTH in the initial independent <h> + <ow> rime", () => {
   const g2p = new EnglishG2P({ disableDict: true });
@@ -28,10 +28,8 @@ describe("MOUTH in the initial independent <h> + <ow> rime", () => {
   });
 
   it("keeps the bound rime in sentence context", () => {
-    const api = createPhonemizer({ processors: [g2p] });
-    const tokens = api.phonemize("How, somehow, did the show end?", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(g2p, "How, somehow, did the show end?");
     expect(tokens.find(token => token.word === "How")?.phoneme).toBe("haʊ");
     expect(tokens.find(token => token.word === "somehow")?.phoneme).toContain("ˌhaʊ");
     expect(tokens.find(token => token.word === "show")?.phoneme).toBe("ʃoʊ");

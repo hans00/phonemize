@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 
 describe.each([false, true])("ify nominal root ownership, rules=%s", disableDict => {
   it("recovers actual verb roots after nominal eviction", () => {
@@ -16,9 +17,7 @@ describe.each([false, true])("ify nominal root ownership, rules=%s", disableDict
   });
   it("keeps caller-owned root phones and full-word precedence", () => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.modification;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["modification"]);
     engine.addPronunciation("modify", "ˈzɛŋəˌfaɪ");
     expect(engine.predict("modification")).toBe("ˌzɛŋəfəˈkeɪʃən");
     engine.addPronunciation("modification", "ˈkɛŋ");

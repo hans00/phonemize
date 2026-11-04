@@ -1,5 +1,6 @@
 import EnglishG2P from "../src/en/g2p";
 import { createPhonemizer } from "../src/core";
+import { withoutDictionaryEntries } from "./helpers/english";
 describe.each([false, true])("vouched closed vowel-initial roots after re, rules=%s", disableDict => {
   it("preserves complete roots through whole-word eviction", () => {
     const engine = new EnglishG2P({ disableDict });
@@ -37,9 +38,7 @@ describe.each([false, true])("vouched closed vowel-initial roots after re, rules
   });
   it("preserves supplied prefix, root and complete-child readings", () => {
     const engine = new EnglishG2P({ disableDict });
-    const dictionary = { ...Reflect.get(engine, "dictionary") };
-    delete dictionary.react; delete dictionary.reaction;
-    Reflect.set(engine, "dictionary", dictionary);
+    withoutDictionaryEntries(engine, ["react","reaction"]);
     engine.addPronunciation("re", "ˈkɛŋ");
     engine.addPronunciation("act", "ˈzɛŋ");
     engine.addPronunciation("action", "ˈbɛŋ");

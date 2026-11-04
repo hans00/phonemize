@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("-idential morphology (disableDict=%s)", disableDict => {
   const g2p = new EnglishG2P({ disableDict });
@@ -25,11 +25,8 @@ describe.each([false, true])("-idential morphology (disableDict=%s)", disableDic
   });
 
   test("preserves sentence tokenization and neighboring noun/verb readings", () => {
-    const api = createPhonemizer({ processors: [g2p] });
-    const tokens = api.phonemize(
-      "The president announced a presidential plan. A resident requested residential housing. The manager kept confidential records.",
-      { language: "en-US", returnArray: true },
-    );
+
+    const tokens = englishTokens(g2p, "The president announced a presidential plan. A resident requested residential housing. The manager kept confidential records.");
     expect(tokens.find(token => token.word === "presidential")?.phoneme).toBe(disableDict ? "ˌpɹɛzɪˈdɛnʃəɫ" : "ˌpɹɛzəˈdɛnʃəɫ");
     expect(tokens.find(token => token.word === "residential")?.phoneme).toBe("ˌɹɛzɪˈdɛnʃəɫ");
     expect(tokens.find(token => token.word === "confidential")?.phoneme).toBe("ˌkɑnfəˈdɛnʃəɫ");

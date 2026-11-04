@@ -1,9 +1,9 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("-ally derives from the personal root (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
-  const api = createPhonemizer({ processors: [engine] });
+
 
   it("keeps the rule-supported weak vowel in personally", () => {
     expect(engine.predict("personally", "en")).toBe("ˈpɝsənəɫi");
@@ -13,10 +13,7 @@ describe.each([false, true])("-ally derives from the personal root (disableDict=
   });
 
   it("preserves the reading in a full sentence with noun and adjective controls", () => {
-    const tokens = api.phonemize(
-      "The person spoke personally about the personal account.",
-      { language: "en-US", returnArray: true },
-    );
+    const tokens = englishTokens(engine, "The person spoke personally about the personal account.");
     expect(tokens.find(token => token.word === "person")?.phoneme).toBe("ˈpɝsən");
     expect(tokens.find(token => token.word === "personally")?.phoneme).toBe("ˈpɝsənəɫi");
     expect(tokens.find(token => token.word === "personal")?.phoneme).toBe(disableDict ? "ˈpɝsənəɫ" : "ˈpɝsɪnəɫ");

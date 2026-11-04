@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 const rules = new EnglishG2P({ disableDict: true });
 
@@ -32,10 +32,8 @@ describe("matur- stem stress and reflexes", () => {
     expect(rules.predict("mature", "en-US", "ADJ")).toBe("məˈtʃʊɹ");
     expect(rules.predict("mature", "en-US", "V")).toBe("məˈtʃʊɹ");
     expect(rules.predict("maturity", "en-US", "N")).toBe("məˈtʃʊɹəti");
-    const api = createPhonemizer({ processors: [rules] });
-    const tokens = api.phonemize("The immature child will mature, and the fruit reaches maturity.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(rules, "The immature child will mature, and the fruit reaches maturity.");
     expect(tokens.find(token => token.word === "immature")?.phoneme).toBe("ˌɪməˈtʃʊɹ");
     expect(tokens.find(token => token.word === "mature")?.phoneme).toBe("məˈtʃʊɹ");
     expect(tokens.find(token => token.word === "maturity")?.phoneme).toBe("məˈtʃʊɹəti");

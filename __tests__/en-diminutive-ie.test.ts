@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("diminutive ie with a vouched digraph root (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -39,8 +39,8 @@ describe.each([false, true])("diminutive ie with a vouched digraph root (disable
     expect(engine.predict("belie")).toBe(disableDict ? "bɪˈɫi" : "bɪˈɫaɪ");
   });
   it("retains noun, adjective and finite verb controls in prose", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever rookie will cook a cookie.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The clever rookie will cook a cookie.");
     expect(tokens.find(t => t.word === "rookie")?.phoneme).toBe("ˈɹʊki");
     expect(tokens.find(t => t.word === "cookie")?.phoneme).toBe("ˈkʊki");
     expect(tokens.find(t => t.word === "cook")?.phoneme).toBe("kʊk");

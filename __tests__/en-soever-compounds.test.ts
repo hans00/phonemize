@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("fused ever compounds (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -28,8 +28,8 @@ describe.each([false, true])("fused ever compounds (disableDict=%s)", disableDic
     expect(engine.predict(word)).toMatch(/ˈ[^ˈ]*ɛvɝ$/);
   });
   it("preserves noun, adjective and verb controls in a full sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader will work wherever he can.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The clever reader will work wherever he can.");
     expect(tokens.find(t => t.word === "reader")?.phoneme).toBe("ˈɹidɝ");
     expect(tokens.find(t => t.word === "work")?.phoneme).toBe("wɝk");
     expect(tokens.find(t => t.word === "clever")?.phoneme).toBe("ˈkɫɛvɝ");

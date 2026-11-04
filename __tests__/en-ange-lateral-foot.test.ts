@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Oxford American angel /ˈeɪndʒl/:
 // https://www.oxfordlearnersdictionaries.com/definition/american_english/angel
@@ -27,8 +27,8 @@ describe.each([false, true])("ange lateral foot (rules=%s)", disableDict => {
     expect(owned.predict("zangels")).toBe("ˈzɛŋz");
   });
   test("preserves noun, adjective and verb readings in sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The angel records angelic voices. They anger the manager.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The angel records angelic voices. They anger the manager.");
     for (const [word, pos] of [["angel", "N"], ["angelic", "ADJ"], ["anger", "V"]])
       expect(tokens.find(token => token.word === word)?.phoneme).toBe(engine.predict(word, "en-US", pos));
     expect(tokens.find(token => token.word === "records")?.phoneme).toBe(engine.predict("records", "en-US", "V"));

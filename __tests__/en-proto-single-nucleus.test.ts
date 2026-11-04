@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("single-nucleus proto tails, disableDict=%s", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -29,8 +29,8 @@ describe.each([false, true])("single-nucleus proto tails, disableDict=%s", disab
     expect(own.predict("protokemp")).toBe("ˈkɛŋ");
   });
   it("preserves neighbouring adjective, noun and verb readings", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("They record a kind minder following the protocol.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "They record a kind minder following the protocol.");
     expect(tokens.find(t => t.word === "kind")?.phoneme).toBe("kaɪnd");
     expect(tokens.find(t => t.word === "minder")?.phoneme).toBe("ˈmaɪndɝ");
     expect(tokens.find(t => t.word === "protocol")?.phoneme).toBe("ˈpɹoʊtəˌkɑɫ");

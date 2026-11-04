@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe("sourced suite, soul, comfort, congress, and bother roots", () => {
   it.each([false, true])("keeps lexical root readings through inflection and sentence context (dictionary disabled: %s)", (disableDict) => {
@@ -23,11 +23,8 @@ describe("sourced suite, soul, comfort, congress, and bother roots", () => {
     expect(engine.predict("progress", "en-US", "NN")).toBe(disableDict ? "ˈpɹɑɡɹɛs" : "ˈpɹoʊɡɹɛs");
     expect(engine.predict("south", "en-US", "NN")).toBe("saʊθ");
 
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize(
-      "The suite offered comfort to every bothered soul; Congress heard the complaint without a bother.",
-      { language: "en-US", returnArray: true },
-    );
+
+    const tokens = englishTokens(engine, "The suite offered comfort to every bothered soul; Congress heard the complaint without a bother.");
     const reading = (word: string) => tokens.find(token => token.word.toLowerCase() === word.toLowerCase())?.phoneme;
     expect(reading("suite")).toBe("swit");
     expect(reading("comfort")).toBe("ˈkʌmfɝt");

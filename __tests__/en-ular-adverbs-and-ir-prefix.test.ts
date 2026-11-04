@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 describe.each([false, true])("bound roots and weak ir (disableDict=%s)", disableDict => {
   const engine = new EnglishG2P({ disableDict });
@@ -42,10 +42,8 @@ describe.each([false, true])("bound roots and weak ir (disableDict=%s)", disable
     }
   });
   it("preserves noun, adjective and finite verb readings in a sentence", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The clever reader will work irregularly.", {
-      language: "en-US", returnArray: true,
-    });
+
+    const tokens = englishTokens(engine, "The clever reader will work irregularly.");
     for (const [word, ipa] of [["irregularly", "ˌɪˈɹɛɡjəɫɝɫi"], ["clever", "ˈkɫɛvɝ"],
       ["reader", "ˈɹidɝ"], ["work", "wɝk"]])
       expect(tokens.find(t => t.word === word)?.phoneme).toBe(ipa);

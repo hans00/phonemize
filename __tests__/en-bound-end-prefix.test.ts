@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge US amend/append/contend and apprehend confirm the root's primary stress.
 // https://dictionary.cambridge.org/pronunciation/english/amend
@@ -32,8 +32,8 @@ describe.each([false, true])("closed end root after weak prefixes (rules=%s)", d
     expect(owned.predict("apzending")).toBe("ˈzɛndɪŋ");
   });
   test("preserves the noun amends and verb/adjective controls in full sentences", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("They make amends. They amend the careful record.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "They make amends. They amend the careful record.");
     for (const [word, pos] of [["amends", "N"], ["amend", "V"], ["careful", "ADJ"], ["record", "N"]])
       expect(tokens.find(token => token.word === word)?.phoneme).toBe(engine.predict(word, "en-US", pos));
   });

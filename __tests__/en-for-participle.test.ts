@@ -1,5 +1,5 @@
 import EnglishG2P from "../src/en/g2p";
-import { createPhonemizer } from "../src/core";
+import { englishTokens } from "./helpers/english";
 
 // Cambridge US forgotten /fɚˈɡɑːtən/, forbidden /fɚˈbɪdən/;
 // its Academic Content entry also accepts full /fɔr-/ with root stress.
@@ -21,8 +21,8 @@ describe.each([false, true])("native for- participles (rules=%s)", disableDict =
     expect(engine.predict(word)?.replace(/[ˈˌ]/g, "")).toMatch(/^fɔɹ/);
   });
   test("preserves adjective and passive contexts plus unrelated noun/verb controls", () => {
-    const api = createPhonemizer({ processors: [engine] });
-    const tokens = api.phonemize("The forgotten book is old. Smoking is forbidden here. They format reports.", { language: "en-US", returnArray: true });
+
+    const tokens = englishTokens(engine, "The forgotten book is old. Smoking is forbidden here. They format reports.");
     expect(tokens.find(token => token.word === "forgotten")?.phoneme).toBe("fɝˈɡɑtən");
     expect(tokens.find(token => token.word === "forbidden")?.phoneme).toBe(disableDict ? "fɝˈbɪdən" : "fɔɹˈbɪdən");
     expect(tokens.find(token => token.word === "book")?.phoneme).toBe("bʊk");
