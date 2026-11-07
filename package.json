@@ -54,7 +54,7 @@
   },
   "scripts": {
     "test": "jest",
-    "test:coverage": "nyc --reporter=text --reporter=html --reporter=lcov yarn test",
+    "test:coverage": "jest --coverage",
     "test:eval": "tsx scripts/evaluate.ts",
     "test:eval:common": "tsx scripts/evaluate.ts --subset common",
     "test:parity": "node --require tsx/cjs scripts/evaluate-parity-v6.ts",
